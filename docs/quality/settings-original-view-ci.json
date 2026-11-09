@@ -1,0 +1,249 @@
+{
+  "source_revision": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+  "run_id": 42663662547,
+  "run_attempt": 1,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547",
+  "result": "passed",
+  "jobs": [
+    {
+      "id": 129321496657,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321496657",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+      "test_summaries": [
+        268,
+        268
+      ],
+      "required_steps": [
+        "Test",
+        "Require executed Wayland results",
+        "Test reverse driver discovery order",
+        "Require executed reverse-order Wayland results",
+        "Compare two fixed Vulkan driver discovery orders"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T17:27:29.5051555Z 101/268 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.58 sec",
+        "2026-11-09T17:28:30.3268173Z 162/268 Test #162: nexaui_text_document ..................................................   Passed    0.05 sec",
+        "2026-11-09T17:28:30.3623468Z 163/268 Test #163: nexaui_document_presentation ..........................................   Passed    0.04 sec",
+        "2026-11-09T17:28:32.0446719Z 191/268 Test #191: nexaui_font_metadata ..................................................   Passed    0.01 sec",
+        "2026-11-09T17:31:48.7997488Z 101/268 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.59 sec",
+        "2026-11-09T17:32:51.6547207Z 162/268 Test #162: nexaui_text_document ..................................................   Passed    0.04 sec",
+        "2026-11-09T17:32:51.6914738Z 163/268 Test #163: nexaui_document_presentation ..........................................   Passed    0.04 sec",
+        "2026-11-09T17:32:53.3565600Z 191/268 Test #191: nexaui_font_metadata ..................................................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-original-view5-ci-129321496657.log",
+        "size": 337478,
+        "sha256": "dad5dfb86af9f90467ded955a697eef8b844b0c088f4c7938def49ee2599c239"
+      }
+    },
+    {
+      "id": 129321496995,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321496995",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+      "test_summaries": [
+        122
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T17:26:22.6707550Z  58/122 Test  #58: nexaui_text_document .......................   Passed    0.02 sec",
+        "2026-11-09T17:26:22.6856460Z  59/122 Test  #59: nexaui_document_presentation ...............   Passed    0.01 sec",
+        "2026-11-09T17:26:40.5098800Z  90/122 Test  #90: nexaui_font_metadata .......................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-original-view5-ci-129321496995.log",
+        "size": 111231,
+        "sha256": "4f136106ca9a1cc0b658592b4b32b17b7aa5bf278f08e89abda5cd84182372e0"
+      }
+    },
+    {
+      "id": 129321497225,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321497225",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+      "test_summaries": [
+        146
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T17:21:48.7607512Z  64/146 Test  #64: nexaui_text_document .......................   Passed    0.03 sec",
+        "2026-11-09T17:21:48.7951054Z  65/146 Test  #65: nexaui_document_presentation ...............   Passed    0.03 sec",
+        "2026-11-09T17:22:04.9052479Z 108/146 Test #108: nexaui_font_metadata .......................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-original-view5-ci-129321497225.log",
+        "size": 101654,
+        "sha256": "f1c5f81d19e27beaeee00b2e35c262a42010881a42c9fbd0482154ddcd296dc7"
+      }
+    },
+    {
+      "id": 129321497244,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321497244",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+      "test_summaries": [
+        268,
+        1
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T17:22:59.4159785Z 101/268 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.59 sec",
+        "2026-11-09T17:24:05.8790758Z 162/268 Test #162: nexaui_text_document ..................................................   Passed    0.02 sec",
+        "2026-11-09T17:24:05.8987672Z 163/268 Test #163: nexaui_document_presentation ..........................................   Passed    0.02 sec",
+        "2026-11-09T17:24:06.7573912Z 191/268 Test #191: nexaui_font_metadata ..................................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-original-view5-ci-129321497244.log",
+        "size": 304459,
+        "sha256": "43469aee15c8c618e5c9611a4ae0f4e6dcad8570d01b9c3bbb03dfa42ce24d57"
+      }
+    },
+    {
+      "id": 129321497257,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321497257",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+      "test_summaries": [
+        121
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T17:26:31.8975450Z  58/121 Test  #58: nexaui_text_document .......................   Passed    0.02 sec",
+        "2026-11-09T17:26:31.9210500Z  59/121 Test  #59: nexaui_document_presentation ...............   Passed    0.02 sec",
+        "2026-11-09T17:26:52.0078870Z  89/121 Test  #89: nexaui_font_metadata .......................   Passed    0.01 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-original-view5-ci-129321497257.log",
+        "size": 110922,
+        "sha256": "ca29c424b8d7741724714b6d5929314c92464c94733656782048d7b5577e7048"
+      }
+    },
+    {
+      "id": 129321497274,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321497274",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+      "test_summaries": [
+        266
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Unix)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Unix)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T17:22:57.1862026Z 101/266 Test #101: nexaui_atspi_document_presentation_wayland_private ....................   Passed    0.54 sec",
+        "2026-11-09T17:24:05.7901840Z 161/266 Test #161: nexaui_text_document ..................................................   Passed    0.02 sec",
+        "2026-11-09T17:24:05.8118279Z 162/266 Test #162: nexaui_document_presentation ..........................................   Passed    0.02 sec",
+        "2026-11-09T17:24:07.4257393Z 189/266 Test #189: nexaui_font_metadata ..................................................   Passed    0.00 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-original-view5-ci-129321497274.log",
+        "size": 298160,
+        "sha256": "f12c6c4a55e0b395df66505dc681929b572ae9ad7404780e8e864d6d5801a518"
+      }
+    },
+    {
+      "id": 129321497380,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321497380",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640",
+      "test_summaries": [
+        145
+      ],
+      "required_steps": [
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Run installed consumer (Windows)",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Run close-request consumer (Windows)",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "relevant_test_lines": [
+        "2026-11-09T17:22:09.4857891Z  64/145 Test  #64: nexaui_text_document .......................   Passed    0.03 sec",
+        "2026-11-09T17:22:09.5197186Z  65/145 Test  #65: nexaui_document_presentation ...............   Passed    0.03 sec",
+        "2026-11-09T17:22:26.1277746Z 107/145 Test #107: nexaui_font_metadata .......................   Passed    0.02 sec"
+      ],
+      "log": {
+        "path": "D:/NexaUI/out/settings-original-view5-ci-129321497380.log",
+        "size": 101522,
+        "sha256": "75d35a6dfb93bcaf810d6e5aaeb125ff54afebaf7c96f1bf99f9b1a9569f0fec"
+      }
+    },
+    {
+      "id": 129321499200,
+      "name": "fuzz-campaigns",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321499200",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640"
+    },
+    {
+      "id": 129321499559,
+      "name": "windows-asan",
+      "status": "completed",
+      "conclusion": "skipped",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42663662547/job/129321499559",
+      "head_sha": "a45b55349d44c64babde2d4da5f1e14559c9c640"
+    }
+  ],
+  "scope": "All seven required SDK/package jobs pass; two optional jobs skip. No CTest skips. Standalone original Settings/Sound consumer, private native tasks and borrowed-font captures are established by the separate exact-source local receipt; CI is not new original-compositor/audio/human/performance acceptance."
+}

@@ -1,0 +1,255 @@
+{
+  "archive": "/mnt/d/NexaUI/out/nexaui-settings-original-view5-ci-20261109.tar.gz",
+  "size": 587179,
+  "sha256": "e9d3e03364e78b3e057f81413e901dfaa841eec4d20585f2305df26f85680611",
+  "files": 49,
+  "verified_each_member": true,
+  "members": [
+    {
+      "path": "documentation/README.md",
+      "size": 23272,
+      "sha256": "10dd94fbdbe62752ee2fe2a3b259c89233643b506852730b8373f3e7ff04c4ad"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-adoption-assessment.md",
+      "size": 464138,
+      "sha256": "7ea829afaf467c24d02751fe8968f8a8d65f9c2e768aedfb01af4f3ee9bfdfbc"
+    },
+    {
+      "path": "documentation/docs/quality/aetheri-requirement-map.md",
+      "size": 266368,
+      "sha256": "665ac40e2bffa2ba6faf719b40fa57f6cfafa85a7bc64e45ce6a5c660e4f6d78"
+    },
+    {
+      "path": "documentation/docs/quality/system-compositions-assessment.md",
+      "size": 28465,
+      "sha256": "a33efecbe2576e9fc3a9830e5541d8397ca3fce5620e13084695c46b45e4b521"
+    },
+    {
+      "path": "documentation/examples/21_aetheri_model/README.md",
+      "size": 9493,
+      "sha256": "e386534f4cd5775123b612196786b5b2b7dfc04c42824106cc12853e640cb0df"
+    },
+    {
+      "path": "host/archive_settings_original_view5.py",
+      "size": 2381,
+      "sha256": "b7b781a5b5769c6c3c67ba7802d7278bf389bf2404ac9b51abcd4a615866d3a5"
+    },
+    {
+      "path": "host/archive_settings_original_view5_ci.py",
+      "size": 1897,
+      "sha256": "7e00133f39a1372c9a11dcb2cc5c6194e4c918cea08d4ddb0958ee58ea67242e"
+    },
+    {
+      "path": "host/bind_settings_original_view5.py",
+      "size": 9181,
+      "sha256": "08aa834cd185dc16877deea5f804acc0f4071cf7cdf3558630e499031f043858"
+    },
+    {
+      "path": "host/bind_settings_original_view5_ci.py",
+      "size": 3488,
+      "sha256": "d610fc59559814f1e9a2e61dfa7e3755161d2c6b52764cc8195dae5f0ba8c337"
+    },
+    {
+      "path": "host/bind_settings_original_view6.py",
+      "size": 1172,
+      "sha256": "ab1d5825caa89f3fbb1531e5dffe81b7341dd6c368c33d71f20cbedc82eaf486"
+    },
+    {
+      "path": "host/bind_settings_original_view7.py",
+      "size": 244,
+      "sha256": "aa8ff9498fe0fdaeb4b913a5c0ac5ff91fdf0784923ec15b0b0799cbf0e8f923"
+    },
+    {
+      "path": "host/bind_settings_original_view8.py",
+      "size": 419,
+      "sha256": "9f19a0e98a82599ea03ee9158ef98a6d2d372bf63d5cf0c1c87e8c253893b5b0"
+    },
+    {
+      "path": "host/build_settings_original_sdk_o1.py",
+      "size": 2256,
+      "sha256": "5c08258877174ed8aae86b40c610c2a05b9280cb7ceee588144a71492011a7a9"
+    },
+    {
+      "path": "host/build_settings_original_sdk_o1_final.py",
+      "size": 999,
+      "sha256": "7de9d7e0762a55096748eb0ae22a74f842243964b5ba6b0256cb2c113c6f3c19"
+    },
+    {
+      "path": "host/build_settings_original_sdk_o1_retry.py",
+      "size": 759,
+      "sha256": "4cbee7441ac7ac78328e3c72223e51fc6a9d4b76c5610266b9f1bd56686a884a"
+    },
+    {
+      "path": "host/capture_settings_original_view5.py",
+      "size": 2204,
+      "sha256": "5d4b0989fe11d8e870bb0386234d914ee8ec09d1a90cf00276ea7091c1fbf2cc"
+    },
+    {
+      "path": "host/check_settings_original_view5_docs.py",
+      "size": 4320,
+      "sha256": "cad2b7a55f1fc22dfbd87d1849fa160aadc09a3766371144410352ac110bddde"
+    },
+    {
+      "path": "host/check_settings_original_view5_negative.py",
+      "size": 2765,
+      "sha256": "2ebcd397417b49f9ef539509de424177bc1ed7d525be5d17c1fd756f9f669c3a"
+    },
+    {
+      "path": "host/check_settings_original_view5_off.py",
+      "size": 3054,
+      "sha256": "6b8b01afb919cfef3a959aed80f79f794f3595798df9153644d2e8e8b58e33af"
+    },
+    {
+      "path": "host/diagnose_settings_original_generated.py",
+      "size": 1108,
+      "sha256": "c1337175e516b24f9eff75534cdd85cf0526dc2cc9d2c69989211ec4bd882c49"
+    },
+    {
+      "path": "host/freeze_settings_original_view1.py",
+      "size": 1114,
+      "sha256": "8d32cd58ffa505469b19c8489c15cc88d2e516af4b26608c64afd771f03281a8"
+    },
+    {
+      "path": "host/freeze_settings_original_view2.py",
+      "size": 381,
+      "sha256": "26b030e4ec1991a6252d11f9164068627a8c7f4d7ec119c803498ac9655f356e"
+    },
+    {
+      "path": "host/freeze_settings_original_view3.py",
+      "size": 1981,
+      "sha256": "7dd60a04361a6ff7d7f593178683f56037b407e7cf9f26f960d2b4ae5ada040b"
+    },
+    {
+      "path": "host/polish_settings_original_view5_docs.py",
+      "size": 2528,
+      "sha256": "fae9b655c3487462c6c1d8dda4a95f6c11cf925c0f1363149a7aba962a32c535"
+    },
+    {
+      "path": "host/probe_settings_original_view2.py",
+      "size": 2780,
+      "sha256": "3b07bb01fd46af3a3bbe93faaebed06649f4ad0610621619a3119b979563fd0f"
+    },
+    {
+      "path": "host/probe_settings_original_view3.py",
+      "size": 373,
+      "sha256": "8e0b66b7ee638c8a954f952096e989429d664f54276b276ddf8be0d67293b687"
+    },
+    {
+      "path": "host/run_settings_original_view4.py",
+      "size": 3658,
+      "sha256": "28c1e8a5ec2cddda81f355297b8d763a72ba2c1e00a5ec00fa1328924b8a3495"
+    },
+    {
+      "path": "host/run_settings_original_view4_native.py",
+      "size": 2729,
+      "sha256": "5997e09a6501f44512741803756fca11e42788bdece31cb1d76c3b08e1ef1414"
+    },
+    {
+      "path": "host/run_settings_original_view5.py",
+      "size": 840,
+      "sha256": "9a943ea24436ddb6446803d8e045f7050280e65ce0fa962c3c8842dded9d6ca1"
+    },
+    {
+      "path": "host/run_settings_original_view5_native.py",
+      "size": 610,
+      "sha256": "d028e40db5bb9fef04a6e7e2a79fc332136d2a1e1d2426cd013538cbbcbabe46"
+    },
+    {
+      "path": "host/run_settings_original_view6_native.py",
+      "size": 650,
+      "sha256": "d2e1d3d6a02f5db3d2ce4a569a308190a13861031d528cbd0d30fdd3e87b9eb3"
+    },
+    {
+      "path": "host/settings-original-view5-ci-129321496657.log",
+      "size": 337478,
+      "sha256": "dad5dfb86af9f90467ded955a697eef8b844b0c088f4c7938def49ee2599c239"
+    },
+    {
+      "path": "host/settings-original-view5-ci-129321496995.log",
+      "size": 111231,
+      "sha256": "4f136106ca9a1cc0b658592b4b32b17b7aa5bf278f08e89abda5cd84182372e0"
+    },
+    {
+      "path": "host/settings-original-view5-ci-129321497225.log",
+      "size": 101654,
+      "sha256": "f1c5f81d19e27beaeee00b2e35c262a42010881a42c9fbd0482154ddcd296dc7"
+    },
+    {
+      "path": "host/settings-original-view5-ci-129321497244.log",
+      "size": 304459,
+      "sha256": "43469aee15c8c618e5c9611a4ae0f4e6dcad8570d01b9c3bbb03dfa42ce24d57"
+    },
+    {
+      "path": "host/settings-original-view5-ci-129321497257.log",
+      "size": 110922,
+      "sha256": "ca29c424b8d7741724714b6d5929314c92464c94733656782048d7b5577e7048"
+    },
+    {
+      "path": "host/settings-original-view5-ci-129321497274.log",
+      "size": 298160,
+      "sha256": "f12c6c4a55e0b395df66505dc681929b572ae9ad7404780e8e864d6d5801a518"
+    },
+    {
+      "path": "host/settings-original-view5-ci-129321497380.log",
+      "size": 101522,
+      "sha256": "75d35a6dfb93bcaf810d6e5aaeb125ff54afebaf7c96f1bf99f9b1a9569f0fec"
+    },
+    {
+      "path": "host/settings-original-view5-ci-jobs-initial.json",
+      "size": 26138,
+      "sha256": "4aa1c35f3b4cbb7586ad129fa7ee4d4b8741bd60a5eaf5dd540366ef34678d3c"
+    },
+    {
+      "path": "host/settings-original-view5-ci-jobs.json",
+      "size": 70823,
+      "sha256": "3fd977851eb2783f7b6d9a4f2d37c12f0f9ffa6a1db8411da540be9ff5722701"
+    },
+    {
+      "path": "host/settings-original-view5-ci-run.json",
+      "size": 13449,
+      "sha256": "8e264456499add8658ca42ab146fba83270dfc298cfe099cccc523d4ef067fa5"
+    },
+    {
+      "path": "host/settings-original-view5-ci-runs.json",
+      "size": 14391,
+      "sha256": "e00df2c744379cba56544adeec3b2c1b4d43f42dbb6ed0dc774015546dfae900"
+    },
+    {
+      "path": "host/settings-original-view5-ci.json",
+      "size": 11728,
+      "sha256": "4388e7e27875c2790bffa4db94f2a5542e073a9d7acbf851e9c2b11ca70d3ead"
+    },
+    {
+      "path": "host/settings-original-view5-generated-diagnostic.json",
+      "size": 4528,
+      "sha256": "09dfc9d23b608c9394fb4f9048b0b918d79a6dc3883a4fc746d34fd537c4a88e"
+    },
+    {
+      "path": "host/write_settings_original_view5_docs.py",
+      "size": 4297,
+      "sha256": "a597e69385ff769e207f033fadc5534db5af86210a5204f3b2244c9f9b84ac84"
+    },
+    {
+      "path": "public/settings-original-view-archive.json",
+      "size": 178093,
+      "sha256": "804a6aadae2bd52200cda1006af732a9b4706ad99714d75a226311c6e09b216b"
+    },
+    {
+      "path": "public/settings-original-view-ci.json",
+      "size": 11728,
+      "sha256": "4388e7e27875c2790bffa4db94f2a5542e073a9d7acbf851e9c2b11ca70d3ead"
+    },
+    {
+      "path": "public/settings-original-view-local.json",
+      "size": 304560,
+      "sha256": "ba63ef0b9e0b4fa8cd0c64672494b53da621db626e3a9c7654e92d0840cbd583"
+    },
+    {
+      "path": "public/settings-original-view-report.md",
+      "size": 8685,
+      "sha256": "492d71e7295cf5e7b4225e3dbbe090c25d2559edfe737ef950e5212424b79bd7"
+    }
+  ],
+  "scope": "Complete final seven CI logs, initial/final run metadata, preparation/verification scripts and documented exact-source local evidence; complements the separately verified raw local archive."
+}

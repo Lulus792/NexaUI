@@ -1,5 +1,19 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Settings/Sound composition: optional Example21 at `a45b553` compiles
+the original Aetheri `509766e` view, model and ordinary Wayland host against
+installed SDK `0.1.31`. Three enabled profiles pass 24 CTests; default-OFF
+current/legacy adds 8, and the unchanged instrumented SDK prerequisite passes 10.
+Nine private AT-SPI/keyboard/unavailable-bridge tasks and 16 headless captures,
+with eight complete RGB equalities, are bound to 42 Git inputs. A compiled
+last-output omission fails the new 64-output test. See the
+[original-view report](settings-original-view-report.md) for exact sources,
+profiles, the retained unoptimized-ASan timeout and the raw archive. Native
+Sound reports unavailable without an admitted original audio owner. Real service
+effects, actual Aetheri compositor, canonical fonts, IME, physical/human,
+performance and normal adoption remain open. Active Aetheri stays unchanged;
+all 103 IDs/statuses and remaining packets 6–8 persist.
+
 Settings model compatibility: Example21/source7d46024 builds the exact original
 current Settings modele1cd481 and minimal legacy7bbe704 model with installed
 SDK0.1.31. Six configurations pass24 headless CTests and51 source-bound objects;
@@ -8,7 +22,9 @@ replacement and keyboard appearance/language changes. A compiled reset defect
 fails that unchanged test with sanitizers active. See the
 [compatibility report](settings-model-compatibility-report.md). No Sound page,
 audio service, device effect or new native acceptance is supplied by this step.
-The existing original Sound view/host is the next composition to reuse. Active
+That checkpoint did not compose the original Sound view/host; the subsequent
+[original-view report](settings-original-view-report.md) supplies that optional
+composition with separate scope and evidence. Active
 Aetheri source/pin/default remains untouched; all103 IDs and packets6–8 persist.
 
 Original Editor attributes, partial checkpoint: consumer6d1f273 with installed

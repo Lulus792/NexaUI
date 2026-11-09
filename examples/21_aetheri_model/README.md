@@ -68,6 +68,9 @@ integrated. No GLib/PipeWire dependency or new service admission is added to
 the SDK. The view has no editable text field and therefore supplies no IME task.
 Physical input, screenreader speech, canonical-font/design acceptance and normal
 Aetheri adoption remain separate gates.
+The [original-view report](../../docs/quality/settings-original-view-report.md)
+binds exact sources, installed profiles, native tasks, captures and retained
+failures without closing those wider gates.
 
 On Linux, with a Wayland-only NexaUI SDK installed and a compatible Aetheri
 source snapshot available:

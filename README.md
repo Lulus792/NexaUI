@@ -11,7 +11,7 @@ NexaUI brings layout, widgets, text, rendering and native window integration beh
 
 Applications own their data and compose each frame through independent UI contexts. The framework includes a deterministic software renderer, Windows D3D12, Linux Vulkan and macOS Metal backends for shapes, images and glyph masks, plus primitives for moving simulation snapshots and commands between worker threads and the UI. Native backends remain in development; their validation scope is described below.
 
-> **Early development — 0.1.30.** The repository contains a working foundation and examples. The toolkit is incomplete, and public APIs may change before v1.0. Read the [platform status](#platform-status) and [known limitations](#known-limitations) before choosing it for an application.
+> **Early development — 0.1.31.** The repository contains a working foundation and examples. The toolkit is incomplete, and public APIs may change before v1.0. Read the [platform status](#platform-status) and [known limitations](#known-limitations) before choosing it for an application.
 
 ## Usage
 
@@ -62,6 +62,11 @@ The optional [original Editor clipboard experiment](docs/quality/editor-clipboar
 joins the installed SDK with the original document/history/save/IME owner and
 independent native/system clipboard peers. Its source-bound evidence and open
 adoption gates are separate from normal Aetheri development.
+
+The optional [original Settings/Sound consumer](docs/quality/settings-original-view-report.md)
+builds Aetheri's supplied original view and ordinary Linux host against an
+installed SDK. Source-bound keyboard, AT-SPI and model-lifetime checks remain
+separate from admitted audio-service integration and normal Aetheri adoption.
 
 Its [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
 actual consumed clipboard bytes, held writers and original-model invalidation

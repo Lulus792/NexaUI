@@ -1,0 +1,4615 @@
+{
+  "archive": "/mnt/d/NexaUI/out/nexaui-settings-original-view5-20261109.tar.gz",
+  "size": 129953123,
+  "sha256": "cc82190cc60e5d6e74ac1b91e107588feefa0d7acc84d429aa23f96b061990ca",
+  "files": 919,
+  "symlinks": 2,
+  "seconds": 33.91104417500003,
+  "font_bytes_bundled": false,
+  "verified_each_member": true,
+  "members": [
+    {
+      "path": "host/archive_settings_original_view5.py",
+      "size": 2381,
+      "sha256": "b7b781a5b5769c6c3c67ba7802d7278bf389bf2404ac9b51abcd4a615866d3a5"
+    },
+    {
+      "path": "host/bind_settings_original_view5.py",
+      "size": 9181,
+      "sha256": "08aa834cd185dc16877deea5f804acc0f4071cf7cdf3558630e499031f043858"
+    },
+    {
+      "path": "host/bind_settings_original_view6.py",
+      "size": 1172,
+      "sha256": "ab1d5825caa89f3fbb1531e5dffe81b7341dd6c368c33d71f20cbedc82eaf486"
+    },
+    {
+      "path": "host/bind_settings_original_view7.py",
+      "size": 244,
+      "sha256": "aa8ff9498fe0fdaeb4b913a5c0ac5ff91fdf0784923ec15b0b0799cbf0e8f923"
+    },
+    {
+      "path": "host/bind_settings_original_view8.py",
+      "size": 419,
+      "sha256": "9f19a0e98a82599ea03ee9158ef98a6d2d372bf63d5cf0c1c87e8c253893b5b0"
+    },
+    {
+      "path": "host/build_settings_original_sdk_o1.py",
+      "size": 2256,
+      "sha256": "5c08258877174ed8aae86b40c610c2a05b9280cb7ceee588144a71492011a7a9"
+    },
+    {
+      "path": "host/build_settings_original_sdk_o1_final.py",
+      "size": 999,
+      "sha256": "7de9d7e0762a55096748eb0ae22a74f842243964b5ba6b0256cb2c113c6f3c19"
+    },
+    {
+      "path": "host/build_settings_original_sdk_o1_retry.py",
+      "size": 759,
+      "sha256": "4cbee7441ac7ac78328e3c72223e51fc6a9d4b76c5610266b9f1bd56686a884a"
+    },
+    {
+      "path": "host/capture_settings_original_view5.py",
+      "size": 2204,
+      "sha256": "5d4b0989fe11d8e870bb0386234d914ee8ec09d1a90cf00276ea7091c1fbf2cc"
+    },
+    {
+      "path": "host/check_settings_original_view5_negative.py",
+      "size": 2765,
+      "sha256": "2ebcd397417b49f9ef539509de424177bc1ed7d525be5d17c1fd756f9f669c3a"
+    },
+    {
+      "path": "host/check_settings_original_view5_off.py",
+      "size": 3054,
+      "sha256": "6b8b01afb919cfef3a959aed80f79f794f3595798df9153644d2e8e8b58e33af"
+    },
+    {
+      "path": "host/diagnose_settings_original_generated.py",
+      "size": 1108,
+      "sha256": "c1337175e516b24f9eff75534cdd85cf0526dc2cc9d2c69989211ec4bd882c49"
+    },
+    {
+      "path": "host/freeze_settings_original_view1.py",
+      "size": 1114,
+      "sha256": "8d32cd58ffa505469b19c8489c15cc88d2e516af4b26608c64afd771f03281a8"
+    },
+    {
+      "path": "host/freeze_settings_original_view2.py",
+      "size": 381,
+      "sha256": "26b030e4ec1991a6252d11f9164068627a8c7f4d7ec119c803498ac9655f356e"
+    },
+    {
+      "path": "host/freeze_settings_original_view3.py",
+      "size": 1981,
+      "sha256": "7dd60a04361a6ff7d7f593178683f56037b407e7cf9f26f960d2b4ae5ada040b"
+    },
+    {
+      "path": "host/probe_settings_original_view2.py",
+      "size": 2780,
+      "sha256": "3b07bb01fd46af3a3bbe93faaebed06649f4ad0610621619a3119b979563fd0f"
+    },
+    {
+      "path": "host/probe_settings_original_view3.py",
+      "size": 373,
+      "sha256": "8e0b66b7ee638c8a954f952096e989429d664f54276b276ddf8be0d67293b687"
+    },
+    {
+      "path": "host/run_settings_original_view4.py",
+      "size": 3658,
+      "sha256": "28c1e8a5ec2cddda81f355297b8d763a72ba2c1e00a5ec00fa1328924b8a3495"
+    },
+    {
+      "path": "host/run_settings_original_view4_native.py",
+      "size": 2729,
+      "sha256": "5997e09a6501f44512741803756fca11e42788bdece31cb1d76c3b08e1ef1414"
+    },
+    {
+      "path": "host/run_settings_original_view5.py",
+      "size": 840,
+      "sha256": "9a943ea24436ddb6446803d8e045f7050280e65ce0fa962c3c8842dded9d6ca1"
+    },
+    {
+      "path": "host/run_settings_original_view5_native.py",
+      "size": 610,
+      "sha256": "d028e40db5bb9fef04a6e7e2a79fc332136d2a1e1d2426cd013538cbbcbabe46"
+    },
+    {
+      "path": "host/run_settings_original_view6_native.py",
+      "size": 650,
+      "sha256": "d2e1d3d6a02f5db3d2ce4a569a308190a13861031d528cbd0d30fdd3e87b9eb3"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-build.log",
+      "size": 44,
+      "sha256": "2da553ac0cba7e6b90f5a03a8b8c40b7c7a736393145acf64770c5751da9498f"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-commands.json",
+      "size": 1926,
+      "sha256": "f4ee13ea687f40d9258fd2c57213cf531a910dd985d5851cd804b3ad3a267724"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-configure.log",
+      "size": 807,
+      "sha256": "b0eba7b992ef5932aef63a24f9043a5dbc28d67bf80a96626c114d0ea19d1764"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-final-build.log",
+      "size": 5557,
+      "sha256": "efd5381d53d187b2bcd21bf8a61a5f0c1b333b4c68607fd8c915900ec28a3151"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-final-commands.json",
+      "size": 2935,
+      "sha256": "22578f00c4cbfcd8c50fdc36dba91c5d933bd6e244568d53855595c31c00e302"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-final-configure.log",
+      "size": 133,
+      "sha256": "cf8ce3a810d0c78de74ac911118e53520adda499f35ad6e23aac12e71c511b62"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-final-install.log",
+      "size": 1387,
+      "sha256": "4fbd854f3f185677a09d6357ecbd438c96d0fd660e1f38af3cf38ce594afc825"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-final-test.log",
+      "size": 4235,
+      "sha256": "04c4cc56e620ecb111ced15664746f620511568e7b17fb37d355970b114bf01e"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-retry-build.log",
+      "size": 2586,
+      "sha256": "d8b0aad42e2026e9ed6481bcbade909430cd4b58fb39580c49e038490ba0e330"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-retry-commands.json",
+      "size": 1937,
+      "sha256": "97f395f3036e02ea725a1aea9d0386af53ece5c731c0107956385a5dab803b50"
+    },
+    {
+      "path": "host/settings-original-sdk-o1-retry-configure.log",
+      "size": 133,
+      "sha256": "fefef68dad4b2e81ba47d5ce35441f4c1a8417b834e9bf1cb7c30b2eec16eb94"
+    },
+    {
+      "path": "host/settings-original-view-input2.json",
+      "size": 3616,
+      "sha256": "994f28e077498940e9d52694314adb52a932392e926e967717d4457007ebce21"
+    },
+    {
+      "path": "host/settings-original-view-input3.json",
+      "size": 17918,
+      "sha256": "827f0ee1024f5619eaa633edb4c5c1ff476622f3ff070c0d2bef7a03ff9525e8"
+    },
+    {
+      "path": "host/settings-original-view-input3.tar.gz",
+      "size": 75960,
+      "sha256": "0ea1985090ef41aa06f61595264166582c34b9a38f2bdd797179877ee0c03b3b"
+    },
+    {
+      "path": "host/settings-original-view2-probe-0.log",
+      "size": 719,
+      "sha256": "8bb24706eea3fdf52c7d66d5cd8332e64b4ecc62f9e7ac0a3dca5ac538682f32"
+    },
+    {
+      "path": "host/settings-original-view2-probe-1.log",
+      "size": 1885,
+      "sha256": "11c3ad7593ba9cad9229c8372371907251623e737368536daaf4840c2beb8195"
+    },
+    {
+      "path": "host/settings-original-view2-probe.json",
+      "size": 1170,
+      "sha256": "f49586836dd4a75919fb90645f396cba5e2a95c5a7e6c638b871d6cb6ab16ef5"
+    },
+    {
+      "path": "host/settings-original-view3-probe-0.log",
+      "size": 719,
+      "sha256": "d3064713d958b7d598c7c975f0c2d8d41ef79b824f0de36007328248743e556f"
+    },
+    {
+      "path": "host/settings-original-view3-probe-1.log",
+      "size": 767,
+      "sha256": "e87fcc9081d5cc08f67b5069a8a4a7dca11ee600605017202d9b21a86c49ce79"
+    },
+    {
+      "path": "host/settings-original-view3-probe-2.log",
+      "size": 317,
+      "sha256": "8abf2a2a0ef182dcf149395654ed574f51fa0bcf8a87895361b48689b76a3578"
+    },
+    {
+      "path": "host/settings-original-view3-probe.json",
+      "size": 1512,
+      "sha256": "ba3b98ed503a550d3e9295717c6ba708f7b381bbbd9ea0a70fefbc1499d2aaab"
+    },
+    {
+      "path": "host/settings-original-view4-asan-build.log",
+      "size": 2419,
+      "sha256": "e6d539419c8f29c6bb0ab72520f1bec9fe43444a150e3c759b36dafe210b5189"
+    },
+    {
+      "path": "host/settings-original-view4-asan-commands.json",
+      "size": 1838,
+      "sha256": "fee4d80d5bac5a0f763b06848fc2476babe055f50c0687cb12cdc8812b57b9e9"
+    },
+    {
+      "path": "host/settings-original-view4-asan-configure.log",
+      "size": 719,
+      "sha256": "e0d91b34131ade4f8d2d025d38d01a2fe55c299e76c7a64309ab1d81961b8847"
+    },
+    {
+      "path": "host/settings-original-view4-asan-test.log",
+      "size": 4181,
+      "sha256": "3f14e18d73c3aca873a5fda50d215f1e3c10dc389bcf8a12d1a7b72de902c355"
+    },
+    {
+      "path": "host/settings-original-view4-native-release-atspi_client-build.log",
+      "size": 14554,
+      "sha256": "b74a8a7cb3a4a87805d421e543230f50da471df4cd601c82f0ba7404e387ccbe"
+    },
+    {
+      "path": "host/settings-original-view4-native.json",
+      "size": 1143,
+      "sha256": "cc2e69bbcd772bc9288fa7a946946a57ea871a4e82089d722d11c501dc529db2"
+    },
+    {
+      "path": "host/settings-original-view4-release-build.log",
+      "size": 2419,
+      "sha256": "4788c4d376079f181a5de72c1d77ebb09dd36b9b73a434ed3755ee2980f6c674"
+    },
+    {
+      "path": "host/settings-original-view4-release-commands.json",
+      "size": 1785,
+      "sha256": "9a31a4aee7e618f94df5fb0a48f45dddc4f06516b06e76109e4164de70a8a613"
+    },
+    {
+      "path": "host/settings-original-view4-release-configure.log",
+      "size": 722,
+      "sha256": "c225254d37f79ba052bb1133ddae4d0ec6d33197204a5da8f5382293f562d177"
+    },
+    {
+      "path": "host/settings-original-view4-release-test.log",
+      "size": 4065,
+      "sha256": "4d106532d9caf683c924572f4e441768913ec5d1325ba542201e3fce02209e55"
+    },
+    {
+      "path": "host/settings-original-view4-shared-build.log",
+      "size": 2419,
+      "sha256": "b466eb84006c073a91be1e46ff8c541e79e2357babb8500ef77f7219f2a8d427"
+    },
+    {
+      "path": "host/settings-original-view4-shared-commands.json",
+      "size": 1777,
+      "sha256": "9efd23e97b955a2d76bf609a5bf40bf6e34cfb60c799e64c955df6a5ba2dea58"
+    },
+    {
+      "path": "host/settings-original-view4-shared-configure.log",
+      "size": 721,
+      "sha256": "0f6da362d89aeaeb37eecf87dd62a43b90a125e80c0676bdb77e2f530d5c491c"
+    },
+    {
+      "path": "host/settings-original-view4-shared-test.log",
+      "size": 4047,
+      "sha256": "6f9f667918ef7f4a26fdb1f8e524a31b6541505cf7abbdff961fdf3ad89089c7"
+    },
+    {
+      "path": "host/settings-original-view5-asan-1-sound-dark.png",
+      "size": 15366,
+      "sha256": "ef5a225059d2df6f4f326c35065888c487b67e05a296b41e8f6c76dba7998df9"
+    },
+    {
+      "path": "host/settings-original-view5-asan-1-sound-light-de-200-controls.png",
+      "size": 11550,
+      "sha256": "da7c0ca9d62dd00033f3e780a35959db9c713a00a2f00d9315b3d814ba3d3db5"
+    },
+    {
+      "path": "host/settings-original-view5-asan-1-sound-light-de-200.png",
+      "size": 15853,
+      "sha256": "42350529d0159803102caf97bf53a9b37bbf1fefcfd7f21593de17623a528e70"
+    },
+    {
+      "path": "host/settings-original-view5-asan-1-sound-muted-contrast.png",
+      "size": 15626,
+      "sha256": "ceaffaf7cdfa6141d07362e314cff300adca9c5e12ba2611410822964021e2de"
+    },
+    {
+      "path": "host/settings-original-view5-asan-2-sound-dark.png",
+      "size": 14059,
+      "sha256": "9a55eff76a7b3fc484e03d8f7c5fd8d929c448d32ea640e9b6faa52dc5e2cfe7"
+    },
+    {
+      "path": "host/settings-original-view5-asan-2-sound-light-de-200-controls.png",
+      "size": 10251,
+      "sha256": "9f867d0026ef29627cfa19873b918743308bbdb7520922a2a7af8876f764fc1a"
+    },
+    {
+      "path": "host/settings-original-view5-asan-2-sound-light-de-200.png",
+      "size": 13945,
+      "sha256": "d11a65032bf4ee307f4e3644e9894806ba88f01c09e0b101937f47bea0ad0066"
+    },
+    {
+      "path": "host/settings-original-view5-asan-2-sound-muted-contrast.png",
+      "size": 14379,
+      "sha256": "d9810a43bad9cee72b0fc3f6c34547d200772a6a068169ecccaac1dca5b981ae"
+    },
+    {
+      "path": "host/settings-original-view5-asan-build.log",
+      "size": 2470,
+      "sha256": "5bcac291045231861dc6050720ba3e4e5cd30786bf70939e30ffbfe639f06161"
+    },
+    {
+      "path": "host/settings-original-view5-asan-commands.json",
+      "size": 1872,
+      "sha256": "193f1fd3525ab309d7b0695ee132c085f984f75b63fb9139078d1d3fa9869ae2"
+    },
+    {
+      "path": "host/settings-original-view5-asan-configure.log",
+      "size": 719,
+      "sha256": "466a08505464033c12ac52b2f36af12b8129a183d0129a0deb4843b5b78701fd"
+    },
+    {
+      "path": "host/settings-original-view5-asan-test.log",
+      "size": 4011,
+      "sha256": "3f2ce727a9d0504ad57147782cbf8fe3ba229474bfb012c0749bbaf48aff8ab6"
+    },
+    {
+      "path": "host/settings-original-view5-captures-asan-1.log",
+      "size": 111,
+      "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc"
+    },
+    {
+      "path": "host/settings-original-view5-captures-asan-2.log",
+      "size": 111,
+      "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc"
+    },
+    {
+      "path": "host/settings-original-view5-captures-release-1.log",
+      "size": 111,
+      "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc"
+    },
+    {
+      "path": "host/settings-original-view5-captures-shared-1.log",
+      "size": 111,
+      "sha256": "d3d79b6ef0a22a38271e3efcc642521b5e5c2a1741aecbb235ef4f7c998c60cc"
+    },
+    {
+      "path": "host/settings-original-view5-captures.json",
+      "size": 8771,
+      "sha256": "b39716c5cac0643e29986d2823bbb488d463fe048ce4cabc765946b45ce88e4a"
+    },
+    {
+      "path": "host/settings-original-view5-ci-jobs-initial.json",
+      "size": 26138,
+      "sha256": "4aa1c35f3b4cbb7586ad129fa7ee4d4b8741bd60a5eaf5dd540366ef34678d3c"
+    },
+    {
+      "path": "host/settings-original-view5-ci-runs.json",
+      "size": 14391,
+      "sha256": "e00df2c744379cba56544adeec3b2c1b4d43f42dbb6ed0dc774015546dfae900"
+    },
+    {
+      "path": "host/settings-original-view5-generated-diagnostic.json",
+      "size": 4528,
+      "sha256": "09dfc9d23b608c9394fb4f9048b0b918d79a6dc3883a4fc746d34fd537c4a88e"
+    },
+    {
+      "path": "host/settings-original-view5-local.json",
+      "size": 304560,
+      "sha256": "ba63ef0b9e0b4fa8cd0c64672494b53da621db626e3a9c7654e92d0840cbd583"
+    },
+    {
+      "path": "host/settings-original-view5-native-asan-actions.log",
+      "size": 151,
+      "sha256": "a30c2513190a595198d6089fc48678d4925fb08928414cc6a3a3fd7787a98250"
+    },
+    {
+      "path": "host/settings-original-view5-native-asan-disabled.log",
+      "size": 143,
+      "sha256": "20b25547788615ee9738ea51a0c59a0a949d633f8b78a38ce49f5e58039efe8d"
+    },
+    {
+      "path": "host/settings-original-view5-native-asan-keyboard.log",
+      "size": 155,
+      "sha256": "978af7ef3f6432539654bf5c51a5101c7df2df4b752f8b19a51167c6b8a2797f"
+    },
+    {
+      "path": "host/settings-original-view5-native-asan-peer5-atspi_client-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view5-native-asan-peer5-atspi_focus-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view5-native-release-actions.log",
+      "size": 151,
+      "sha256": "a30c2513190a595198d6089fc48678d4925fb08928414cc6a3a3fd7787a98250"
+    },
+    {
+      "path": "host/settings-original-view5-native-release-disabled.log",
+      "size": 143,
+      "sha256": "20b25547788615ee9738ea51a0c59a0a949d633f8b78a38ce49f5e58039efe8d"
+    },
+    {
+      "path": "host/settings-original-view5-native-release-keyboard.log",
+      "size": 155,
+      "sha256": "978af7ef3f6432539654bf5c51a5101c7df2df4b752f8b19a51167c6b8a2797f"
+    },
+    {
+      "path": "host/settings-original-view5-native-release-peer5-atspi_client-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view5-native-release-peer5-atspi_focus-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view5-native-shared-actions.log",
+      "size": 151,
+      "sha256": "a30c2513190a595198d6089fc48678d4925fb08928414cc6a3a3fd7787a98250"
+    },
+    {
+      "path": "host/settings-original-view5-native-shared-disabled.log",
+      "size": 143,
+      "sha256": "20b25547788615ee9738ea51a0c59a0a949d633f8b78a38ce49f5e58039efe8d"
+    },
+    {
+      "path": "host/settings-original-view5-native-shared-keyboard.log",
+      "size": 155,
+      "sha256": "978af7ef3f6432539654bf5c51a5101c7df2df4b752f8b19a51167c6b8a2797f"
+    },
+    {
+      "path": "host/settings-original-view5-native-shared-peer5-atspi_client-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view5-native-shared-peer5-atspi_focus-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view5-native.json",
+      "size": 17658,
+      "sha256": "90a3b514f6edfd557e1f451edd1c83ed6ddd97c6463876947d5937523d3bc987"
+    },
+    {
+      "path": "host/settings-original-view5-negative-build.log",
+      "size": 499,
+      "sha256": "df55df11d2ace9eb1e229d41c14954c81a054133be0d1fc900add8bb316a943f"
+    },
+    {
+      "path": "host/settings-original-view5-negative-configure.log",
+      "size": 729,
+      "sha256": "7155345cf4de2542b7fcb06e5b68c68652b7e4a75260ee5fb1d3acb80b8f40b8"
+    },
+    {
+      "path": "host/settings-original-view5-negative-test.log",
+      "size": 95,
+      "sha256": "cd9ce967d9d64d1a6da23f21a58713eab6de1448f4a74d40e975674d7b8b34f0"
+    },
+    {
+      "path": "host/settings-original-view5-negative.json",
+      "size": 1976,
+      "sha256": "4b889607c7371389538b5ad820c3e211abc9579a1610ce6a3f7039220be7dcb3"
+    },
+    {
+      "path": "host/settings-original-view5-off-aetheri-build.log",
+      "size": 1616,
+      "sha256": "2273caa0e641366258b0b54f534ea40e7db62d04352e14a1e01ead5e853af183"
+    },
+    {
+      "path": "host/settings-original-view5-off-aetheri-configure.log",
+      "size": 732,
+      "sha256": "1cb07a776149dd255522538e910886be8cdaf6d10cc9a298c9f5587b64f490c9"
+    },
+    {
+      "path": "host/settings-original-view5-off-aetheri-test.log",
+      "size": 2696,
+      "sha256": "7705996b4a9e9f07879110f296a4ea32f52944c39b554117644be7906656b0cc"
+    },
+    {
+      "path": "host/settings-original-view5-off-legacy-build.log",
+      "size": 1112,
+      "sha256": "5e879681da4f232296cb8e29a8854e3e1654679cabede114f4b0114fd0f4ca9f"
+    },
+    {
+      "path": "host/settings-original-view5-off-legacy-configure.log",
+      "size": 731,
+      "sha256": "5f6e41a214d545cecce8114e66ac7a84c7a5b6e6174b6881ce8c9422d602e85b"
+    },
+    {
+      "path": "host/settings-original-view5-off-legacy-test.log",
+      "size": 1753,
+      "sha256": "83f74cfd9d42f4b3792553c9518a634d4205d7fbbbe3ec84f5053d6393e385b7"
+    },
+    {
+      "path": "host/settings-original-view5-off.json",
+      "size": 3300,
+      "sha256": "4a9424ae29a3bbb385bea8feb810129a133e302f21360b5bbea164d93ae0f4d1"
+    },
+    {
+      "path": "host/settings-original-view5-preflight-notes.json",
+      "size": 2220,
+      "sha256": "ab0fcc8293ffc15adf1d6d4a56e35a4dbec21521f7c7e824a5e577c190242a26"
+    },
+    {
+      "path": "host/settings-original-view5-release-1-sound-dark.png",
+      "size": 15366,
+      "sha256": "ef5a225059d2df6f4f326c35065888c487b67e05a296b41e8f6c76dba7998df9"
+    },
+    {
+      "path": "host/settings-original-view5-release-1-sound-light-de-200-controls.png",
+      "size": 11550,
+      "sha256": "da7c0ca9d62dd00033f3e780a35959db9c713a00a2f00d9315b3d814ba3d3db5"
+    },
+    {
+      "path": "host/settings-original-view5-release-1-sound-light-de-200.png",
+      "size": 15853,
+      "sha256": "42350529d0159803102caf97bf53a9b37bbf1fefcfd7f21593de17623a528e70"
+    },
+    {
+      "path": "host/settings-original-view5-release-1-sound-muted-contrast.png",
+      "size": 15626,
+      "sha256": "ceaffaf7cdfa6141d07362e314cff300adca9c5e12ba2611410822964021e2de"
+    },
+    {
+      "path": "host/settings-original-view5-release-build.log",
+      "size": 2470,
+      "sha256": "93fa46686165c10fa6247d743b9e1c9b9791da403a7f142a300396a5a64694a1"
+    },
+    {
+      "path": "host/settings-original-view5-release-commands.json",
+      "size": 1827,
+      "sha256": "ab6d00ed89905bcb522f324f0f5e43087a9678a1b487a7fe70088a1556047404"
+    },
+    {
+      "path": "host/settings-original-view5-release-configure.log",
+      "size": 722,
+      "sha256": "131d43a3c1694c896acfea1ab2b16109f2167b96ca35057c05864db70d602ee8"
+    },
+    {
+      "path": "host/settings-original-view5-release-test.log",
+      "size": 4065,
+      "sha256": "21064b38f481bd8648b1b315f53ef545bfa03dbad4fd6bb83800486442c183eb"
+    },
+    {
+      "path": "host/settings-original-view5-shared-1-sound-dark.png",
+      "size": 15366,
+      "sha256": "ef5a225059d2df6f4f326c35065888c487b67e05a296b41e8f6c76dba7998df9"
+    },
+    {
+      "path": "host/settings-original-view5-shared-1-sound-light-de-200-controls.png",
+      "size": 11550,
+      "sha256": "da7c0ca9d62dd00033f3e780a35959db9c713a00a2f00d9315b3d814ba3d3db5"
+    },
+    {
+      "path": "host/settings-original-view5-shared-1-sound-light-de-200.png",
+      "size": 15853,
+      "sha256": "42350529d0159803102caf97bf53a9b37bbf1fefcfd7f21593de17623a528e70"
+    },
+    {
+      "path": "host/settings-original-view5-shared-1-sound-muted-contrast.png",
+      "size": 15626,
+      "sha256": "ceaffaf7cdfa6141d07362e314cff300adca9c5e12ba2611410822964021e2de"
+    },
+    {
+      "path": "host/settings-original-view5-shared-build.log",
+      "size": 2470,
+      "sha256": "91dbf6bb81d6f3a48c4b1101c4429e52c1dfccbad541cfb51e8f428b680316cd"
+    },
+    {
+      "path": "host/settings-original-view5-shared-commands.json",
+      "size": 1819,
+      "sha256": "20cc50c8d0cb8d8d49dc3926251613642016e9496985f74cc8c0337a0fa55978"
+    },
+    {
+      "path": "host/settings-original-view5-shared-configure.log",
+      "size": 721,
+      "sha256": "26c64451b94227e3a96f9caf23c2d800e0068224310a1bf783517fbfeb2a671b"
+    },
+    {
+      "path": "host/settings-original-view5-shared-test.log",
+      "size": 4047,
+      "sha256": "97812bd57a898a4e95a9fdb51e5f1b74be23cbd4e866ae96416069f5a24cf7f7"
+    },
+    {
+      "path": "host/settings-original-view6-native-asan-actions.log",
+      "size": 151,
+      "sha256": "a30c2513190a595198d6089fc48678d4925fb08928414cc6a3a3fd7787a98250"
+    },
+    {
+      "path": "host/settings-original-view6-native-asan-disabled.log",
+      "size": 143,
+      "sha256": "20b25547788615ee9738ea51a0c59a0a949d633f8b78a38ce49f5e58039efe8d"
+    },
+    {
+      "path": "host/settings-original-view6-native-asan-keyboard.log",
+      "size": 235,
+      "sha256": "7b46d121afbe75d4311aae3a177a40ece627bac33213957c6a275ea761a5f0af"
+    },
+    {
+      "path": "host/settings-original-view6-native-asan-peer6-atspi_client-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view6-native-asan-peer6-atspi_focus-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view6-native-release-actions.log",
+      "size": 151,
+      "sha256": "a30c2513190a595198d6089fc48678d4925fb08928414cc6a3a3fd7787a98250"
+    },
+    {
+      "path": "host/settings-original-view6-native-release-disabled.log",
+      "size": 143,
+      "sha256": "20b25547788615ee9738ea51a0c59a0a949d633f8b78a38ce49f5e58039efe8d"
+    },
+    {
+      "path": "host/settings-original-view6-native-release-keyboard.log",
+      "size": 235,
+      "sha256": "7b46d121afbe75d4311aae3a177a40ece627bac33213957c6a275ea761a5f0af"
+    },
+    {
+      "path": "host/settings-original-view6-native-release-peer6-atspi_client-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view6-native-release-peer6-atspi_focus-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view6-native-shared-actions.log",
+      "size": 151,
+      "sha256": "a30c2513190a595198d6089fc48678d4925fb08928414cc6a3a3fd7787a98250"
+    },
+    {
+      "path": "host/settings-original-view6-native-shared-disabled.log",
+      "size": 143,
+      "sha256": "20b25547788615ee9738ea51a0c59a0a949d633f8b78a38ce49f5e58039efe8d"
+    },
+    {
+      "path": "host/settings-original-view6-native-shared-keyboard.log",
+      "size": 235,
+      "sha256": "7b46d121afbe75d4311aae3a177a40ece627bac33213957c6a275ea761a5f0af"
+    },
+    {
+      "path": "host/settings-original-view6-native-shared-peer6-atspi_client-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view6-native-shared-peer6-atspi_focus-build.log",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "host/settings-original-view6-native.json",
+      "size": 17531,
+      "sha256": "e4ce6948861586ffd9394547d860257b59f442af9a7b0cec612be13208f12ac2"
+    },
+    {
+      "path": "runtime/sdk-o1/build/.ninja_deps",
+      "size": 22444,
+      "sha256": "affaf5b14c818be68ae1006b3a418388a241bf0f8428b30079d115248b48d2eb"
+    },
+    {
+      "path": "runtime/sdk-o1/build/.ninja_log",
+      "size": 10262,
+      "sha256": "2477f0332d3ae0d1190cc0b108f253e0790b8a01ea95cd5be14f1d5fdea3d037"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeCache.txt",
+      "size": 33136,
+      "sha256": "8ae1d93d1fa9d8370fd3696b46106e4dc2e5e7dbc00ef6cb98dd5effb7da5bf0"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 433307,
+      "sha256": "b81945800ac4d6afa334836d0378d4baceff87c98fbed32c5ab5bfd81a40f990"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/Export/23b7eb32bb127650bae6f16e5602e59f/NexaUITargets-debug.cmake",
+      "size": 831,
+      "sha256": "c5c76c532f3822fc26a6c93f4485064f83904538dbe3e334d801ec09af327815"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/Export/23b7eb32bb127650bae6f16e5602e59f/NexaUITargets.cmake",
+      "size": 4327,
+      "sha256": "c0362fed2073609620d4821097874fd57bc851a6c804f7915c1411d408ec997b"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/InstallScripts.json",
+      "size": 119,
+      "sha256": "4fa78d45490af4e1ce0ebd2ed590982f8c4ac4816b41094f2a5b5fbf92bbc08c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/TargetDirectories.txt",
+      "size": 13528,
+      "sha256": "d35d86ad5b98aab5e52c24061255998df15ecb4e8c1a5a98f207f64247d7f836"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/generated/wayland/fractional-scale-v1-protocol.c.o",
+      "size": 16936,
+      "sha256": "5b656a2c6e319c659ce6f3f6cf3f66ebeb6784033e2782ed9ccf3d2c535f0bf2"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/generated/wayland/text-input-unstable-v1-protocol.c.o",
+      "size": 42856,
+      "sha256": "9889d875987016e825fd96b3016cbe42165dd00be0e9ead3b3e906e1d277ea2c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/generated/wayland/text-input-unstable-v3-protocol.c.o",
+      "size": 37888,
+      "sha256": "f0516e95c162fac35350ba7cd9e6c89b8d5bbe0bc0c06dc85ed403fd026e6f6e"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/generated/wayland/viewporter-protocol.c.o",
+      "size": 17096,
+      "sha256": "b6d58f989d79dc98debfb9df66be11a48a36a6949077296a0265ecb0131aff7c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/generated/wayland/xdg-decoration-protocol.c.o",
+      "size": 18496,
+      "sha256": "88c578f02dbddaba20d27631927240d0cdef92bc806c133dacebd689649227d3"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/generated/wayland/xdg-shell-protocol.c.o",
+      "size": 64920,
+      "sha256": "ecd96e2f132a29cf40482904fee3838759679033165a047e35c4a958cd5783b6"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/common/drop_queue.c.o",
+      "size": 46400,
+      "sha256": "600909b50e38ce32dd6ab57110cd22b2d97f17558f73e74446782a735cf9caf1"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/common/event_queue.c.o",
+      "size": 51000,
+      "sha256": "7eeeb962006f78e07cc6c7e9c83a712a9ddf633f81a85e9a20992439456eb54c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/common/uri_list.c.o",
+      "size": 39120,
+      "sha256": "c207142e850052a8efe6c0319a28075146409e99c7ec0fc1f4053f68f1d37ab4"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/accessibility.c.o",
+      "size": 1328000,
+      "sha256": "6b31310fc0432f5d723eb2cd0c303167f2a588502be02e21a859fab35ee312e3"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/accessibility_host.c.o",
+      "size": 52584,
+      "sha256": "91d4393ddd207fc46fc66f2dfcda3e06cfbf89ed2f9d40cffb946a9d709dfe4b"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/wayland/cursor.c.o",
+      "size": 26584,
+      "sha256": "43499c497c14ee3e474aa6ad8dfc9840e13c86b7e031c7de12a3776691bf277f"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/wayland/host.c.o",
+      "size": 82360,
+      "sha256": "677b46fe60baac0b8de10eb7936ea31ca2f1649d1ae04ba01ffc7f1f3665d884"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/wayland/repeat.c.o",
+      "size": 25832,
+      "sha256": "252aa934f0d7c348b4dccd7f5c3007a1ca892c811b52d4cdd8402c0974bd5a16"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/wayland/scale.c.o",
+      "size": 7536,
+      "sha256": "3082297b323729b835c32fc2f971f8a494e84e940125c69449f7cbe0355c5bc3"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/wayland/transfer.c.o",
+      "size": 51456,
+      "sha256": "d391ce093a40089081d72bec03f736fff96ab26c47a45693d6d043f2daea6db0"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o",
+      "size": 1329720,
+      "sha256": "02e1d51cd54c9ec3ff62fb1773d9ee18a8c9e0a4023f748193380297ad0a48d4"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/linux/window.c.o",
+      "size": 226264,
+      "sha256": "35cc55c52fcf06a6c9e2bc131b1a0cf3f6cbc8201cf7fa16eaaf231a36a69d0a"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/platform/posix/snapshot_lock.c.o",
+      "size": 13808,
+      "sha256": "8a830c10dda51986afb2037666c5db55d639c22b209af791d6bf3d0ceeb76035"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/arena.c.o",
+      "size": 20664,
+      "sha256": "099a6f0ad0ef0a5c460af0c637a83c7a074008bb1a4b85ffe81a2d6f961a13b9"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/bidi.c.o",
+      "size": 144424,
+      "sha256": "e57203d271d869e01ea0b22c507a0e1dd6f6f89361e733cb8837b8d4bbac6e67"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/color.c.o",
+      "size": 23664,
+      "sha256": "a08cb95da36ec7fae0c2b2ed9ea0d75bb742903c3c6903654cde0bf9865337f3"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/docking.c.o",
+      "size": 142584,
+      "sha256": "b3a0be8bf0b5ecd4e2798cffae43c94a41e0cb481880e648a67dae180ffded2c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/document_presentation.c.o",
+      "size": 108648,
+      "sha256": "d8b620991eef33272bb35412510e60ac437dc9e4f3aed5c68154fe88f640a242"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/font.c.o",
+      "size": 149704,
+      "sha256": "2c5da6b2be9063b49b2c73cb2a1d502d1084a2f7bed22f6d70d110e9a2978c23"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/font_collection.c.o",
+      "size": 27688,
+      "sha256": "9b56d8722d8d67df4d33fd500d3f2aa2e5e3a4753943a021474b64868f935ba3"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/glyf.c.o",
+      "size": 103744,
+      "sha256": "ab0b87b129104f3c7defaaf54960cb2b821d65fbae9079601fd93d714702c1fb"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/glyph_cache.c.o",
+      "size": 92984,
+      "sha256": "b7bda3071b174a55858a1c1fbe82c8551c98d087402c0c435e5b2a0aedadd305"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/gpos.c.o",
+      "size": 132976,
+      "sha256": "cf79784cfb862b65d5ebd6d34114daa0a4a09cd9d797b3f4c9242b11bcb27d52"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/gpos_marks.c.o",
+      "size": 69288,
+      "sha256": "6c9417b24e43c0bc069063cc514f51b43d7a461c579b4180fdd3728e6cfbbe8f"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/grapheme.c.o",
+      "size": 12408,
+      "sha256": "4f147a84df3a77e92a7f0c9b7f65cb5ec7c5bae2f10d1ced15b1f453bfaa3400"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/gsub.c.o",
+      "size": 125728,
+      "sha256": "7f1358fd99e9cc0e3247966433a36d0e5b5fa1a1b12fa933d1d85f661eb3e6b3"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/gsub_context.c.o",
+      "size": 313520,
+      "sha256": "ee10b6dd824776aa55917cb6bb80593add5428df1ebc237de846ac2baa9357de"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/headless.c.o",
+      "size": 138712,
+      "sha256": "305a2cd41dd2837593359180bad910cd1acaf7ea6df4fac5a4706fdea2ec4115"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/layout.c.o",
+      "size": 445640,
+      "sha256": "bb85013bf59b7d692826c1ea20de4859e9a42183dd70b4d6667ad658c7f4edf0"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/line.c.o",
+      "size": 52304,
+      "sha256": "09c4d11cfd969ba2fbe40966ddd1ffd589a2fdb23ca87155ce2158a5101928c5"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/nexaui.c.o",
+      "size": 3976160,
+      "sha256": "10cae41ef4d39cf1abd43d8e2a146d5de2e440d635014ce6fb78d10cf8b9f672"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/ot_layout.c.o",
+      "size": 88752,
+      "sha256": "e77744a5dd230934f7fb7b02fa155ee5cc279c8bc79990c39c13646239c9b838"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/paint.c.o",
+      "size": 130216,
+      "sha256": "1ba146d0432486ca1135259b5f5720af36a4651de0066b6a704631a1c8f0d519"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/raster.c.o",
+      "size": 83384,
+      "sha256": "2fe0d81f773421466b170cb953d2d20686ec7b85d6eaa7241a97f95eb7354ce6"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/renderer_backend.c.o",
+      "size": 56320,
+      "sha256": "08a864c4b6ceedb9a9a4dab95128cd91c0042afddcac433fff623960f8e22551"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/search.c.o",
+      "size": 13648,
+      "sha256": "f9b4ba237c1f7444de626755ef9c2a33bb52c9a04f00557ef8859d9447b1ae57"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/selection_model.c.o",
+      "size": 130024,
+      "sha256": "4ef9af5a10c821b4033ff1d7d6ff0abfd3c2045c7cde299b6419a85ec24bcce0"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/series.c.o",
+      "size": 24424,
+      "sha256": "8276ba3d6a443e600dc13a0254a6ddca8b9adfeff8876622e55a71841688fe93"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/shape.c.o",
+      "size": 98200,
+      "sha256": "141132c536b4fc12caf28dd6f6b1936007872c34af065c7ce39e5738a271c96d"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/sim_channel.c.o",
+      "size": 70680,
+      "sha256": "8ed2bd7048ed3784f91925e7269a61b47152f390ce0891b8c93671a4e3c9e67b"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/snapshot.c.o",
+      "size": 55200,
+      "sha256": "a600c954c834feb66a070e6320713bac7a800d1786234f8b687312a2ed6fe374"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/table.c.o",
+      "size": 15752,
+      "sha256": "2efcffe1738cc1372490c20bd610c8c5bb8ff612e84cccf7c52e307071e225f5"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/text_buffer.c.o",
+      "size": 289152,
+      "sha256": "2e5aaeaae58f98a620e964e5ef8f3801a054bc3ca40b37791581bf9dfcbf574a"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/text_layout.c.o",
+      "size": 277000,
+      "sha256": "12991883583a09a9b5a816196d5e1c8cee4817e9aaab1256e1dee7da4a911e13"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/text_stamp.c.o",
+      "size": 56912,
+      "sha256": "c750d6521e2327692d582e152ee5332dd19bbd8c0d7c48da7b1189bf348d69eb"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/theme.c.o",
+      "size": 28536,
+      "sha256": "d84e2e3b87fb98cdf48c56c4c2e0d690364ce19bc12dbf52613ba98f5559c066"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/tree.c.o",
+      "size": 18360,
+      "sha256": "ea2b3350cf6354dffcf69cd14fb0b2b1fcd68f556b4adb40414067d43a7d8262"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/unicode_data.c.o",
+      "size": 216272,
+      "sha256": "853cee903e49edaf05fbd760d7639fd841eee8765fb2c8415002971f36cc0347"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/utf8.c.o",
+      "size": 14096,
+      "sha256": "42625364ebbd250b504d5b90f9b10ec5121424e0e83b930c1babd920042b67ae"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/virtual_list.c.o",
+      "size": 89024,
+      "sha256": "b3ded9adeca68d3057a5754aa83bdac5745209035fbcea2ec141e5b1a528f554"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui.dir/src/word.c.o",
+      "size": 15800,
+      "sha256": "c5971ecd2b025892bb5daad878ed91c9c60189d0951d3259f090144ec0109a5c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_close_request_tests.dir/tests/test_close_request.c.o",
+      "size": 42160,
+      "sha256": "f5857e27b1f9ea9021bda8c5bbc7cf3face15e60a523a9b9e4d64901b5883be9"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_font_metadata_tests.dir/tests/test_font_metadata.c.o",
+      "size": 135144,
+      "sha256": "72a1c02a9c5f91aab8855141eed4d4a9a50bbec48c8e5f87dfbe725b3670e134"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_font_tests.dir/tests/test_font.c.o",
+      "size": 84088,
+      "sha256": "1e9fae0b2ade2a281bfba82a3238090ba9840e3542f53cd14d2d05a41c4ddae1"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_glyph_cache_tests.dir/tests/test_glyph_cache.c.o",
+      "size": 108152,
+      "sha256": "597ce500be8a244f113d138d3eb63126e278ff5d8e009b7c0e65442d05fe48c1"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_scroll_virtual_tests.dir/tests/test_scroll_virtual.c.o",
+      "size": 392824,
+      "sha256": "f177239da68cbcc78c7a9fb11a5827d82bc2eadc74392e6ca2c66144434d6143"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_semantics_tests.dir/tests/test_semantics.c.o",
+      "size": 221104,
+      "sha256": "72c8258f54e0bd821fd22a58733be1cb4b54120d466ca18160171ef81b986c80"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_tests.dir/tests/test_nexaui.c.o",
+      "size": 118912,
+      "sha256": "a31367b6b6d09079fe3e6f72557f25925cc7a4513e3f34671f586babfe5548b4"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_text_layout_tests.dir/tests/test_text_layout.c.o",
+      "size": 289080,
+      "sha256": "445a8d80ba72dfbaa5b0ad4d8124a6228d0ba480ac7c162970f3ff31904cac3f"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_value_control_tests.dir/tests/test_value_controls.c.o",
+      "size": 112368,
+      "sha256": "95e7222a35b2e7bc129b6d81da7d0ddb6ae0f2d5d72a5c5fea3a7c1384750f0c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/nexaui_widget_tests.dir/tests/test_widget.c.o",
+      "size": 71368,
+      "sha256": "2f648aec69b242429d461194b48bd2547a87f6adc942c015466951c63956676d"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CMakeFiles/rules.ninja",
+      "size": 102523,
+      "sha256": "0e80356dfd9b48753be6b83584d016a104125c14f7ae5a4ac963d9b9a4599ef1"
+    },
+    {
+      "path": "runtime/sdk-o1/build/CTestTestfile.cmake",
+      "size": 73315,
+      "sha256": "be24e2f0136ffc9d2b22e547bd8ab7b2ff74ce3393c2d407ec0b53c85fbbffcb"
+    },
+    {
+      "path": "runtime/sdk-o1/build/NexaUIConfig.cmake",
+      "size": 1665,
+      "sha256": "f4a12024984eb791df9786543c38034c966490fadf9b19a51e49130d5904708d"
+    },
+    {
+      "path": "runtime/sdk-o1/build/NexaUIConfigVersion.cmake",
+      "size": 3678,
+      "sha256": "72edcf506e4c0924dfaa210b06bb5b8f2d1c0f91cc0db5688bd24e6134cb20b1"
+    },
+    {
+      "path": "runtime/sdk-o1/build/Testing/Temporary/CTestCostData.txt",
+      "size": 299,
+      "sha256": "a0fced7ac2ad559192afe73e559a6f8f4780793089b2c9310a3b117fc2a110c4"
+    },
+    {
+      "path": "runtime/sdk-o1/build/Testing/Temporary/LastTest.log",
+      "size": 6328,
+      "sha256": "5963d0c9d67a86fef84db66e7d892ee2d86a250dc28b3198fa4912525ab2d8d1"
+    },
+    {
+      "path": "runtime/sdk-o1/build/build.ninja",
+      "size": 473793,
+      "sha256": "bbb5d8bdfe63a906c7544f7ccc45ec3b7994c4159d00115362bceee4455760cb"
+    },
+    {
+      "path": "runtime/sdk-o1/build/cmake_install.cmake",
+      "size": 4850,
+      "sha256": "ca56bebeaf788a51b3d61e051d848ce88125dfad4dfdf3c35a53cb576632e509"
+    },
+    {
+      "path": "runtime/sdk-o1/build/compile_commands.json",
+      "size": 199471,
+      "sha256": "21064e40f7cfe5c76ce82dfe4c91e5404ec7d4b097661fec397b448774dbde33"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/source_revision.h",
+      "size": 83,
+      "sha256": "f316e4ded2c0a8ca0e5060f0115512a377394cc45d666f76cfea7f4294745958"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/fractional-scale-v1-client-protocol.h",
+      "size": 9618,
+      "sha256": "f4209b3897aff068bf4bb1a09cbe12101b7345f54fae04ffb84882ab363be203"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/fractional-scale-v1-protocol.c",
+      "size": 2629,
+      "sha256": "35b716c3c666ab88879a1bf26cc6eb4d79679abe12ed6915d08f649e6c6ab9ae"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/text-input-unstable-v1-client-protocol.h",
+      "size": 27816,
+      "sha256": "92306cb306f6dc4ad7c4902c4c9e402dee3dba0f1fc9523f5ab27ee441344496"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/text-input-unstable-v1-protocol.c",
+      "size": 4055,
+      "sha256": "b05a881b0688aa844934c7e9d2755e1815790c8d5730f1351134e370a7becf1a"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/text-input-unstable-v3-client-protocol.h",
+      "size": 38235,
+      "sha256": "8c3ef4ae0e8cd4731b28f1e1e85443a6a3a04da11febf00bae72301fded4fadc"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/text-input-unstable-v3-protocol.c",
+      "size": 3980,
+      "sha256": "9ce02c0925fe468268b8c53e4cfe41d163c82847f831839ad15421b6a10f63f9"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/viewporter-client-protocol.h",
+      "size": 14436,
+      "sha256": "c9bef2f432889cc4e6fb6dc247a86ff51c0b663565871a859dcba0b3f0b01285"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/viewporter-protocol.c",
+      "size": 2423,
+      "sha256": "b3fa0c42cc8c05e282d464c90a8cfa99ed392737a1c688e2e82a6526c8d6bd2c"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/xdg-decoration-client-protocol.h",
+      "size": 15304,
+      "sha256": "ddb0e4269761e74bef9b52071f139c8f1ca74e8a62efefc4c304d18e231b42ff"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/xdg-decoration-protocol.c",
+      "size": 2805,
+      "sha256": "80a14dc125186711c08104c005e6afde7f018c5320119ba04aad0c58bfa1a9d7"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/xdg-shell-client-protocol.h",
+      "size": 86018,
+      "sha256": "6d99a2d4ab9bdb3a7b96e8ff25a523a7596460b40fd66f3d487a3d3660fca4e2"
+    },
+    {
+      "path": "runtime/sdk-o1/build/generated/wayland/xdg-shell-protocol.c",
+      "size": 5999,
+      "sha256": "6acb725de29bab4d19a0ef629f1e97ed4fe05e8028f147daa4685f388077aaf3"
+    },
+    {
+      "path": "runtime/sdk-o1/build/install_manifest.txt",
+      "size": 1068,
+      "sha256": "08d2fc654d943cd105407ed624ad76fdaedfaf9baf4eb7396b30ca6dc25bbf77"
+    },
+    {
+      "path": "runtime/sdk-o1/build/libnexaui.a",
+      "size": 11353650,
+      "sha256": "27e7e60be64cdcc22e7f5ec9f82b539a3c9fff786a0fdb5b61e8f24da17a1073"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_close_request_tests",
+      "size": 2865456,
+      "sha256": "1c1016e58a3ca2eec7e10fa648098f8fb9dc8ff12de57acab0d067861c89231f"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_font_metadata_tests",
+      "size": 3023664,
+      "sha256": "b4b08a3ecb6b7e331bee50ef789b748ace446add49723c08ebe0251b30938b7b"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_font_tests",
+      "size": 2999640,
+      "sha256": "d7ef423aaeff40301d7a7bad5160e80d6a4eb715a373345fa45c1a34a89e1be2"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_glyph_cache_tests",
+      "size": 3205392,
+      "sha256": "baa3be68a09cb4c16b5a70d9f41d60d128c8e65677be016325484fa150e1ed1d"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_scroll_virtual_tests",
+      "size": 10734944,
+      "sha256": "c1b96b306cc56afb96c10ea6ca5f8ce10c58c575e5ecd1d86ddcd50a1c8e5797"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_semantics_tests",
+      "size": 10237920,
+      "sha256": "09914e124ee7c59a1ee7299754e390d4f13d47635500a4df84759b9518b9c47d"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_tests",
+      "size": 10199872,
+      "sha256": "9626845e79ad052add6eda4d57c02bf321eaa75236063ee2fac97f6b98af1a50"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_text_layout_tests",
+      "size": 10286744,
+      "sha256": "d704d7fc70f8ac108edb07013a4de2c1d2e53f60097a4142662068de0771df53"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_value_control_tests",
+      "size": 10187480,
+      "sha256": "32ebb2bc008810f63b9eff7e614a149c1b92a43afe5dfca6e89466c79c348098"
+    },
+    {
+      "path": "runtime/sdk-o1/build/nexaui_widget_tests",
+      "size": 10173328,
+      "sha256": "cab0424ee3ad0f6c6802e165ea24acd516e5b35413c2e858cb052c4d5c155a3e"
+    },
+    {
+      "path": "runtime/sdk-o1/build/tests.xml",
+      "size": 2187,
+      "sha256": "acc37029675172ecc562370ba743f76447b563b80c863e7929eb519ff39e11fd"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/cell_grid.h",
+      "size": 2941,
+      "sha256": "76d5e4386e678d984b34a52844920f9e9dc2840ca507006a068bd9461c7a9afb"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/linux_accessibility_host.h",
+      "size": 2336,
+      "sha256": "e940b0b2532b55f1e45fe321de219ad1513e04f52c222229bb1145642d68d667"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/nexaui.h",
+      "size": 166010,
+      "sha256": "16661d7b6e289534835efc972965de728062078b577f2d742926d32413a5a851"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/software.h",
+      "size": 1867,
+      "sha256": "71bf5a6b6ffb1491b154f50573727c55b87a095ac65f50db1562a2700bb9ce62"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/vulkan.h",
+      "size": 1824,
+      "sha256": "833a8d4388527826ad45a9ae5fc16dd4ae1a1b958fdb90cebafa35992bd6b08a"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/wayland_clipboard.h",
+      "size": 2562,
+      "sha256": "b0d3650bcf1cd759c6971a5995049e7bea1b722d89ac4b26e99751b028542d64"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/wayland_host.h",
+      "size": 3352,
+      "sha256": "af147554893526d476e9cdf7d80573b1dd9412b434544a10c5f6e18e4da233db"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/include/nexaui/wayland_outputs.h",
+      "size": 1588,
+      "sha256": "691f8e895c1704d2ac1b0259d17072d69f54db88186dc24e6cdc65d67ebe25f3"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/lib/cmake/NexaUI/NexaUIConfig.cmake",
+      "size": 1665,
+      "sha256": "f4a12024984eb791df9786543c38034c966490fadf9b19a51e49130d5904708d"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/lib/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "size": 3678,
+      "sha256": "72edcf506e4c0924dfaa210b06bb5b8f2d1c0f91cc0db5688bd24e6134cb20b1"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/lib/cmake/NexaUI/NexaUITargets-debug.cmake",
+      "size": 831,
+      "sha256": "c5c76c532f3822fc26a6c93f4485064f83904538dbe3e334d801ec09af327815"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/lib/cmake/NexaUI/NexaUITargets.cmake",
+      "size": 4327,
+      "sha256": "c0362fed2073609620d4821097874fd57bc851a6c804f7915c1411d408ec997b"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/lib/libnexaui.a",
+      "size": 11353650,
+      "sha256": "27e7e60be64cdcc22e7f5ec9f82b539a3c9fff786a0fdb5b61e8f24da17a1073"
+    },
+    {
+      "path": "runtime/sdk-o1/prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "runtime/view2/asan/.ninja_deps",
+      "size": 3208,
+      "sha256": "3bc71d00cd830b796b8d925fd5a748f707a9c764761d263adf1cb0882a467fce"
+    },
+    {
+      "path": "runtime/view2/asan/.ninja_log",
+      "size": 928,
+      "sha256": "0a4b72558a413a8c887748c4bb0ddda003e338a054805014799c21ad174e0097"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeCache.txt",
+      "size": 17648,
+      "sha256": "429d1e2af8bb60f4389a08d4510831372576b3c1d74d9ea3a39f67db2707b84a"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 225819,
+      "sha256": "13bc1b7c0b97c19ba2b1a2259a4755cbae85be90ad84cfc8495d8f208113d3ec"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/InstallScripts.json",
+      "size": 117,
+      "sha256": "163fb430604e0adc5a2124f9385667c2059c7fa705f89abccb9342836cbfd24c"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/TargetDirectories.txt",
+      "size": 412,
+      "sha256": "ade6ff95edb37665ea34d160f7b030747f57ecafa2898ae9be165996ca32ba6f"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/original.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/model.c.o",
+      "size": 110912,
+      "sha256": "3fed4162658ce52a349216e4dcb39b36e007e11c1d6f57a137b11c8b07ddc427"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/original.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_view.c.o",
+      "size": 494928,
+      "sha256": "c4a44b06ae1897fd74bf2f05ba74dc8868cabecf696bb072886a6dea5e5e19e5"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/original.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/text/grapheme.c.o",
+      "size": 58888,
+      "sha256": "7469bb8dda721df34b234a25d04ffb1650211cc32386d76e58ed696c56dc88e9"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/original_settings.dir/main.c.o",
+      "size": 4192,
+      "sha256": "0dbd0fd691040360b2d44c56c5cd33e0c7a4d98086f82a11af4b0cb70b3cc44e"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_main.c.o",
+      "size": 193968,
+      "sha256": "08662f7e13b7b7df8c96856348337a7c6f951eede586c84da30e447f50fb4ed3"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_view.c.o",
+      "size": 301416,
+      "sha256": "67059378fd230e5d10a5e579d68324c16c0bfc46362aeccfa4cdf00572d6247d"
+    },
+    {
+      "path": "runtime/view2/asan/CMakeFiles/rules.ninja",
+      "size": 3319,
+      "sha256": "42ea06a0cf1ad58ed506bae254b5ccb3d721577b22b0d5c08668b2cfa0ffad64"
+    },
+    {
+      "path": "runtime/view2/asan/CTestTestfile.cmake",
+      "size": 662,
+      "sha256": "f883355705b48646366d7d26a95b0a78971a0fd8bcf0ea65b19372ad2d410a89"
+    },
+    {
+      "path": "runtime/view2/asan/build.ninja",
+      "size": 26197,
+      "sha256": "84799ae01d5b4e172a1c394e24aaa7e03ada3904aa1ca08b6ef23fe259459464"
+    },
+    {
+      "path": "runtime/view2/asan/cmake_install.cmake",
+      "size": 2128,
+      "sha256": "5c24a15aba414ca850d66a494837cdc99119261f714b3a582545cf729dc5dd6e"
+    },
+    {
+      "path": "runtime/view2/asan/compile_commands.json",
+      "size": 4269,
+      "sha256": "129aeb2f1271722c41298e0990423f8b16a7b12d7b4fd71b8b94894922d41f29"
+    },
+    {
+      "path": "runtime/view2/asan/liboriginal.a",
+      "size": 665566,
+      "sha256": "aa96d164909989c4988f819cf348a477a81053bc843e17ebcce7d53045b9760d"
+    },
+    {
+      "path": "runtime/view2/asan/original_view_test",
+      "size": 11619760,
+      "sha256": "24adb36c718937c9f6831d688a73a51affada2b8cb716c78797e8c5b25732e53"
+    },
+    {
+      "path": "runtime/view2/probe/CMakeLists.txt",
+      "size": 1145,
+      "sha256": "2e70589c327dcaf64d93468a98833abbbf33df1dc7b7e3ee10c1fae30cfc51f1"
+    },
+    {
+      "path": "runtime/view2/probe/main.c",
+      "size": 111,
+      "sha256": "3fc56c2ab426b8455f2c5bc38284a6c1bec458fd3f5af5e5dbe7a26f475706e6"
+    },
+    {
+      "path": "runtime/view3/asan/.ninja_deps",
+      "size": 3072,
+      "sha256": "64d1cfea1b05e15a0adaafd7efb8225639ea5aef6ef161cb02c17356c35bec8a"
+    },
+    {
+      "path": "runtime/view3/asan/.ninja_log",
+      "size": 904,
+      "sha256": "5d18c42a1364ea2ca13108d7bcd30f867ca96ba7c4b212950851f5e6b5610f87"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeCache.txt",
+      "size": 17648,
+      "sha256": "1b9eca6641cc28cac9817edd9c9d772c6610943a194eee49cbe108894b59d7f1"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 225819,
+      "sha256": "e655da2477f001b316e014776298d34038e865edda1c40eaaa8c39bf6a7ba6a7"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/InstallScripts.json",
+      "size": 117,
+      "sha256": "e1fb96b688a2ebebbeed49bdd55933a4f70276a43086420e20461f6f6d12d267"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/TargetDirectories.txt",
+      "size": 412,
+      "sha256": "03e0eef3ef245b8dcf21a49428000816daa9bc22af787108ee5f437074849071"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/original.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/model.c.o",
+      "size": 110912,
+      "sha256": "620d09c5667d1294372c5ac09b3a95a23987214ede66dcf1736f2da605ffb22a"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/original.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_view.c.o",
+      "size": 494928,
+      "sha256": "96662c82494617b276986830d66a876686d15bddaac6407619a5bad50578244c"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/original.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/text/grapheme.c.o",
+      "size": 58888,
+      "sha256": "9407b9b4bd08589b5cb832c98741f98ffb5ea03b60838054d1161f8243195869"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_main.c.o",
+      "size": 193968,
+      "sha256": "816df7ce3b595ce803c753e6948e235280f181ef1643fae0efd6b8a9e969839f"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_view.c.o",
+      "size": 301416,
+      "sha256": "1b93e5efc660a4eb438ae0882820a095dea5fd5204ffa108b1b5f2064cc3f83f"
+    },
+    {
+      "path": "runtime/view3/asan/CMakeFiles/rules.ninja",
+      "size": 3319,
+      "sha256": "76a8c7929ef5aa29b7e392e6b02ee2f0d789507e62d71632dfd2808a4d771465"
+    },
+    {
+      "path": "runtime/view3/asan/CTestTestfile.cmake",
+      "size": 662,
+      "sha256": "7fe6ed1d2dfdbed3af9b1b0d39488a5011a9e2573a4dbbf91d837b04bce630f9"
+    },
+    {
+      "path": "runtime/view3/asan/Testing/Temporary/CTestCostData.txt",
+      "size": 36,
+      "sha256": "b10408ada589da0fc0844f74b4eb927bd3015a183b0cf88913d0676b972d1ba1"
+    },
+    {
+      "path": "runtime/view3/asan/Testing/Temporary/LastTest.log",
+      "size": 719,
+      "sha256": "0a23e8fa5d45c89f21c590a6cc6854bef324e5f5b4b123a4248c68d1791baa5e"
+    },
+    {
+      "path": "runtime/view3/asan/Testing/Temporary/LastTestsFailed.log",
+      "size": 16,
+      "sha256": "fd44dcfb1e2eccdc59d37d184d518c2ccbe62f504d22a150ed358fcdfd1520ee"
+    },
+    {
+      "path": "runtime/view3/asan/build.ninja",
+      "size": 25388,
+      "sha256": "9d8ef4e80fd5045e3767abc40af175f7ffda9424b32d8102f474a954c7aab3c4"
+    },
+    {
+      "path": "runtime/view3/asan/cmake_install.cmake",
+      "size": 2128,
+      "sha256": "a8b16dc9b6ec6db0c3158459bd3b0dd4672b0adf08c32652fd24b0c78f5158eb"
+    },
+    {
+      "path": "runtime/view3/asan/compile_commands.json",
+      "size": 3699,
+      "sha256": "df7b7ef005b240355b4aec9b47dc432ab17d7163c53882ab84590784c53d177e"
+    },
+    {
+      "path": "runtime/view3/asan/liboriginal.a",
+      "size": 665566,
+      "sha256": "7e31412b9a722a281194c1aeda8e3d821c1e9d8fa30f4070dea0ce0539c7e48a"
+    },
+    {
+      "path": "runtime/view3/asan/original_settings",
+      "size": 11590088,
+      "sha256": "8b4921e166233071cc86788c7161a913ddd57cdf1f0c761eb1d5d8ca539ad2b6"
+    },
+    {
+      "path": "runtime/view3/asan/original_view_test",
+      "size": 11619760,
+      "sha256": "02e5a9962b9f3c7c1670c76c817315f3b53896dae946b904a877845cdf013824"
+    },
+    {
+      "path": "runtime/view3/probe/CMakeLists.txt",
+      "size": 1138,
+      "sha256": "120b9683ab1b96d003c5b2c090c119b32fed519db1f07b6d5972407a12231a38"
+    },
+    {
+      "path": "runtime/view3/probe/main.c",
+      "size": 111,
+      "sha256": "3fc56c2ab426b8455f2c5bc38284a6c1bec458fd3f5af5e5dbe7a26f475706e6"
+    },
+    {
+      "path": "runtime/view4/asan-native5-actions/result.json",
+      "size": 1050,
+      "sha256": "a6f78d5bcd627b43e560ac54bd60b1457ac9255bab984230a6f3f5ebc816e2ba"
+    },
+    {
+      "path": "runtime/view4/asan-native5-actions/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/asan-native5-actions/weston.stderr",
+      "size": 2851,
+      "sha256": "dd023b286cd3f40417ca94ea20c0fbd705585816d5e2419532fc621ce27788c7"
+    },
+    {
+      "path": "runtime/view4/asan-native5-actions/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/asan-native5-disabled/result.json",
+      "size": 1049,
+      "sha256": "adeba27e79a361785e4cce73a80edb4cb24c293dcfae79cdad241712894bfc3e"
+    },
+    {
+      "path": "runtime/view4/asan-native5-disabled/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/asan-native5-disabled/weston.stderr",
+      "size": 2853,
+      "sha256": "77c3f85687d307e6df9bbd6f305bc4d0907ab5f888f22a071cc6872d567caaec"
+    },
+    {
+      "path": "runtime/view4/asan-native5-disabled/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/asan-native5-keyboard/result.json",
+      "size": 1013,
+      "sha256": "8e1f5daec5226082ced23d6e281510d8d7cb3e66d7fd3c6ede377d37ee00a62e"
+    },
+    {
+      "path": "runtime/view4/asan-native5-keyboard/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/asan-native5-keyboard/weston.stderr",
+      "size": 2853,
+      "sha256": "b1d422c265afab5975b33c4d5246b35fee6e8d9c90ca0803346043cf07f72b90"
+    },
+    {
+      "path": "runtime/view4/asan-native5-keyboard/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/asan-peer5-atspi_client",
+      "size": 2875784,
+      "sha256": "937e89e394a961640a90a110d5bc99332ea10f6cfd8613b1b1b2d3d8b0465f40"
+    },
+    {
+      "path": "runtime/view4/asan-peer5-atspi_focus",
+      "size": 2870088,
+      "sha256": "69fb28b84f765f5e2ba72a48ecfe75fa8ddacd392b2dab08654b547fb19214be"
+    },
+    {
+      "path": "runtime/view4/asan/.ninja_deps",
+      "size": 5980,
+      "sha256": "2a60913b16ed7db85faf82072b54027a7e9771c1b6d2bfb90a9683354620f924"
+    },
+    {
+      "path": "runtime/view4/asan/.ninja_log",
+      "size": 2783,
+      "sha256": "1081dc5b437eaf5d64c65443f6c56cb25166c6588fb3e0bc919ff404778b8a50"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeCache.txt",
+      "size": 18470,
+      "sha256": "006a193cd6a1be0cc4ad0279531ea3e7e4bfff39f1e828841710c42a2ec585a5"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 226569,
+      "sha256": "bc5cf6427921c2bd1a712129f7fee6eae8929739cd31b61ba5977ae0eb44331f"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/InstallScripts.json",
+      "size": 193,
+      "sha256": "e209f0e241c619f10ed13bfd41d273c9f0e7afe684ea70f1d1be6372c5ed142a"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/TargetDirectories.txt",
+      "size": 1461,
+      "sha256": "c9f5ab812cbd3109678204d464e61b06583830c11299d7c94779cf9560dd3e66"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings.c.o",
+      "size": 37448,
+      "sha256": "6de1862d009ddb67c15e2a223f8db9cfe4f5b3132d03bfd5093c49b9e93207bd"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_sound.c.o",
+      "size": 89688,
+      "sha256": "f2ebb63dadc5cbecd5e1607df557b36384de02227c38af64fd4300c104824949"
+    },
+    {
+      "path": "runtime/view4/asan/CMakeFiles/rules.ninja",
+      "size": 9333,
+      "sha256": "58739b4d0a59370737585aea24fa43827792e619df53fc1c63ea6a5ccd0bc539"
+    },
+    {
+      "path": "runtime/view4/asan/CTestTestfile.cmake",
+      "size": 3397,
+      "sha256": "0a86652bceb1f5e62ae80fee1e26e7d001fa91e6b84c77668816f1611a967470"
+    },
+    {
+      "path": "runtime/view4/asan/Testing/Temporary/CTestCostData.txt",
+      "size": 277,
+      "sha256": "625ff6c098abea664660031356860acddf046b82a06773cef61bbaae18a4f561"
+    },
+    {
+      "path": "runtime/view4/asan/Testing/Temporary/LastTest.log",
+      "size": 5852,
+      "sha256": "c393385beda802cc4a16774731f8c71eafe86fda7e900b3ba9129a6b4f975888"
+    },
+    {
+      "path": "runtime/view4/asan/Testing/Temporary/LastTestsFailed.log",
+      "size": 31,
+      "sha256": "ceebc95b44ef99c83ff2bba4723b58f57a0cb6be80a071425270703d4e0c28d7"
+    },
+    {
+      "path": "runtime/view4/asan/build.ninja",
+      "size": 55393,
+      "sha256": "d180d86f433cbda246068bc3ad1b38117bc1dcf1c5b48e76e132d3b6afd892a9"
+    },
+    {
+      "path": "runtime/view4/asan/cmake_install.cmake",
+      "size": 2309,
+      "sha256": "316c5372467cbcf932b54ebd610f47d84bd740bb45f0fb40b65827e29e6dae70"
+    },
+    {
+      "path": "runtime/view4/asan/compile_commands.json",
+      "size": 12001,
+      "sha256": "c3e3fed933f6081721394d923b3acb6bf43bf38249310be82f5f77eb62b30ebf"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/model.c.o",
+      "size": 110912,
+      "sha256": "7a9103a0b447c9f98cd4d2d1bed4a6b1fa7656f97d90f68c3b9f8122dce608a3"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/text/grapheme.c.o",
+      "size": 58888,
+      "sha256": "26c1e5b53b0561e237e0674617a8d69f9fd39cc74f85bd7c3e24e6550ad32b89"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+      "size": 60856,
+      "sha256": "b514d1f87aef2961895c5003557bfa53094dd1023b11eb6363b91f5ee44ab6cd"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 38712,
+      "sha256": "2a39b269374f9aa3f60fbe1a6647d0b58005641b3fa15fc4c9974959f7aa3047"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 113032,
+      "sha256": "306e7cfdbcf329b9c9fa1edbc4de21a01a50cb3f588435dc3fe1ae17a0921faa"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 198368,
+      "sha256": "15ef5c6f3547124bc100620ef6a42f366921c78d5526176bebd7c69a6bc76cc9"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_main.c.o",
+      "size": 193968,
+      "sha256": "09b4efa8178f1d71865491ee4cfca86ad272fb2d8400f58263574065022c1a06"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+      "size": 94368,
+      "sha256": "1461a2d8ef6322145ea9beb03244e2abe511cdea9cd8eff79f761099944bc42d"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_view.c.o",
+      "size": 494928,
+      "sha256": "2a086eb847fc397e95a64d165fa1d1a7ae3870fcc07016df3e4f75ae165fbb14"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_view.c.o",
+      "size": 301416,
+      "sha256": "0f9fbafc4361c7a64a512ebce2f323794f35ebd231f1027e2bad3e3bb0c24803"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_view.dir/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/common/text_wrap.c.o",
+      "size": 25848,
+      "sha256": "23f6b9d747f54757ac6fe0126003abcf552bac1fbde52de6e30ef4d7f6038178"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 275096,
+      "sha256": "ddb51ff793f32d72c7d1be617a2bab7fd641af183efc391db7082237be9074be"
+    },
+    {
+      "path": "runtime/view4/asan/example21/CTestTestfile.cmake",
+      "size": 347,
+      "sha256": "ff368b27a35c22018b2f76bd3f245b80a4322c1323a21acf169060d2652845a1"
+    },
+    {
+      "path": "runtime/view4/asan/example21/aetheri_model_sound_state_test",
+      "size": 11366920,
+      "sha256": "46e1db31f23c3b54b7f5bcbb0311288e09d33beb39f19774eece80f00fcc1f6c"
+    },
+    {
+      "path": "runtime/view4/asan/example21/aetheri_model_text_wrap_test",
+      "size": 4170000,
+      "sha256": "20c1706299084e971ef4da031563fa4aac39c5bf4b6d1162ae4121104579463e"
+    },
+    {
+      "path": "runtime/view4/asan/example21/aetheri_model_view",
+      "size": 11406032,
+      "sha256": "c92d55ed1fc69f0eeb41bdebe3d5e289ce81495cb7584153b9f25faf224cc9d8"
+    },
+    {
+      "path": "runtime/view4/asan/example21/aetheri_model_view_test",
+      "size": 11437888,
+      "sha256": "ae88a4fbc4a752185ddfcc6de187924f6fece49cbc6bfe32a35a02231bef1833"
+    },
+    {
+      "path": "runtime/view4/asan/example21/aetheri_original_settings",
+      "size": 11590088,
+      "sha256": "f9db4472705f2781ba216ccb0607019bd507f40d32043e70210f23a2d3175582"
+    },
+    {
+      "path": "runtime/view4/asan/example21/aetheri_original_sound_test",
+      "size": 11518176,
+      "sha256": "4053e534f1198f6cd13faa2f1d0c7adb5d3614d1818d48b0a4d77dca954670e3"
+    },
+    {
+      "path": "runtime/view4/asan/example21/aetheri_original_view_test",
+      "size": 11619760,
+      "sha256": "c073dabdc2cd8fd5550380cfb1467f0eef02395b6fd0396e6c0a253c02265ecf"
+    },
+    {
+      "path": "runtime/view4/asan/example21/cmake_install.cmake",
+      "size": 1582,
+      "sha256": "c86f21e3f9b1d4bc50797f8c71fc8d1c08bd75f8f9c85b161fb04f4809d909d3"
+    },
+    {
+      "path": "runtime/view4/asan/example21/libaetheri_model.a",
+      "size": 170310,
+      "sha256": "71f19286bb7f14fa5221b58825e7162b94e717d0224ac9b83650fd5b8c859c26"
+    },
+    {
+      "path": "runtime/view4/asan/example21/libaetheri_original_view.a",
+      "size": 495328,
+      "sha256": "0e9eca0bbe5a87d944dbaf331bf731fc4f011716b6c3340d4faadfc95a70ec3e"
+    },
+    {
+      "path": "runtime/view4/asan/example21/libaetheri_view.a",
+      "size": 301362,
+      "sha256": "10542ce1a1c5a8af61b79c713890b1cc6ab64e3e0c3e177156612d36527dce1e"
+    },
+    {
+      "path": "runtime/view4/asan/original_model",
+      "size": 2987528,
+      "sha256": "0408910a9b61126729ec7a87913033e1515d6ecab63d0f6b79d2fab7c5b1fe00"
+    },
+    {
+      "path": "runtime/view4/asan/original_sound",
+      "size": 3011872,
+      "sha256": "bfd066cec07735f9910d6c76c4887df2f87f7f34d042b2458e7d17cba28f1828"
+    },
+    {
+      "path": "runtime/view4/asan/tests.xml",
+      "size": 2165,
+      "sha256": "ca202d83dd6bd692dc178100e901a78a391650bd330cd64e08e64c5f956abd87"
+    },
+    {
+      "path": "runtime/view4/harness/CMakeLists.txt",
+      "size": 2006,
+      "sha256": "d96cc71df18f27c38987869268cd592a55cb0a90152e6dd7cc9a985d634a0e0a"
+    },
+    {
+      "path": "runtime/view4/release-native5-actions/result.json",
+      "size": 1059,
+      "sha256": "6916971a0a285fd48e94d0819948875ab4f34b4f6eeaf45860d15c57edd84268"
+    },
+    {
+      "path": "runtime/view4/release-native5-actions/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/release-native5-actions/weston.stderr",
+      "size": 2857,
+      "sha256": "3a0f37db72eef07bc47e6a41af3700adf6d5f9988e37fd6736add389d64d4001"
+    },
+    {
+      "path": "runtime/view4/release-native5-actions/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/release-native5-disabled/result.json",
+      "size": 1059,
+      "sha256": "51879295bd2376a0b02acdc35b03b54030df2b79d0a9fcb1d2b770bd01db470e"
+    },
+    {
+      "path": "runtime/view4/release-native5-disabled/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/release-native5-disabled/weston.stderr",
+      "size": 2859,
+      "sha256": "2e52c967f85048176a90d4effdb0f89690731ddeb27f9ff2ba384b7a59e9df44"
+    },
+    {
+      "path": "runtime/view4/release-native5-disabled/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/release-native5-keyboard/result.json",
+      "size": 1019,
+      "sha256": "63f205deadefbe3b5406d24a3b8d4a1d5607814c0480148fc851656fb5780ac5"
+    },
+    {
+      "path": "runtime/view4/release-native5-keyboard/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/release-native5-keyboard/weston.stderr",
+      "size": 2859,
+      "sha256": "7726f21654f20174c0376a303df33d061bee2200127f4f41db1e05ff5c157139"
+    },
+    {
+      "path": "runtime/view4/release-native5-keyboard/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/release-peer5-atspi_client",
+      "size": 23944,
+      "sha256": "054506c816ff193edf78cb0d91b7b17d6116eb783a1a921698b709af440fb8f2"
+    },
+    {
+      "path": "runtime/view4/release-peer5-atspi_focus",
+      "size": 19288,
+      "sha256": "251c808296d8c45dadaf8b0b99fdcb1d029be7df47e5ef9b67626aca09dea483"
+    },
+    {
+      "path": "runtime/view4/release/.ninja_deps",
+      "size": 5968,
+      "sha256": "af8548bf503c38f6b938d7b1cabbfdbd3f2bf5820b599997fd424861ce1c7103"
+    },
+    {
+      "path": "runtime/view4/release/.ninja_log",
+      "size": 2785,
+      "sha256": "b0bb94fef0a9ddcf8470304910f5cad35bb49a71f50517f28c8d07566a99702c"
+    },
+    {
+      "path": "runtime/view4/release/CMakeCache.txt",
+      "size": 18412,
+      "sha256": "29ac4a75299197ce38b1b495e1c713df5fb390240229685941fae5c792b2d366"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 222581,
+      "sha256": "ffa01df737318acdb4c182eed9ebb04a7195a066bc3f0f8abe55ba63e4e1dbc3"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/InstallScripts.json",
+      "size": 199,
+      "sha256": "f87f3117d110dc6db15b94dc6bad5fc3bd1cdfcfd8093e5be656ed6510938bcf"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/TargetDirectories.txt",
+      "size": 1515,
+      "sha256": "6f27883c9415e43882a950e1ea257d658177b289f08ad7915dac0efd4e8e23c1"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings.c.o",
+      "size": 6712,
+      "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_sound.c.o",
+      "size": 18376,
+      "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+    },
+    {
+      "path": "runtime/view4/release/CMakeFiles/rules.ninja",
+      "size": 9386,
+      "sha256": "219e2e0eb8b8973eb1387e41ced248b3cc10088701995a69ec1c55ee066bb945"
+    },
+    {
+      "path": "runtime/view4/release/CTestTestfile.cmake",
+      "size": 3424,
+      "sha256": "34c106617c53260823037c266744e0ba993b3c107c41718a716ff78542241fb4"
+    },
+    {
+      "path": "runtime/view4/release/Testing/Temporary/CTestCostData.txt",
+      "size": 263,
+      "sha256": "bece065724265817eaf76fc68f00ec6ed018c13e5aa29fb9abc6673ee591e811"
+    },
+    {
+      "path": "runtime/view4/release/Testing/Temporary/LastTest.log",
+      "size": 6011,
+      "sha256": "b17279566271dca68fb2c9f8a485c60a8296a4078024138d850b34abbc8d618e"
+    },
+    {
+      "path": "runtime/view4/release/build.ninja",
+      "size": 54132,
+      "sha256": "72ae3c76a416c51ffb2a1bee2a385b0070949f7844a9c7963f9f1f0c8c576265"
+    },
+    {
+      "path": "runtime/view4/release/cmake_install.cmake",
+      "size": 2320,
+      "sha256": "99b1c2a80be7d4044cc8dc209b2e0e2f2707495034add07728f9856f14408653"
+    },
+    {
+      "path": "runtime/view4/release/compile_commands.json",
+      "size": 11513,
+      "sha256": "029d14bd6c9034e432338a3b6a93c65dc204645aff253a697ba77fc658e40920"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/model.c.o",
+      "size": 6032,
+      "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+      "size": 11016,
+      "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 7496,
+      "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 14248,
+      "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 48040,
+      "sha256": "deb0cedcceda8f7eb2549cfc29a9b12b6ed120ce37d346a37ae346dcf9c9e970"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_main.c.o",
+      "size": 19016,
+      "sha256": "f594c53edeffffd8f3dbc28d4f27fd32fed3289c026f8b97d0ad5bf303a628a3"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+      "size": 13048,
+      "sha256": "c2dea1abc74b88ed2b6806ea3cc2c88eba8336f4037ef4e0b9c1cc67cc219451"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_view.c.o",
+      "size": 62440,
+      "sha256": "adbe73e83ac13fc8fee3817b8a28f36caf766c76dcd5540b4c23e8478a776543"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_view.c.o",
+      "size": 66456,
+      "sha256": "2955b421a3eb1854d03b9062e648905c59e2fe2f126521928f910e907b6d0728"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_view.dir/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/common/text_wrap.c.o",
+      "size": 3512,
+      "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+    },
+    {
+      "path": "runtime/view4/release/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 27120,
+      "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+    },
+    {
+      "path": "runtime/view4/release/example21/CTestTestfile.cmake",
+      "size": 350,
+      "sha256": "02c0ed54e1b7474caed66b71ce888f0a10bcdb2609bd7740d8eafe42ab320666"
+    },
+    {
+      "path": "runtime/view4/release/example21/aetheri_model_sound_state_test",
+      "size": 906680,
+      "sha256": "cd40fd6170cb46cf1ab2287c4aede95fe4844410c56e0bda2ec2f40e6ae281f6"
+    },
+    {
+      "path": "runtime/view4/release/example21/aetheri_model_text_wrap_test",
+      "size": 246128,
+      "sha256": "b3f73d5b2023a134f24224ae4ec151bebc8a7f4d5d8fd94272ac6cabb02ea346"
+    },
+    {
+      "path": "runtime/view4/release/example21/aetheri_model_view",
+      "size": 906960,
+      "sha256": "498c845fd9f3352dad6cfb08ea60f4135d5200172f340d474c795a4459f2b6e4"
+    },
+    {
+      "path": "runtime/view4/release/example21/aetheri_model_view_test",
+      "size": 927304,
+      "sha256": "8d0d7275f4e404307ffb6b0b4b1a970594282e42bf1979c1a58744c665c300cb"
+    },
+    {
+      "path": "runtime/view4/release/example21/aetheri_original_settings",
+      "size": 927784,
+      "sha256": "f09e50f42dee3a9195bcc22f87f2a3bf3a4dc51f8bf9ba36c2d6491eb28a3e90"
+    },
+    {
+      "path": "runtime/view4/release/example21/aetheri_original_sound_test",
+      "size": 923280,
+      "sha256": "1fc42888c821a415a132dd486816bab14ab38b140f939e354d3f3375dd3a8493"
+    },
+    {
+      "path": "runtime/view4/release/example21/aetheri_original_view_test",
+      "size": 948112,
+      "sha256": "265fa27e61330b9da3b2a10a48d938d34d205908117ed65bc5f0c6f5794539fe"
+    },
+    {
+      "path": "runtime/view4/release/example21/cmake_install.cmake",
+      "size": 1587,
+      "sha256": "c89fadec8afd22eebaf91a50145c1019580fc8cdbe4d3b52a5de572f483206f0"
+    },
+    {
+      "path": "runtime/view4/release/example21/libaetheri_model.a",
+      "size": 29408,
+      "sha256": "5370b031ee39d80e19b04d22e798b838f713b60ce48850830ef1f8bdf4273f96"
+    },
+    {
+      "path": "runtime/view4/release/example21/libaetheri_original_view.a",
+      "size": 62810,
+      "sha256": "78be2bcce44b4240649beb5fe27ad5bce8c2a9e3eac92e938abfc681ab6c7524"
+    },
+    {
+      "path": "runtime/view4/release/example21/libaetheri_view.a",
+      "size": 30988,
+      "sha256": "fb22b4551e0e7e8fbd5f341a2c4b924b2053aada360614df3941c144a63cde73"
+    },
+    {
+      "path": "runtime/view4/release/original_model",
+      "size": 43776,
+      "sha256": "0d346831acd04ed6a7a15688cb20af3686376d92c2613cacad363fe0dc85222a"
+    },
+    {
+      "path": "runtime/view4/release/original_sound",
+      "size": 51976,
+      "sha256": "27926b060f79ad73da9f5138398227e830a0ab872425c394e5b8c5094fbc15f7"
+    },
+    {
+      "path": "runtime/view4/release/tests.xml",
+      "size": 2252,
+      "sha256": "d0f15b7f5e8c2801c462a3aca14111707b5c72e77de0514d83008d2dd12fb0f4"
+    },
+    {
+      "path": "runtime/view4/shared-native5-actions/result.json",
+      "size": 1055,
+      "sha256": "f4501ade4861ae3896c7002859627844fc21dff0ff2ece215158ab85838ae104"
+    },
+    {
+      "path": "runtime/view4/shared-native5-actions/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/shared-native5-actions/weston.stderr",
+      "size": 2855,
+      "sha256": "eb721297a4653de62286badb856973878445616ca8d4207dd4a31625a4fce6d2"
+    },
+    {
+      "path": "runtime/view4/shared-native5-actions/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/shared-native5-disabled/result.json",
+      "size": 1056,
+      "sha256": "14380cc5d567709767e57f624c64b14124108ba2e5d9f293d5ae91cf886f1165"
+    },
+    {
+      "path": "runtime/view4/shared-native5-disabled/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/shared-native5-disabled/weston.stderr",
+      "size": 2857,
+      "sha256": "eceaad4cabfefbff68e8a82195a9c0e307da7caf5f993520705fd4175c319c12"
+    },
+    {
+      "path": "runtime/view4/shared-native5-disabled/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/shared-native5-keyboard/result.json",
+      "size": 1016,
+      "sha256": "62177a999da1345ef9a69206f31ce0c21f84359b1970ae4d2aea18c6808c806e"
+    },
+    {
+      "path": "runtime/view4/shared-native5-keyboard/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view4/shared-native5-keyboard/weston.stderr",
+      "size": 2857,
+      "sha256": "979e21e8064949ca771783f8d2b7f80619058b4afadd9fb94dff65f3fa63400a"
+    },
+    {
+      "path": "runtime/view4/shared-native5-keyboard/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view4/shared-peer5-atspi_client",
+      "size": 23944,
+      "sha256": "054506c816ff193edf78cb0d91b7b17d6116eb783a1a921698b709af440fb8f2"
+    },
+    {
+      "path": "runtime/view4/shared-peer5-atspi_focus",
+      "size": 19288,
+      "sha256": "251c808296d8c45dadaf8b0b99fdcb1d029be7df47e5ef9b67626aca09dea483"
+    },
+    {
+      "path": "runtime/view4/shared/.ninja_deps",
+      "size": 5964,
+      "sha256": "d51f0ab4e79ab937d81f55c9802e6861519b75397c91ffba8221a3f46d1e7e4b"
+    },
+    {
+      "path": "runtime/view4/shared/.ninja_log",
+      "size": 2784,
+      "sha256": "2e53a987c21dd4a4f8f714677eda821e1ad88da7596191d885d4a2f252c655b2"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeCache.txt",
+      "size": 18405,
+      "sha256": "8fd21d115fc04a2e8726d83e2ebfa76c597ae40a06736fe4df6bbb680e0a5f0b"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 222502,
+      "sha256": "c7eb86b37a1ec223709a9857606f22d0e1404af051fbb98b7b9a6f565c00d1d2"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/InstallScripts.json",
+      "size": 197,
+      "sha256": "d8e6f315f4079fd70745c50b90cc52ec4020a77b79fbcf52118fee320df03669"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/TargetDirectories.txt",
+      "size": 1497,
+      "sha256": "f8e612f89742bbb31297dafd5c056d640c02c5e25575d33f3e6860c2d486398d"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings.c.o",
+      "size": 6712,
+      "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_sound.c.o",
+      "size": 18376,
+      "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+    },
+    {
+      "path": "runtime/view4/shared/CMakeFiles/rules.ninja",
+      "size": 9385,
+      "sha256": "d153760318cd4d05948532d1a822fddcf975f32e000a0fa9c7c5ca75026e6546"
+    },
+    {
+      "path": "runtime/view4/shared/CTestTestfile.cmake",
+      "size": 3415,
+      "sha256": "1cbcbb926317f0a46c2417702504a8ae3c4dfd88f5e0319961f368f97b205288"
+    },
+    {
+      "path": "runtime/view4/shared/Testing/Temporary/CTestCostData.txt",
+      "size": 263,
+      "sha256": "df661a986c2f3310996a94dfd84fd97e00c13c3d2f9222bf44c921168f4d51e1"
+    },
+    {
+      "path": "runtime/view4/shared/Testing/Temporary/LastTest.log",
+      "size": 5995,
+      "sha256": "c642d9b101e2a15c6564f76ff953c664d7a0edc5895367d88923ec453534cad1"
+    },
+    {
+      "path": "runtime/view4/shared/build.ninja",
+      "size": 53869,
+      "sha256": "f615109cabfaf1efa4ea2e5c12f3f0fa75ec65f20df56e53ad46c111a25ef00e"
+    },
+    {
+      "path": "runtime/view4/shared/cmake_install.cmake",
+      "size": 2317,
+      "sha256": "4e0e92966ff942d7ae8d34e9d1b85021f0a849e8caf5f42eb83d9f0d513d8a9d"
+    },
+    {
+      "path": "runtime/view4/shared/compile_commands.json",
+      "size": 11635,
+      "sha256": "61dcf9f430a566504549f37ff1c015fbde9b94ed3f166429e1cadac04a440654"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/model.c.o",
+      "size": 6032,
+      "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+      "size": 11016,
+      "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 7496,
+      "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 14248,
+      "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 48040,
+      "sha256": "deb0cedcceda8f7eb2549cfc29a9b12b6ed120ce37d346a37ae346dcf9c9e970"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_main.c.o",
+      "size": 19016,
+      "sha256": "f594c53edeffffd8f3dbc28d4f27fd32fed3289c026f8b97d0ad5bf303a628a3"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+      "size": 13048,
+      "sha256": "c2dea1abc74b88ed2b6806ea3cc2c88eba8336f4037ef4e0b9c1cc67cc219451"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-original-view-source2/src/settings/nexaui_view.c.o",
+      "size": 62440,
+      "sha256": "adbe73e83ac13fc8fee3817b8a28f36caf766c76dcd5540b4c23e8478a776543"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source2/tests/test_settings_view.c.o",
+      "size": 66456,
+      "sha256": "2955b421a3eb1854d03b9062e648905c59e2fe2f126521928f910e907b6d0728"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_view.dir/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/common/text_wrap.c.o",
+      "size": 3512,
+      "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 27120,
+      "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+    },
+    {
+      "path": "runtime/view4/shared/example21/CTestTestfile.cmake",
+      "size": 349,
+      "sha256": "ce9854e3f66720284013b87fa4aeb0cc1c3766ddcb2289d7038ab51298a357b0"
+    },
+    {
+      "path": "runtime/view4/shared/example21/aetheri_model_sound_state_test",
+      "size": 70520,
+      "sha256": "920cebfe93b7ab9c8a6beae3877aa88503403435a550d779e2f462f445511a9f"
+    },
+    {
+      "path": "runtime/view4/shared/example21/aetheri_model_text_wrap_test",
+      "size": 19480,
+      "sha256": "b3ed8fa7218a81c598d41360c1da08202e3f6a1f261635dd3c052746cbe37474"
+    },
+    {
+      "path": "runtime/view4/shared/example21/aetheri_model_view",
+      "size": 71792,
+      "sha256": "ad941f26513a5e620fa60cbb2501e6c6ce8111847ec79e38e7a88defec413db6"
+    },
+    {
+      "path": "runtime/view4/shared/example21/aetheri_model_view_test",
+      "size": 87184,
+      "sha256": "1293892f221d394ec8739b4fe59a8d4c8ef5263b02df1ace90451d86d6f2bf04"
+    },
+    {
+      "path": "runtime/view4/shared/example21/aetheri_original_settings",
+      "size": 88992,
+      "sha256": "03dd6d201858b911b86597137fba4ee4bf27c3872e56e41be971f359c8613ed5"
+    },
+    {
+      "path": "runtime/view4/shared/example21/aetheri_original_sound_test",
+      "size": 87320,
+      "sha256": "60a1a742667879f0725098b16d099bf7155f7e54257b20035a1dbe2958df9073"
+    },
+    {
+      "path": "runtime/view4/shared/example21/aetheri_original_view_test",
+      "size": 112424,
+      "sha256": "17c050986f56db2376654b38638be0c68e64b5f071477a53dc051ecd08f34791"
+    },
+    {
+      "path": "runtime/view4/shared/example21/cmake_install.cmake",
+      "size": 1586,
+      "sha256": "81f2a3ff478da81f1bb44e75f915cce67204abc26d37072da748248bc198e669"
+    },
+    {
+      "path": "runtime/view4/shared/example21/libaetheri_model.a",
+      "size": 29408,
+      "sha256": "5370b031ee39d80e19b04d22e798b838f713b60ce48850830ef1f8bdf4273f96"
+    },
+    {
+      "path": "runtime/view4/shared/example21/libaetheri_original_view.a",
+      "size": 62810,
+      "sha256": "78be2bcce44b4240649beb5fe27ad5bce8c2a9e3eac92e938abfc681ab6c7524"
+    },
+    {
+      "path": "runtime/view4/shared/example21/libaetheri_view.a",
+      "size": 30988,
+      "sha256": "fb22b4551e0e7e8fbd5f341a2c4b924b2053aada360614df3941c144a63cde73"
+    },
+    {
+      "path": "runtime/view4/shared/original_model",
+      "size": 43776,
+      "sha256": "0d346831acd04ed6a7a15688cb20af3686376d92c2613cacad363fe0dc85222a"
+    },
+    {
+      "path": "runtime/view4/shared/original_sound",
+      "size": 51976,
+      "sha256": "27926b060f79ad73da9f5138398227e830a0ab872425c394e5b8c5094fbc15f7"
+    },
+    {
+      "path": "runtime/view4/shared/tests.xml",
+      "size": 2252,
+      "sha256": "6b5dacda9f3dd005ba3bd2ca928b6909282b56ac58ebc375f8b17add9e392b55"
+    },
+    {
+      "path": "runtime/view5/asan-captures-1/sound-dark.ppm",
+      "size": 2160016,
+      "sha256": "1c20b702c8fe2d8db0a4fd4dc013ac1965fa82d6997383be485480a3693a018f"
+    },
+    {
+      "path": "runtime/view5/asan-captures-1/sound-light-de-200-controls.ppm",
+      "size": 1152015,
+      "sha256": "565049ce4d1653852dd0287ba641a0e26e3c61057af45f4e50e84a57d93a44a5"
+    },
+    {
+      "path": "runtime/view5/asan-captures-1/sound-light-de-200.ppm",
+      "size": 1152015,
+      "sha256": "090e4d87236c32bd1c173c8ce24a545d3ec282a6a2158cc1d50c931181ce4e89"
+    },
+    {
+      "path": "runtime/view5/asan-captures-1/sound-muted-contrast.ppm",
+      "size": 2160016,
+      "sha256": "321e2358ed4bd7a63775acd03d50ffb1bb9e12e30a1f36cecf9eb6ddb2a384c4"
+    },
+    {
+      "path": "runtime/view5/asan-captures-2/sound-dark.ppm",
+      "size": 2160016,
+      "sha256": "b56ff5edb532be2a3465b703f3609c6a460c7441cc442bc72f44ba64dd770e95"
+    },
+    {
+      "path": "runtime/view5/asan-captures-2/sound-light-de-200-controls.ppm",
+      "size": 1152015,
+      "sha256": "0101e9b048d71370eef36742faa806eeb7603aed026ce93dcb9015937431351a"
+    },
+    {
+      "path": "runtime/view5/asan-captures-2/sound-light-de-200.ppm",
+      "size": 1152015,
+      "sha256": "eab3becc85b91fe32abb14e916a70e1c8e1a6164c961f14fc5adcdf832130555"
+    },
+    {
+      "path": "runtime/view5/asan-captures-2/sound-muted-contrast.ppm",
+      "size": 2160016,
+      "sha256": "d57fc577b6824d55b9caafc14498e3e53e0ebbec4db2c3e39888ba20c3d09e01"
+    },
+    {
+      "path": "runtime/view5/asan-native6-actions/result.json",
+      "size": 1043,
+      "sha256": "84a4ee0fa2dc480aaa2ea447b74ab65f31f1e85de51dd7e962c56ef5dc6b1913"
+    },
+    {
+      "path": "runtime/view5/asan-native6-actions/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/asan-native6-actions/weston.stderr",
+      "size": 2851,
+      "sha256": "b26cbd91adc3ff93e436fcd4d778ef691d55655930bdcdd8eaf6866deb37a12a"
+    },
+    {
+      "path": "runtime/view5/asan-native6-actions/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/asan-native6-disabled/result.json",
+      "size": 1044,
+      "sha256": "0a765eb8570bb7eb65ee003094a20bde7c326a35edd30fbfb73433f2312dece3"
+    },
+    {
+      "path": "runtime/view5/asan-native6-disabled/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/asan-native6-disabled/weston.stderr",
+      "size": 2853,
+      "sha256": "655e0a1deb02569bd089e27e03601a6d7442996e0fd0efbc2b00394c5b2871c4"
+    },
+    {
+      "path": "runtime/view5/asan-native6-disabled/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/asan-native6-keyboard/result.json",
+      "size": 1007,
+      "sha256": "08b79c90066bc4675ee2f874c6e22ae04626de9129cf30bcc0aacdf83ed52f07"
+    },
+    {
+      "path": "runtime/view5/asan-native6-keyboard/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/asan-native6-keyboard/weston.stderr",
+      "size": 2853,
+      "sha256": "5b2089b580479429c9ecd2b720f4c60f8fc0450203655bee9477613a4f31c38b"
+    },
+    {
+      "path": "runtime/view5/asan-native6-keyboard/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/asan-peer6-atspi_client",
+      "size": 2880120,
+      "sha256": "d2233cc6d0a98fff19e9ea555263d5cca87e84c9ffabcc1ad7d50349dde4c12a"
+    },
+    {
+      "path": "runtime/view5/asan-peer6-atspi_focus",
+      "size": 2870048,
+      "sha256": "4b3b031e7231ecb232ae16d7ff68055a566b489715070d1a11dc4d4f0d6d1b81"
+    },
+    {
+      "path": "runtime/view5/asan/.ninja_deps",
+      "size": 6072,
+      "sha256": "ac09bdfc8c7c48d42555fdca5c138f3d6e7821919e414091f201da55566e637c"
+    },
+    {
+      "path": "runtime/view5/asan/.ninja_log",
+      "size": 2835,
+      "sha256": "d8ae33c7bc2be3e25c83656cc47abc20dbe24d9b087b47b2daded7458cdb4b38"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeCache.txt",
+      "size": 18467,
+      "sha256": "fe10c6c2a9e3b30f4f8e0b879a2fe6e97b796e01fbcc06bffd1b30518cf52855"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 226227,
+      "sha256": "028076044d8b772f5e42261a41e61d686b52b0e976091d72683411326ca07567"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/InstallScripts.json",
+      "size": 193,
+      "sha256": "afbbe27beb0efa3745fd89822c6ff24728d3fe6824ad9b1b8d033f9020dca1d4"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/TargetDirectories.txt",
+      "size": 1461,
+      "sha256": "54568ab32212c34beec3909589d06b3e0303702d6d33e9895477fa2f33205865"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings.c.o",
+      "size": 33408,
+      "sha256": "e2a91baa22e9bb06075f0e2e51bf85c7773358b783039590ad2c2509f41238f3"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings_sound.c.o",
+      "size": 72336,
+      "sha256": "fd06978de4301379fcd0dcaa23bb20053d2d157b68eec73783a9ca6eb5f844d5"
+    },
+    {
+      "path": "runtime/view5/asan/CMakeFiles/rules.ninja",
+      "size": 9333,
+      "sha256": "0bc40318e35b16fbc93b7b67f2d30505b4118f977c0bc158fb1b12b2c56ea5bb"
+    },
+    {
+      "path": "runtime/view5/asan/CTestTestfile.cmake",
+      "size": 3397,
+      "sha256": "c05972c03d33eeff3b90444c4372ba9b6796f4f3c01d90d620c2211919a2e9fd"
+    },
+    {
+      "path": "runtime/view5/asan/Testing/Temporary/CTestCostData.txt",
+      "size": 256,
+      "sha256": "173b4e65097d16c7a159f3851ecd78b15bada0d93278e501f5f44d5a0e710147"
+    },
+    {
+      "path": "runtime/view5/asan/Testing/Temporary/LastTest.log",
+      "size": 5963,
+      "sha256": "cf5aae409b77bb2cc66af7b0abe5346129cca657af40fb5cd82bfbc743b22fe0"
+    },
+    {
+      "path": "runtime/view5/asan/build.ninja",
+      "size": 55746,
+      "sha256": "d86c9e4f08debec538de0564db2567016e39c4275780cd48bd34933be361446b"
+    },
+    {
+      "path": "runtime/view5/asan/cmake_install.cmake",
+      "size": 2309,
+      "sha256": "17e64969625ba25b6e906c60522540fdd9dca80fa560c9848645cfad2c42cc1a"
+    },
+    {
+      "path": "runtime/view5/asan/compile_commands.json",
+      "size": 12345,
+      "sha256": "bfcfa6aa24b269585bcb39efb6b7a855cccffd6ba6811d6442c21e1fdec878ef"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/model.c.o",
+      "size": 98192,
+      "sha256": "d4ed940991c2f443fdff3e340b62fe86083bc2b27897e7e8acdab4c4354b9cee"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/text/grapheme.c.o",
+      "size": 46080,
+      "sha256": "d08683b8b3a1729649c68d6d1035edb7df1aae25133098d08dd901c9668ae508"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+      "size": 53736,
+      "sha256": "d43cdc09a04390740fe3f55a4009a5fdf22c6dfa56915605b77c403d4bc44a8a"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 38528,
+      "sha256": "14c9187ce203110105560a662113bd835ff9bc95c9760c8055f6cadf77d60afd"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 94272,
+      "sha256": "c37a82885460c106138231c191437982226278277b30f9befeff65e89b59aa66"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 190040,
+      "sha256": "fcb4b0a931757ce8ba94072f2f700acea8719f3e8d04c6400987390f7b58b71c"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/nexaui_main.c.o",
+      "size": 161312,
+      "sha256": "2d15e235491b3e802b51d58406b43c25dd8182234bec2b818b8cbca72863544b"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+      "size": 73064,
+      "sha256": "d4499fd08f2febaddd099e251cf11f544725454e7ac67dfb0f90ba8d4e933b84"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/nexaui_view.c.o",
+      "size": 462328,
+      "sha256": "f74679175f5d37d79edfe06dc58d3507179f3b34b8f48ce19a3ab8e39838f3b2"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings_view.c.o",
+      "size": 268976,
+      "sha256": "e08f061c6142cd54a5dbe416f21347ef688ce2f61c0b5601fa38b7888a5ce4c8"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/repo/examples/common/text_wrap.c.o",
+      "size": 21072,
+      "sha256": "d5be8f9ea1db5eb6f2f03b49e0663b945b025474c91a26ffd0317197fb89bc38"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 230208,
+      "sha256": "2a6e889f9255ed32ca0e547ddb683b45f9d0c1132b37efdb111eec7f35633885"
+    },
+    {
+      "path": "runtime/view5/asan/example21/CTestTestfile.cmake",
+      "size": 342,
+      "sha256": "a1790d48ab19bc392b2f2a30741794877b05bfc6e135d28b5f5d282dcff8c43f"
+    },
+    {
+      "path": "runtime/view5/asan/example21/aetheri_model_sound_state_test",
+      "size": 10415192,
+      "sha256": "d5f45d7b4b6340301e53638b6ea8df45fc00491819087e97cf0c37712f2af705"
+    },
+    {
+      "path": "runtime/view5/asan/example21/aetheri_model_text_wrap_test",
+      "size": 4146960,
+      "sha256": "c6dd2ecf736150ec6f348523cdb9a4ad742b73b98a4734c77adfc932f1a84839"
+    },
+    {
+      "path": "runtime/view5/asan/example21/aetheri_model_view",
+      "size": 10445336,
+      "sha256": "3743b975b4dc686ab3ab6c0cfe53588bc1d3054a67b4f1ec3f6987c7040a1d14"
+    },
+    {
+      "path": "runtime/view5/asan/example21/aetheri_model_view_test",
+      "size": 10488016,
+      "sha256": "8cd20f883100abc4fcab66d915da142eaedf9a1b4be58d14c684bad3c4f3f20a"
+    },
+    {
+      "path": "runtime/view5/asan/example21/aetheri_original_settings",
+      "size": 10623664,
+      "sha256": "aa8ed1c1e7f82239035dc0191b706f63ae08197a19318cba078b591a057963ca"
+    },
+    {
+      "path": "runtime/view5/asan/example21/aetheri_original_sound_test",
+      "size": 10566320,
+      "sha256": "a2557ffdede1bcad078c391342c54bab395a13256e5eaf45a2073fffa076f1ce"
+    },
+    {
+      "path": "runtime/view5/asan/example21/aetheri_original_view_test",
+      "size": 10661248,
+      "sha256": "c22046844c565d549a1e47045d36f9b866bc677f8d8d24528e23edb3556eb55e"
+    },
+    {
+      "path": "runtime/view5/asan/example21/cmake_install.cmake",
+      "size": 1577,
+      "sha256": "22d5cff47df2e9fc8f6a2b62c5918d58e681666ec123483d9a2f9c46e6cc8203"
+    },
+    {
+      "path": "runtime/view5/asan/example21/libaetheri_model.a",
+      "size": 144782,
+      "sha256": "110fae718cc00b117c586714bfa393b5ff29fc4a8b040a724b43f5933009645d"
+    },
+    {
+      "path": "runtime/view5/asan/example21/libaetheri_original_view.a",
+      "size": 462728,
+      "sha256": "6c13ecd72277ae61541cd68b68fc393585edae5cdd5c281c298dfbc2ede983c2"
+    },
+    {
+      "path": "runtime/view5/asan/example21/libaetheri_view.a",
+      "size": 251698,
+      "sha256": "d380e5de67000d3cc03406ea0d0ffacfba60a97b573b6400767eabe41546ad2a"
+    },
+    {
+      "path": "runtime/view5/asan/original_model",
+      "size": 2959736,
+      "sha256": "001c3ece3a89302db4f011d0ac16709f9f5ea3c01406bf24cb06816047d63b2f"
+    },
+    {
+      "path": "runtime/view5/asan/original_sound",
+      "size": 2982808,
+      "sha256": "9f2291e5b6d24878d1eed49d6bb671d690af36fb03c35f76ae764e7e12b8b528"
+    },
+    {
+      "path": "runtime/view5/asan/tests.xml",
+      "size": 2246,
+      "sha256": "76e0b645801fc75794bc316cc6aa6aa4035d354a38424e32797d3452095c9510"
+    },
+    {
+      "path": "runtime/view5/harness/CMakeLists.txt",
+      "size": 2025,
+      "sha256": "f3ded9d4cff6deb01c30bc93df0c399a28df7a563691df76963938cb05c6d92f"
+    },
+    {
+      "path": "runtime/view5/negative/CMakeLists.txt",
+      "size": 686,
+      "sha256": "261358be6421d87ba90c132ebd098055402407a6e445052caafd6f80fa9435fd"
+    },
+    {
+      "path": "runtime/view5/negative/build/.ninja_deps",
+      "size": 2128,
+      "sha256": "05db0e0f8227d5c2298fa1d003666094fb08d011941c8cbabca19e57eda7b019"
+    },
+    {
+      "path": "runtime/view5/negative/build/.ninja_log",
+      "size": 596,
+      "sha256": "b53913961e569352e603ac9f1db9a751a70e38fd2ca44f8efbf7dc8a655966f1"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeCache.txt",
+      "size": 17730,
+      "sha256": "48823c10604ddde43ea7333a915b532c3efb426bc67a98cfd539d4f096c07064"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3138,
+      "sha256": "3bb3940c34594a6674ed932633c06947e57221808cd717a67bc10923ad3e2e1e"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 2849168,
+      "sha256": "2cf1603555377012de91f52928fcbbbb6916d673b2ea0f3d0b70523c4307940f"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 2849888,
+      "sha256": "6d7ebcb3d443110421211b297a89b358c091ae56e271961813343e3945fc2c98"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 225757,
+      "sha256": "fefc51544460127148c3958bfcb0e29ccbaf7835951b4c5e91b8daa14a817b74"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/InstallScripts.json",
+      "size": 127,
+      "sha256": "b96e6a2e80409fcd1e9614c907b9a37385d81dbc97f075b377fac65bc3e38abc"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/TargetDirectories.txt",
+      "size": 231,
+      "sha256": "45b0250ffb1a025b220905727ca447550ebbd5b073e4297c2373c5289a1c69de"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/control.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/model.c.o",
+      "size": 98208,
+      "sha256": "5cf9aa70448b65d1820f0c1d9254428efa59bfe4a21759258530b200a9b61aaf"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/control.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/text/grapheme.c.o",
+      "size": 46104,
+      "sha256": "aff897b7dd82c4066eadd76a7cd7583d0b1b7fd8ee87dfa3d06431428910b00d"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/control.dir/mnt/d/NexaUI/out/settings-original-view-source3/repo/examples/21_aetheri_model/test_original_sound.c.o",
+      "size": 73080,
+      "sha256": "dc32354007f47ebc3ffcbb91394005e62811dd64828e4d774f244c0c6572d20d"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/control.dir/nexaui_view.c.o",
+      "size": 462368,
+      "sha256": "8fa39046084a1a1ea77c3067330a80949bca04de9846f5388e478e87624f0ab7"
+    },
+    {
+      "path": "runtime/view5/negative/build/CMakeFiles/rules.ninja",
+      "size": 2003,
+      "sha256": "5495bda71819d10775807683c239f8a2f13969d5cb6b1ed1171d563cab0a554b"
+    },
+    {
+      "path": "runtime/view5/negative/build/build.ninja",
+      "size": 21144,
+      "sha256": "dde844a567df14181c7141cbce6b9af57e35baf0b56dd9628f3e8758d7419006"
+    },
+    {
+      "path": "runtime/view5/negative/build/cmake_install.cmake",
+      "size": 2151,
+      "sha256": "7adda1f59a9b6db2cd52a09e442394ea21a760ae23619be20c5ff5fc7f70e34e"
+    },
+    {
+      "path": "runtime/view5/negative/build/compile_commands.json",
+      "size": 3119,
+      "sha256": "8a65758779bbaa6611e25ec5c49cbd5fe13e087a3bc67536b809c39a5d8ac237"
+    },
+    {
+      "path": "runtime/view5/negative/build/control",
+      "size": 10566328,
+      "sha256": "907bf9e3547e02794dcf3b8bde8d878db2c9d9b273a07f26fe55f72f410c1263"
+    },
+    {
+      "path": "runtime/view5/negative/nexaui_view.c",
+      "size": 38052,
+      "sha256": "85540bdfa6d4516a6cacbaea6da1cdd3c503043eb31b1b6b0f9c09befc72bfcd"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/CMakeLists.txt",
+      "size": 1860,
+      "sha256": "17996770f79e9ed006897ad8aa079144cb57633f4c200de87bdaf8250a081129"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/.ninja_deps",
+      "size": 4504,
+      "sha256": "09c232af2de45cf21d1109fc124a76cafa0ca53385242041698aa98ac2f48c1f"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/.ninja_log",
+      "size": 1877,
+      "sha256": "ce46a8c2f5a4aa558bc5f3658a64fa4dacc2ba6e5cddbd08cebdf234091bf402"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeCache.txt",
+      "size": 18473,
+      "sha256": "5ec3dfbbbf2c52a99a0794cb0396ae356faa310434972208efbee053a7ba39c9"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 222637,
+      "sha256": "a9c5282c85be73578c3ea345acc8ebe916d5af6b108afbcd397efb18aa264c2c"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/InstallScripts.json",
+      "size": 219,
+      "sha256": "11b5b1305172085a366df283afec57e3f8dde7f0f35a2fdf705f7479153b92de"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/TargetDirectories.txt",
+      "size": 1276,
+      "sha256": "ced6062fc59fc0a7c91ad4245f7e67dcfe24523319bd22a42c76eb891aefaee3"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings.c.o",
+      "size": 6712,
+      "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings_sound.c.o",
+      "size": 18376,
+      "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CMakeFiles/rules.ninja",
+      "size": 6699,
+      "sha256": "05b33d341723976ff1fbad124fc76605ae0a9701d1bf60315fd3da9e56dfb591"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/CTestTestfile.cmake",
+      "size": 2276,
+      "sha256": "e0c31ca37a8b38f6c7cedef28058b8c61b7871517661e1735b1e2f2b0293aedc"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/Testing/Temporary/CTestCostData.txt",
+      "size": 158,
+      "sha256": "47cd19acd41050bb3f178fe268250db246d6836d5464ba13171bcd2337b08c61"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/Testing/Temporary/LastTest.log",
+      "size": 3731,
+      "sha256": "e8bee05583f25068ceea7d0fa1d1fd32a189146fd7676dd40dd81d1a19a28fbe"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/build.ninja",
+      "size": 42203,
+      "sha256": "507068a1bdfd26ea284bc59abd5158e69ff329cf5189ffb4f4deb48cfcfc316a"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/cmake_install.cmake",
+      "size": 2354,
+      "sha256": "2cf051ebd76aaed039390db78f89dc83020cd72bff528d410055acc39ef32058"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/compile_commands.json",
+      "size": 8645,
+      "sha256": "d945180a475161496476a34774c31111fc8ea1744da124051a5dd631344881b6"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/model.c.o",
+      "size": 6032,
+      "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+      "size": 11016,
+      "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 7496,
+      "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 14248,
+      "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 48040,
+      "sha256": "39ccf8e321fe95ce1f4cf3effec9247651e68126c848fa1ee29b074daf4442ab"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/repo/examples/common/text_wrap.c.o",
+      "size": 3512,
+      "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 27120,
+      "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/CTestTestfile.cmake",
+      "size": 355,
+      "sha256": "06bca00afbfb08e1e377c4bae90e13da27a56b1a2899d79c84ca66017f48a59b"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/aetheri_model_sound_state_test",
+      "size": 70520,
+      "sha256": "920cebfe93b7ab9c8a6beae3877aa88503403435a550d779e2f462f445511a9f"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/aetheri_model_text_wrap_test",
+      "size": 19480,
+      "sha256": "b3ed8fa7218a81c598d41360c1da08202e3f6a1f261635dd3c052746cbe37474"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/aetheri_model_view",
+      "size": 71792,
+      "sha256": "ad941f26513a5e620fa60cbb2501e6c6ce8111847ec79e38e7a88defec413db6"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/aetheri_model_view_test",
+      "size": 87184,
+      "sha256": "dd2043cfd8d364dd2c4a15a2a65930675ef3db238452a1af332b0c6d0a7bec62"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/cmake_install.cmake",
+      "size": 1592,
+      "sha256": "046f3a9708a0bc9d1a1b23e800fd8eb23da81cf466557e190b6d1c7d40058fa9"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/libaetheri_model.a",
+      "size": 29408,
+      "sha256": "5370b031ee39d80e19b04d22e798b838f713b60ce48850830ef1f8bdf4273f96"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/example21/libaetheri_view.a",
+      "size": 30988,
+      "sha256": "fb22b4551e0e7e8fbd5f341a2c4b924b2053aada360614df3941c144a63cde73"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/original_model",
+      "size": 43776,
+      "sha256": "0d346831acd04ed6a7a15688cb20af3686376d92c2613cacad363fe0dc85222a"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/original_sound",
+      "size": 51976,
+      "sha256": "27926b060f79ad73da9f5138398227e830a0ab872425c394e5b8c5094fbc15f7"
+    },
+    {
+      "path": "runtime/view5/off-aetheri/build/tests.xml",
+      "size": 1410,
+      "sha256": "5c35cce195c0ee5ab6ee6aeb6c27339799474ca00e7929b63d9aab16e29eadae"
+    },
+    {
+      "path": "runtime/view5/off-legacy/CMakeLists.txt",
+      "size": 1305,
+      "sha256": "580d5a29de08a24cb030dfcf33c3e3567c464303df914515d819c5439e571cbe"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/.ninja_deps",
+      "size": 3368,
+      "sha256": "5c18027799b4368241d010c5c353d1cc3ffb04c21988523fb8b9825051833a7e"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/.ninja_log",
+      "size": 1303,
+      "sha256": "93098178a361f870a008f003aad1ce8124993fddaf37d4849a1923b762644f0f"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeCache.txt",
+      "size": 18466,
+      "sha256": "b5f340947a649c97a433b2eb0b3519dbf5e36cc3b163d7ab7b79ebbee45f1b98"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 222622,
+      "sha256": "fe9558a38040b1f258a01c44cfcf3d01c59e1a31b1f8fef34f8afa101b6b0cc6"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/InstallScripts.json",
+      "size": 217,
+      "sha256": "08e410828cae24e09055719844254ce3a8f559a5b45ead032032097bb7b5ad75"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/TargetDirectories.txt",
+      "size": 1070,
+      "sha256": "ceaa5b6c1b2a7f41ccfa05a100035cae17136e7befcbeaa9c0e71b8264a78c0e"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/legacy/tests/test_settings.c.o",
+      "size": 6664,
+      "sha256": "32cce7a00484d6a2504169c9313a082c299e04a820d0ed30b0ae6f099956ef61"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CMakeFiles/rules.ninja",
+      "size": 5379,
+      "sha256": "3de36d6b69402a6833a2a48f9938970d719f17448e7574cce4a0f5e57b195964"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/CTestTestfile.cmake",
+      "size": 1500,
+      "sha256": "e32b85ab4aff217061784396c1d87aa4c513c62e7b15f189a862bfaf51ddaa1e"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/Testing/Temporary/CTestCostData.txt",
+      "size": 94,
+      "sha256": "2518c77e3970b1d633f3a778371b8d269f4d04581c60103e79ce2fc064e9a953"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/Testing/Temporary/LastTest.log",
+      "size": 2236,
+      "sha256": "9b1c9e945ab8abdd311f60086904365cbf1f8d55473d61706adb8eb963c6cc43"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/build.ninja",
+      "size": 35633,
+      "sha256": "e496fec419bf79e9979f46733688a73d508c7a62d8ae7cc79b6ac9021a962091"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/cmake_install.cmake",
+      "size": 2350,
+      "sha256": "78579a346dce330a1d992782735ffdd40138338a3f9f34990fa0df500db7d966"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/compile_commands.json",
+      "size": 6070,
+      "sha256": "ad38b4bf0593c6761444bc57e47b3d305618fd095955bdd41649ee5ed0a3c635"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/legacy/src/settings/model.c.o",
+      "size": 2512,
+      "sha256": "bf55689f14bc90b3631ef652068fb762e4d5354c90d762c19bd9f0e937074b6c"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 7496,
+      "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 14208,
+      "sha256": "71daae306ae82dbefb080a2e7f744a7a5b0885e78f6b4d746b9e47eb3f57f3cd"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 47992,
+      "sha256": "9082bdba8a2a188adbad146390d2d036db82945d3cb3dd0450d4a89beb38ac76"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/repo/examples/common/text_wrap.c.o",
+      "size": 3512,
+      "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 27120,
+      "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/CTestTestfile.cmake",
+      "size": 354,
+      "sha256": "66b937b65c4541a5b29fba13840757c233289cee4e4fb695045bba2ef4290e10"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/aetheri_model_text_wrap_test",
+      "size": 19480,
+      "sha256": "b3ed8fa7218a81c598d41360c1da08202e3f6a1f261635dd3c052746cbe37474"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/aetheri_model_view",
+      "size": 46712,
+      "sha256": "c2142a9702b8776b7350d1b3f21083e257533b62128f648e4230ca22f3889dc6"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/aetheri_model_view_test",
+      "size": 62112,
+      "sha256": "dac4e6f72c4af39eb02ab509bdf57e50d16d290da06af7da75f028577453fb50"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/cmake_install.cmake",
+      "size": 1591,
+      "sha256": "4a842f45b6cb92eca5317deeb4e1b8577c00bc488f8d0af5046cb5f80d728d52"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/libaetheri_model.a",
+      "size": 2714,
+      "sha256": "22639772c9e7c5fe15b592f1942735526af2803b0461d57c82f3ee3418158cec"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/example21/libaetheri_view.a",
+      "size": 30988,
+      "sha256": "fb22b4551e0e7e8fbd5f341a2c4b924b2053aada360614df3941c144a63cde73"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/original_model",
+      "size": 18704,
+      "sha256": "3bc1f9e3697d4dacf97a972748e7663ee10a4ea399eeeab6033c880d4c902d1c"
+    },
+    {
+      "path": "runtime/view5/off-legacy/build/tests.xml",
+      "size": 864,
+      "sha256": "52ae2d868773c46fa8528cfa44db46c8949688bee923c7db0c004b041f9d68bb"
+    },
+    {
+      "path": "runtime/view5/release-captures-1/sound-dark.ppm",
+      "size": 2160016,
+      "sha256": "1c20b702c8fe2d8db0a4fd4dc013ac1965fa82d6997383be485480a3693a018f"
+    },
+    {
+      "path": "runtime/view5/release-captures-1/sound-light-de-200-controls.ppm",
+      "size": 1152015,
+      "sha256": "565049ce4d1653852dd0287ba641a0e26e3c61057af45f4e50e84a57d93a44a5"
+    },
+    {
+      "path": "runtime/view5/release-captures-1/sound-light-de-200.ppm",
+      "size": 1152015,
+      "sha256": "090e4d87236c32bd1c173c8ce24a545d3ec282a6a2158cc1d50c931181ce4e89"
+    },
+    {
+      "path": "runtime/view5/release-captures-1/sound-muted-contrast.ppm",
+      "size": 2160016,
+      "sha256": "321e2358ed4bd7a63775acd03d50ffb1bb9e12e30a1f36cecf9eb6ddb2a384c4"
+    },
+    {
+      "path": "runtime/view5/release-native6-actions/result.json",
+      "size": 1052,
+      "sha256": "c7376f52bd7db94ad4c23ad1638c90c78752b980215625811398e477c86ab1b9"
+    },
+    {
+      "path": "runtime/view5/release-native6-actions/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/release-native6-actions/weston.stderr",
+      "size": 2857,
+      "sha256": "e15d10601cb821b15517b3ec88cc88b61e06716352a793ee5bcf2a25a3650d58"
+    },
+    {
+      "path": "runtime/view5/release-native6-actions/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/release-native6-disabled/result.json",
+      "size": 1052,
+      "sha256": "a0449a35083a64e10b7bd625c72255fa98da63a2e38565fd801bf9f6c9e2d9ce"
+    },
+    {
+      "path": "runtime/view5/release-native6-disabled/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/release-native6-disabled/weston.stderr",
+      "size": 2859,
+      "sha256": "03d45d0008dc6793487c7069c2c66e28f29625c7282e89a48f3f3314498c480e"
+    },
+    {
+      "path": "runtime/view5/release-native6-disabled/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/release-native6-keyboard/result.json",
+      "size": 1012,
+      "sha256": "36f8a01a22f117947d4136457a48abff3e06f2d59505710c0816cb66955af96e"
+    },
+    {
+      "path": "runtime/view5/release-native6-keyboard/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/release-native6-keyboard/weston.stderr",
+      "size": 2859,
+      "sha256": "1076e07761eca9d167d88af836af25955d5b7c7563acd3543691e50fa55499fc"
+    },
+    {
+      "path": "runtime/view5/release-native6-keyboard/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/release-peer6-atspi_client",
+      "size": 23944,
+      "sha256": "23753dba7407c6bead7b0cffc6e02b9e0d926b7bb82621facd120785a897021f"
+    },
+    {
+      "path": "runtime/view5/release-peer6-atspi_focus",
+      "size": 19288,
+      "sha256": "251c808296d8c45dadaf8b0b99fdcb1d029be7df47e5ef9b67626aca09dea483"
+    },
+    {
+      "path": "runtime/view5/release/.ninja_deps",
+      "size": 6076,
+      "sha256": "ffe8aa13226738ee84e1fc3a164ba6b23e8af52425931b09003299d554810271"
+    },
+    {
+      "path": "runtime/view5/release/.ninja_log",
+      "size": 2834,
+      "sha256": "5b110b5dd32a08b42a29bc963551dc95f632276594a435fa426d3eeea63780bb"
+    },
+    {
+      "path": "runtime/view5/release/CMakeCache.txt",
+      "size": 18419,
+      "sha256": "bf334fb66c6de4bea0682c7b6bc81a6ca06f89bf194216545ba687efb9e02ddd"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 222559,
+      "sha256": "589aaf3a2abc08f1164ca6ba9aea3e5edbda3f921afaa71b3da6f147e9dd8eb0"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/InstallScripts.json",
+      "size": 199,
+      "sha256": "55e834ee1f83ed057f5c6e3f0d7f30f20869b9ff1c4641ea40caa78c60821693"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/TargetDirectories.txt",
+      "size": 1515,
+      "sha256": "004261674f3e2746c589405c06ce57b3c699455f682ddc7da4cad1206a6e3db4"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings.c.o",
+      "size": 6712,
+      "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings_sound.c.o",
+      "size": 18376,
+      "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+    },
+    {
+      "path": "runtime/view5/release/CMakeFiles/rules.ninja",
+      "size": 9386,
+      "sha256": "752fb57cf3d557715724bfda27f5ef98a3a463971567e60a40b69c3ffde6a700"
+    },
+    {
+      "path": "runtime/view5/release/CTestTestfile.cmake",
+      "size": 3424,
+      "sha256": "1bd8fe61a0344f2abf339faeaa8536176624259916aeb76d0dcdbb6a0869e681"
+    },
+    {
+      "path": "runtime/view5/release/Testing/Temporary/CTestCostData.txt",
+      "size": 262,
+      "sha256": "33268b6d0ca34f39956714d0b43290461560764c756113ee0ea953bf6edba76f"
+    },
+    {
+      "path": "runtime/view5/release/Testing/Temporary/LastTest.log",
+      "size": 6011,
+      "sha256": "e2388f72db12eda9608fac62ee30f25a0808e287cb7c415102c29698474a6ddb"
+    },
+    {
+      "path": "runtime/view5/release/build.ninja",
+      "size": 54541,
+      "sha256": "e12b65f8d1c0889d915b5cf13ddd9e821e5971963d669d819eef816febaf3797"
+    },
+    {
+      "path": "runtime/view5/release/cmake_install.cmake",
+      "size": 2320,
+      "sha256": "91dcd03aa0bd2050ebfce5bba83d6759ebc00be4ac49befbe190ab5259ad1039"
+    },
+    {
+      "path": "runtime/view5/release/compile_commands.json",
+      "size": 11851,
+      "sha256": "fb787a3235a5a2c5ef83de1149703ccd18ce49a8bac9101d772dc7cc8dcd2bfe"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/model.c.o",
+      "size": 6032,
+      "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+      "size": 11016,
+      "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 7496,
+      "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 14248,
+      "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 48040,
+      "sha256": "39ccf8e321fe95ce1f4cf3effec9247651e68126c848fa1ee29b074daf4442ab"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/nexaui_main.c.o",
+      "size": 19016,
+      "sha256": "f594c53edeffffd8f3dbc28d4f27fd32fed3289c026f8b97d0ad5bf303a628a3"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+      "size": 13048,
+      "sha256": "c2dea1abc74b88ed2b6806ea3cc2c88eba8336f4037ef4e0b9c1cc67cc219451"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/nexaui_view.c.o",
+      "size": 62440,
+      "sha256": "adbe73e83ac13fc8fee3817b8a28f36caf766c76dcd5540b4c23e8478a776543"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings_view.c.o",
+      "size": 66456,
+      "sha256": "2955b421a3eb1854d03b9062e648905c59e2fe2f126521928f910e907b6d0728"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/repo/examples/common/text_wrap.c.o",
+      "size": 3512,
+      "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+    },
+    {
+      "path": "runtime/view5/release/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 27120,
+      "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+    },
+    {
+      "path": "runtime/view5/release/example21/CTestTestfile.cmake",
+      "size": 345,
+      "sha256": "922a49b0a445260d91eca013e25b9bf15c2c0a67678b00cbda91834db751e81b"
+    },
+    {
+      "path": "runtime/view5/release/example21/aetheri_model_sound_state_test",
+      "size": 906680,
+      "sha256": "cd40fd6170cb46cf1ab2287c4aede95fe4844410c56e0bda2ec2f40e6ae281f6"
+    },
+    {
+      "path": "runtime/view5/release/example21/aetheri_model_text_wrap_test",
+      "size": 246128,
+      "sha256": "b3f73d5b2023a134f24224ae4ec151bebc8a7f4d5d8fd94272ac6cabb02ea346"
+    },
+    {
+      "path": "runtime/view5/release/example21/aetheri_model_view",
+      "size": 906960,
+      "sha256": "498c845fd9f3352dad6cfb08ea60f4135d5200172f340d474c795a4459f2b6e4"
+    },
+    {
+      "path": "runtime/view5/release/example21/aetheri_model_view_test",
+      "size": 927304,
+      "sha256": "725b5d6b58922f60bd3855ce01925bcf3504516855c5bee6ec2369ddc1ab2722"
+    },
+    {
+      "path": "runtime/view5/release/example21/aetheri_original_settings",
+      "size": 927784,
+      "sha256": "f09e50f42dee3a9195bcc22f87f2a3bf3a4dc51f8bf9ba36c2d6491eb28a3e90"
+    },
+    {
+      "path": "runtime/view5/release/example21/aetheri_original_sound_test",
+      "size": 923280,
+      "sha256": "1fc42888c821a415a132dd486816bab14ab38b140f939e354d3f3375dd3a8493"
+    },
+    {
+      "path": "runtime/view5/release/example21/aetheri_original_view_test",
+      "size": 948112,
+      "sha256": "265fa27e61330b9da3b2a10a48d938d34d205908117ed65bc5f0c6f5794539fe"
+    },
+    {
+      "path": "runtime/view5/release/example21/cmake_install.cmake",
+      "size": 1582,
+      "sha256": "ab59c88371bea2a55fa00045b675dcc17061bb9c4c5e6b4a29ddeaad2f5a8ec4"
+    },
+    {
+      "path": "runtime/view5/release/example21/libaetheri_model.a",
+      "size": 29408,
+      "sha256": "5370b031ee39d80e19b04d22e798b838f713b60ce48850830ef1f8bdf4273f96"
+    },
+    {
+      "path": "runtime/view5/release/example21/libaetheri_original_view.a",
+      "size": 62810,
+      "sha256": "78be2bcce44b4240649beb5fe27ad5bce8c2a9e3eac92e938abfc681ab6c7524"
+    },
+    {
+      "path": "runtime/view5/release/example21/libaetheri_view.a",
+      "size": 30988,
+      "sha256": "fb22b4551e0e7e8fbd5f341a2c4b924b2053aada360614df3941c144a63cde73"
+    },
+    {
+      "path": "runtime/view5/release/original_model",
+      "size": 43776,
+      "sha256": "0d346831acd04ed6a7a15688cb20af3686376d92c2613cacad363fe0dc85222a"
+    },
+    {
+      "path": "runtime/view5/release/original_sound",
+      "size": 51976,
+      "sha256": "27926b060f79ad73da9f5138398227e830a0ab872425c394e5b8c5094fbc15f7"
+    },
+    {
+      "path": "runtime/view5/release/tests.xml",
+      "size": 2251,
+      "sha256": "a288e18132c9fc6d42704ab6f52f75f97db120b2b771a6380f87e3165ae999ad"
+    },
+    {
+      "path": "runtime/view5/shared-captures-1/sound-dark.ppm",
+      "size": 2160016,
+      "sha256": "1c20b702c8fe2d8db0a4fd4dc013ac1965fa82d6997383be485480a3693a018f"
+    },
+    {
+      "path": "runtime/view5/shared-captures-1/sound-light-de-200-controls.ppm",
+      "size": 1152015,
+      "sha256": "565049ce4d1653852dd0287ba641a0e26e3c61057af45f4e50e84a57d93a44a5"
+    },
+    {
+      "path": "runtime/view5/shared-captures-1/sound-light-de-200.ppm",
+      "size": 1152015,
+      "sha256": "090e4d87236c32bd1c173c8ce24a545d3ec282a6a2158cc1d50c931181ce4e89"
+    },
+    {
+      "path": "runtime/view5/shared-captures-1/sound-muted-contrast.ppm",
+      "size": 2160016,
+      "sha256": "321e2358ed4bd7a63775acd03d50ffb1bb9e12e30a1f36cecf9eb6ddb2a384c4"
+    },
+    {
+      "path": "runtime/view5/shared-native6-actions/result.json",
+      "size": 1048,
+      "sha256": "14ea3de3e1366cee70a990b160bac52cd2015945d49d1d6d59d744c5d4f5b7c1"
+    },
+    {
+      "path": "runtime/view5/shared-native6-actions/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/shared-native6-actions/weston.stderr",
+      "size": 2855,
+      "sha256": "d738f6ad4a673116f04220f2e89f00b74f116142cbfe32f8cd1ec0b4ffa42e1d"
+    },
+    {
+      "path": "runtime/view5/shared-native6-actions/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/shared-native6-disabled/result.json",
+      "size": 1048,
+      "sha256": "9f1e7c259437341c56b45c203c359a9e5913ba578138e49477e0c8b74f9f5e51"
+    },
+    {
+      "path": "runtime/view5/shared-native6-disabled/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/shared-native6-disabled/weston.stderr",
+      "size": 2857,
+      "sha256": "20134e5342d5f8bd8820ab3ec3c9999a10508c67568de9cd2a0d396e4a6ec9bd"
+    },
+    {
+      "path": "runtime/view5/shared-native6-disabled/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/shared-native6-keyboard/result.json",
+      "size": 1009,
+      "sha256": "0860d5f6da3f2fdb04e81be185f2c6e7d274e10e865b38a1d35816e820a105a7"
+    },
+    {
+      "path": "runtime/view5/shared-native6-keyboard/weston.ini",
+      "size": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "path": "runtime/view5/shared-native6-keyboard/weston.stderr",
+      "size": 2857,
+      "sha256": "61728bb66cf6b47511402f8433ce02b86b0a6d10d12af9aeacfe00ee48864eb4"
+    },
+    {
+      "path": "runtime/view5/shared-native6-keyboard/weston.stdout",
+      "size": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "runtime/view5/shared-peer6-atspi_client",
+      "size": 23944,
+      "sha256": "23753dba7407c6bead7b0cffc6e02b9e0d926b7bb82621facd120785a897021f"
+    },
+    {
+      "path": "runtime/view5/shared-peer6-atspi_focus",
+      "size": 19288,
+      "sha256": "251c808296d8c45dadaf8b0b99fdcb1d029be7df47e5ef9b67626aca09dea483"
+    },
+    {
+      "path": "runtime/view5/shared/.ninja_deps",
+      "size": 6072,
+      "sha256": "00541fa6ccbc9f3b70500a1c543fabeab8c040b269d8218c3464fc8ca868b704"
+    },
+    {
+      "path": "runtime/view5/shared/.ninja_log",
+      "size": 2833,
+      "sha256": "157b2542df8b6254c864f526acf99f0127951d942e45ddbe5edac31b14b29450"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeCache.txt",
+      "size": 18412,
+      "sha256": "d6a2fbbbd5732564d2a552b607011d165a57124f2f1878a24bdff4827168a9d1"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/4.2.3/CMakeCCompiler.cmake",
+      "size": 3122,
+      "sha256": "fe9ffd716d31b8cb2e74402160e6fbf052640e31b682ec8a584788d183921e43"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/4.2.3/CMakeDetermineCompilerABI_C.bin",
+      "size": 18528,
+      "sha256": "2a46ebdb7fd7681063a77cb300da56335b701b04c67eee1b9ae1956a84907ad7"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/4.2.3/CMakeSystem.cmake",
+      "size": 466,
+      "sha256": "8f122adbf9bbe045f330399a4409313ec5d6756895a8cebeeaacd7a723e60ea0"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/4.2.3/CompilerIdC/CMakeCCompilerId.c",
+      "size": 28668,
+      "sha256": "fdf6ba6324e3b29e4268e3ab04f9eb181809b98fe6a52f48fbd526b331e66e02"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/4.2.3/CompilerIdC/a.out",
+      "size": 18600,
+      "sha256": "e7ee409610af5943e90ea67a34387b9509b7bceffbc00684de93500c8935c750"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/CMakeConfigureLog.yaml",
+      "size": 222480,
+      "sha256": "566a8b0f4f550c9a96d1a84f322c377ec57b04c3826f2ce53a4d12c996055e53"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/InstallScripts.json",
+      "size": 197,
+      "sha256": "23128c8846509e25b58431373a6dc10de23a8cbf13747d05479444fc51aceec6"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/TargetDirectories.txt",
+      "size": 1497,
+      "sha256": "b34e8d6021c01519d933621e1f17f8576ba800a6d753a4c4306ee88c7d18de21"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/cmake.check_cache",
+      "size": 85,
+      "sha256": "a26189e394421da57f45706a07713c5720acd200a41711b0c0c590c3c63371c4"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/original_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings.c.o",
+      "size": 6712,
+      "sha256": "82fa3ca44bf598fcf8dba2edb4a2037e4efdaba587fbb6859d7a45621aa6321a"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/original_sound.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings_sound.c.o",
+      "size": 18376,
+      "sha256": "289d71ce09a06cfc83114f04a83713acd6dfaef3427ba7b656586c99acfd49ed"
+    },
+    {
+      "path": "runtime/view5/shared/CMakeFiles/rules.ninja",
+      "size": 9385,
+      "sha256": "b2834ba4bd638be39b49fbbbd7e10ea15d2261c4029375eb4f30f6977a75eb41"
+    },
+    {
+      "path": "runtime/view5/shared/CTestTestfile.cmake",
+      "size": 3415,
+      "sha256": "9e92e1ec721e7363bf71ce6578743803c1eb3b42bf845cecf04960f1b381bbc5"
+    },
+    {
+      "path": "runtime/view5/shared/Testing/Temporary/CTestCostData.txt",
+      "size": 261,
+      "sha256": "207e73238be89d983f516c3f53243bcdf38d455f7de5739498a82526971ff4f0"
+    },
+    {
+      "path": "runtime/view5/shared/Testing/Temporary/LastTest.log",
+      "size": 5995,
+      "sha256": "4e79024d8dbe7d456d818fd812f14739ff49db54de7b39bf7af1304155046c6c"
+    },
+    {
+      "path": "runtime/view5/shared/build.ninja",
+      "size": 54278,
+      "sha256": "5b41cac7547adfbfe933aa32de860f82e32f715c875c5793da9c1fab29439110"
+    },
+    {
+      "path": "runtime/view5/shared/cmake_install.cmake",
+      "size": 2317,
+      "sha256": "a9eaf11f2f630a6e4259c3efe6e297dbdf8f1841a45c4ece8dbcfd57ec81e4d7"
+    },
+    {
+      "path": "runtime/view5/shared/compile_commands.json",
+      "size": 11973,
+      "sha256": "63aead4f102d311250ce7d1709e70e41f99388f55b9c0f9f7400954f2b3ca94c"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/model.c.o",
+      "size": 6032,
+      "sha256": "defa449dd7622cece0bc46551fe1c883f3b187bb1a80833281e61b2ffb16bea7"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_model.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/text/grapheme.c.o",
+      "size": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_model_sound_state_test.dir/test_sound_state.c.o",
+      "size": 11016,
+      "sha256": "c28b0de70cc91c5493700c55d2d058d8848c5a4873096b70d7e32ce3ca198013"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_model_text_wrap_test.dir/test_text_wrap.c.o",
+      "size": 7496,
+      "sha256": "cfd7eb075c33a66c232b6f6c80751f6f63f4a655ec49d4f3d2092d0fe85a583e"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_model_view.dir/main.c.o",
+      "size": 14248,
+      "sha256": "3a7d97b54c7dac6aea675054b3c5227956269d320b43171d45acff253595afb5"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_model_view_test.dir/test_view.c.o",
+      "size": 48040,
+      "sha256": "39ccf8e321fe95ce1f4cf3effec9247651e68126c848fa1ee29b074daf4442ab"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_original_settings.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/nexaui_main.c.o",
+      "size": 19016,
+      "sha256": "f594c53edeffffd8f3dbc28d4f27fd32fed3289c026f8b97d0ad5bf303a628a3"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_original_sound_test.dir/test_original_sound.c.o",
+      "size": 13048,
+      "sha256": "c2dea1abc74b88ed2b6806ea3cc2c88eba8336f4037ef4e0b9c1cc67cc219451"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_original_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/src/settings/nexaui_view.c.o",
+      "size": 62440,
+      "sha256": "adbe73e83ac13fc8fee3817b8a28f36caf766c76dcd5540b4c23e8478a776543"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_original_view_test.dir/mnt/d/NexaUI/out/settings-original-view-source3/aetheri/tests/test_settings_view.c.o",
+      "size": 66456,
+      "sha256": "2955b421a3eb1854d03b9062e648905c59e2fe2f126521928f910e907b6d0728"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_view.dir/mnt/d/NexaUI/out/settings-original-view-source3/repo/examples/common/text_wrap.c.o",
+      "size": 3512,
+      "sha256": "98b658370a70cc2a2cf5d661315118cdda2cc3bce6aac341c0b5de77e7d4eebd"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CMakeFiles/aetheri_view.dir/view.c.o",
+      "size": 27120,
+      "sha256": "ac46f66add491f4987ff28e94f24a9b3c13314abdbe53665e9b36a6980ad3857"
+    },
+    {
+      "path": "runtime/view5/shared/example21/CTestTestfile.cmake",
+      "size": 344,
+      "sha256": "84be3866745d3c38003a4cd0302e1bed96b30641302c5bdd21499791ad77cd6e"
+    },
+    {
+      "path": "runtime/view5/shared/example21/aetheri_model_sound_state_test",
+      "size": 70520,
+      "sha256": "920cebfe93b7ab9c8a6beae3877aa88503403435a550d779e2f462f445511a9f"
+    },
+    {
+      "path": "runtime/view5/shared/example21/aetheri_model_text_wrap_test",
+      "size": 19480,
+      "sha256": "b3ed8fa7218a81c598d41360c1da08202e3f6a1f261635dd3c052746cbe37474"
+    },
+    {
+      "path": "runtime/view5/shared/example21/aetheri_model_view",
+      "size": 71792,
+      "sha256": "ad941f26513a5e620fa60cbb2501e6c6ce8111847ec79e38e7a88defec413db6"
+    },
+    {
+      "path": "runtime/view5/shared/example21/aetheri_model_view_test",
+      "size": 87184,
+      "sha256": "dd2043cfd8d364dd2c4a15a2a65930675ef3db238452a1af332b0c6d0a7bec62"
+    },
+    {
+      "path": "runtime/view5/shared/example21/aetheri_original_settings",
+      "size": 88992,
+      "sha256": "03dd6d201858b911b86597137fba4ee4bf27c3872e56e41be971f359c8613ed5"
+    },
+    {
+      "path": "runtime/view5/shared/example21/aetheri_original_sound_test",
+      "size": 87320,
+      "sha256": "60a1a742667879f0725098b16d099bf7155f7e54257b20035a1dbe2958df9073"
+    },
+    {
+      "path": "runtime/view5/shared/example21/aetheri_original_view_test",
+      "size": 112424,
+      "sha256": "17c050986f56db2376654b38638be0c68e64b5f071477a53dc051ecd08f34791"
+    },
+    {
+      "path": "runtime/view5/shared/example21/cmake_install.cmake",
+      "size": 1581,
+      "sha256": "f626e5cceb3e737df2c6cb152400ed951ac704769a9da7eb9dc9372db5f8f848"
+    },
+    {
+      "path": "runtime/view5/shared/example21/libaetheri_model.a",
+      "size": 29408,
+      "sha256": "5370b031ee39d80e19b04d22e798b838f713b60ce48850830ef1f8bdf4273f96"
+    },
+    {
+      "path": "runtime/view5/shared/example21/libaetheri_original_view.a",
+      "size": 62810,
+      "sha256": "78be2bcce44b4240649beb5fe27ad5bce8c2a9e3eac92e938abfc681ab6c7524"
+    },
+    {
+      "path": "runtime/view5/shared/example21/libaetheri_view.a",
+      "size": 30988,
+      "sha256": "fb22b4551e0e7e8fbd5f341a2c4b924b2053aada360614df3941c144a63cde73"
+    },
+    {
+      "path": "runtime/view5/shared/original_model",
+      "size": 43776,
+      "sha256": "0d346831acd04ed6a7a15688cb20af3686376d92c2613cacad363fe0dc85222a"
+    },
+    {
+      "path": "runtime/view5/shared/original_sound",
+      "size": 51976,
+      "sha256": "27926b060f79ad73da9f5138398227e830a0ab872425c394e5b8c5094fbc15f7"
+    },
+    {
+      "path": "runtime/view5/shared/tests.xml",
+      "size": 2249,
+      "sha256": "4412ed26002c6bd265440e5577cadacd98242022244f1cfcb594f3a71d972b42"
+    },
+    {
+      "path": "sdk/font-metadata-sdk4-input.json",
+      "size": 273463,
+      "sha256": "8edc89c85ebdf1306351536ebaaa8fb5085630c584ef8fed9d5d869702400c28"
+    },
+    {
+      "path": "sdk/font-metadata-sdk4-input.tar.gz",
+      "size": 5007417,
+      "sha256": "06c6b176e2a6fd5d64caef59cb5996cd324e17437bd135baa74c5d5f8370b8bf"
+    },
+    {
+      "path": "sdk/font-metadata-sdk4-local.json",
+      "size": 1035277,
+      "sha256": "bf5f8018e8c2e48ff6cb0635c6ca44d464981ee958e9370b63f95ef544c6c1ce"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/cell_grid.h",
+      "size": 2941,
+      "sha256": "76d5e4386e678d984b34a52844920f9e9dc2840ca507006a068bd9461c7a9afb"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/linux_accessibility_host.h",
+      "size": 2336,
+      "sha256": "e940b0b2532b55f1e45fe321de219ad1513e04f52c222229bb1145642d68d667"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/nexaui.h",
+      "size": 166010,
+      "sha256": "16661d7b6e289534835efc972965de728062078b577f2d742926d32413a5a851"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/software.h",
+      "size": 1867,
+      "sha256": "71bf5a6b6ffb1491b154f50573727c55b87a095ac65f50db1562a2700bb9ce62"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/vulkan.h",
+      "size": 1824,
+      "sha256": "833a8d4388527826ad45a9ae5fc16dd4ae1a1b958fdb90cebafa35992bd6b08a"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/wayland_clipboard.h",
+      "size": 2562,
+      "sha256": "b0d3650bcf1cd759c6971a5995049e7bea1b722d89ac4b26e99751b028542d64"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/wayland_host.h",
+      "size": 3352,
+      "sha256": "af147554893526d476e9cdf7d80573b1dd9412b434544a10c5f6e18e4da233db"
+    },
+    {
+      "path": "sdk/release-prefix/include/nexaui/wayland_outputs.h",
+      "size": 1588,
+      "sha256": "691f8e895c1704d2ac1b0259d17072d69f54db88186dc24e6cdc65d67ebe25f3"
+    },
+    {
+      "path": "sdk/release-prefix/lib/cmake/NexaUI/NexaUIConfig.cmake",
+      "size": 1665,
+      "sha256": "f4a12024984eb791df9786543c38034c966490fadf9b19a51e49130d5904708d"
+    },
+    {
+      "path": "sdk/release-prefix/lib/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "size": 3678,
+      "sha256": "72edcf506e4c0924dfaa210b06bb5b8f2d1c0f91cc0db5688bd24e6134cb20b1"
+    },
+    {
+      "path": "sdk/release-prefix/lib/cmake/NexaUI/NexaUITargets-release.cmake",
+      "size": 841,
+      "sha256": "6050dca3b41abaf6a0cb6785c9dfb574ff22c2a654a4d6e8c23cae2bac8bd021"
+    },
+    {
+      "path": "sdk/release-prefix/lib/cmake/NexaUI/NexaUITargets.cmake",
+      "size": 4327,
+      "sha256": "c0362fed2073609620d4821097874fd57bc851a6c804f7915c1411d408ec997b"
+    },
+    {
+      "path": "sdk/release-prefix/lib/libnexaui.a",
+      "size": 1226426,
+      "sha256": "ae7e623a4a6290416d2ac4453bed5c8f13dc7cf82b37d08eedb17ba471f69827"
+    },
+    {
+      "path": "sdk/release-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/cell_grid.h",
+      "size": 2941,
+      "sha256": "76d5e4386e678d984b34a52844920f9e9dc2840ca507006a068bd9461c7a9afb"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/linux_accessibility_host.h",
+      "size": 2336,
+      "sha256": "e940b0b2532b55f1e45fe321de219ad1513e04f52c222229bb1145642d68d667"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/nexaui.h",
+      "size": 166010,
+      "sha256": "16661d7b6e289534835efc972965de728062078b577f2d742926d32413a5a851"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/software.h",
+      "size": 1867,
+      "sha256": "71bf5a6b6ffb1491b154f50573727c55b87a095ac65f50db1562a2700bb9ce62"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/vulkan.h",
+      "size": 1824,
+      "sha256": "833a8d4388527826ad45a9ae5fc16dd4ae1a1b958fdb90cebafa35992bd6b08a"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/wayland_clipboard.h",
+      "size": 2562,
+      "sha256": "b0d3650bcf1cd759c6971a5995049e7bea1b722d89ac4b26e99751b028542d64"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/wayland_host.h",
+      "size": 3352,
+      "sha256": "af147554893526d476e9cdf7d80573b1dd9412b434544a10c5f6e18e4da233db"
+    },
+    {
+      "path": "sdk/shared-prefix/include/nexaui/wayland_outputs.h",
+      "size": 1588,
+      "sha256": "691f8e895c1704d2ac1b0259d17072d69f54db88186dc24e6cdc65d67ebe25f3"
+    },
+    {
+      "path": "sdk/shared-prefix/lib/cmake/NexaUI/NexaUIConfig.cmake",
+      "size": 1665,
+      "sha256": "f4a12024984eb791df9786543c38034c966490fadf9b19a51e49130d5904708d"
+    },
+    {
+      "path": "sdk/shared-prefix/lib/cmake/NexaUI/NexaUIConfigVersion.cmake",
+      "size": 3678,
+      "sha256": "72edcf506e4c0924dfaa210b06bb5b8f2d1c0f91cc0db5688bd24e6134cb20b1"
+    },
+    {
+      "path": "sdk/shared-prefix/lib/cmake/NexaUI/NexaUITargets-release.cmake",
+      "size": 852,
+      "sha256": "ca1efb35fcd910bf8ac3da91b77ad47134b0a09992ec6546f11f478aa74ba1be"
+    },
+    {
+      "path": "sdk/shared-prefix/lib/cmake/NexaUI/NexaUITargets.cmake",
+      "size": 4203,
+      "sha256": "0300605e9302413ade6284856edd16db4a2ef6a7963a81502f3e8a7badef82e8"
+    },
+    {
+      "path": "sdk/shared-prefix/lib/libnexaui.so",
+      "symlink": "libnexaui.so.0"
+    },
+    {
+      "path": "sdk/shared-prefix/lib/libnexaui.so.0",
+      "symlink": "libnexaui.so.0.1.31"
+    },
+    {
+      "path": "sdk/shared-prefix/lib/libnexaui.so.0.1.31",
+      "size": 970048,
+      "sha256": "83cee14f0483d096933806b616ceef4deaa4844f3e69def92ff3164a48efef60"
+    },
+    {
+      "path": "sdk/shared-prefix/share/doc/NexaUI/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "source1/LICENSE",
+      "size": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "path": "source1/src/audio/types.h",
+      "size": 1645,
+      "sha256": "e4e89f72c3664edeb6d036181791478de806dd86c69737c5a4d48f148ce3593f"
+    },
+    {
+      "path": "source1/src/settings/model.c",
+      "size": 6877,
+      "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+    },
+    {
+      "path": "source1/src/settings/model.h",
+      "size": 2959,
+      "sha256": "a85eb45715efd87184b6dc68da5898b2592fe2edc1d58fccb79a97b9cc843acb"
+    },
+    {
+      "path": "source1/src/settings/nexaui_main.c",
+      "size": 20700,
+      "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+    },
+    {
+      "path": "source1/src/settings/nexaui_main.h",
+      "size": 432,
+      "sha256": "fe52f721cc0ec821e9ad0999fe3cd504b510a5dbb2f01709131db0877b749b28"
+    },
+    {
+      "path": "source1/src/settings/nexaui_view.c",
+      "size": 38050,
+      "sha256": "b662dceec54e21f351ecddaf1f104878239f4133be0b87e1e96bc82a53b6f472"
+    },
+    {
+      "path": "source1/src/settings/nexaui_view.h",
+      "size": 1744,
+      "sha256": "4f8c1a625245c210507684ac4e6247cb34427a2e39e250ff14a8b0916541d7b6"
+    },
+    {
+      "path": "source1/src/text/grapheme.c",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "source1/src/text/grapheme.h",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "source1/src/text/grapheme_data.h",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "path": "source1/tests/test_settings.c",
+      "size": 1548,
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+    },
+    {
+      "path": "source1/tests/test_settings_sound.c",
+      "size": 4874,
+      "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+    },
+    {
+      "path": "source1/tests/test_settings_view.c",
+      "size": 17780,
+      "sha256": "ee68efac30a8558bdb0247b394f590068ca3c90f1d35b50c0b1c840dec796e08"
+    },
+    {
+      "path": "source2/LICENSE",
+      "size": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "path": "source2/src/audio/types.h",
+      "size": 1645,
+      "sha256": "e4e89f72c3664edeb6d036181791478de806dd86c69737c5a4d48f148ce3593f"
+    },
+    {
+      "path": "source2/src/settings/NEXAUI-NOTICE.txt",
+      "size": 1150,
+      "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096"
+    },
+    {
+      "path": "source2/src/settings/model.c",
+      "size": 6877,
+      "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+    },
+    {
+      "path": "source2/src/settings/model.h",
+      "size": 2959,
+      "sha256": "a85eb45715efd87184b6dc68da5898b2592fe2edc1d58fccb79a97b9cc843acb"
+    },
+    {
+      "path": "source2/src/settings/nexaui_main.c",
+      "size": 20700,
+      "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+    },
+    {
+      "path": "source2/src/settings/nexaui_main.h",
+      "size": 432,
+      "sha256": "fe52f721cc0ec821e9ad0999fe3cd504b510a5dbb2f01709131db0877b749b28"
+    },
+    {
+      "path": "source2/src/settings/nexaui_view.c",
+      "size": 38050,
+      "sha256": "b662dceec54e21f351ecddaf1f104878239f4133be0b87e1e96bc82a53b6f472"
+    },
+    {
+      "path": "source2/src/settings/nexaui_view.h",
+      "size": 1744,
+      "sha256": "4f8c1a625245c210507684ac4e6247cb34427a2e39e250ff14a8b0916541d7b6"
+    },
+    {
+      "path": "source2/src/text/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "source2/src/text/grapheme.c",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "source2/src/text/grapheme.h",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "source2/src/text/grapheme_data.h",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "path": "source2/tests/test_settings.c",
+      "size": 1548,
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+    },
+    {
+      "path": "source2/tests/test_settings_sound.c",
+      "size": 4874,
+      "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+    },
+    {
+      "path": "source2/tests/test_settings_view.c",
+      "size": 17780,
+      "sha256": "ee68efac30a8558bdb0247b394f590068ca3c90f1d35b50c0b1c840dec796e08"
+    },
+    {
+      "path": "source3/aetheri/LICENSE",
+      "size": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "path": "source3/aetheri/src/audio/types.h",
+      "size": 1645,
+      "sha256": "e4e89f72c3664edeb6d036181791478de806dd86c69737c5a4d48f148ce3593f"
+    },
+    {
+      "path": "source3/aetheri/src/settings/NEXAUI-NOTICE.txt",
+      "size": 1150,
+      "sha256": "6620c0c62e151535149a9bfea81e5c1bc2ada3fe75228dc3835d6e0c60a95096"
+    },
+    {
+      "path": "source3/aetheri/src/settings/model.c",
+      "size": 6877,
+      "sha256": "49f9cf0bef6a34093deb36d55a747a912e91dba302b5e65a3111d02bb0d4f1e1"
+    },
+    {
+      "path": "source3/aetheri/src/settings/model.h",
+      "size": 2959,
+      "sha256": "a85eb45715efd87184b6dc68da5898b2592fe2edc1d58fccb79a97b9cc843acb"
+    },
+    {
+      "path": "source3/aetheri/src/settings/nexaui_main.c",
+      "size": 20700,
+      "sha256": "4ce36012af086911daaa3ba01c5d5c9893e3402204df1f642f5ea4d025e1a8b4"
+    },
+    {
+      "path": "source3/aetheri/src/settings/nexaui_main.h",
+      "size": 432,
+      "sha256": "fe52f721cc0ec821e9ad0999fe3cd504b510a5dbb2f01709131db0877b749b28"
+    },
+    {
+      "path": "source3/aetheri/src/settings/nexaui_view.c",
+      "size": 38050,
+      "sha256": "b662dceec54e21f351ecddaf1f104878239f4133be0b87e1e96bc82a53b6f472"
+    },
+    {
+      "path": "source3/aetheri/src/settings/nexaui_view.h",
+      "size": 1744,
+      "sha256": "4f8c1a625245c210507684ac4e6247cb34427a2e39e250ff14a8b0916541d7b6"
+    },
+    {
+      "path": "source3/aetheri/src/text/UNICODE-LICENSE.txt",
+      "size": 1995,
+      "sha256": "e7a93b009565cfce55919a381437ac4db883e9da2126fa28b91d12732bc53d96"
+    },
+    {
+      "path": "source3/aetheri/src/text/grapheme.c",
+      "size": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "source3/aetheri/src/text/grapheme.h",
+      "size": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "source3/aetheri/src/text/grapheme_data.h",
+      "size": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "path": "source3/aetheri/tests/test_settings.c",
+      "size": 1548,
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+    },
+    {
+      "path": "source3/aetheri/tests/test_settings_sound.c",
+      "size": 4874,
+      "sha256": "72914f196e7b7febe199f68263d9aef3d8b960037a1c91fbe89c1debe707952b"
+    },
+    {
+      "path": "source3/aetheri/tests/test_settings_view.c",
+      "size": 17780,
+      "sha256": "ee68efac30a8558bdb0247b394f590068ca3c90f1d35b50c0b1c840dec796e08"
+    },
+    {
+      "path": "source3/legacy/src/settings/model.c",
+      "size": 1769,
+      "sha256": "3ee6f265faa83b884d387b363e77ac327a69834b2d1aac250ac557a5007b437c"
+    },
+    {
+      "path": "source3/legacy/src/settings/model.h",
+      "size": 1126,
+      "sha256": "776de312e1cfed97e972c09fb8a56cca0b94748d4e410e5b8278b0335a12e793"
+    },
+    {
+      "path": "source3/legacy/tests/test_settings.c",
+      "size": 1548,
+      "sha256": "b6abac505fc60390ba60761996e15af42664d29c7739eeb6e6ec33766e3c89c1"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/CMakeLists.txt",
+      "size": 4594,
+      "sha256": "68e585b222378374f4e56e6f60092ce41bc54a0624abfaab76a4ad495dac2ab0"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/README.md",
+      "size": 9292,
+      "sha256": "ec2ca212b1f1127210b11017e1b0b54a55f55a9b01c2a4350abfe067b5ccc00f"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/atspi_client.c",
+      "size": 7818,
+      "sha256": "b2555cc23563e9cf58b65c02fac09322f298a8d2d4e39ba7c35ea6d034d3a1d9"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/benchmark_view.c",
+      "size": 1980,
+      "sha256": "297b20a8d6d30d65dec13ace6eb5c4b37680c42a7c5cd9ef1e4ff7fd4fadf36b"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/main.c",
+      "size": 10383,
+      "sha256": "3aaa06ae6232626e679fd25d775f8901e125e87f6384d759966e3e43ccd4fe3e"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/run_sway_resize.py",
+      "size": 12184,
+      "sha256": "e7fa1b02191f1fca202d3e03f2fdf87643ba002e1e153b1f8149ffbfb78dfca8"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/test_original_sound.c",
+      "size": 5707,
+      "sha256": "c81d7631374862b4466ac83244f16d1d3c49b6b91ccc57f34c5600f00be682d6"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/test_sound_state.c",
+      "size": 3457,
+      "sha256": "dbf8cff590e5e213ff02989022c34f9224fc2f3488bdb62f6cffbe9c803f7260"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/test_text_wrap.c",
+      "size": 3471,
+      "sha256": "2ba87938a3eddb703a717e87c0a355c7031c4d7e9b1bd64999e87ad3b1205046"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/test_view.c",
+      "size": 15045,
+      "sha256": "8ed172270c3d03f01adf849bc62b6c538733a9c46de9183a3b76ffcb18af3e90"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/view.c",
+      "size": 18451,
+      "sha256": "bffce7b02af3fbd44e7970db22946e16ca09bd5f6dafc2f2f6d86e7b2ae5ac1b"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/view.h",
+      "size": 586,
+      "sha256": "329958c4c289b5ebad59bf30c45f01fb00051258032bed8bbf96e6fadce1ab08"
+    },
+    {
+      "path": "source3/repo/examples/21_aetheri_model/virtual_pointer.c",
+      "size": 3254,
+      "sha256": "2a27ad5203034fd4bcdeda8f41b7a2710ce9191372dc1ccae2d7500feae11367"
+    },
+    {
+      "path": "source3/repo/examples/common/text_wrap.c",
+      "size": 3658,
+      "sha256": "764d0aec6a56a2b052014259ce2286d97ef6a36ed00ba6f2373abc397babd0ae"
+    },
+    {
+      "path": "source3/repo/examples/common/text_wrap.h",
+      "size": 349,
+      "sha256": "0deb1f4204e0a804dd71c2c3f71868265ccf2dfd42aaa64620855b17d6fa699d"
+    },
+    {
+      "path": "source3/repo/tests/aetheri_settings_candidate/CMakeLists.txt",
+      "size": 3400,
+      "sha256": "679a00d57b27a7762fd8c5f58932b2011d39dbf4da629da7f4455fa4c8f488d0"
+    },
+    {
+      "path": "source3/repo/tests/aetheri_settings_candidate/README.md",
+      "size": 6163,
+      "sha256": "9b2abb315d3b627443189cc98d85d1d6a215f9a5c4f1b009053faeda8f77c0ca"
+    },
+    {
+      "path": "source3/repo/tests/aetheri_settings_candidate/atspi_client.c",
+      "size": 5974,
+      "sha256": "73c6d239ad583e1b795ce5ae6639969bbb1296fb4c34581a221035164ef309ce"
+    },
+    {
+      "path": "source3/repo/tests/aetheri_settings_candidate/atspi_focus.c",
+      "size": 3403,
+      "sha256": "ad4df4c3c6231f6f52c9949bc74c02255f5347964f49c8d21a31907622e8743a"
+    },
+    {
+      "path": "source3/repo/tests/aetheri_settings_candidate/native_keyboard.py",
+      "size": 5759,
+      "sha256": "84329af0d0b7c5c5acb0299cffb9c1d73223d704bce508063d1a5bb2259c25fc"
+    },
+    {
+      "path": "source3/repo/tests/aetheri_settings_candidate/prepare_compositor_trial.py",
+      "size": 3842,
+      "sha256": "ef432af5aec166cca22bb9528290835a697da37d80fa0282b9fdf687fcd64823"
+    },
+    {
+      "path": "source3/repo/tests/run_atspi_native.py",
+      "size": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "path": "source3/repo/tests/run_weston_native.py",
+      "size": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    }
+  ]
+}
