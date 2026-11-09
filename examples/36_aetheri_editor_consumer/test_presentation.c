@@ -95,7 +95,7 @@ int main(int argc,char **argv) {
     CHECK(argc==2 || (argc==3 && !strcmp(argv[2],"--require-ligature")));FILE *file=fopen(argv[1],"rb");CHECK(file && !fseek(file,0,SEEK_END));long length=ftell(file);CHECK(length>0 && length<20000000 && !fseek(file,0,SEEK_SET));
     uint8_t *bytes=malloc((size_t)length);CHECK(bytes && fread(bytes,1,(size_t)length,file)==(size_t)length && !fclose(file));
     nx_font *font=NULL;nx_font_collection *fonts=NULL;CHECK(nx_font_open(bytes,(size_t)length,NULL,&font)==NX_OK && nx_font_collection_create(NULL,&fonts)==NX_OK && nx_font_collection_add(fonts,font)==NX_OK);
-    const char *cases[]={"Wii office", "a\xcc\x81" " b\xc3\xa9", "abc \xd7\x90\xd7\x91\xd7\x92 def"};
+    const char *cases[]={"Wii office", ("a\xcc\x81" " b\xc3\xa9"), "abc \xd7\x90\xd7\x91\xd7\x92 def"};
     for(size_t c=0;c<sizeof(cases)/sizeof(*cases);++c)for(unsigned scale=1;scale<=2;++scale) {
         CHECK(!sample(fonts,cases[c],20.0*scale,(nx_point){20,10},(nx_rect){0,0,1000,1000}));
         CHECK(!sample(fonts,cases[c],20.0*scale,(nx_point){-9.25f,5.5f},(nx_rect){5,9,100,30}));

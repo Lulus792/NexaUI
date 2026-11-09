@@ -1,4 +1,4 @@
-"""Adapt only native window ownership in a separately generated original Editor."""
+"""Adapt native ownership and explicit C17 predicates in a separate original Editor."""
 import hashlib
 import json
 from pathlib import Path
@@ -18,6 +18,11 @@ def replace(before,after):
     global text
     if text.count(before)!=1:raise SystemExit('Changed original Editor boundary: '+repr(before))
     text=text.replace(before,after);changes.append(dict(before=before,after=after))
+# Preserve the original zero/nonzero decisions while keeping Clang's strict
+# floating-to-bool diagnostics enabled for the copied host and paint test.
+replace('if(a->review_max_scroll &&', 'if(a->review_max_scroll!=0.0f &&')
+replace('(nh?nh:1)', '(nh!=0.0f?nh:1)')
+replace('if(side) {', 'if(side!=0.0f) {')
 replace('    bool overlay_shown,close_seen;uint64_t clicked_row;double clicked_at;',
         '    bool overlay_shown;uint64_t clicked_row;double clicked_at;\n    nx_window_close_request native_close;bool chrome_release;uint64_t wait_serial;')
 replace('static volatile sig_atomic_t stopping,signal_fd=-1;', '#include "window_input.h"\nstatic volatile sig_atomic_t stopping,signal_fd=-1;')
@@ -60,4 +65,4 @@ done:''','''    if(a.native_close.id) {
     result=0;
 done:''')
 generated=text.encode();(output/'editor.c').write_bytes(generated)
-(output/'source-delta.json').write_text(json.dumps(dict(original=str(path),original_sha256=hashlib.sha256(data).hexdigest(),generated_sha256=hashlib.sha256(generated).hexdigest(),changes=changes,scope='Separate installed consumer: original document/workspace/dialog/save/input/rendering code retained. Native close consumption and caption/edge gestures are the explicit adapter delta.'),indent=2)+'\n')
+(output/'source-delta.json').write_text(json.dumps(dict(original=str(path),original_sha256=hashlib.sha256(data).hexdigest(),generated_sha256=hashlib.sha256(generated).hexdigest(),changes=changes,scope='Separate installed consumer: original document/workspace/dialog/save/input/rendering behavior retained. Native close consumption, caption/edge gestures and three equivalent explicit floating zero/nonzero predicates are the adapter delta.'),indent=2)+'\n')
