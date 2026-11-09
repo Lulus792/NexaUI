@@ -41,7 +41,7 @@ int main(void) {
         CHECK(nx_text_layout_line_count(layout) == 1 && shape_calls == 1);
         nx_text_layout_destroy(layout);
     }
-    const char *split[] = {"AB AB AB", "AB\nAB", "AB\r\nAB", "AB\xe2\x80\xa8" "AB"};
+    const char *split[] = {"AB AB AB", "AB\nAB", "AB\r\nAB", ("AB\xe2\x80\xa8" "AB")};
     for (unsigned i = 0; i < 4; ++i) {
         nx_text_layout *layout = NULL; shape_calls = 0;
         CHECK(nx_text_layout_create(fonts, split[i], strlen(split[i]),
