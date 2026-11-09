@@ -11,7 +11,18 @@
                 for ordinal in range(2):
                     before=log().count('FRAME ');event(f'M {500+ordinal} {400+ordinal}')
                     wait(lambda:log().count('FRAME ')>before,'original frame while '+phase+' clipboard bytes have no EOF')
-                    assert peer.poll() is None,'native paste must not reply before EOF'
+                    status=peer.poll()
+                    if status is not None:
+                        # Preserve the actual reply before teardown closes the
+                        # foreign pipe and changes the original owner's state.
+                        reply,_=peer.communicate(timeout=1)
+                        writer=dict(stream_task.states[source.pid])
+                        try:writer['actual_pipe']=os.readlink(f'/proc/{source.pid}/fd/{writer["pipe_fd"]}')
+                        except OSError as error:writer['observation_error']=str(error)
+                        (root/'clipboard-early-reply.json').write_text(json.dumps(dict(
+                            phase=phase,ordinal=ordinal,peer_exit=status,stdout=reply,
+                            writer=writer,view=view(),frame=log().count('FRAME ')),indent=2)+'\n')
+                    assert status is None,'native paste must not reply before EOF'
                     assert state(cursor=0,selected=0) and view()['revision']==revision,'no partial model edit before EOF'
                     observed.append(dict(frame=log().count('FRAME '),revision=view()['revision'],**stream_task.held(source)))
                 return observed

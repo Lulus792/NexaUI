@@ -181,7 +181,11 @@ int main(int argc,char **argv) {
         CHECK(expected_text(text,"A\r\nline"));
     } else if(!strcmp(argv[2],"clipboard-paste") || !strcmp(argv[2],"clipboard-paste-refused") || !strcmp(argv[2],"clipboard-paste-cancelled")) {
         CHECK(argc==4 && edit);puts("READY");fflush(stdout);
+        gint64 started=g_get_monotonic_time();
+        fprintf(stderr,"native paste begin: phase=%s monotonic_us=%lld\n",argv[2],(long long)started);
         gboolean accepted=atspi_editable_text_paste_text(edit,1,&e);
+        fprintf(stderr,"native paste reply: phase=%s accepted=%d elapsed_us=%lld error=%s\n",
+            argv[2],accepted,(long long)(g_get_monotonic_time()-started),e?e->message:"none");
         if(!strcmp(argv[2],"clipboard-paste"))CHECK(accepted && !e);
         else {CHECK(!accepted);g_clear_error(&e);}
         if(strcmp(argv[2],"clipboard-paste-cancelled"))CHECK(expected_file(text,argv[3]));
