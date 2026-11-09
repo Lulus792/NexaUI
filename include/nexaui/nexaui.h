@@ -2061,7 +2061,8 @@ NX_API nx_result nx_text_document_register_with_clipboard(nx_context *context,
    state. No layout/model pointer is retained. Call at most once per node/frame;
    failed validation/allocation leaves it unattached and permits retry.
    Boxes are sorted by (start,end), with at most one caret at a boundary and no
-   overlapping nonempty ranges; gaps explicitly have no published geometry.
+   overlapping nonempty ranges. Carets may be inside a shared cluster range;
+   gaps explicitly have no published geometry.
    Runs are sorted nonempty, nonoverlapping ranges. Attributes have unique
    nonempty UTF-8 names (max128 bytes) and UTF-8 values (max4096 bytes), no NUL.
    Defaults apply throughout the document; runs override matching names.

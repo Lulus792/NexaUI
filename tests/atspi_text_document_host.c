@@ -80,6 +80,12 @@ static int frame(fixture *f) {
                 boxes[count++]=(nx_text_document_box){start,at,{x,30.5f,width,15}};x+=width;
             }
             if(at==f->length)boxes[count++]=(nx_text_document_box){at,at,{x,30.5f,0,15}};
+            if(f->presentation==2 && count>1 && boxes[1].start_byte<boxes[1].end_byte) {
+                size_t interior=boxes[1].start_byte,cluster_end=boxes[1].end_byte;
+                boxes[0]=(nx_text_document_box){0,cluster_end,{30.25f,30.5f,16,15}};
+                boxes[1]=(nx_text_document_box){interior,interior,{38.25f,30.5f,0,15}};
+                count=2;
+            }
             nx_text_document_attribute defaults[]={{{"family-name",11},{"Fixture mono",12}},{{"weight",6},{"400",3}}};
             nx_text_document_attribute override={{"weight",6},{f->presentation_changed?"600":"700",3}};
             nx_text_document_attribute_run run={0};size_t runs=0;
@@ -140,6 +146,10 @@ int main(int argc,char **argv) {
         else if(!strcmp(input,"fail")){f.fail=1;publish=0;}
         else if(!strcmp(input,"presentation-change")){f.presentation_changed=1;}
         else if(!strcmp(input,"presentation-same")){/* Republish identical owned data. */}
+        else if(!strcmp(input,"presentation-cluster")) {
+            if(!replace_local(&f,"fizz",4,0))goto done;
+            f.presentation=2;
+        }
         else if(!strcmp(input,"presentation-off")){f.presentation=0;}
         else if(!strcmp(input,"presentation-on")){f.presentation=1;}
         else if(!strcmp(input,"clip-check")) {
@@ -151,6 +161,7 @@ int main(int argc,char **argv) {
             char *large=malloc(NX_TEXT_DOCUMENT_MAX_BYTES);if(!large)goto done;
             memset(large,'x',NX_TEXT_DOCUMENT_MAX_BYTES);large[0]='A';large[NX_TEXT_DOCUMENT_MAX_BYTES-1u]='Z';
             int copied=replace_local(&f,large,NX_TEXT_DOCUMENT_MAX_BYTES,1);free(large);if(!copied)goto done;
+            if(f.presentation)f.presentation=1;
             f.readonly=1;
         } else if(!strcmp(input,"detach")) {
             if(nx_window_publish_semantics(f.window,NULL)!=NX_OK)goto done;

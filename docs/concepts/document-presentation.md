@@ -19,6 +19,9 @@ window coordinates. A nonempty interval may represent a whole cluster/ligature;
 all its native scalar offsets receive the same bounds. A zero-length interval
 is an explicitly supplied caret rectangle. Keep boxes sorted by `(start,end)`;
 nonempty intervals cannot overlap, and each boundary has at most one caret.
+Caret records may lie inside a shared cluster/ligature interval. Character
+queries skip those zero-length records and retain the shared character bounds;
+empty-range queries return the explicitly supplied caret rectangle.
 Visual positions may run in another order, including bidi text. Point queries
 resolve overlapping rectangles in logical record order, returning that record's
 first scalar. Geometry must come from the actual layout; the API does not infer

@@ -87,6 +87,16 @@ int main(int argc,char **argv) {
     CHECK(command("presentation-on") && rectangle(text,1,ATSPI_COORD_TYPE_WINDOW,38,30,9,16));
     CHECK(atspi_event_listener_deregister(listener,"object:text-attributes-changed",&e) && !e);
     CHECK(atspi_event_listener_deregister(listener,"object:visible-data-changed",&e) && !e);g_object_unref(listener);
+    CHECK(command("presentation-cluster") && rectangle(text,0,ATSPI_COORD_TYPE_WINDOW,30,30,17,16));
+    CHECK(rectangle(text,1,ATSPI_COORD_TYPE_WINDOW,30,30,17,16));
+    r=atspi_text_get_range_extents(text,1,1,ATSPI_COORD_TYPE_WINDOW,&e);
+    CHECK(!e && r && r->x==38 && r->y==30 && r->width==1 && r->height==16);g_free(r);
+    CHECK(atspi_text_get_offset_at_point(text,40,35,ATSPI_COORD_TYPE_WINDOW,&e)==0 && !e);
+    r=atspi_text_get_character_extents(text,2,ATSPI_COORD_TYPE_WINDOW,&e);CHECK(e);g_clear_error(&e);g_free(r);
+    AtspiEditableText *edit=atspi_accessible_get_editable_text_iface(field);CHECK(edit);
+    CHECK(atspi_editable_text_set_text_contents(edit,"fiZZ",&e) && !e);
+    CHECK(atspi_text_get_character_at_offset(text,2,&e)=='Z' && !e && rectangle(text,1,ATSPI_COORD_TYPE_WINDOW,30,30,17,16));
+    g_object_unref(edit);
     CHECK(command("large"));r=atspi_text_get_character_extents(text,0,ATSPI_COORD_TYPE_WINDOW,&e);CHECK(e);g_clear_error(&e);g_free(r);
     g_object_unref(text);g_object_unref(field);field=fresh(app);CHECK(field);text=atspi_accessible_get_text_iface(field);CHECK(text);
     CHECK(atspi_text_get_character_count(text,&e)==8*1024*1024 && !e && rectangle(text,0,ATSPI_COORD_TYPE_WINDOW,30,30,9,16));
@@ -95,5 +105,5 @@ int main(int argc,char **argv) {
     CHECK(command("detach"));r=atspi_text_get_character_extents(text,0,ATSPI_COORD_TYPE_WINDOW,&e);CHECK(e);g_clear_error(&e);g_free(r);
     CHECK(fprintf(commands,"quit\n")>0 && !fflush(commands));int status=0;CHECK(waitpid(child,&status,0)==child && WIFEXITED(status) && !WEXITSTATUS(status));child=-1;
     g_object_unref(text);g_object_unref(field);g_object_unref(app);g_object_unref(desktop);atspi_exit();cleanup();
-    puts("AT-SPI document presentation: scalar/window/parent geometry, range/caret, hit test, attributes/default override, actual replacement/omission,8MiB sparse bounds, stale/unknown-screen/detach and clean exit passed");return 0;
+    puts("AT-SPI document presentation: scalar/window/parent geometry, range/interior caret, hit test, attributes/default override, actual edit/replacement/omission,8MiB sparse bounds, stale/unknown-screen/detach and clean exit passed");return 0;
 }

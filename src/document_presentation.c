@@ -59,10 +59,11 @@ nx_result nx_document_presentation_build(nx_utf8_span value,
     size_t end=0;
     for(size_t i=0;i<d->box_count;++i) {
         const nx_text_document_box *b=&d->boxes[i];
-        if(b->start_byte>b->end_byte || b->start_byte<end || !boundary(value,b->start_byte) ||
+        if(b->start_byte>b->end_byte || (b->start_byte!=b->end_byte && b->start_byte<end) || !boundary(value,b->start_byte) ||
            !boundary(value,b->end_byte) || !rect_valid(b->bounds))return NX_ERROR_ARGUMENT;
-        if(i && b->start_byte==d->boxes[i-1].start_byte && b->end_byte<=d->boxes[i-1].end_byte)return NX_ERROR_ARGUMENT;
-        end=b->end_byte;
+        if(i && (b->start_byte<d->boxes[i-1].start_byte ||
+           (b->start_byte==d->boxes[i-1].start_byte && b->end_byte<=d->boxes[i-1].end_byte)))return NX_ERROR_ARGUMENT;
+        if(b->start_byte!=b->end_byte)end=b->end_byte;
     }
     nx_result result=attributes_size(d->defaults,d->default_count,&bytes);if(result!=NX_OK)return result;
     end=0;
@@ -91,9 +92,18 @@ nx_result nx_document_presentation_character(const nx_document_presentation *p,s
     *out=(nx_rect){0};if(!p)return NX_ERROR_UNSUPPORTED;
     if(byte>=p->text_bytes)return NX_ERROR_ARGUMENT;
     const nx_text_document_box *b=boxes(p);size_t lo=0,hi=p->box_count;
-    while(lo<hi){size_t mid=lo+(hi-lo)/2;if(b[mid].end_byte<=byte)lo=mid+1;else hi=mid;}
-    if(lo==p->box_count || b[lo].start_byte>byte)return NX_ERROR_UNSUPPORTED;
-    *out=b[lo].bounds;return NX_OK;
+    /* Only starts are monotone when carets lie inside a shared cluster.
+       Find the last start at/before the byte, then skip caret-only entries.
+       Nonempty ranges never overlap, so the first nonempty predecessor is
+       the only possible character box. */
+    while(lo<hi){size_t mid=lo+(hi-lo)/2;if(b[mid].start_byte<=byte)lo=mid+1;else hi=mid;}
+    while(lo) {
+        const nx_text_document_box *item=&b[--lo];
+        if(item->start_byte==item->end_byte)continue;
+        if(item->end_byte<=byte)return NX_ERROR_UNSUPPORTED;
+        *out=item->bounds;return NX_OK;
+    }
+    return NX_ERROR_UNSUPPORTED;
 }
 nx_result nx_document_presentation_range(const nx_document_presentation *p,size_t start,size_t end,nx_rect *out) {
     if(!out)return NX_ERROR_ARGUMENT;

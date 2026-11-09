@@ -72,7 +72,7 @@ static int ordinary(void) {
 static int invalid(void) {
     heap h={0};nx_context_desc desc={0};desc.allocator=(nx_allocator){&h,allocate,release};nx_context *c=NULL;
     CHECK(nx_context_create(&desc,&c)==NX_OK && begin(c,(nx_utf8_span){"A\xcc\x81\xf0\x9f\x8c\x8d",7})==0);
-    for(unsigned mode=0;mode<16;++mode) {
+    for(unsigned mode=0;mode<20;++mode) {
         nx_text_document_box b[3];nx_text_document_attribute a[3];nx_text_document_attribute_run r[1];nx_text_document_presentation d=sample(b,a,r);
         nx_result expected=NX_ERROR_ARGUMENT;
         if(mode==0)b[0].end_byte=2;
@@ -91,6 +91,10 @@ static int invalid(void) {
         if(mode==13){d.boxes=NULL;}
         if(mode==14){d.runs=NULL;}
         if(mode==15){r[0].end_byte=r[0].start_byte;}
+        if(mode==16){b[1]=(nx_text_document_box){1,1,{20,10,0,15}};b[2]=(nx_text_document_box){1,3,{20,10,8,15}};}
+        if(mode==17){b[1]=(nx_text_document_box){1,1,{20,10,0,15}};b[2]=b[1];}
+        if(mode==18){b[1]=(nx_text_document_box){3,3,{20,10,0,15}};b[2]=(nx_text_document_box){1,1,{20,10,0,15}};}
+        if(mode==19){b[1]=(nx_text_document_box){2,2,{20,10,0,15}};}
         size_t calls=h.calls;CHECK(nx_text_document_set_presentation(c,1,77,9,&d)==expected && h.calls==calls);
     }
     nx_text_document_presentation empty={0};CHECK(nx_text_document_set_presentation(c,1,77,9,&empty)==NX_OK && nx_end_frame(c)==NX_OK);
@@ -114,4 +118,50 @@ static int allocation_and_sparse(void) {
 #endif
     nx_context_destroy(c);CHECK(!h.live);free(value);free(b);return 0;
 }
-int main(void){if(ordinary() || invalid() || allocation_and_sparse())return 1;puts("Document presentation: copied cluster geometry, caret, sparse ranges, attributes, identity, omission and allocation retry passed");return 0;}
+static int interior_carets(void) {
+    nx_context *c=NULL;CHECK(nx_context_create(NULL,&c)==NX_OK && begin(c,(nx_utf8_span){"fizz",4})==0);
+    nx_text_document_box minimal[]={{0,2,{20,10,16,15}},{1,1,{28,10,0,15}}};
+    nx_text_document_presentation simple={minimal,2,NULL,0,NULL,0};
+    CHECK(nx_text_document_set_presentation(c,1,77,9,&simple)==NX_OK && nx_end_frame(c)==NX_OK);
+#ifdef PRIVATE_QUERIES
+    const nx_document_presentation *first=nx_context_document_presentation(c,1);nx_rect first_rect;
+    CHECK(first && nx_document_presentation_character(first,0,&first_rect)==NX_OK && first_rect.x==20);
+    CHECK(nx_document_presentation_character(first,1,&first_rect)==NX_OK && first_rect.x==20 && first_rect.width==16);
+    CHECK(nx_document_presentation_range(first,1,1,&first_rect)==NX_OK && first_rect.x==28);
+    CHECK(nx_document_presentation_character(first,2,&first_rect)==NX_ERROR_UNSUPPORTED);
+#endif
+    CHECK(begin(c,(nx_utf8_span){"A\xc3\xa9\xf0\x9f\x8c\x8d",7})==0);
+    nx_text_document_box unicode[]={{0,7,{20,10,24,15}},{3,3,{36,10,0,15}}};
+    simple.boxes=unicode;
+    CHECK(nx_text_document_set_presentation(c,1,77,9,&simple)==NX_OK && nx_end_frame(c)==NX_OK);
+#ifdef PRIVATE_QUERIES
+    first=nx_context_document_presentation(c,1);
+    CHECK(nx_document_presentation_character(first,1,&first_rect)==NX_OK && first_rect.width==24);
+    CHECK(nx_document_presentation_character(first,3,&first_rect)==NX_OK && first_rect.width==24);
+    CHECK(nx_document_presentation_range(first,3,3,&first_rect)==NX_OK && first_rect.x==36);
+#endif
+    CHECK(begin(c,(nx_utf8_span){"fizz",4})==0);
+    nx_text_document_box boxes[]={
+        {0,0,{20,10,0,15}},
+        {0,2,{20,10,16,15}},
+        {1,1,{28,10,0,15}},
+        {2,2,{36,10,0,15}},
+        {2,3,{36,10,8,15}},
+        {3,3,{44,10,0,15}},
+        {4,4,{52,10,0,15}}};
+    nx_text_document_presentation d={boxes,7,NULL,0,NULL,0};
+    CHECK(nx_text_document_set_presentation(c,1,77,9,&d)==NX_OK && nx_end_frame(c)==NX_OK);
+#ifdef PRIVATE_QUERIES
+    const nx_document_presentation *p=nx_context_document_presentation(c,1);nx_rect r;size_t byte;
+    CHECK(p && nx_document_presentation_character(p,0,&r)==NX_OK && r.x==20 && r.width==16);
+    CHECK(nx_document_presentation_character(p,1,&r)==NX_OK && r.x==20 && r.width==16);
+    CHECK(nx_document_presentation_range(p,1,1,&r)==NX_OK && r.x==28 && r.width==0);
+    CHECK(nx_document_presentation_character(p,2,&r)==NX_OK && r.x==36 && r.width==8);
+    CHECK(nx_document_presentation_character(p,3,&r)==NX_ERROR_UNSUPPORTED);
+    CHECK(nx_document_presentation_range(p,0,3,&r)==NX_OK && r.width==24);
+    CHECK(nx_document_presentation_range(p,0,4,&r)==NX_ERROR_UNSUPPORTED);
+    CHECK(nx_document_presentation_point(p,(nx_point){30,12},&byte)==NX_OK && byte==0);
+#endif
+    nx_context_destroy(c);return 0;
+}
+int main(void){if(ordinary() || invalid() || allocation_and_sparse() || interior_carets())return 1;puts("Document presentation: copied cluster geometry, interior caret, sparse ranges, attributes, identity, omission and allocation retry passed");return 0;}
