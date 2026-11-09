@@ -1,5 +1,16 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Document presentation prerequisite: SDK0.1.30/source1ee9d99 adds copied
+owner geometry/caret and attributes to the existing document registration.
+Three installed profiles pass69 selected tests,12 private native tasks and3
+package consumers with an actually compiled omitted-data control. All1082 inputs
+and276 objects are bound in the [presentation report](document-presentation-report.md).
+Seven required exact-source CI jobs pass, including the Windows alignment fix.
+Synthetic native rectangles are not original Editor layout/font adoption;
+that owner integration remains next. AX/UIA, broader text interfaces and final
+physical/human/design/performance/normal adoption remain open. No active Aetheri
+source/pin/build changes; all103 IDs and remaining packets6–8 persist.
+
 Original Editor partial-byte EOF: test source9477f62 adds a private foreign
 transfer adapter while reusing the unchanged original owner, SDK and compositor.
 Three profiles pass21 stream cases/78 forced pre-EOF frames,252 captures and249

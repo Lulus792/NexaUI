@@ -1,0 +1,27 @@
+{
+  "archives": [
+    {
+      "label": "sdk-native-package-control-and-msvc",
+      "path": "D:/NexaUI/out/nexaui-document-presentation-sdk3-20261109.tar.gz",
+      "sha256": "4de066b004eaa4537b19e3394c753d96aee0e581503064a762e8164d1f822cdc",
+      "files": 3254,
+      "links": 4,
+      "directories": 2476,
+      "verified": true,
+      "name": "nexaui-document-presentation-sdk3-20261109.tar.gz",
+      "size": 108060432
+    },
+    {
+      "label": "host-binding-and-ci",
+      "path": "D:/NexaUI/out/nexaui-document-presentation-evidence-20261109.tar.gz",
+      "sha256": "6c18439114669c19adff2c9585fb5b31910e5d71dbc41726a077879e1c0046aa",
+      "files": 36,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-document-presentation-evidence-20261109.tar.gz",
+      "size": 368199
+    }
+  ],
+  "scope": "Every recorded archive member type, mode, byte count and hash verified. Borrowed runtime hashes are provenance, not redistributed dependencies. No original Aetheri source, pin, build, quota, mount, driver, deadline or sanitizer settings changed."
+}

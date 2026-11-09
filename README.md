@@ -67,6 +67,10 @@ Its [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
 actual consumed clipboard bytes, held writers and original-model invalidation
 without changing the SDK or the active Aetheri application.
 
+The optional [copied document presentation entry](docs/quality/document-presentation-report.md)
+adds owner-supplied geometry and text attributes with Linux AT-SPI evidence.
+Original Editor layout adoption and other native bridges remain separate.
+
 ## Platform status
 
 | Platform | Native window and input | Rendering |

@@ -1,0 +1,193 @@
+{
+  "result": "passed",
+  "source_revision": "1ee9d99540587494a0667e2c41caf63e6fd27e14",
+  "sdk_version": "0.1.30",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "git_bound_inputs": 1082,
+  "profiles": [
+    {
+      "profile": "release",
+      "ctests": 23,
+      "native_tasks": 4,
+      "compiled_objects": 91,
+      "consumer_objects": 1,
+      "installed_consumer": {
+        "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-release-consumer/consumer",
+        "size": 904152,
+        "sha256": "cb01c501858b422839cc11e502f931d6e107bb802a16775aee65f7d630d063d7"
+      },
+      "library": {
+        "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-release-prefix/lib/libnexaui.a",
+        "size": 1223374,
+        "sha256": "7e795f1a7e9ecea2069e5f4b54f1513f8e10d3a9baa71c66f831893c0340be55"
+      },
+      "language_scope": "SDK and new fixtures explicitly C17; inherited legacy test targets and package consumer use the compiler default satisfying exported c_std_17. Exact commands/default macro retained; no claim that every object has an explicit -std=c17 flag.",
+      "compiler_default_standard": "#define __STDC_VERSION__ 202311L"
+    },
+    {
+      "profile": "shared",
+      "ctests": 23,
+      "native_tasks": 4,
+      "compiled_objects": 91,
+      "consumer_objects": 1,
+      "installed_consumer": {
+        "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-shared-consumer/consumer",
+        "size": 29296,
+        "sha256": "0db905af1f0231e3c4dbc58bbd05265229859a03d9dba7b7daa718129fcef9aa"
+      },
+      "library": {
+        "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-shared-prefix/lib/libnexaui.so.0.1.30",
+        "size": 969920,
+        "sha256": "705c2597471da2f1acd2c26cff79d4aa2f3c535fbdbf79d5866a5e6fdcd3e71d"
+      },
+      "language_scope": "SDK and new fixtures explicitly C17; inherited legacy test targets and package consumer use the compiler default satisfying exported c_std_17. Exact commands/default macro retained; no claim that every object has an explicit -std=c17 flag.",
+      "compiler_default_standard": "#define __STDC_VERSION__ 202311L"
+    },
+    {
+      "profile": "asan",
+      "ctests": 23,
+      "native_tasks": 4,
+      "compiled_objects": 91,
+      "consumer_objects": 1,
+      "installed_consumer": {
+        "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-asan-consumer/consumer",
+        "size": 11547128,
+        "sha256": "3c84c4dfccee3cda502a549d87ee69b4257f8e3ca4a0150ec5e446d462004a2c"
+      },
+      "library": {
+        "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-asan-prefix/lib/libnexaui.a",
+        "size": 12349438,
+        "sha256": "ae6a0f6f08e6a438495e3262efec2c0f4cb00d1c7f02a74c5a8d5ea9e2e03106"
+      },
+      "language_scope": "SDK and new fixtures explicitly C17; inherited legacy test targets and package consumer use the compiler default satisfying exported c_std_17. Exact commands/default macro retained; no claim that every object has an explicit -std=c17 flag.",
+      "compiler_default_standard": "#define __STDC_VERSION__ 201710L"
+    }
+  ],
+  "compiled_control": {
+    "result": "detected",
+    "base_revision": "1ee9d99540587494a0667e2c41caf63e6fd27e14",
+    "mutation": "Native snapshot accessor omits all optional presentation; model/registration/core storage unchanged",
+    "changes": [
+      {
+        "path": "src/nexaui.c",
+        "before_sha256": "7848be743e3f61d9e70da49c409cc67815fefa8c92433098837b8fa25dc776df",
+        "after_sha256": "516d49a85f87f10ffef30f99473c700c56c778ef714e6f31178f3782ff28afee"
+      }
+    ],
+    "before": "const nx_document_presentation *nx_context_document_presentation(const nx_context *ctx,uint64_t id) {\n    if(!ctx || ctx->state!=2u)return NULL;\n    uint32_t index=nx_semantic_find_index(&ctx->semantics,id);\n    if(index==UINT32_MAX || !ctx->semantics.nodes[index].presentation_bytes)return NULL;\n    return (const nx_document_presentation *)(const void *)(ctx->semantics.text+ctx->semantics.nodes[index].presentation_offset);\n}\n",
+    "after": "const nx_document_presentation *nx_context_document_presentation(const nx_context *ctx,uint64_t id) {\n    (void)ctx;(void)id;return NULL;\n}\n",
+    "commands": [
+      {
+        "command": [
+          "cmake",
+          "-S",
+          "/mnt/d/NexaUI/out/document-presentation-negative3-source",
+          "-B",
+          "/mnt/d/NexaUI/out/document-presentation-negative3-build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Werror",
+          "-DNEXAUI_ENABLE_X11=OFF",
+          "-DNEXAUI_BUILD_EXAMPLES=OFF",
+          "-DNEXAUI_BUILD_VULKAN=OFF",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "seconds": 9.353560246992856,
+        "log": "/mnt/d/NexaUI/out/document-presentation-negative3-0.log"
+      },
+      {
+        "command": [
+          "cmake",
+          "--build",
+          "/mnt/d/NexaUI/out/document-presentation-negative3-build",
+          "--target",
+          "nexaui_atspi_text_document_host",
+          "--parallel",
+          "4"
+        ],
+        "exit": 0,
+        "seconds": 21.02518398599932,
+        "log": "/mnt/d/NexaUI/out/document-presentation-negative3-1.log"
+      },
+      {
+        "command": [
+          "xvfb-run",
+          "-a",
+          "-s",
+          "-screen 0 1600x1200x24",
+          "python3",
+          "/mnt/d/NexaUI/out/document-presentation-sdk3-source/tests/run_weston_native.py",
+          "--work-dir",
+          "/mnt/d/NexaUI/out/document-presentation-negative3-build/native",
+          "--",
+          "python3",
+          "/mnt/d/NexaUI/out/document-presentation-sdk3-source/tests/run_atspi_multiselection_wayland.py",
+          "/usr/libexec/at-spi2-registryd",
+          "/mnt/d/NexaUI/out/document-presentation-sdk3-release/nexaui_atspi_document_presentation_client",
+          "/mnt/d/NexaUI/out/document-presentation-negative3-build/nexaui_atspi_text_document_host"
+        ],
+        "exit": 1,
+        "seconds": 0.8429712450015359,
+        "log": "/mnt/d/NexaUI/out/document-presentation-negative3-2.log"
+      }
+    ],
+    "independent_client": {
+      "path": "/mnt/d/NexaUI/out/document-presentation-sdk3-release/nexaui_atspi_document_presentation_client",
+      "sha256": "6e5b3423b917e8f422614862fc4565e2513e792ad1cbc4e0d01f3d87cb1a0c20"
+    },
+    "control_host": {
+      "path": "/mnt/d/NexaUI/out/document-presentation-negative3-build/nexaui_atspi_text_document_host",
+      "sha256": "98ae7817777094aeab0e26c51a4ebff27c781b4e19a3f59d2346915f1d90f0b8"
+    },
+    "scope": "Actually compiled omitted-presentation control fails the same real native peer at first character geometry. Not a claim of an existing production bug; no installed SDK/prefix or original Aetheri app is replaced."
+  },
+  "public_header_compatibility": {
+    "previous_revision": "d9deecc36402761409f402c681bbce7fc5b1982b",
+    "removed_new_type_section": true,
+    "removed_new_function_section": true,
+    "restored_version": true,
+    "remaining_header_byte_identical": true,
+    "added_public_entry": "nx_text_document_set_presentation"
+  },
+  "linux_previous_definitions": 530,
+  "linux_added_definitions": [
+    "nx_context_document_presentation",
+    "nx_document_attribute_name",
+    "nx_document_attribute_value",
+    "nx_document_presentation_attributes",
+    "nx_document_presentation_build",
+    "nx_document_presentation_character",
+    "nx_document_presentation_point",
+    "nx_document_presentation_range",
+    "nx_text_document_set_presentation"
+  ],
+  "msvc_shared_guard": {
+    "ctests": 2,
+    "build_log": "D:/NexaUI/out/document-presentation-msvc2-build.log",
+    "test_log": "D:/NexaUI/out/document-presentation-msvc2-tests.log",
+    "scope": "Local MSVC19.38 Shared build/selected tests with normalized source matching the fixed candidate; no Windows native Text presentation claim."
+  },
+  "initial_ci": {
+    "revision": "c1221f05d11feb7511163876d3ab7fc41d1349ee",
+    "run_id": 42582037151,
+    "windows_failures": [
+      {
+        "job_id": 129042827217,
+        "path": "D:/NexaUI/out/document-presentation-ci-129042827217.log",
+        "size": 20927,
+        "sha256": "2d1b12f946bf7a70920ba1d3391607aaf48ce1c64c7c0b199995cf4ae6da9836"
+      },
+      {
+        "job_id": 129042827436,
+        "path": "D:/NexaUI/out/document-presentation-ci-129042827436.log",
+        "size": 20999,
+        "sha256": "1377e9e3bc71d7a48ab1f2a431d5085ab062fd76fd246755976d7cbd1c52d7e6"
+      }
+    ],
+    "correction": "Use alignment of a union of the actual stored types, without requiring max_align_t; explicit alignment invariants retained."
+  },
+  "ci": "document-presentation-ci.json",
+  "scope": "SDK prerequisite with synthetic owner geometry/attributes and actual private Wayland/libatspi transport. No actual original Editor layout integration, AX/UIA presentation, physical/human/design/performance or normal Aetheri adoption. All103 IDs and remaining packet6/packets7-8 remain active; no1.0."
+}

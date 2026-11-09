@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Copied document presentation SDK prerequisite (2026-11-09)
+
+SDK0.1.30/source1ee9d99 accepts owner-supplied geometry/caret and text attributes
+on the exact copied document identity/revision. Three installed profiles pass69
+selected CTests,12 private native tasks and3 package consumers; a separately
+compiled omitted-presentation control fails the same OS peer. All1082 Git inputs,
+276 objects, unchanged prior public header and530 retained Linux definitions are
+bound in the [presentation report](document-presentation-report.md). Seven
+required exact-source CI jobs pass after a retained MSVC alignment correction.
+The fixture uses declared synthetic geometry. Actual original Editor layouts,
+font/styles and interaction adoption remain next; native AX/UIA presentation,
+broader text interfaces and physical/human/design/performance gates stay open.
+Active Aetheri remains independent; all103 IDs and packets6–8 persist.
+
 ## Original Editor partial-byte clipboard EOF (2026-11-09)
 
 Test source9477f62 reuses owner40/reader40 and installed SDK8862cb5/0.1.29.
