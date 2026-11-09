@@ -10,7 +10,43 @@ After `nx_end_frame`, `nx_semantics_count`, `nx_semantics_get` and `nx_semantics
 
 `nx_semantics_request_action(context, id, action)` accepts press, focus and selection requests against a completed frame. It validates both semantics and the interaction region. Missing, disabled, inactive and modal-blocked controls are rejected. Unsupported actions are rejected. Press/focus and legacy ungrouped select requests use ordinary interaction in the next frame. Explicit selection groups instead update an application-owned selected ID through the selection APIs; selecting an item does not invoke its command or synthesize a click.
 
-The context queue has 64 entries. A duplicate ID/action or a full queue returns `NX_ERROR_LIMIT` without accepting another request. Context calls, including this function, belong to the context owner thread. There is no arbitrary worker-thread access to a context, and accepting a request does not mean the application has completed its action. Increment/decrement, editing, expansion and text-range actions remain separate work.
+The context queue has 64 entries. A duplicate ID/action or a full queue returns `NX_ERROR_LIMIT` without accepting another request. Context calls, including this function, belong to the context owner thread. There is no arbitrary worker-thread access to a context, and accepting a request does not mean the application has completed its action. Built-in numeric step actions follow the [widget contract](widgets.md#value-controls); absolute numeric requests use the same queue and order as described below. Text editing and expansion retain their separately documented target/lifetime contracts.
+
+## Copied numeric values
+
+Since0.1.33, `nx_semantics_get_numeric_value` copies minimum, maximum, increment,
+current value, control kind and writable state for a built-in slider or drag
+value after `nx_end_frame`. It never parses the displayed value string. Disabled
+or modal-blocked targets remain readable with writable0. Other control kinds and
+custom semantic nodes return UNSUPPORTED. Output is cleared on error.
+
+`nx_semantics_request_numeric_value` takes that unchanged snapshot and a finite,
+in-range desired value. Tokens bind its context/completed frame; they are
+temporary UI metadata and do not belong in application persistence. Admission
+shares the existing64-action bound and order, with one pending absolute write per
+ID. At the next submission, kind/role/parent/overlay, enabled ancestors, range,
+increment and the previously observed caller value must still match. Otherwise
+the request expires. Routed pointer/key input runs first, followed by absolute
+and step actions in admission order, using ordinary clamping/snapping. It does
+not click or focus. Successful painting commits once; failure retains the
+request and unchanged caller value for a same-frame retry. Omission/destruction
+expires work. Admission is no application validation or service acknowledgement.
+
+For an existing volume control with a0..100 range, owner-thread code between
+frames can use the public API without accessing private widget storage:
+
+```c
+nx_numeric_value_snapshot observed;
+nx_result result = nx_semantics_get_numeric_value(ui, volume_id, &observed);
+if (result == NX_OK && observed.writable &&
+    observed.minimum <= 61 && observed.maximum >= 61) {
+    result = nx_semantics_request_numeric_value(ui, volume_id, &observed, 61);
+}
+```
+
+The application still owns its number and any correlated backend command. Linux
+AT-SPI uses this contract through a revocable, bounded native lease. UIA/AX range
+bindings, other numeric kinds and human assistive acceptance remain open.
 
 ## Application-owned document text
 

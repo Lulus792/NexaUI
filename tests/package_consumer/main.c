@@ -48,7 +48,24 @@ static int font_metadata(void) {
         nx_font_get_style(font,&style)==NX_OK && style.weight_class==400 && style.width_class==5 && style.slant==NX_FONT_SLANT_ITALIC;
     nx_font_close(font);return okay;
 }
+static int numeric_value_contract(void) {
+    nx_context *ui=NULL;int okay=0;
+    if(nx_context_create(NULL,&ui)!=NX_OK)return 0;
+    nx_value_control_desc control={0};control.control.id=1;
+    control.control.name=(nx_utf8_span){"Volume",6};control.control.bounds=(nx_rect){0,0,80,20};
+    control.maximum=100;control.step=1;double number=60;nx_interaction_state state;
+    nx_numeric_value_snapshot observed;
+    if(nx_begin_frame(ui,100,40,0)==NX_OK && nx_slider(ui,&control,&number,&state)==NX_OK &&
+       nx_end_frame(ui)==NX_OK && nx_semantics_get_numeric_value(ui,1,&observed)==NX_OK &&
+       observed.minimum==0 && observed.maximum==100 && observed.increment==1 && observed.value==60 &&
+       observed.writable && observed.control_kind==NX_NUMERIC_VALUE_SLIDER &&
+       nx_semantics_request_numeric_value(ui,1,&observed,61)==NX_OK && number==60 &&
+       nx_begin_frame(ui,100,40,0)==NX_OK && nx_slider(ui,&control,&number,&state)==NX_OK &&
+       nx_end_frame(ui)==NX_OK && number==61)okay=1;
+    nx_context_destroy(ui);return okay;
+}
 int main(int argc, char **argv) {
+    if(!numeric_value_contract())return 35;
     if(!font_metadata())return 34;
     if (nx_window_fullscreen(NULL) != NX_ERROR_ARGUMENT) return 31;
     if (nx_numeric_field_set_ime_window(NULL, NULL) != NX_ERROR_ARGUMENT) return 28;

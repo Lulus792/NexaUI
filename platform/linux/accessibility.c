@@ -3,6 +3,7 @@
 #include "../../src/context_identity.h"
 #include "../../src/selection_model.h"
 #include "../../src/text_value.h"
+#include "../../src/numeric_value.h"
 #include "../../src/document_presentation.h"
 #include "../../src/ascii_run.h"
 #include <stdatomic.h>
@@ -67,6 +68,7 @@ nx_result nx_linux_ax_test_disconnect(nx_linux_ax *b) { (void)b; return NX_ERROR
 #define NX_AX_SEL "org.a11y.atspi.Selection"
 #define NX_AX_TEXT "org.a11y.atspi.Text"
 #define NX_AX_EDIT "org.a11y.atspi.EditableText"
+#define NX_AX_VALUE "org.a11y.atspi.Value"
 #define NX_AX_CACHE_IF "org.a11y.atspi.Cache"
 #define NX_AX_PROPS "org.freedesktop.DBus.Properties"
 
@@ -81,6 +83,7 @@ typedef struct nx_ax_node {
     nx_selection_target target;
     nx_text_value_target text_target;
     nx_text_selection_snapshot text_selection;
+    nx_numeric_value_snapshot numeric;
     size_t text_bytes;
     int32_t text_count, text_anchor, text_cursor;
     int text_ready, text_snapshot_only;
@@ -133,7 +136,17 @@ typedef struct nx_ax_request {
     int forwarded;
     nx_ax_multi_request *multi;
     nx_ax_text_request *text;
+    struct nx_ax_numeric_request *numeric;
 } nx_ax_request;
+typedef struct nx_ax_numeric_request {
+    atomic_uint references;
+    nx_ax_multi_lease *lease;
+    uint64_t generation, context, id, incarnation, frame, deadline;
+    nx_numeric_value_snapshot snapshot;
+    double value;
+    DBusMessage *call, *reply;
+    int result;
+} nx_ax_numeric_request;
 typedef struct nx_ax_inflight {nx_ax_request request;struct nx_ax_inflight *previous;} nx_ax_inflight;
 typedef struct nx_ax_hub nx_ax_hub;
 struct nx_linux_ax {
@@ -286,6 +299,41 @@ static void text_reply(nx_ax_hub *h,nx_ax_text_request *r) {
     if(h)nx_ax_send(h,reply,built);else d.message_unref(reply);
 }
 static uint64_t *multi_ids(nx_ax_multi_request *r) { return (uint64_t *)(r->members+r->member_count); }
+static void numeric_retain(void *user) {
+    nx_ax_numeric_request *r=user;atomic_fetch_add_explicit(&r->references,1,memory_order_relaxed);
+}
+static void numeric_release(void *user) {
+    nx_ax_numeric_request *r=user;
+    if(r && atomic_fetch_sub_explicit(&r->references,1,memory_order_acq_rel)==1) {
+        if(r->reply)d.message_unref(r->reply);
+        if(r->call)d.message_unref(r->call);
+        lease_release(r->lease);free(r);
+    }
+}
+static int numeric_current(void *user,uint64_t token,uint64_t context,uint64_t id,uint64_t frame) {
+    nx_ax_numeric_request *r=user;nx_ax_multi_lease *l=r->lease;
+    if(!pthread_equal(pthread_self(),l->thread) || r->result || !l->live || !l->snapshot ||
+       token!=r->generation || l->generation!=r->generation || context!=r->context ||
+       l->context!=context || id!=r->id || frame!=r->frame || l->frame!=frame)return 0;
+    uint64_t now=nx_ax_now();if(!now || now>=r->deadline)return 0;
+    uint32_t index=nx_ax_find(l->snapshot,id);if(index==NX_AX_NONE)return 0;
+    nx_ax_node *n=&l->snapshot->nodes[index];
+    return n->incarnation==r->incarnation && n->numeric.context_identity &&
+        n->numeric.writable && !(n->state&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED)) &&
+        n->numeric.control_kind==r->snapshot.control_kind;
+}
+static void numeric_completed(void *user,int applied) {
+    nx_ax_numeric_request *r=user;if(!r->result)r->result=applied?1:2;
+}
+static void numeric_reply(nx_ax_hub *h,nx_ax_numeric_request *r) {
+    if(!r || !r->reply)return;
+    DBusMessage *reply=r->reply;r->reply=NULL;
+    if(r->result!=1) {
+        d.message_unref(reply);
+        reply=d.message_new_error(r->call,DBUS_ERROR_FAILED,"Numeric value was not applied");
+    }
+    if(h)nx_ax_send(h,reply,reply!=NULL);else if(reply)d.message_unref(reply);
+}
 static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
     uint64_t owner_id,nx_selection_target target) {
     nx_ax_multi_request *r=user;nx_ax_multi_lease *l=r->lease;
@@ -311,11 +359,14 @@ static int multi_current(void *user,uint64_t token,uint64_t context,uint64_t id,
 static void remove_request_internal(nx_linux_ax *b,size_t at,int reply) {
     nx_ax_multi_request *r=b->requests[at].multi;
     nx_ax_text_request *t=b->requests[at].text;
+    nx_ax_numeric_request *v=b->requests[at].numeric;
     if (r) b->request_bytes-=r->bytes;
     if (t) b->request_bytes-=t->bytes;
+    if (v) b->request_bytes-=sizeof(*v);
     --b->request_count;memmove(b->requests+at,b->requests+at+1,(b->request_count-at)*sizeof(*b->requests));
     if(r)multi_release(r);
     if(t){if(reply){if(!t->result)t->result=2;text_reply(b->hub,t);}text_release(t);}
+    if(v){if(reply){if(!v->result)v->result=2;numeric_reply(b->hub,v);}numeric_release(v);}
 }
 static void remove_request(nx_linux_ax *b,size_t at) {remove_request_internal(b,at,1);}
 static void clear_requests(nx_linux_ax *b) { while(b->request_count)remove_request(b,b->request_count-1); }
@@ -440,6 +491,7 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         n->intrinsic_disabled=nx_context_semantic_intrinsically_disabled(context,v.id);
         n->text_selection=nx_context_text_selection_snapshot(context,v.id);
         n->text_target=nx_context_text_value_target(context,v.id);
+        (void)nx_semantics_get_numeric_value(context,v.id,&n->numeric);
         n->text_snapshot_only=nx_context_text_snapshot_only(context,v.id);
         n->raw_parent=n->parent=nx_ax_find(s,v.parent_id);
         n->first=n->last=n->next=n->owner=n->selected=n->selected_last=n->next_selected=NX_AX_NONE;
@@ -481,10 +533,13 @@ static nx_result nx_ax_copy(nx_linux_ax *b,const nx_context *context,uint64_t re
         }
         uint32_t old=binding==b->binding ? nx_ax_find(b->snapshot,n->id) : NX_AX_NONE;
         int same=old!=NX_AX_NONE && b->snapshot->nodes[old].role==n->role &&
+            b->snapshot->nodes[old].numeric.control_kind==n->numeric.control_kind &&
             b->snapshot->nodes[old].text_ready==n->text_ready &&
             b->snapshot->nodes[old].text_snapshot_only==n->text_snapshot_only &&
             nx_ax_editable(&b->snapshot->nodes[old])==nx_ax_editable(n) &&
             !((b->snapshot->nodes[old].state^n->state)&NX_SEM_PROTECTED);
+        if(same && n->numeric.context_identity)
+            same=same_ancestry(s,n->raw_parent,b->snapshot,b->snapshot->nodes[old].raw_parent);
         if (same && n->text_ready) {
             nx_ax_node *prior=&b->snapshot->nodes[old];
             same=n->text_target.identity && n->text_target.identity==prior->text_target.identity &&
@@ -730,6 +785,7 @@ static uint64_t nx_ax_states(nx_ax_ref r) {
     STATE(32,s&NX_SEM_MIXED); STATE(33,s&(NX_SEM_REQUIRED|NX_SEM_SELECTION_REQUIRED)); STATE(36,s&NX_SEM_INVALID);
     STATE(41,n && (n->role==NX_ROLE_CHECKBOX || n->role==NX_ROLE_RADIO || n->role==NX_ROLE_SWITCH));
     STATE(43,s&NX_SEM_READONLY);
+    STATE(7,n && n->numeric.context_identity && n->numeric.writable && !(s&NX_SEM_DISABLED));
     if (r.window) {
         nx_linux_ax_geometry g=r.window->geometry;
         STATE(12,g.focused && g.visible && (s&NX_SEM_FOCUSED)); STATE(1,!n && g.focused && g.visible);
@@ -850,6 +906,26 @@ static int nx_ax_queue_text(nx_ax_ref ref,const char *value,size_t length,int ra
     nx_ax_request q={0};q.id=n->id;q.incarnation=n->incarnation;q.text=t;
     b->requests[b->request_count++]=q;b->request_bytes+=bytes;return 1;
 }
+static int nx_ax_queue_numeric(nx_ax_ref ref,double value,DBusMessage *call,DBusMessage *reply) {
+    nx_linux_ax *b=ref.window;nx_ax_node *n=nx_ax_node_at(ref);
+    if(!b || !n || b->retired || !b->lease->live || !n->numeric.context_identity ||
+       !n->numeric.writable || (n->state&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED)) ||
+       n->numeric.context_identity!=b->binding || n->numeric.frame!=b->frame ||
+       !isfinite(value) || value<n->numeric.minimum || value>n->numeric.maximum ||
+       !queue_space(b,sizeof(nx_ax_numeric_request),0))return 0;
+    for(size_t i=0;i<b->request_count;++i)
+        if(b->requests[i].numeric && b->requests[i].id==n->id)return 0;
+    for(nx_ax_inflight *f=b->inflight;f;f=f->previous)
+        if(f->request.numeric && f->request.id==n->id)return 0;
+    uint64_t now=nx_ax_now();if(!now || now>UINT64_MAX-2000u)return 0;
+    nx_ax_numeric_request *v=calloc(1,sizeof(*v));if(!v)return 0;
+    atomic_init(&v->references,1);v->lease=b->lease;lease_retain(v->lease);
+    v->generation=b->lease->generation;v->context=b->binding;v->frame=b->frame;
+    v->id=n->id;v->incarnation=n->incarnation;v->snapshot=n->numeric;v->value=value;
+    v->deadline=now+2000u;v->call=d.message_ref(call);v->reply=reply;
+    nx_ax_request q={0};q.id=n->id;q.incarnation=n->incarnation;q.numeric=v;q.action=NX_ACTION_SET_VALUE;
+    b->requests[b->request_count++]=q;b->request_bytes+=sizeof(*v);return 1;
+}
 static int nx_ax_compare_id(const void *a,const void *b) {
     uint64_t x=*(const uint64_t *)a,y=*(const uint64_t *)b;return x<y?-1:x>y;
 }
@@ -909,6 +985,7 @@ static int nx_ax_interfaces(DBusMessageIter *it,nx_ax_ref r) {
     if (n && (n->state&NX_AX_SELECTION)) ok=ok && nx_ax_string(&a,NX_AX_SEL);
     if (n && n->text_ready) ok=ok && nx_ax_string(&a,NX_AX_TEXT);
     if (nx_ax_editable(n)) ok=ok && nx_ax_string(&a,NX_AX_EDIT);
+    if (n && n->numeric.context_identity) ok=ok && nx_ax_string(&a,NX_AX_VALUE);
     return ok && d.message_iter_close_container(it,&a);
 }
 static int nx_ax_put_states(DBusMessageIter *it,nx_ax_ref r) {
@@ -965,6 +1042,20 @@ static int nx_ax_event(nx_ax_ref r,const char *member,const char *detail,int fir
         d.message_iter_close_container(&it,&dict);
     return nx_ax_send(r.hub,m,ok);
 }
+static int nx_ax_numeric_event(nx_ax_ref r,double value) {
+    if(!r.hub->connection || r.hub->failed)return 0;
+    char path[128];nx_ax_path(r,path);
+    DBusMessage *m=d.message_new_signal(path,"org.a11y.atspi.Event.Object","PropertyChange");
+    if(!m){r.hub->failed=1;return 0;}
+    DBusMessageIter it,v,dict;d.message_iter_init_append(m,&it);
+    int ok=nx_ax_string(&it,"accessible-value") && nx_ax_int(&it,0) && nx_ax_int(&it,0) &&
+        d.message_iter_open_container(&it,DBUS_TYPE_VARIANT,"d",&v) &&
+        d.message_iter_append_basic(&v,DBUS_TYPE_DOUBLE,&value) &&
+        d.message_iter_close_container(&it,&v) &&
+        d.message_iter_open_container(&it,DBUS_TYPE_ARRAY,"{sv}",&dict) &&
+        d.message_iter_close_container(&it,&dict);
+    return nx_ax_send(r.hub,m,ok);
+}
 static int nx_ax_cache_signal(nx_ax_ref r,int add) {
     if (!r.hub->connection || r.hub->failed) return 0;
     DBusMessage *m=d.message_new_signal(NX_AX_CACHE,NX_AX_CACHE_IF,add?"AddAccessible":"RemoveAccessible");
@@ -984,7 +1075,10 @@ static const nx_ax_property nx_ax_properties[]={
     {NX_AX_COMP,"version","u"}, {NX_AX_ACT,"version","u"}, {NX_AX_ACT,"NActions","i"},
     {NX_AX_SEL,"version","u"}, {NX_AX_SEL,"NSelectedChildren","i"},
     {NX_AX_TEXT,"version","u"}, {NX_AX_TEXT,"CharacterCount","i"}, {NX_AX_TEXT,"CaretOffset","i"},
-    {NX_AX_EDIT,"version","u"}
+    {NX_AX_EDIT,"version","u"}, {NX_AX_VALUE,"version","u"},
+    {NX_AX_VALUE,"MinimumValue","d"}, {NX_AX_VALUE,"MaximumValue","d"},
+    {NX_AX_VALUE,"MinimumIncrement","d"}, {NX_AX_VALUE,"CurrentValue","d"},
+    {NX_AX_VALUE,"Text","s"}
 };
 static int nx_ax_supports(nx_ax_ref r,const char *interface) {
     if (!strcmp(interface,NX_AX_ACC)) return 1;
@@ -994,11 +1088,19 @@ static int nx_ax_supports(nx_ax_ref r,const char *interface) {
     nx_ax_node *n=nx_ax_node_at(r);
     if (!strcmp(interface,NX_AX_TEXT)) return n && n->text_ready;
     if (!strcmp(interface,NX_AX_EDIT)) return nx_ax_editable(n);
+    if (!strcmp(interface,NX_AX_VALUE)) return n && n->numeric.context_identity;
     return !strcmp(interface,NX_AX_SEL) && n && (n->state&NX_AX_SELECTION);
 }
 static int nx_ax_property_value(DBusMessageIter *it,nx_ax_ref r,const nx_ax_property *p) {
     nx_ax_node *n=nx_ax_node_at(r); const char *name=p->name;
     if (!strcmp(p->type,"u")) return nx_ax_uint(it,1);
+    if (!strcmp(p->interface,NX_AX_VALUE)) {
+        if(!strcmp(name,"Text"))return nx_ax_string(it,n?n->value:"");
+        double value=!n?0:!strcmp(name,"MinimumValue")?n->numeric.minimum:
+            !strcmp(name,"MaximumValue")?n->numeric.maximum:
+            !strcmp(name,"MinimumIncrement")?n->numeric.increment:n->numeric.value;
+        return d.message_iter_append_basic(it,DBUS_TYPE_DOUBLE,&value);
+    }
     if (!strcmp(name,"Name")) return nx_ax_string(it,nx_ax_name(r));
     if (!strcmp(name,"Description")) return nx_ax_string(it,n?n->description:"");
     if (!strcmp(name,"Parent")) return nx_ax_put_parent(it,r);
@@ -1337,6 +1439,7 @@ static int nx_ax_introspect(nx_ax_hub *h,nx_ax_ref r,int cache,DBusMessageIter *
         if (nx_ax_supports(r,NX_AX_SEL)) pieces[count++]=nx_ax_xml_selection;
         if (nx_ax_supports(r,NX_AX_TEXT)) pieces[count++]=nx_ax_xml_text;
         if (nx_ax_supports(r,NX_AX_EDIT)) pieces[count++]=nx_ax_xml_edit;
+        if (nx_ax_supports(r,NX_AX_VALUE)) pieces[count++]=nx_ax_xml_value;
     }
     pieces[count++]="<interface name=\"org.freedesktop.DBus.Properties\">"
         "<method name=\"Get\"><arg direction=\"in\" type=\"s\"/><arg direction=\"in\" type=\"s\"/>"
@@ -1363,7 +1466,7 @@ static int nx_ax_cache_ref_charge(size_t *remaining,nx_ax_ref r) {
     return nx_ax_cache_charge(remaining,bus?bus:"") && nx_ax_cache_charge(remaining,path);
 }
 static int nx_ax_cache_item_charge(size_t *remaining,nx_ax_ref r) {
-    /* Cache items carry three references, name/description, six possible
+    /* Cache items carry three references, name/description, seven possible
        interface names, fixed scalars and two arrays. 1024 covers all fixed
        strings, length fields, terminators and alignment; variable strings are
        charged separately. Neither document values nor spare allocation
@@ -1408,6 +1511,28 @@ static DBusHandlerResult nx_ax_message(DBusConnection *connection,DBusMessage *c
     }
     DBusMessage *reply=d.message_new_method_return(call);
     if (!reply) { h->failed=1; return DBUS_HANDLER_RESULT_HANDLED; }
+    if(!cache && !strcmp(interface,NX_AX_PROPS) && !strcmp(member,"Set") &&
+       d.message_has_signature(call,"ssv")) {
+        DBusMessageIter args,v;const char *iface,*property;d.message_iter_init(call,&args);
+        d.message_iter_get_basic(&args,&iface);d.message_iter_next(&args);
+        d.message_iter_get_basic(&args,&property);d.message_iter_next(&args);
+        if(!strcmp(iface,NX_AX_VALUE) && !strcmp(property,"CurrentValue")) {
+            nx_ax_node *n=nx_ax_node_at(r);double value=0;const char *error=NULL;
+            d.message_iter_recurse(&args,&v);
+            if(!nx_ax_supports(r,NX_AX_VALUE))error=DBUS_ERROR_UNKNOWN_PROPERTY;
+            else if(d.message_iter_get_arg_type(&v)!=DBUS_TYPE_DOUBLE)error=DBUS_ERROR_INVALID_ARGS;
+            else {
+                d.message_iter_get_basic(&v,&value);
+                if(!n->numeric.writable || (n->state&(NX_SEM_DISABLED|NX_SEM_READONLY|NX_SEM_PROTECTED)))
+                    error=DBUS_ERROR_PROPERTY_READ_ONLY;
+                else if(!isfinite(value) || value<n->numeric.minimum || value>n->numeric.maximum)
+                    error=DBUS_ERROR_INVALID_ARGS;
+                else if(!nx_ax_queue_numeric(r,value,call,reply))error=DBUS_ERROR_FAILED;
+            }
+            if(error){d.message_unref(reply);nx_ax_error(h,call,error,"Numeric value request was not accepted");}
+            return DBUS_HANDLER_RESULT_HANDLED;
+        }
+    }
     if(!cache && !strcmp(interface,NX_AX_TEXT) && nx_ax_supports(r,interface) &&
        (!strcmp(member,"SetCaretOffset") || !strcmp(member,"AddSelection") ||
         !strcmp(member,"SetSelection") || !strcmp(member,"RemoveSelection"))) {
@@ -1601,7 +1726,9 @@ int nx_linux_ax_pump(nx_linux_ax *b) {
     for(nx_linux_ax *w=h->windows;w;w=w->next) {
         for(size_t i=0;i<w->request_count;) {
             nx_ax_text_request *t=w->requests[i].text;
-            if(t && (t->result || !text_current(t,t->generation,t->context,t->id,t->target))) {
+            nx_ax_numeric_request *v=w->requests[i].numeric;
+            if((t && (t->result || !text_current(t,t->generation,t->context,t->id,t->target))) ||
+               (v && (v->result || !numeric_current(v,v->generation,v->context,v->id,v->frame)))) {
                 remove_request(w,i);work=1;
             } else ++i;
         }
@@ -1620,9 +1747,10 @@ uint32_t nx_linux_ax_timeout(nx_linux_ax *b,uint32_t timeout) {
         return remaining<timeout?(uint32_t)remaining:timeout;
     }
     for(nx_linux_ax *w=b->hub->windows;w;w=w->next)for(size_t i=0;i<w->request_count;++i) {
-        nx_ax_text_request *t=w->requests[i].text;if(!t)continue;
-        if(!now || t->deadline<=now)return 0;
-        uint64_t remaining=t->deadline-now;if(remaining<timeout)timeout=(uint32_t)remaining;
+        nx_ax_text_request *t=w->requests[i].text;nx_ax_numeric_request *v=w->requests[i].numeric;
+        uint64_t deadline=t?t->deadline:v?v->deadline:0;if(!deadline)continue;
+        if(!now || deadline<=now)return 0;
+        uint64_t remaining=deadline-now;if(remaining<timeout)timeout=(uint32_t)remaining;
     }
     return timeout;
 }
@@ -1653,6 +1781,10 @@ static void nx_ax_bridge_release(nx_linux_ax *b) {
 }
 static int nx_ax_request_current(nx_linux_ax *b,const nx_ax_request *q) {
     if(b->retired || !b->snapshot)return 0;
+    if(q->numeric) {
+        nx_ax_numeric_request *v=q->numeric;
+        return numeric_current(v,v->generation,v->context,v->id,v->frame);
+    }
     if(q->text) {
         nx_ax_text_request *t=q->text;
         return text_current(t,t->generation,t->context,t->id,t->target);
@@ -1677,11 +1809,16 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
         nx_ax_request q=b->requests[at];
         if(q.multi)multi_retain(q.multi);
         if(q.text)text_retain(q.text);
+        if(q.numeric)numeric_retain(q.numeric);
         nx_ax_inflight flight={q,b->inflight};b->inflight=&flight;
-        ++b->admission_count;size_t bytes=q.multi?q.multi->bytes:q.text?q.text->bytes:0;b->admission_bytes+=bytes;
+        ++b->admission_count;size_t bytes=q.multi?q.multi->bytes:q.text?q.text->bytes:q.numeric?sizeof(*q.numeric):0;b->admission_bytes+=bytes;
         remove_request_internal(b,at,0);
         int valid=nx_ax_request_current(b,&q);nx_result result=NX_OK;
-        if(valid && q.text) {
+        if(valid && q.numeric) {
+            nx_ax_numeric_request *v=q.numeric;
+            nx_numeric_value_guard guard={v,v->generation,numeric_retain,numeric_release,numeric_current};
+            result=nx_semantics_request_numeric_value_guarded(context,v->id,&v->snapshot,v->value,&guard,numeric_completed);
+        } else if(valid && q.text) {
             nx_ax_text_request *t=q.text;
             nx_text_value_guard guard={t,t->generation,text_retain,text_release,text_current,text_defer_paste};
             result=t->clipboard==3?nx_semantics_request_text_paste_with_completion(context,t->id,t->start,&guard,text_completed):
@@ -1702,12 +1839,16 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
                 ++*count;
                 if(q.action==NX_ACTION_FOCUS && b->owner.focus)b->owner.focus(b->owner.object);
             }
-            if(q.text || q.owner_id || result!=NX_OK) {
+            if(q.text || q.numeric || q.owner_id || result!=NX_OK) {
                 q.forwarded=result==NX_OK;q.frame=b->frame;
                 if(q.multi)multi_retain(q.multi);
                 if(q.text)text_retain(q.text);
+                if(q.numeric)numeric_retain(q.numeric);
                 b->requests[b->request_count++]=q;b->request_bytes+=bytes;
             }
+        } else if(q.numeric) {
+            if(!q.numeric->result)q.numeric->result=2;
+            numeric_reply(b->hub,q.numeric);
         } else if(q.text) {
             if(!q.text->result)q.text->result=2;
             text_reply(b->hub,q.text);
@@ -1715,6 +1856,7 @@ nx_result nx_linux_ax_route(nx_linux_ax *b,nx_context *context,size_t *count) {
         b->inflight=flight.previous;--b->admission_count;b->admission_bytes-=bytes;
         if(q.multi)multi_release(q.multi);
         if(q.text)text_release(q.text);
+        if(q.numeric)numeric_release(q.numeric);
         if(valid && live && result==NX_ERROR_MEMORY){status=result;break;}
         if(valid && live && result==NX_ERROR_LIMIT)break;
     }
@@ -1824,6 +1966,8 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
         }
         if (strcmp(a->name,n->name)) nx_ax_event(r,"PropertyChange","accessible-name",0,0,n->name,NULL);
         if (strcmp(a->description,n->description)) nx_ax_event(r,"PropertyChange","accessible-description",0,0,n->description,NULL);
+        if(a->numeric.context_identity && n->numeric.context_identity && a->numeric.value!=n->numeric.value)
+            nx_ax_numeric_event(r,n->numeric.value);
         nx_ax_text_delta(r,a,n);
         if(!nx_ax_document_styles_equal(a->presentation,n->presentation))
             nx_ax_event(r,"TextAttributesChanged","",0,0,NULL,NULL);
@@ -1836,7 +1980,7 @@ static void nx_ax_publish_delta(nx_linux_ax *b,nx_ax_snapshot *next) {
         uint64_t after=nx_ax_states(r);
         b->snapshot=old; uint64_t before=nx_ax_states((nx_ax_ref){b->hub,b,prior}); b->snapshot=next;
         static const struct { unsigned bit; const char *name; } states[]={
-            {3,"busy"},{4,"checked"},{5,"collapsed"},{8,"enabled"},{9,"expandable"},{10,"expanded"},
+            {3,"busy"},{4,"checked"},{5,"collapsed"},{7,"editable"},{8,"enabled"},{9,"expandable"},{10,"expanded"},
             {11,"focusable"},{12,"focused"},{22,"selectable"},{23,"selected"},{24,"sensitive"},
             {25,"showing"},{30,"visible"},{32,"indeterminate"},{33,"required"},{36,"invalid-entry"},{41,"checkable"},{43,"read-only"}
         };
@@ -1953,6 +2097,9 @@ void nx_linux_ax_destroy(nx_linux_ax *b) {
     nx_ax_hub *h=b->hub;
     for(nx_ax_inflight *f=b->inflight;f;f=f->previous)if(f->request.text) {
         nx_ax_text_request *t=f->request.text;if(!t->result)t->result=2;text_reply(h,t);
+    }
+    for(nx_ax_inflight *f=b->inflight;f;f=f->previous)if(f->request.numeric) {
+        nx_ax_numeric_request *v=f->request.numeric;if(!v->result)v->result=2;numeric_reply(h,v);
     }
     if(h->connection && b->snapshot) {
         nx_ax_ref child=nx_ax_window(b);

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.33 — Development snapshot
+
+- Added copied numeric snapshots and bounded absolute value requests for built-in sliders/drag values, preserving existing public layouts. Absolute writes share ordered action admission and require the same completed-frame model/range, control identity and enabled scope at submission; painting failures retain requests for a same-frame retry. Linux AT-SPI publishes standard Value properties, editable state and numeric change notifications, with deferred success/error replies and bounded lifetime guards. Other numeric kinds, UIA/AX range-value bindings, real audio-device effects and full human/performance acceptance remain separate work.
+
 ## 0.1.32 — Development snapshot
 
 - Added ordered semantic increment/decrement handling for built-in sliders and drag values. Requests retain control kind, role, parent and overlay identity, respect disabled ancestors and current range/step, expire on omission/rebinding, and commit once after successful painting. Same-frame drawing retries retain pending actions. This connects existing native assistive action routing to the original Settings volume intent without changing public structures, exports or application ownership. Numeric native Value interfaces and other control kinds remain separate work.

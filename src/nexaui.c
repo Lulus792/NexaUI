@@ -5,6 +5,7 @@
 #include "context_identity.h"
 #include "text_command.h"
 #include "text_value.h"
+#include "numeric_value.h"
 #include "document_presentation.h"
 #include "selection_model.h"
 #include "source_revision.h"
@@ -97,6 +98,11 @@ typedef struct nx_accessible_request {
     uint64_t id, owner_id, parent_id, overlay_id;
     nx_semantic_role role;
     uint32_t action;
+    nx_numeric_value_snapshot numeric;
+    double number;
+    nx_numeric_value_guard numeric_guard;
+    void (*numeric_completed)(void *user, int applied);
+    int numeric_applied;
 } nx_accessible_request;
 
 typedef struct nx_value_step_request {
@@ -127,6 +133,7 @@ typedef struct nx_semantic_record {
     size_t description_offset, description_length;
     size_t value_offset, value_length;
     uint32_t state, actions;
+    nx_numeric_value_snapshot numeric;
     nx_text_value_target text_value;
     nx_text_selection_snapshot text_selection;
     size_t presentation_offset, presentation_bytes;
@@ -586,8 +593,27 @@ uint64_t nx_context_identity(const nx_context *ctx) { return ctx ? ctx->native_i
 uint64_t nx_context_frame_serial(const nx_context *ctx) { return ctx ? ctx->frame_serial : 0; }
 #endif
 
+static void nx_numeric_request_dispose(nx_accessible_request *request,int applied) {
+    if(!request->numeric.context_identity)return;
+    if(request->numeric_completed)
+        request->numeric_completed(request->numeric_guard.user,applied);
+    if(request->numeric_guard.release)
+        request->numeric_guard.release(request->numeric_guard.user);
+    request->numeric=(nx_numeric_value_snapshot){0};
+    request->numeric_guard=(nx_numeric_value_guard){0};
+    request->numeric_completed=NULL;
+}
+static void nx_numeric_requests_finish(nx_context *ctx) {
+    for(size_t i=0;i<ctx->value_step_request_count;++i)
+        nx_numeric_request_dispose(&ctx->value_step_requests[i].request,0);
+    ctx->value_step_request_count=0;
+}
+
 void nx_context_destroy(nx_context *ctx) {
     if (!ctx) return;
+    for(size_t i=0;i<ctx->accessible_request_count;++i)
+        nx_numeric_request_dispose(&ctx->accessible_requests[i],0);
+    nx_numeric_requests_finish(ctx);
     ctx->multi_cleanup = 1;
     nx_text_values_clear(ctx);
     nx_multi_requests_clear(ctx);
@@ -774,6 +800,7 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         width <= 0.0f || height <= 0.0f || delta_seconds < 0.0)
         return NX_ERROR_ARGUMENT;
     if (ctx->state == 1u) return NX_ERROR_STATE;
+    nx_numeric_requests_finish(ctx);
     /* Normally end_frame has expired unused requests. Keep this check explicit
        rather than allowing a source-frame counter wrap to revive old work. */
     for (size_t i = 0; i < ctx->text_value_count; ++i)
@@ -955,7 +982,9 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
         uint32_t action = ctx->accessible_requests[i].action;
         nx_region *region = nx_region_find(&ctx->previous_regions, id);
         if (!region || (region->flags & (NX_REGION_DISABLED | NX_REGION_INACTIVE)) ||
-            (ctx->previous_overlay_id && region->overlay_id != ctx->previous_overlay_id)) continue;
+            (ctx->previous_overlay_id && region->overlay_id != ctx->previous_overlay_id)) {
+            nx_numeric_request_dispose(&ctx->accessible_requests[i],0);continue;
+        }
         if (ctx->accessible_requests[i].owner_id && (action == NX_ACTION_SELECT ||
             action == NX_ACTION_ADD_SELECTION || action == NX_ACTION_DESELECT)) {
             size_t slot = ctx->selection_request_count++;
@@ -964,12 +993,14 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
             ctx->selection_requests[slot].action = action;
         } else if (action == NX_ACTION_EXPAND || action == NX_ACTION_COLLAPSE) {
             ctx->expansion_requests[ctx->expansion_request_count++] = ctx->accessible_requests[i];
-        } else if (action == NX_ACTION_INCREMENT || action == NX_ACTION_DECREMENT) {
+        } else if (action == NX_ACTION_INCREMENT || action == NX_ACTION_DECREMENT ||
+                   action == NX_ACTION_SET_VALUE) {
             if (region->value_kind) {
                 nx_value_step_request *request=&ctx->value_step_requests[ctx->value_step_request_count++];
                 request->request=ctx->accessible_requests[i];request->kind=region->value_kind;
-            } else if (region->scroll_axis && region->scroll_owner_id)
+            } else if (action!=NX_ACTION_SET_VALUE && region->scroll_axis && region->scroll_owner_id)
                 region->scroll_steps += action == NX_ACTION_INCREMENT ? 1 : -1;
+            else nx_numeric_request_dispose(&ctx->accessible_requests[i],0);
         } else if (action == NX_ACTION_FOCUS) {
             if (region->flags & NX_REGION_FOCUSABLE) { nx_context_change_focus(ctx, id); ctx->key_active_id = 0; }
         } else if (region->clicks != UINT_MAX) ++region->clicks;
@@ -2455,8 +2486,67 @@ nx_result nx_semantics_request_action(nx_context *ctx, uint64_t id, uint32_t act
         if (ctx->accessible_requests[i].id == id && ctx->accessible_requests[i].action == action) return NX_ERROR_LIMIT;
     if (ctx->accessible_request_count == 64u) return NX_ERROR_LIMIT;
     ctx->accessible_requests[ctx->accessible_request_count++] = (nx_accessible_request){
-        id, owner ? owner->id : 0, node->parent_id, region->overlay_id, node->role, action};
+        .id=id,.owner_id=owner ? owner->id : 0,.parent_id=node->parent_id,
+        .overlay_id=region->overlay_id,.role=node->role,.action=action};
     return NX_OK;
+}
+
+static uint64_t nx_numeric_context_identity(const nx_context *ctx) {
+#if defined(_WIN32) || defined(__APPLE__) || defined(__linux__)
+    return ctx->native_identity;
+#else
+    (void)ctx;return 0;
+#endif
+}
+nx_result nx_semantics_get_numeric_value(const nx_context *ctx,uint64_t id,
+                                         nx_numeric_value_snapshot *out) {
+    if(out)*out=(nx_numeric_value_snapshot){0};
+    if(!ctx || !id || !out)return NX_ERROR_ARGUMENT;
+    if(ctx->state!=2u)return NX_ERROR_STATE;
+    uint32_t index=nx_semantic_find_index(&ctx->semantics,id);
+    if(index==UINT32_MAX)return NX_ERROR_STATE;
+    const nx_semantic_record *node=&ctx->semantics.nodes[index];
+    const nx_region *region=nx_region_find(&ctx->current_regions,id);
+    if(!node->numeric.context_identity || !region || !region->value_kind)
+        return NX_ERROR_UNSUPPORTED;
+    *out=node->numeric;
+    out->writable=!(node->state&(NX_SEM_READONLY|NX_SEM_PROTECTED)) &&
+        !nx_text_value_disabled(ctx,node) &&
+        !(region->flags&(NX_REGION_DISABLED|NX_REGION_INACTIVE)) &&
+        (!ctx->current_overlay_id || region->overlay_id==ctx->current_overlay_id);
+    return NX_OK;
+}
+static int nx_numeric_snapshot_equal(nx_numeric_value_snapshot a,nx_numeric_value_snapshot b) {
+    return a.minimum==b.minimum && a.maximum==b.maximum && a.increment==b.increment &&
+        a.value==b.value && a.context_identity==b.context_identity && a.frame==b.frame &&
+        a.control_kind==b.control_kind && a.writable==b.writable;
+}
+nx_result nx_semantics_request_numeric_value_guarded(nx_context *ctx,uint64_t id,
+    const nx_numeric_value_snapshot *snapshot,double value,
+    const nx_numeric_value_guard *guard,void (*complete)(void *user,int applied)) {
+    if(!snapshot || !isfinite(value) ||
+       (guard && (!guard->retain || !guard->release || !guard->current)))return NX_ERROR_ARGUMENT;
+    nx_numeric_value_snapshot current;
+    nx_result result=nx_semantics_get_numeric_value(ctx,id,&current);
+    if(result!=NX_OK)return result;
+    if(!current.writable || !nx_numeric_snapshot_equal(current,*snapshot))return NX_ERROR_STATE;
+    if(value<current.minimum || value>current.maximum)return NX_ERROR_ARGUMENT;
+    for(size_t i=0;i<ctx->accessible_request_count;++i)
+        if(ctx->accessible_requests[i].id==id && ctx->accessible_requests[i].action==NX_ACTION_SET_VALUE)
+            return NX_ERROR_LIMIT;
+    if(ctx->accessible_request_count==64u)return NX_ERROR_LIMIT;
+    const nx_region *region=nx_region_find(&ctx->current_regions,id);
+    const nx_semantic_record *node=&ctx->semantics.nodes[nx_semantic_find_index(&ctx->semantics,id)];
+    nx_accessible_request request={0};request.id=id;request.parent_id=node->parent_id;
+    request.overlay_id=region->overlay_id;request.role=node->role;request.action=NX_ACTION_SET_VALUE;
+    request.numeric=current;request.number=value;request.numeric_completed=complete;
+    if(guard){request.numeric_guard=*guard;guard->retain(guard->user);}
+    ctx->accessible_requests[ctx->accessible_request_count++]=request;
+    return NX_OK;
+}
+nx_result nx_semantics_request_numeric_value(nx_context *ctx,uint64_t id,
+    const nx_numeric_value_snapshot *snapshot,double value) {
+    return nx_semantics_request_numeric_value_guarded(ctx,id,snapshot,value,NULL,NULL);
 }
 
 nx_text_value_target nx_context_text_value_target(const nx_context *ctx,
@@ -3301,6 +3391,7 @@ nx_result nx_end_frame(nx_context *ctx) {
             ctx->ime_active_id,ctx->ime_candidate_revision);
 #endif
     ctx->state = 2u;
+    nx_numeric_requests_finish(ctx);
     nx_text_values_finish(ctx);
     nx_multi_requests_clear(ctx);
     return NX_OK;
@@ -5898,17 +5989,31 @@ static double nx_value_snap(double value, double minimum, double maximum,
 }
 
 static double nx_value_step_actions(nx_context *ctx,const nx_value_control_desc *desc,
-                                    int drag,double value) {
+                                    int drag,double initial,double value) {
     nx_region *region=nx_region_find(&ctx->current_regions,desc->control.id);
-    region->value_kind=drag?2u:1u;
+    region->value_kind=drag?NX_NUMERIC_VALUE_DRAG:NX_NUMERIC_VALUE_SLIDER;
     const nx_semantic_record *node=&ctx->semantics.nodes[ctx->semantics.count-1u];
+    for(size_t i=0;i<ctx->value_step_request_count;++i)
+        ctx->value_step_requests[i].request.numeric_applied=0;
     if(nx_text_value_disabled(ctx,node))return value;
     for(size_t i=0;i<ctx->value_step_request_count;++i) {
-        const nx_value_step_request *step=&ctx->value_step_requests[i];
-        const nx_accessible_request *request=&step->request;
+        nx_value_step_request *step=&ctx->value_step_requests[i];
+        nx_accessible_request *request=&step->request;
         if(request->id!=desc->control.id || step->kind!=region->value_kind ||
            request->role!=NX_ROLE_SLIDER || request->parent_id!=desc->control.parent_id ||
            request->overlay_id!=region->overlay_id)continue;
+        if(request->action==NX_ACTION_SET_VALUE) {
+            nx_numeric_value_snapshot observed=request->numeric;
+            if(observed.context_identity!=nx_numeric_context_identity(ctx) ||
+               observed.frame==UINT64_MAX || observed.frame+1u!=ctx->frame_serial ||
+               observed.minimum!=desc->minimum || observed.maximum!=desc->maximum ||
+               observed.increment!=desc->step || observed.value!=initial ||
+               (request->numeric_guard.current && !request->numeric_guard.current(
+                   request->numeric_guard.user,request->numeric_guard.token,
+                   nx_numeric_context_identity(ctx),request->id,observed.frame)))continue;
+            value=nx_value_snap(request->number,desc->minimum,desc->maximum,desc->step);
+            request->numeric_applied=1;continue;
+        }
         double delta=request->action==NX_ACTION_INCREMENT?desc->step:-desc->step;
         value=nx_value_snap(value+delta,desc->minimum,desc->maximum,desc->step);
     }
@@ -5918,7 +6023,10 @@ static double nx_value_step_actions(nx_context *ctx,const nx_value_control_desc 
 static void nx_value_step_commit(nx_context *ctx,uint64_t id) {
     /* Keep actions available for a same-frame retry after failed painting. */
     for(size_t i=0;i<ctx->value_step_request_count;++i)
-        if(ctx->value_step_requests[i].request.id==id)ctx->value_step_requests[i].request.id=0;
+        if(ctx->value_step_requests[i].request.id==id) {
+            nx_accessible_request *request=&ctx->value_step_requests[i].request;
+            nx_numeric_request_dispose(request,request->numeric_applied);request->id=0;
+        }
 }
 
 static nx_result nx_value_format(double value, char text[64], size_t *length) {
@@ -6054,7 +6162,8 @@ static nx_result nx_value_control_run(nx_context *ctx,
             }
         }
     }
-    next = nx_value_step_actions(ctx,desc,drag,next);
+    next = nx_value_step_actions(ctx,desc,drag,
+        nx_value_clamp(*value,desc->minimum,desc->maximum),next);
     next = nx_value_snap(next, desc->minimum, desc->maximum, desc->step);
     if (next != nx_value_clamp(*value, desc->minimum, desc->maximum)) {
         char updated_text[64];
@@ -6070,6 +6179,10 @@ static nx_result nx_value_control_run(nx_context *ctx,
     }
     result = nx_value_paint(ctx, desc, next, drag, state);
     if (result != NX_OK) goto rollback;
+    ctx->semantics.nodes[ctx->semantics.count-1u].numeric=(nx_numeric_value_snapshot){
+        .minimum=desc->minimum,.maximum=desc->maximum,.increment=desc->step,.value=next,
+        .context_identity=nx_numeric_context_identity(ctx),.frame=ctx->frame_serial,
+        .control_kind=drag?NX_NUMERIC_VALUE_DRAG:NX_NUMERIC_VALUE_SLIDER,.writable=1};
     *value = next;
     *out_state = state;
     nx_value_step_commit(ctx,desc->control.id);

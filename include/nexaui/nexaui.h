@@ -22,7 +22,7 @@ extern "C" {
 
 #define NX_VERSION_MAJOR 0
 #define NX_VERSION_MINOR 1
-#define NX_VERSION_PATCH 32
+#define NX_VERSION_PATCH 33
 #define NX_VERSION_STRINGIFY_IMPL(value) #value
 #define NX_VERSION_STRINGIFY(value) NX_VERSION_STRINGIFY_IMPL(value)
 #define NX_VERSION_STRING NX_VERSION_STRINGIFY(NX_VERSION_MAJOR) "." \
@@ -2129,6 +2129,33 @@ NX_API nx_result nx_semantics_find(const nx_context *context, uint64_t id,
    Generic custom widgets have no expansion-state binding and remain unsupported.
    Duplicate/full 64-entry queues return LIMIT. Owner thread, between frames. */
 NX_API nx_result nx_semantics_request_action(nx_context *context, uint64_t id, uint32_t action);
+/* Copied numeric metadata for built-in sliders/drag values, never parsed from
+   their display text. Tokens bind the context and completed frame. Keep this
+   snapshot unchanged when requesting a value. Other controls are unsupported. */
+#define NX_NUMERIC_VALUE_SLIDER 1u
+#define NX_NUMERIC_VALUE_DRAG   2u
+typedef struct nx_numeric_value_snapshot {
+    double minimum, maximum, increment, value;
+    uint64_t context_identity, frame;
+    uint32_t control_kind; /* NX_NUMERIC_VALUE_SLIDER or NX_NUMERIC_VALUE_DRAG. */
+    int writable;
+} nx_numeric_value_snapshot;
+/* Owner thread, completed frame only. Clears a non-NULL output on error.
+   Disabled/modal-blocked controls can still be read, with writable == 0. */
+NX_API nx_result nx_semantics_get_numeric_value(const nx_context *context,
+    uint64_t id, nx_numeric_value_snapshot *out_snapshot);
+/* Queue one finite, in-range absolute value against the unchanged snapshot.
+   Shares the action queue's 64-entry bound/order; duplicate SET for an ID is
+   LIMIT. NX_OK means admission, not application/service acknowledgement.
+   The next frame must retain context, ID, kind, parent, overlay, enabled state,
+   range/step and the previously observed model value. Otherwise it expires.
+   Routed input precedes queued actions; SET and steps then apply in admission
+   order with ordinary snapping. No focus/click. Successful painting commits;
+   failed painting preserves the caller value and permits a same-frame retry.
+   A stale snapshot/disabled target returns STATE; nonfinite/out-of-range input
+   returns ARGUMENT. Omission/destruction drops pending work. Between frames. */
+NX_API nx_result nx_semantics_request_numeric_value(nx_context *context,
+    uint64_t id, const nx_numeric_value_snapshot *snapshot, double value);
 /* Maximum UTF-8 bytes per queued whole-text replacement (excluding terminator). */
 #define NX_TEXT_VALUE_MAX_BYTES 65536u
 /* Copy a whole-text replacement for a standard text/numeric field from a

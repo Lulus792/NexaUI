@@ -11,7 +11,7 @@ NexaUI brings layout, widgets, text, rendering and native window integration beh
 
 Applications own their data and compose each frame through independent UI contexts. The framework includes a deterministic software renderer, Windows D3D12, Linux Vulkan and macOS Metal backends for shapes, images and glyph masks, plus primitives for moving simulation snapshots and commands between worker threads and the UI. Native backends remain in development; their validation scope is described below.
 
-> **Early development — 0.1.32.** The repository contains a working foundation and examples. The toolkit is incomplete, and public APIs may change before v1.0. Read the [platform status](#platform-status) and [known limitations](#known-limitations) before choosing it for an application.
+> **Early development — 0.1.33.** The repository contains a working foundation and examples. The toolkit is incomplete, and public APIs may change before v1.0. Read the [platform status](#platform-status) and [known limitations](#known-limitations) before choosing it for an application.
 
 ## Usage
 

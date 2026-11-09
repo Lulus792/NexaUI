@@ -55,10 +55,20 @@ xvfb-run -a python3 tests/run_weston_native.py -- \
     /tmp/settings-audio-consumer/controlled_audio_settings
 ```
 
+With installed0.1.33, add `NEXAUI_AUDIO_NUMERIC_VALUE=1` to exercise the standard
+AT-SPI Value interface as well: real range/increment/current/Text reads, the
+unmodified libatspi absolute setter, exact raw invalid/disabled/Defunct errors,
+and independent double-valued change signals. Both full observed/loss and
+close-pending variants keep the existing deadlines/frame/transcript guards.
+libatspi2.60.5 aborts on an error reply and does not decode double event payloads;
+the [transport notes](../../docs/concepts/atspi.md#numeric-value-controls) explain
+the retained actual failure and independent wire checks. No client library or
+SDK error contract is weakened to make a refusal look successful.
+
 Keep sanitizer instrumentation and leak detection enabled for matching SDK and
 consumer builds. Record source/font/library hashes, build flags, actual native
 outcomes and failure logs. These tasks do not prove actual Aetheri compositor,
-admitted session/backend integration, audibility/persistence, standard AT-SPI
-numeric Value support, canonical fonts, physical input or human screenreader
+admitted session/backend integration, audibility/persistence, broader numeric
+control kinds/UIA/AX, canonical fonts, physical input or human screenreader
 acceptance. The original process owner retains deferred session retirement after
 the window returns; this controlled fixture has no asynchronous real backend.

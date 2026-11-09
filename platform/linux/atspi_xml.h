@@ -43,3 +43,12 @@ static const char nx_ax_xml_edit[] =
 "</interface>";
 static const char nx_ax_xml_cache[] =
 "<interface name=\"org.a11y.atspi.Cache\"><property name=\"version\" type=\"u\" access=\"read\" /><method name=\"GetItems\"><arg direction=\"out\" name=\"nodes\" type=\"a((so)(so)(so)iiassusau)\" /></method><signal name=\"AddAccessible\"><arg name=\"nodeAdded\" type=\"((so)(so)(so)iiassusau)\" /></signal><signal name=\"RemoveAccessible\"><arg name=\"nodeRemoved\" type=\"(so)\" /></signal><signal name=\"Ready\" /></interface>";
+static const char nx_ax_xml_value[] =
+"<interface name=\"org.a11y.atspi.Value\">"
+"<property name=\"version\" type=\"u\" access=\"read\"/>"
+"<property name=\"MinimumValue\" type=\"d\" access=\"read\"/>"
+"<property name=\"MaximumValue\" type=\"d\" access=\"read\"/>"
+"<property name=\"MinimumIncrement\" type=\"d\" access=\"read\"/>"
+"<property name=\"CurrentValue\" type=\"d\" access=\"readwrite\"/>"
+"<property name=\"Text\" type=\"s\" access=\"read\"/>"
+"</interface>";

@@ -5,6 +5,41 @@ accessibility bus. The NexaCloud Vulkan runner calls it after building each fram
 The transport implements its own object hierarchy, role/state mapping, request
 queue and AT-SPI D-Bus messages. It uses no GTK/ATK provider objects.
 
+## Numeric Value controls
+
+Since0.1.33, built-in sliders and drag values expose `org.a11y.atspi.Value`:
+version1, MinimumValue, MaximumValue, MinimumIncrement, CurrentValue and Text.
+The [copied numeric contract](accessibility.md#copied-numeric-values) supplies
+actual range/value metadata; arbitrary semantic value strings do not acquire
+this interface. Only writable/enabled targets report EDITABLE. Changing kind,
+ancestry or numeric support creates a new native incarnation.
+
+Setting CurrentValue admits a finite in-range double into the same ordered
+control path. Its D-Bus reply stays pending until successful painting/assignment
+or cancellation. A revocable lease retains context/frame/epoch/incarnation and
+the existing two-second native deadline; queue slots/bytes share the established
+64-request/8-MiB admission budget. Omission, unpublished frame drift, disabling,
+replacement, bridge retirement and timeout cannot redirect work to another
+control. No model pointer is retained by the bridge. A successful UI assignment
+does not acknowledge a device/backend operation.
+
+Numeric changes send `Object.PropertyChange` with detail `accessible-value` and
+a double variant. Existing value-string attributes remain. Bounds/step and Text
+are read through Properties.Get/GetAll; native controls remain readable while
+disabled. Other numeric kinds and full human screenreader acceptance stay open.
+
+The independently observed libatspi2.60.5 setter aborts on rejected D-Bus replies:
+its [versioned implementation](https://github.com/GNOME/at-spi2-core/blob/2.60.5/atspi/atspi-value.c#L131)
+unrefs the NULL reply. Its
+[event decoder](https://github.com/GNOME/at-spi2-core/blob/2.60.5/atspi/atspi-event-listener.c#L1152)
+also maps unhandled double payloads to
+gint0, so the test separately verifies the actual double variant on D-Bus and
+the library's delivered notification/current-value query. Valid writes still
+use the unmodified libatspi setter. Expected invalid/disabled/Defunct writes
+require the exact independent wire error, using a copied old endpoint after
+libatspi disposes a retired proxy. This records the installed client limitation;
+it does not convert a provider refusal into success or patch a system library.
+
 ## Build and runtime
 
 The private adapter uses the system `dbus-1` development headers when available.

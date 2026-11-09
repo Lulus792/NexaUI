@@ -42,12 +42,13 @@ slider/drag kind, parent and overlay; disabled ancestors also prevent applicatio
 Omitted or rebound controls drop the old request. A drawing failure leaves the
 caller value unchanged and retains actions for a same-frame retry; successful
 drawing consumes them once. Generic custom widgets do not acquire a numeric
-model by advertising these action bits. This does not add a native numeric Value
-interface or an arbitrary numeric SetValue operation.
+model by advertising these action bits. Since0.1.33, copied snapshots and absolute
+numeric requests additionally support these two built-ins through the
+[numeric contract](accessibility.md#copied-numeric-values) and Linux AT-SPI Value.
 The [numeric-step report](../quality/value-steps-report.md) retains exact-source
 regressions, detected defects and native original-volume evidence.
 
-`nx_value_control_desc.control` supplies the stable ID, accessible name, bounds, disabled state and optional visible text layout. Both calls register a slider semantic node with increment, decrement and set-value capability bits. Its copied numeric value string reflects the updated model in the same frame. The current drag-value visualization is a marker on a track; applications can provide a text layout for a visible numeric label. Vertical sliders and standard native numeric Value/SetValue support remain pending; the capability bits alone do not implement arbitrary native value assignment.
+`nx_value_control_desc.control` supplies the stable ID, accessible name, bounds, disabled state and optional visible text layout. Both calls register a slider semantic node with increment, decrement and set-value capability bits. Its copied numeric value string reflects the updated model in the same frame. The current drag-value visualization is a marker on a track; applications can provide a text layout for a visible numeric label. Vertical sliders, UIA/AX range-value bindings and numeric support for other kinds remain pending; capability bits on custom widgets do not implement arbitrary native value assignment.
 
 `nx_numeric_parse` validates an ASCII decimal against finite bounds without depending on the process locale. `nx_numeric_input_apply_event` filters text events to digits, sign, decimal point and exponent characters, while reusing `nx_text_buffer` for selection, deletion and undo. Incomplete or out-of-range drafts remain editable; Enter commits only a valid draft to the caller-owned number. The application can call this helper for a custom focused editor.
 
