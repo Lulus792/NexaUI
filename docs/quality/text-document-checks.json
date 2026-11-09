@@ -1,0 +1,31 @@
+{
+  "result": "passed",
+  "source_revision": "f5090602def620ce5a822c4301d6e4fdfaadf696",
+  "sdk_version": "0.1.28",
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "profiles": 3,
+  "ctests": 39,
+  "installed_package_runs": 3,
+  "native_document_tasks": 3,
+  "functional_mutants_detected": 2,
+  "sdk_inputs": 1055,
+  "installed_native_consumer_inputs": 6,
+  "compiled_objects": [
+    73,
+    73,
+    73
+  ],
+  "native_fixture_objects": [
+    2,
+    2,
+    2
+  ],
+  "artifact_files_bound": 400,
+  "remaining": [
+    "Connect the SDK contract to the separately verified original Editor model/controller and native UI",
+    "Document clipboard operations, text geometry/attributes and broader native text interfaces/events",
+    "Independent original Editor assistive tasks and composition/paste/lifetime interactions",
+    "Real installed IMEs, physical/human/design/performance/normal Aetheri adoption",
+    "Remaining packet6 and packets7-8/all103 IDs, earlier Software AT-SPI finding and backing-failure handling"
+  ]
+}

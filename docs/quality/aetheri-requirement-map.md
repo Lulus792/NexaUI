@@ -1,5 +1,19 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/A04/P04/P05/Q02/Q03/Q06/Q08: SDK 0.1.28 source
+`f5090602def620ce5a822c4301d6e4fdfaadf696` adds an application-owned document
+accessibility seam with copied snapshots up to 8 MiB and guarded atomic
+replace/selection callbacks. Three profiles pass 39 relevant CTests, three
+installed package runs and three independent native AT-SPI tasks, including
+complete 8-MiB range reads/deletion and stale/disabled/read-only/detach refusal.
+Two compiled defects are detected; 1055 SDK inputs, six native-fixture inputs,
+225 compiled objects and 400 selected artifacts are source/archive-bound.
+See [SDK contract and precise original-Editor boundary](text-document-report.md).
+The fixture is not the original Editor adapter. Original-model adoption,
+clipboard/geometry, broader native text and physical/human/performance gates
+remain open. All 103 IDs, remaining packet 6/packets 7–8 and earlier AT-SPI/backing
+findings persist; no active Aetheri source/pin/default or 1.0 change.
+
 T03/A03/A04/P04/P05/Q02/Q03/Q06/Q08: consumer
 `e6cd1d0b61b451589b7708f402e95fef534267f8` adds an optional original Editor
 accessible-model prerequisite: allocation-free scalar reads, original atomic

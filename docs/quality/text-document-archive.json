@@ -1,0 +1,274 @@
+{
+  "archives": [
+    {
+      "sha256": "60c43be34e4c3a238d33ac62719b1c93276a8c87b889884afebcd99b0061fddc",
+      "files": 1590,
+      "links": 4,
+      "directories": 1206,
+      "verified": true,
+      "name": "nexaui-text-document-sdk7-builds-20261109.tar.gz",
+      "size": 45627400,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "9ddc66d38689179010d6b875adb68190471e843848a5302e3f0f26522af95e31",
+      "files": 102,
+      "links": 0,
+      "directories": 72,
+      "verified": true,
+      "name": "nexaui-text-document-native7-20261109.tar.gz",
+      "size": 2169312,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "5a6b742e84960675d8e9c05964eb5617f04b5b7268489434a5a84c78e46eba78",
+      "files": 96,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-text-document-evidence-20261109.tar.gz",
+      "size": 285643,
+      "scope": "Host provenance/build/native/archive/mutation/retirement/check drivers, backing probes, read-only current53-input adoption preflight and all seven complete successful SDK CI logs plus exact-source job/run metadata. Windows modes are the WSL view, not ACLs. Local evidence, no release assets."
+    }
+  ],
+  "reused_producer_archive": {
+    "sha256": "bf160ca5f0d3e7a4255a65bf8dba03778852c56f05ba30efd9e937103365a1c7",
+    "files": 1377,
+    "links": 4,
+    "directories": 587,
+    "verified": true,
+    "name": "nexaui-editor-native-ime-20261108.tar.gz",
+    "size": 11880799,
+    "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+  },
+  "historical_trial_archives": [
+    {
+      "sha256": "12edac4ea95bc18a399b270b03fc5087fb2f9155a03ffcb840734ea96c65ff01",
+      "files": 2439,
+      "links": 0,
+      "directories": 946,
+      "verified": true,
+      "name": "nexaui-text-document-sdk-progress-20261109.tar.gz",
+      "size": 31137740,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "b6f7b6efc3acb161b8cf2228b211db0cadc57e6741b5ac5a331ce2126a74fea9",
+      "files": 1654,
+      "links": 4,
+      "directories": 1314,
+      "verified": true,
+      "name": "nexaui-text-document-sdk6-20261109.tar.gz",
+      "size": 33678094,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    }
+  ],
+  "additional_retirement_backing_archives": [
+    {
+      "sha256": "161d982a0f3518651d9ba09ff5d45edec3370c38625e78bf1486f4d0278820af",
+      "files": 844,
+      "links": 4,
+      "directories": 509,
+      "verified": true,
+      "name": "nexaui-editor-accessible-model-20261108-r2.tar.gz",
+      "size": 9111978,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+      "files": 2402,
+      "links": 10,
+      "directories": 1536,
+      "verified": true,
+      "name": "nexaui-editor-close-full-20261108.tar.gz",
+      "size": 22843970,
+      "excluded_special_scope": "Inactive test FIFOs or Unix-domain sockets recorded, not serialized"
+    }
+  ],
+  "retirements": [
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "close-sdk-source3",
+          "close-sdk-source4",
+          "close-sdk-source5",
+          "close-sdk-3-release",
+          "close-sdk-4-release"
+        ],
+        "bytes": 101310800,
+        "files": 2422,
+        "links": 0,
+        "directories": 946,
+        "fingerprint": "2fa8bc21e8a52dcf60c26144e0b5d4f0d037c3265ae9819963315cb88b6c6671",
+        "archive_sha256": "12edac4ea95bc18a399b270b03fc5087fb2f9155a03ffcb840734ea96c65ff01",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive SDK3/4 trial builds and SDK3/4/5 trial exports; sources and all installed SDK prefixes retained",
+        "roots": [
+          "close-sdk-source3",
+          "close-sdk-source4",
+          "close-sdk-source5",
+          "close-sdk-3-release",
+          "close-sdk-4-release"
+        ],
+        "bytes": 101310800,
+        "files": 2422,
+        "links": 0,
+        "directories": 946,
+        "fingerprint": "2fa8bc21e8a52dcf60c26144e0b5d4f0d037c3265ae9819963315cb88b6c6671",
+        "archive_sha256": "12edac4ea95bc18a399b270b03fc5087fb2f9155a03ffcb840734ea96c65ff01",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-22-release",
+          "editor-close-22-shared",
+          "editor-close-22-asan",
+          "editor-ime-default-22-release"
+        ],
+        "bytes": 106961467,
+        "files": 442,
+        "links": 4,
+        "directories": 453,
+        "fingerprint": "fe8163409c41fb8d3a034cb4d3eeae76adcd0aff85561a06f451726702a81190",
+        "archive_sha256": "161d982a0f3518651d9ba09ff5d45edec3370c38625e78bf1486f4d0278820af",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive Editor22/default22 builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-22-release",
+          "editor-close-22-shared",
+          "editor-close-22-asan",
+          "editor-ime-default-22-release"
+        ],
+        "bytes": 106961467,
+        "files": 442,
+        "links": 4,
+        "directories": 453,
+        "fingerprint": "fe8163409c41fb8d3a034cb4d3eeae76adcd0aff85561a06f451726702a81190",
+        "archive_sha256": "161d982a0f3518651d9ba09ff5d45edec3370c38625e78bf1486f4d0278820af",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "editor-close-1-release",
+          "editor-close-2-release",
+          "editor-close-3-release",
+          "editor-close-4-release",
+          "editor-close-5-release",
+          "editor-close-6-release",
+          "editor-close-6-shared",
+          "editor-close-6-asan"
+        ],
+        "bytes": 168595404,
+        "files": 712,
+        "links": 7,
+        "directories": 834,
+        "fingerprint": "b44f991528d03a08573922438d5525bc3f8940768d5a11616caa59627986d917",
+        "archive_sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive Editor1-6 builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "editor-close-1-release",
+          "editor-close-2-release",
+          "editor-close-3-release",
+          "editor-close-4-release",
+          "editor-close-5-release",
+          "editor-close-6-release",
+          "editor-close-6-shared",
+          "editor-close-6-asan"
+        ],
+        "bytes": 168595404,
+        "files": 712,
+        "links": 7,
+        "directories": 834,
+        "fingerprint": "b44f991528d03a08573922438d5525bc3f8940768d5a11616caa59627986d917",
+        "archive_sha256": "84c3a6bf8dadc286d5d2ee7d09348d740b4d5bc3f197250f04a1e9dd8970427f",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "close-sdk-6-release",
+          "close-sdk-6-shared",
+          "close-sdk-6-asan"
+        ],
+        "bytes": 91498178,
+        "files": 318,
+        "links": 2,
+        "directories": 1025,
+        "fingerprint": "12ab9cfead947176a450ea0f12d2a26447b1e9eea602893b36f4c404e2b69508",
+        "archive_sha256": "b6f7b6efc3acb161b8cf2228b211db0cadc57e6741b5ac5a331ce2126a74fea9",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive SDK6 builds; sources and all installed SDK prefixes retained",
+        "roots": [
+          "close-sdk-6-release",
+          "close-sdk-6-shared",
+          "close-sdk-6-asan"
+        ],
+        "bytes": 91498178,
+        "files": 318,
+        "links": 2,
+        "directories": 1025,
+        "fingerprint": "12ab9cfead947176a450ea0f12d2a26447b1e9eea602893b36f4c404e2b69508",
+        "archive_sha256": "b6f7b6efc3acb161b8cf2228b211db0cadc57e6741b5ac5a331ce2126a74fea9",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    },
+    {
+      "check": {
+        "result": "verified",
+        "roots": [
+          "close-sdk-7-asan"
+        ],
+        "bytes": 121054376,
+        "files": 124,
+        "links": 0,
+        "directories": 342,
+        "fingerprint": "752c62fa0a852d31c108dea8e696c04fc8401d03e853852f699c9f634b8f9c7f",
+        "archive_sha256": "60c43be34e4c3a238d33ac62719b1c93276a8c87b889884afebcd99b0061fddc",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      },
+      "retired": {
+        "result": "retired verified inactive SDK7 ASan build; sources and all installed SDK prefixes retained",
+        "roots": [
+          "close-sdk-7-asan"
+        ],
+        "bytes": 121054376,
+        "files": 124,
+        "links": 0,
+        "directories": 342,
+        "fingerprint": "752c62fa0a852d31c108dea8e696c04fc8401d03e853852f699c9f634b8f9c7f",
+        "archive_sha256": "60c43be34e4c3a238d33ac62719b1c93276a8c87b889884afebcd99b0061fddc",
+        "namespace": "mnt:[4026531832]",
+        "holder_start": "20779738"
+      }
+    }
+  ],
+  "artifact_files_bound": 400,
+  "scope": "Final SDK7 build archive retains the subsequently retired ASan build, all installed libraries and13x3 successful tests/package consumers. Native7 archive retains all final independent-client builds/runs and the earlier pre-READY producer failure. Historical SDK3-6 archives retain failed builds and trial runs. Five exact inactive-artifact retirements, including SDK trial source copies3-5; original Aetheri exports, producer16 and installed prefixes retained. No global quota/mount/driver/cache change."
+}

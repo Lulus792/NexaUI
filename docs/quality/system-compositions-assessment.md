@@ -1,5 +1,17 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Application-owned document SDK: 0.1.28 source
+`f5090602def620ce5a822c4301d6e4fdfaadf696`,
+[copied document snapshots and guarded atomic model callbacks](text-document-report.md).
+Three profiles pass 39 CTests, three installed package runs and three independent
+native AT-SPI tasks, with complete 8-MiB range reads/deletion and native lifetime
+refusal. Two compiled defects, 1055 SDK inputs, six fixture inputs, 225 objects
+and 400 artifacts are checked. The fixture's model is not the original Editor;
+compose the SDK contract with its existing original-model seam next. Document
+clipboard/geometry, broader native tasks and final adoption remain open.
+No active Aetheri source/pin/default or 1.0 change; all 103 IDs, remaining
+packet 6/packets 7–8 and earlier AT-SPI/backing findings remain active.
+
 Original Editor accessible model: `e6cd1d0b61b451589b7708f402e95fef534267f8`,
 [scalar reads, original replacements and atomic selection prerequisite](editor-accessible-model-report.md).
 Three profiles pass42 tests plus171 retained native IME/edit/save/window captures;

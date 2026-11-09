@@ -1,5 +1,20 @@
 # Aetheri adoption: initial source assessment
 
+## Application-owned document SDK prerequisite (2026-11-09)
+
+SDK 0.1.28/`f5090602def620ce5a822c4301d6e4fdfaadf696` supplies copied native
+document snapshots and guarded owner-thread replacement/selection callbacks
+without replacing the app's editing/history/file model. Three profiles pass 39
+relevant CTests, three installed package runs and three independent native
+AT-SPI tasks; two compiled defects are detected. All 1055 SDK inputs, six
+native-fixture inputs, 225 compiled objects and 400 selected artifacts are bound.
+See [SDK behavior, full 8-MiB reads/deletion and remaining integration](text-document-report.md).
+The native fixture uses its own app model; connecting the separately verified
+original Editor model remains the next adoption step. No active Aetheri source,
+pin/default, service or persistence changes. Clipboard/geometry, broader native
+document tasks, actual IMEs and physical/human/design/performance gates remain
+open, along with all 103 IDs, remaining packet 6/packets 7–8 and earlier findings.
+
 ## Original Editor accessible-model prerequisite (2026-11-08)
 
 Consumer `e6cd1d0b61b451589b7708f402e95fef534267f8` supplies scalar reads,
