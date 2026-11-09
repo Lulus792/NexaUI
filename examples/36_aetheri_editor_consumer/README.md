@@ -338,3 +338,16 @@ check saves `clipboard-early-reply.json` with the exact exit/stdout, model/frame
 and actual writer-pipe observation before cleanup. EOF assertions and deadlines
 remain unchanged. The Editor target compiles its used Files model/create/rename
 modules; the Files process launcher and Files layout remain outside this target.
+
+The native runner also accepts source-bound0.1.32/0.1.33 SDK receipts, including
+the current compact `libraries` receipt. Library names must match the declared
+version; actual bytes still require the recorded SHA256. Feature floors and
+unknown-version refusal remain explicit.
+
+The generated native driver now reads all requested state fields from one
+observed frame and finds the latest frame without repeatedly parsing older
+records. It retains the complete original logs, native events, one-second
+libatspi deadline, EOF assertions and CPU/frame guards. The standalone
+`check_native_observation.py` regression compares complete historical logs and
+rejects a mixed-frame false positive; the SDK test suite runs it when Python is
+available. This test-driver change is no application performance measurement.

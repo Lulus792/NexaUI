@@ -20,17 +20,20 @@ def main():
     if args.clipboard_stream_gate:args.clipboard_stream_gate=args.clipboard_stream_gate.resolve(strict=True)
     subprocess.run([sys.executable,str(here/'../35_aetheri_files_consumer/check_source.py'),str(original),str(here/'source-inputs.json')],check=True)
     receipt=json.loads(args.sdk_receipt.read_text());binding=json.loads(args.sdk_source_binding.read_text())
-    if receipt['sdk_version'] not in ('0.1.27','0.1.28','0.1.29','0.1.30','0.1.31') or not re.fullmatch('[0-9a-f]{40}',binding['source_revision']):raise SystemExit('Wrong SDK receipt/source binding')
-    if args.presentation and receipt['sdk_version'] not in ('0.1.30','0.1.31'):raise SystemExit('Original presentation task requires the checked0.1.30/0.1.31 SDK with interior-caret correction')
-    if args.attributes and receipt['sdk_version']!='0.1.31':raise SystemExit('Original attribute task requires checked SDK0.1.31')
+    if receipt['sdk_version'] not in ('0.1.27','0.1.28','0.1.29','0.1.30','0.1.31','0.1.32','0.1.33') or not re.fullmatch('[0-9a-f]{40}',binding['source_revision']):raise SystemExit('Wrong SDK receipt/source binding')
+    if args.presentation and receipt['sdk_version'] not in ('0.1.30','0.1.31','0.1.32','0.1.33'):raise SystemExit('Original presentation task requires checked SDK0.1.30 through0.1.33 with interior-caret correction')
+    if args.attributes and receipt['sdk_version'] not in ('0.1.31','0.1.32','0.1.33'):raise SystemExit('Original attribute task requires checked SDK0.1.31 through0.1.33')
     library=args.sdk_library.resolve(strict=True)
-    if not any((x.get('path')==str(library) or (x.get('name') and str(library).endswith('/'+x['name']))) and x['sha256']==digest(library) for x in receipt['artifact_files']):raise SystemExit('Changed or unrecorded installed SDK library')
-    if library.name not in ('libnexaui.a','libnexaui.so.0.1.27','libnexaui.so.0.1.28','libnexaui.so.0.1.29','libnexaui.so.0.1.30','libnexaui.so.0.1.31'):raise SystemExit('Wrong installed SDK library kind')
+    artifacts=receipt.get('artifact_files',receipt.get('libraries',[]))
+    if not any((x.get('path')==str(library) or (x.get('name') and str(library).endswith('/'+x['name']))) and x['sha256']==digest(library) for x in artifacts):raise SystemExit('Changed or unrecorded installed SDK library')
+    if library.name not in ('libnexaui.a','libnexaui.so.'+receipt['sdk_version']):raise SystemExit('Wrong installed SDK library kind')
     source=(original/'tools/test_editor_graphical.py').read_text();changes=[]
     def replace(before,after):
         nonlocal source
         if source.count(before)!=1:raise SystemExit('Changed original native driver boundary: '+repr(before))
         source=source.replace(before,after);changes.append(dict(before=before,after=after))
+    from native_observation import prepare
+    source,observation_change=prepare(source);changes.append(observation_change)
     replace('''        loaded = {Path(line.split()[-1]).resolve() for line in maps.splitlines() if '/libnexaui.so' in line}; assert len(loaded) == 1
         library = loaded.pop(); metadata = json.loads((library.parents[2]/'build.json').read_text())
         pin = json.loads((ROOT/'spec/nexaui-inputs.json').read_text())
@@ -51,7 +54,7 @@ def main():
     accessible_flow=here/'native_accessible_flow.py.inc'
     if args.accessible_client:
         args.accessible_client=args.accessible_client.resolve(strict=True)
-        if receipt['sdk_version'] not in ('0.1.28','0.1.29','0.1.30','0.1.31'):raise SystemExit('Native document accessibility requires a checked0.1.28/0.1.29/0.1.30/0.1.31 SDK')
+        if receipt['sdk_version'] not in ('0.1.28','0.1.29','0.1.30','0.1.31','0.1.32','0.1.33'):raise SystemExit('Native document accessibility requires checked SDK0.1.28 through0.1.33')
         replace("'DBUS_SESSION_BUS_ADDRESS': 'unix:path=' + str(root / 'absent-bus')", "'DBUS_SESSION_BUS_ADDRESS': os.environ['NEXAUI_EDITOR_TEST_ATSPI_ADDRESS']")
         replace("    for name in ('DISPLAY', 'WAYLAND_SOCKET', 'AT_SPI_BUS_ADDRESS'):\n        env.pop(name, None)",
             "    for name in ('DISPLAY', 'WAYLAND_SOCKET'):\n        env.pop(name, None)\n    env['AT_SPI_BUS_ADDRESS']=os.environ['NEXAUI_EDITOR_TEST_ATSPI_ADDRESS']")
@@ -69,7 +72,7 @@ def main():
             accessible_source=accessible_source.replace(stream_marker,(here/'native_clipboard_stream_flow.py.inc').read_text() if args.clipboard_stream_gate else '')
         native_flow=accessible_source+native_flow
         if args.clipboard_tools:
-            if receipt['sdk_version'] not in ('0.1.29','0.1.30','0.1.31'):raise SystemExit('Native document clipboard requires a checked0.1.29/0.1.30/0.1.31 SDK')
+            if receipt['sdk_version'] not in ('0.1.29','0.1.30','0.1.31','0.1.32','0.1.33'):raise SystemExit('Native document clipboard requires checked SDK0.1.29 through0.1.33')
             args.clipboard_tools=args.clipboard_tools.resolve(strict=True)
             replace("'NEXAUI_PLATFORM': 'wayland'", "'NEXAUI_PLATFORM': 'wayland', 'WAYLAND_DEBUG': '1'")
             replace('        for child in reversed(children):',

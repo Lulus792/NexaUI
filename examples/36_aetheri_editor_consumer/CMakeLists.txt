@@ -104,6 +104,8 @@ target_include_directories(aetheri_editor_candidate PRIVATE "${CMAKE_CURRENT_SOU
 target_link_libraries(aetheri_editor_candidate PRIVATE ${model} NexaUI::NexaUI)
 set(checked ${model} aetheri_editor_candidate)
 enable_testing()
+add_test(NAME editor.native_frame_observation COMMAND "${Python3_EXECUTABLE}"
+    "${CMAKE_CURRENT_SOURCE_DIR}/check_native_observation.py")
 if(EDITOR_BUILD_NATIVE_ACCESSIBILITY)
     add_executable(editor_native_document_test test_native_document.c)
     target_include_directories(editor_native_document_test PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}")

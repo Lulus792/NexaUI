@@ -2,6 +2,7 @@
 
 ## 0.1.33 — Development snapshot
 
+- The optional original Editor native runner accepts checked 0.1.32/0.1.33 SDK receipts while retaining artifact hashes and feature floors. Its frame observer reads one coherent state and locates the latest frame without repeatedly scanning earlier frame records; the original native deadlines and assertions remain unchanged.
 - Added copied numeric snapshots and bounded absolute value requests for built-in sliders/drag values, preserving existing public layouts. Absolute writes share ordered action admission and require the same completed-frame model/range, control identity and enabled scope at submission; painting failures retain requests for a same-frame retry. Linux AT-SPI publishes standard Value properties, editable state and numeric change notifications, with deferred success/error replies and bounded lifetime guards. Other numeric kinds, UIA/AX range-value bindings, real audio-device effects and full human/performance acceptance remain separate work.
 
 ## 0.1.32 — Development snapshot

@@ -290,6 +290,13 @@ nexaui_audit_core_target(nexaui)
 
 if(NEXAUI_BUILD_TESTS)
     enable_testing()
+    find_package(Python3 COMPONENTS Interpreter QUIET)
+    if(Python3_Interpreter_FOUND)
+        add_test(NAME nexaui_editor_native_frame_observation COMMAND "${Python3_EXECUTABLE}"
+            "${PROJECT_SOURCE_DIR}/examples/36_aetheri_editor_consumer/check_native_observation.py")
+        set_tests_properties(nexaui_editor_native_frame_observation PROPERTIES TIMEOUT 30
+            ENVIRONMENT "PYTHONDONTWRITEBYTECODE=1")
+    endif()
     add_executable(nexaui_close_request_tests tests/test_close_request.c)
     target_include_directories(nexaui_close_request_tests PRIVATE platform/common)
     target_link_libraries(nexaui_close_request_tests PRIVATE NexaUI::NexaUI)
