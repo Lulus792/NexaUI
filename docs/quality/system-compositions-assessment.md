@@ -1,5 +1,17 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Original Editor cache budget: ded9432 counts serialized metadata rather than
+document values/spare capacity. Three installed profiles pass45 SDK+45 owner
+CTests,3 packages,6 independent fixture tasks,39 original raw cache queries
+and216 complete captures. Full8-MiB and read-only original documents fit their
+small bulk responses; genuinely oversized metadata remains refused. See the
+[source-bound correction and limits](atspi-cache-report.md). Original editing,
+history/save/close/rendering remain owned by the frozen consumer; Aetheri itself
+is unchanged. Native clipboard/geometry/attributes, broader text/cache, AX/UIA,
+real IMEs/screenreaders, physical/human/performance/ordinary adoption and the
+remaining packet6/packets7–8/103-ID gates stay open.
+All seven required exact-source CI jobs pass, including both sanitizer orders.
+
 Original Editor native documents: consumer b2490d5 and SDK9ad027a compose the
 existing model with native Text/EditableText, original history/save/close and
 native IME. Three profiles pass45 owner CTests and216 native captures; full8-MiB

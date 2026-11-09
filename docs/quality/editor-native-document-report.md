@@ -112,6 +112,11 @@ Large native Cache.GetItems emits its existing bounded-reply-budget warning;
 the peer discovers the object through ordinary Accessible calls and completes
 all range reads. Broader cache/screenreader behavior needs separate acceptance.
 
+The later [metadata-budget correction](atspi-cache-report.md) reproduces and
+repairs this bulk-query refusal, with explicit independent wire queries against
+the installed SDK and original Editor. The warning above remains the historical
+result for SDK9ad027a; broader screenreader acceptance remains separate.
+
 Native document clipboard/geometry/attributes, broader native text contracts,
 new app-document AX/UIA tasks, installed real IMEs, delayed clipboard/IME
 composition, physical/human/design/performance gates and normal Aetheri owner

@@ -1,0 +1,162 @@
+{
+  "archives": [
+    {
+      "sha256": "354e745b94f5bf7088e7e2db070d88823e88692c4dc18b994ac6a0864577ae9f",
+      "files": 1750,
+      "links": 4,
+      "directories": 1340,
+      "verified": true,
+      "name": "nexaui-cache-sdk10-20261109.tar.gz",
+      "size": 48484814,
+      "excluded_special_scope": "Inactive original test FIFOs recorded, not serialized"
+    },
+    {
+      "sha256": "1ffd311ea5ad520d295e26bedc34bd22f2e7416a05c65545325d300f8e8a4124",
+      "files": 904,
+      "links": 3,
+      "directories": 450,
+      "verified": true,
+      "name": "nexaui-cache-editor32-20261109.tar.gz",
+      "size": 11389275,
+      "excluded_special_scope": "Inactive test FIFOs and Unix-domain sockets recorded, not serialized"
+    },
+    {
+      "sha256": "27d57198519b79df13bd3d9412c405596a29a5dc760e57f8a18e8aa8f42823ab",
+      "files": 237,
+      "links": 0,
+      "directories": 0,
+      "verified": true,
+      "name": "nexaui-cache-evidence-20261109.tar.gz",
+      "size": 1377504,
+      "scope": "Host-side cache staging/build/native/collection/provenance/check and guarded retirement scripts/receipts, frozen small native input bundles,21 generated replay inputs and seven complete exact-source CI logs. Windows modes reflect WSL view, not ACLs. No release assets."
+    }
+  ],
+  "retirements": [
+    {
+      "result": "retired verified inactive Editor31/negative and SDK8 Release/shared builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "editor-close-31-release",
+        "editor-close-31-shared",
+        "editor-close-31-asan",
+        "editor-document-31-negative",
+        "close-sdk-8-release",
+        "close-sdk-8-shared"
+      ],
+      "bytes": 122417349,
+      "files": 791,
+      "links": 5,
+      "directories": 1288,
+      "fingerprint": "c3e8c98c3ff198e811d09915b406dcb4c2beb63509ac91f6260fa6246b8483e3",
+      "archive_sha256": "b8f11f3b94dc36a35f455e26900bbefc379c8991c58a7cbccc35a7acd64ee40e",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738",
+      "receipt": "/mnt/d/NexaUI/out/cache-editor31-retirement-delete.json",
+      "receipt_sha256": "9215fe6e50c0e60993a083c95f94c51bb5c535f31a110d305d00c8084e150864"
+    },
+    {
+      "result": "retired verified inactive archived owner29 diagnostic builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "editor-close-29-asan"
+      ],
+      "bytes": 53214547,
+      "files": 119,
+      "links": 1,
+      "directories": 118,
+      "fingerprint": "c0cd3e7a8b1e9d957a88f45ae0ad8612b6937f46338771c5672804c85992dc5a",
+      "archive_sha256": "173b228a9421f980131cfa900b153dfa751354cd0d8ece2269e57abae0794df7",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738",
+      "receipt": "/mnt/d/NexaUI/out/cache-owner29-retirement-delete.json",
+      "receipt_sha256": "a07de2bfab918ecbaa92552794614b78acc8d45eb450443b22b9cd229c798b2b"
+    },
+    {
+      "result": "retired verified inactive archived phase31 diagnostic builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "editor-document-29-phase-profile",
+        "editor-document-29-phase-profile-r2"
+      ],
+      "bytes": 19275374,
+      "files": 94,
+      "links": 0,
+      "directories": 224,
+      "fingerprint": "765cbc7e39e8afa0e0bbcd5ecca5a14dfed8b62ad056f3022aecfb1da25ff855",
+      "archive_sha256": "b8f11f3b94dc36a35f455e26900bbefc379c8991c58a7cbccc35a7acd64ee40e",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738",
+      "receipt": "/mnt/d/NexaUI/out/cache-phase31-retirement-delete.json",
+      "receipt_sha256": "0dfecb6dc20d1833900b0a26605b67dd75118eda4553eabd29de8fcdf631a2b0"
+    },
+    {
+      "result": "retired verified inactive archived defaults29 diagnostic builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "editor-document-29-default",
+        "editor-document-29-without-native-ime"
+      ],
+      "bytes": 44631840,
+      "files": 214,
+      "links": 2,
+      "directories": 222,
+      "fingerprint": "bfa7afd4f48232f596ca8a29ff19d22ab2b9f536e58527efc4f33f2388ce4d89",
+      "archive_sha256": "b8f11f3b94dc36a35f455e26900bbefc379c8991c58a7cbccc35a7acd64ee40e",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738",
+      "receipt": "/mnt/d/NexaUI/out/cache-defaults29-retirement-delete.json",
+      "receipt_sha256": "562178492e056ca26e9965e6edd16d29e9d93b51a7b8b442c06ec24d9a60bfe1"
+    },
+    {
+      "result": "retired verified inactive archived sdk10build diagnostic builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "close-sdk-10-asan"
+      ],
+      "bytes": 129275735,
+      "files": 128,
+      "links": 0,
+      "directories": 344,
+      "fingerprint": "ab02bd024b20b002eee133aab0c0e235577c8e17b16a4f23dfb4c890621927a8",
+      "archive_sha256": "354e745b94f5bf7088e7e2db070d88823e88692c4dc18b994ac6a0864577ae9f",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738",
+      "receipt": "/mnt/d/NexaUI/out/cache-sdk10build-retirement-delete.json",
+      "receipt_sha256": "b8f5aa1ced8c3022d17d58cb11a38dd08d1d5c6a829f57d6859cd2d76844a5ae"
+    },
+    {
+      "result": "retired verified inactive archived sdk10peers diagnostic builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "close-sdk-10-release",
+        "close-sdk-10-shared",
+        "cache-consumer3-sdk10-asan"
+      ],
+      "bytes": 29003733,
+      "files": 278,
+      "links": 2,
+      "directories": 712,
+      "fingerprint": "ab7ee2992709a05af80dc11a7e5edc25ed6b6237d0ff9d0fcaf89b6895fd373e",
+      "archive_sha256": "354e745b94f5bf7088e7e2db070d88823e88692c4dc18b994ac6a0864577ae9f",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738",
+      "receipt": "/mnt/d/NexaUI/out/cache-sdk10peers-retirement-delete.json",
+      "receipt_sha256": "194ecc005926f15b9e6276c1568af8febb3e70883ddb3d2900ae2ae0eb9ccb55"
+    },
+    {
+      "result": "retired verified inactive archived captures31 diagnostic builds; sources and all installed SDK prefixes retained",
+      "roots": [
+        "ed-doc-31-sdk8-release",
+        "ed-doc-31-sdk8-shared",
+        "ed-doc-31-sdk8-asan",
+        "ed-doc-29-phase-profile-r2",
+        "ed-doc-29-large-probe-31-backed"
+      ],
+      "bytes": 53946149,
+      "files": 462,
+      "links": 0,
+      "directories": 30,
+      "fingerprint": "44851c5d19b6ecc129bd234da9bf5d4f6c75340b021f7d46ac856151772fc0b5",
+      "archive_sha256": "b8f11f3b94dc36a35f455e26900bbefc379c8991c58a7cbccc35a7acd64ee40e",
+      "namespace": "mnt:[4026531832]",
+      "holder_start": "20779738",
+      "receipt": "/mnt/d/NexaUI/out/cache-captures31-retirement-delete.json",
+      "receipt_sha256": "4bb36c6a4d313c4eb7c913cab67f9928a2d6cd93bfdfdf574256398fb1f2c46b"
+    }
+  ],
+  "scope": "Raw members verified by type/mode/hash before retirement; all current SDK/editor and host/replay/CI evidence archived. Installed prefixes and frozen source exports retained; failures remain attributed to their actual attempts."
+}

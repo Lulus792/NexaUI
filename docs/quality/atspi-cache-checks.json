@@ -1,0 +1,41 @@
+{
+  "result": "local matrix and all seven exact-source CI jobs passed",
+  "source_revision": "ded94329aa859ffaedc23dc626816288055870cb",
+  "sdk_ctests": 45,
+  "owner_ctests": 45,
+  "installed_packages": 3,
+  "independent_fixture_tasks": 6,
+  "original_native_profiles": 3,
+  "original_cache_queries": 39,
+  "original_captures": 216,
+  "sdk_objects": 225,
+  "owner_reader_objects": 96,
+  "sdk_inputs": 1067,
+  "original_consumer_inputs": 94,
+  "standalone_native_inputs": 8,
+  "generated_replays": 21,
+  "compiled_metadata_defects_detected": 1,
+  "baseline_red": "SDK9ad native full8MiB cache query returns LimitsExceeded; identical new independent assertion fails.",
+  "limits": {
+    "bulk_cache_bytes": 4194304,
+    "outgoing_queue_bytes": 8388608,
+    "small_tree_wire_bytes_maximum": 65536,
+    "native_client_deadline_ms": 1000
+  },
+  "initial_failures": [
+    "First regression wrapper gave producer capture/root directories0755; corrected to0700 before accepting the real regression.",
+    "ASan SDK installation quota refusal; successful same-build installation/package continuation after archived-only retirement.",
+    "ASan fixture producer exited SIGBUS before readiness; successful same installed candidate after archived-only retirement.",
+    "First metadata mutant wrapper resolved its native-runner root incorrectly and hit the socket-length guard; same compiled mutant detected with corrected private wrapper.",
+    "Original ASan capture failed in compositor after two images; same compiled owner/peer passed after archived-only retirement.",
+    "First original ASan retry label exceeded the Unix socket-path bound; guard retained; shorter fresh output label passed.",
+    "First evidence collector expected32 owner objects after a bundle-number substitution; corrected to actual31 owner+1 peer without rebuilding or rerunning tests."
+  ],
+  "remaining": [
+    "Full physical/human and real installed IME/screenreader tasks",
+    "Native application document clipboard, geometry, attributes and broader interfaces",
+    "New platform document AX/UIA coverage and ordinary Aetheri adoption",
+    "Approved design/performance/startup/latency acceptance",
+    "Remaining packet6, packets7\u20138 and full103 requirements"
+  ]
+}

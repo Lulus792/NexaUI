@@ -177,6 +177,12 @@ slider step actions have separate acceptance requirements.
 
 ## Coordinates and validation limits
 
+Cache.GetItems admits at most4MiB using serialized metadata and conservative
+fixed-item overhead. Document values and spare snapshot capacity are excluded
+because they are absent from cache items. An oversized metadata tree returns
+LimitsExceeded; individual Accessible/Text queries remain available. See the
+[installed SDK and original-Editor cache evidence](../quality/atspi-cache-report.md).
+
 Component queries support window and parent coordinates. X11 obtains actual root
 coordinates for screen queries. Wayland does not provide a global surface origin:
 screen queries return NotSupported, and screen-space BoundsChanged is omitted.

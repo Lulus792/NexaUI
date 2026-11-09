@@ -1,5 +1,18 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+T03/A03/A04/P04/P05/Q02/Q03/Q06/Q08: source ded9432 corrects AT-SPI bulk-cache
+admission to charge serialized metadata, preserving the4-MiB reply budget.
+Three installed profiles pass45 SDK+45 original-owner CTests,3 packages,
+6 independent native tasks and216 complete original captures. All39 explicit
+original cache queries succeed, including full8-MiB and read-only documents;
+genuinely oversized metadata is refused and a compiled missing-charge defect
+is detected. See the [exact source and retained evidence](atspi-cache-report.md).
+All seven required exact-source CI jobs pass, including both sanitizer orders.
+This closes the scoped original-document bulk-cache finding. Native clipboard,
+geometry/attributes, broader interfaces/screenreader tasks, AX/UIA, ordinary
+Aetheri adoption and physical/human/design/performance gates remain open.
+All103 IDs and remaining packets6–8 persist.
+
 T03/A03/A04/P04/P05/Q02/Q03/Q06/Q08: consumer b2490d5 and SDK9ad027a
 now connect the original Editor to native Text/EditableText. Three installed
 profiles pass45 owner CTests and216 native captures, with full8-MiB reads/edits,

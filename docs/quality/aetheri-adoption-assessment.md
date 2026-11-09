@@ -1,5 +1,19 @@
 # Aetheri adoption: initial source assessment
 
+## Original document cache budget (2026-11-09)
+
+Source ded9432 keeps the original Editor's model/controller/rendering and fixes
+the native bulk-cache refusal caused by full document/spare allocation bytes.
+All three installed profiles pass45 SDK+45 owner tests,3 packages,6 independent
+fixture tasks,39 original raw cache queries and216 native captures. True oversized
+metadata is still refused. All1169 frozen SDK/consumer/fixture inputs are bound;
+the active Aetheri checkout and pin remain independent. See the
+[cache-budget report and open acceptance](atspi-cache-report.md).
+All seven required exact-source CI jobs pass, including both sanitizer orders.
+This is a scoped packet6 correction; document clipboard/geometry/attributes,
+broader native contracts, AX/UIA, real IMEs/screenreaders, physical/human/design/
+performance and ordinary adoption remain open. All103 IDs and packets6–8 persist.
+
 ## Original native document adapter (2026-11-09)
 
 Consumer b2490d5 connects original Editor7bbe704 to SDK9ad027a without modifying
