@@ -4,6 +4,9 @@
 #ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
 #include "presentation.h"
 #endif
+#ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
+#include "attributes.h"
+#endif
 
 /* Owner-only projection correlation, not a document/history model. A global
    monotone serial also invalidates policy-only modal roundtrips and tab changes. */
@@ -18,6 +21,10 @@ struct editor_native_document {
     struct editor_presentation presentation;
     bool presentation_available;
     nx_result presentation_error;
+#endif
+#ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
+    struct editor_attributes attributes;
+    nx_result attribute_error;
 #endif
 };
 #endif

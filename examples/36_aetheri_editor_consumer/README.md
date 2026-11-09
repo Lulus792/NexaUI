@@ -307,3 +307,26 @@ physical/human/design/performance/adoption acceptance remain separate work.
 The [original geometry report](../../docs/quality/editor-presentation-report.md)
 records the exact compiled/driver/SDK revisions, actual font and native tasks,
 default-OFF comparison, retained failures and remaining acceptance.
+
+## Optional original font/style attributes
+
+`-DEDITOR_BUILD_NATIVE_ATTRIBUTES=ON` additionally requires presentation and
+installed SDK0.1.31. The option defaults to OFF, retaining the0.1.30 geometry
+consumer. `--attributes` adds independent OS checks to the existing native task
+and requires `--presentation`. It reads actual font metadata, default and
+selection-run colors, editable policy and attributes after original model edits.
+The peer selects/clears text and invokes the original A+/A− actions, requiring
+matching size/geometry changes and one attribute event per actual change.
+
+The owner uses the actual document font, foreground/background and original
+selection. It reports point size using an explicit96-DPI logical reference:
+14 logical pixels become10.5 points, with original text scaling already applied.
+This does not infer physical monitor DPI. RGB text attributes use16-bit channels;
+the high-contrast selected text is black on the original yellow highlight.
+UI language is not asserted to be document language. Unsupported/malformed font
+metadata is omitted individually while known owner attributes and geometry
+remain available. Invalid owner metadata removes the whole metadata projection
+while retaining valid geometry. Fixed owner buffers are overwritten each frame;
+no font/layout/model pointer or extra allocation is retained by this helper.
+Broader font/fallback, native interfaces, AX/UIA, physical/human/design/performance
+and normal Aetheri owner adoption remain separate acceptance work.

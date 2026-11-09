@@ -125,6 +125,15 @@ static int test_tabs_and_limits(void) {
     test_destroy(&a);return 0;
 }
 #ifdef EDITOR_DOCUMENT_WITH_PRESENTATION
+#ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
+static const char *paint_attribute(const struct app *a,bool selected_text,const char *name) {
+    const struct editor_attributes *s=&a->native_document.attributes;
+    const nx_text_document_attribute *attrs=selected_text?s->selection:s->defaults;
+    size_t count=selected_text?(s->run_count?2u:0u):s->default_count;
+    for(size_t i=0;i<count;++i)if(attrs[i].name.length==strlen(name) && !memcmp(attrs[i].name.data,name,strlen(name)))return attrs[i].value.data;
+    return NULL;
+}
+#endif
 static int test_painted_frame(struct app *a) {
     for(unsigned i=0;i<a->layout_count;++i)nx_text_layout_destroy(a->layouts[i]);
     a->layout_count=0;
@@ -132,6 +141,10 @@ static int test_painted_frame(struct app *a) {
     CHECK(sync_document(a) && nx_begin_frame(a->context,300,200,0)==NX_OK && nx_semantics_add(a->context,&root,NULL)==NX_OK &&
         paint_document(a) && nx_end_frame(a->context)==NX_OK && a->native_document.presentation_available);
     CHECK(a->native_document.presentation.count);
+#ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
+    CHECK(a->native_document.attribute_error==NX_OK && a->native_document.attributes.default_count==8);
+    CHECK(!strcmp(paint_attribute(a,false,"weight"),"400") && !strcmp(paint_attribute(a,false,"style"),"normal"));
+#endif
     for(size_t i=0;i<a->native_document.presentation.count;++i) {
         nx_text_document_box *b=&a->native_document.presentation.boxes[i];
         CHECK(b->start_byte<=b->end_byte && b->end_byte<=a->byte_size && b->bounds.x>=a->canvas.x &&
@@ -154,12 +167,26 @@ static int test_original_paint(const char *path,bool require_ligature) {
         }
         CHECK(found);
     }
+#ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
+    CHECK(!strcmp(paint_attribute(&a,false,"size"),"15") && !strcmp(paint_attribute(&a,false,"editable"),"true"));
+    struct editor_document_binding binding=test_binding(&a);nx_text_document_state state;
+    nx_text_document_request request=test_request(binding,NX_TEXT_DOCUMENT_SET_SELECTION,1,8,NULL,0);
+    CHECK(editor_document_apply(&binding,&request,&state)==NX_OK);a.contrast=true;CHECK(!test_painted_frame(&a));
+    CHECK(a.native_document.attributes.run_count==1 && a.native_document.attributes.run.start_byte==1 && a.native_document.attributes.run.end_byte==8);
+    CHECK(!strcmp(paint_attribute(&a,true,"fg-color"),"0,0,0") && !strcmp(paint_attribute(&a,true,"bg-color"),"65535,58082,16448"));
+    a.contrast=false;a.light=true;CHECK(!test_painted_frame(&a));
+    CHECK(!strcmp(paint_attribute(&a,false,"bg-color"),"62965,63222,63736") && !strcmp(paint_attribute(&a,true,"fg-color"),"8224,8995,11308") && !strcmp(paint_attribute(&a,true,"bg-color"),"51400,54998,60138"));
+    a.light=false;
+#endif
     uint64_t serial=a.native_document.serial;struct ids *ids=tab_ids(&a,a.document);
     CHECK(nx_semantics_request_text_value(a.context,ids->canvas,(nx_utf8_span){"changed\r\nnew",12})==NX_OK && !test_painted_frame(&a));
     CHECK(a.native_document.changed && a.native_document.serial>serial && !test_text(&a,"changed\r\nnew",12) && a.row_count==2);
     a.canvas.height=31;a.top=1;a.ensure_caret=false;CHECK(!test_painted_frame(&a) && a.row_count==1 && a.rows[0].start==9);
     for(size_t i=0;i<a.native_document.presentation.count;++i)CHECK(a.native_document.presentation.boxes[i].start_byte>=9);
     a.em=28;a.scale=2;a.line_height=43.4f;a.canvas.height=80;CHECK(!test_painted_frame(&a));
+#ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
+    CHECK(!strcmp(paint_attribute(&a,false,"size"),"21") && !a.native_document.attributes.run_count);
+#endif
     for(unsigned i=0;i<a.layout_count;++i)nx_text_layout_destroy(a.layouts[i]);
     nx_font_collection_destroy(a.fonts);nx_font_close(a.font);test_destroy(&a);free(bytes);
     puts("Original Editor actual paint: real layout/rows/carets, accepted edit revision, CRLF, viewport omission and font scale passed.");return 0;

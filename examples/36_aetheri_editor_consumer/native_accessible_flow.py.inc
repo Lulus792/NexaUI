@@ -28,8 +28,10 @@
             children.remove(peer)
         def ax_style(name):
             key(30,ctrl=True);wait(lambda:state(selected=1,begin=0,end=7),name+' original selection before assistive style task')
+            if _candidate_native_attributes:ax_phase('attributes-selected-'+name)
             ax_phase('style');wait(lambda:state(cursor=4,selected=0,dirty=1),name+' assistive edit uses original model')
             if _candidate_native_presentation:ax_phase('geometry-visible')
+            if _candidate_native_attributes:ax_phase('attributes-visible-'+name)
             capture(name+' native accessible document edit')
             key(44,ctrl=True);wait(lambda:state(cursor=7,dirty=0),name+' assistive Undo restores original clean document')
             key(30,ctrl=True);wait(lambda:state(selected=1,begin=0,end=7),name+' original selection restored for subsequent native tasks')
@@ -37,6 +39,7 @@
         key(49,ctrl=True);wait(lambda:state(docs=1,cursor=0),'new original accessible document')
         typing('abcde');wait(lambda:state(cursor=5),'original assistive seed')
         if _candidate_native_presentation:ax_phase('geometry')
+        if _candidate_native_attributes:ax_phase('attributes')
         if _candidate_accessible_ime:
             ime_expect('abcde',5);ime_preedit(0,7);ime_snapshot('abcde',5)
         ax_phase('edits');wait(lambda:state(cursor=1,selected=0,dirty=1),'native ranged edit reflected in original view')
@@ -53,7 +56,9 @@
         assert (folder/'accessible.txt').read_bytes()==b'assistive\nsaved'
         held=ax_hold();typing('x');wait(lambda:state(cursor=16,dirty=1),'ordinary input remains original after native editing')
         key(17,ctrl=True);wait(lambda:int(view()['review'])!=0,'original close review blocks the accessible controller')
-        ax_reject(held);ax_phase('readonly','assistive\nsavedx');capture('original close review retains read-only accessible text')
+        ax_reject(held);ax_phase('readonly','assistive\nsavedx')
+        if _candidate_native_attributes:ax_phase('attributes-readonly')
+        capture('original close review retains read-only accessible text')
         key(1);wait(lambda:state(review=0,docs=1,cursor=16),'original review Cancel retains document')
         ax_reject(held);ax_finish(held);ax_phase('expect','assistive\nsavedx')
         key(44,ctrl=True);wait(lambda:state(cursor=15,dirty=0),'original Undo returns to saved assistive state')

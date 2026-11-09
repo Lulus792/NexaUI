@@ -164,6 +164,23 @@ static bool editor_native_document_present(struct app *a,struct ids *ids) {
 #endif
     nx_text_document_presentation data;
     if(result==NX_OK)result=editor_presentation_finish(p,&data);
+#ifdef EDITOR_DOCUMENT_WITH_ATTRIBUTES
+    if(result==NX_OK) {
+        /* This app defines one logical pixel as1/96 inch for native point-size
+           reporting. Output backing scale never becomes an inferred DPI. */
+        struct editor_attribute_desc desc={.font=a->mono_font?a->mono_font:a->font,
+            .text={a->bytes,a->byte_size},.pixels_per_em=a->em,.logical_dpi=96,
+            .foreground=foreground(a),.background=background(a),.selected=selected(a),
+            .selection_start=a->selection.begin,.selection_end=a->selection.end,
+            .selected_text=a->selection.active,.contrast=a->contrast,
+            .editable=(a->native_document.operations&NX_TEXT_DOCUMENT_REPLACE)!=0};
+        a->native_document.attribute_error=editor_attributes_project(&a->native_document.attributes,&desc,&data);
+        if(a->diagnostics) {printf("EDITOR_ATTRIBUTES available=%u defaults=%zu runs=%zu family=%d style=%d result=%d\n",
+            a->native_document.attribute_error==NX_OK?1u:0u,data.default_count,data.run_count,
+            (int)a->native_document.attributes.family_result,(int)a->native_document.attributes.style_result,
+            (int)a->native_document.attribute_error);fflush(stdout);}
+    }
+#endif
     if(result==NX_OK)result=nx_text_document_set_presentation(a->context,ids->canvas,
         a->document,a->native_document.serial,&data);
     a->native_document.presentation_available=result==NX_OK;

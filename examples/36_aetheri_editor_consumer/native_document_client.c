@@ -62,6 +62,83 @@ done:
     if(component)g_object_unref(component);
     return okay;
 }
+static int attr(GHashTable *table,const char *name,const char *expected) {
+    const char *s=table?g_hash_table_lookup(table,name):NULL;return s && !strcmp(s,expected);
+}
+static int attributes(AtspiText *text,int variant,int mode) {
+    static const char *const sizes[]={"10.5","21","15.75"};
+    static const char *const fg[]={"59624,60138,61680","65535,65535,65535","8224,8995,11308"};
+    static const char *const bg[]={"8224,8995,11308","0,0,0","62965,63222,63736"};
+    static const char *const selected[]={"15163,19532,26214","65535,58082,16448","51400,54998,60138"};
+    GError *error=NULL;GHashTable *table=atspi_text_get_default_attributes(text,&error);int okay=0;
+    if(error || !table || g_hash_table_size(table)!=8 || !attr(table,"family-name","Liberation Mono") ||
+       !attr(table,"weight","400") || !attr(table,"style","normal") || !attr(table,"stretch","normal") ||
+       !attr(table,"size",sizes[variant]) || !attr(table,"fg-color",fg[variant]) || !attr(table,"bg-color",bg[variant]) ||
+       !attr(table,"editable",mode==2?"false":"true"))goto done;
+    g_hash_table_unref(table);table=NULL;int first=-1,last=-1;
+    int count=atspi_text_get_character_count(text,&error);if(error || count<1)goto done;
+    table=atspi_text_get_attribute_run(text,0,TRUE,&first,&last,&error);
+    if(error || !table || g_hash_table_size(table)!=8 || first!=0 || last!=count || !attr(table,"size",sizes[variant]) ||
+       !attr(table,"fg-color",mode==1 && variant==1?"0,0,0":fg[variant]) || !attr(table,"bg-color",mode==1?selected[variant]:bg[variant]))goto done;
+    g_hash_table_unref(table);table=NULL;
+    table=atspi_text_get_attribute_run(text,0,FALSE,&first,&last,&error);
+    if(error || !table || g_hash_table_size(table)!=(mode==1?2u:0u) || first!=0 || last!=count)goto done;
+    fprintf(stderr,"Original Editor attributes: variant=%d selected=%d editable=%d size=%s family=Liberation Mono weight=400 style=normal defaults=8\n",variant,mode==1,mode!=2,sizes[variant]);okay=1;
+done:
+    if(!okay)fprintf(stderr,"Original Editor attributes failed: variant=%d mode=%d count=%u error=%s\n",variant,mode,table?g_hash_table_size(table):0u,error?error->message:"default/run values");
+    if(table)g_hash_table_unref(table);
+    g_clear_error(&error);return okay;
+}
+struct attribute_events {const char *path;unsigned count;};
+static void attribute_event(AtspiEvent *event,void *user) {
+    struct attribute_events *events=user;
+    if(event->source && !strcmp(ATSPI_OBJECT(event->source)->path,events->path) && !strcmp(event->type,"object:text-attributes-changed"))++events->count;
+    g_boxed_free(ATSPI_TYPE_EVENT,event);
+}
+static int events_at(struct attribute_events *events,unsigned count) {
+    for(unsigned i=0;i<100 && events->count<count;++i)pump(10);
+    pump(30);return events->count==count;
+}
+static int size_at(AtspiText *text,const char *size) {
+    for(unsigned i=0;i<100;++i) {
+        GError *e=NULL;GHashTable *table=atspi_text_get_default_attributes(text,&e);int same=!e && attr(table,"size",size);
+        if(table)g_hash_table_unref(table);
+        g_clear_error(&e);if(same)return 1;pump(10);
+    }
+    return 0;
+}
+static int attribute_changes(AtspiAccessible *app,AtspiAccessible *field,AtspiText *text) {
+    int okay=0;GError *error=NULL;AtspiAccessible *plus=NULL,*minus=NULL;
+    AtspiAction *up=NULL,*down=NULL;AtspiComponent *component=NULL;AtspiRect *before=NULL,*larger=NULL,*after=NULL;
+    struct attribute_events events={ATSPI_OBJECT(field)->path,0};pump(30);
+    AtspiEventListener *listener=atspi_event_listener_new(attribute_event,&events,NULL);if(!listener)goto done;
+    if(!atspi_event_listener_register(listener,"object:text-attributes-changed",&error) || error)goto done;
+    before=atspi_text_get_character_extents(text,0,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !before)goto done;
+    if(!atspi_text_add_selection(text,1,3,&error) || error || !events_at(&events,1))goto done;
+    int first=-1,last=-1;GHashTable *run=atspi_text_get_attribute_run(text,2,TRUE,&first,&last,&error);
+    int selected=!error && run && first==1 && last==3 && attr(run,"bg-color","15163,19532,26214");if(run)g_hash_table_unref(run);if(!selected)goto done;
+    if(!atspi_text_set_caret_offset(text,5,&error) || error || !events_at(&events,2))goto done;
+    if(!atspi_text_set_caret_offset(text,5,&error) || error)goto done;
+    pump(30);if(events.count!=2)goto done;
+    plus=find(app,"A+",0);minus=find(app,"A\xe2\x88\x92",0);if(!plus || !minus)goto done;
+    up=atspi_accessible_get_action_iface(plus);down=atspi_accessible_get_action_iface(minus);if(!up || !down)goto done;
+    if(!atspi_action_do_action(up,0,&error) || error || !size_at(text,"15.75") || !events_at(&events,3))goto done;
+    larger=atspi_text_get_character_extents(text,0,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !larger || larger->height<=before->height || larger->width<=before->width)goto done;
+    if(!atspi_action_do_action(down,0,&error) || error || !size_at(text,"10.5") || !events_at(&events,4))goto done;
+    after=atspi_text_get_character_extents(text,0,ATSPI_COORD_TYPE_WINDOW,&error);if(error || !after || after->height!=before->height || after->width!=before->width)goto done;
+    component=atspi_accessible_get_component_iface(field);if(!component || !atspi_component_grab_focus(component,&error) || error)goto done;
+    pump(30);if(events.count!=4 || !attributes(text,0,0))goto done;
+    fprintf(stderr,"Original Editor attribute events: selection=1 clear=1 unchanged=0 font150=1 font100=1 total=%u geometry=%dx%d->%dx%d->%dx%d\n",events.count,before->width,before->height,larger->width,larger->height,after->width,after->height);okay=1;
+done:
+    if(!okay)fprintf(stderr,"Original Editor attribute events failed: count=%u error=%s\n",events.count,error?error->message:"selection/font/focus relation");
+    g_clear_error(&error);if(listener) {atspi_event_listener_deregister(listener,"object:text-attributes-changed",&error);g_clear_error(&error);g_object_unref(listener);}
+    if(plus)g_object_unref(plus);
+    if(minus)g_object_unref(minus);
+    if(up)g_object_unref(up);
+    if(down)g_object_unref(down);
+    if(component)g_object_unref(component);
+    g_free(before);g_free(larger);g_free(after);return okay;
+}
 int main(int argc,char **argv) {
     int initialized=0,status=1;GError *e=NULL;AtspiRange *range=NULL;char *reply_text=NULL;
     AtspiAccessible *desktop=NULL,*app=NULL,*field=NULL;AtspiText *text=NULL;AtspiEditableText *edit=NULL;
@@ -79,7 +156,14 @@ int main(int argc,char **argv) {
     CHECK(app);field=find(app,"Edit document",0);if(!field)field=find(app,"Dokument bearbeiten",0);CHECK(field);
     text=atspi_accessible_get_text_iface(field);edit=atspi_accessible_get_editable_text_iface(field);CHECK(text);
     CHECK(cache_probe(field,0,64u*1024u));
-    if(!strcmp(argv[2],"geometry")) {
+    if(!strcmp(argv[2],"attributes")) {
+        CHECK(expected_text(text,"abcde") && attributes(text,0,0) && attribute_changes(app,field,text));
+    } else if(!strcmp(argv[2],"attributes-readonly")) {
+        CHECK(attributes(text,0,2));
+    } else if(!strncmp(argv[2],"attributes-selected-",20) || !strncmp(argv[2],"attributes-visible-",19)) {
+        int selected=!strncmp(argv[2],"attributes-selected-",20);const char *name=argv[2]+(selected?20:19);
+        int variant=!strcmp(name,"contrast-200")?1:!strcmp(name,"light-150")?2:-1;CHECK(variant>=0 && attributes(text,variant,selected));
+    } else if(!strcmp(argv[2],"geometry")) {
         CHECK(edit && expected_text(text,"abcde") && geometry(field,text,0));
         CHECK(atspi_editable_text_set_text_contents(edit,"a\xcc\x81" "b\r\nend",&e) && !e && expected_text(text,"a\xcc\x81" "b\r\nend"));
         CHECK(geometry(field,text,1));
