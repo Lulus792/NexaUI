@@ -93,8 +93,8 @@ add_library(${model} STATIC "${original}/text/grapheme.c"
     "${document}" "${direct}"
     "${original}/editor/modal.c" "${original}/editor/file.c"
     "${original}/editor/workspace.c" "${original}/editor/view.c"
-    "${original}/files/model.c" "${original}/files/launch.c" "${original}/files/create.c"
-    "${original}/files/rename.c" "${original}/files/layout.c")
+    "${original}/files/model.c" "${original}/files/create.c"
+    "${original}/files/rename.c")
 target_include_directories(${model} PUBLIC "${original}" PRIVATE "${original}/editor" "${CMAKE_CURRENT_SOURCE_DIR}")
 set_source_files_properties("${original}/editor/file.c" "${original}/editor/workspace.c"
     "${original}/editor/view.c" PROPERTIES COMPILE_DEFINITIONS _GNU_SOURCE)

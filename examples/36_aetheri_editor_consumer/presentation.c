@@ -42,8 +42,8 @@ static int compare(const void *a,const void *b) {
 }
 static nx_rect united(nx_rect a,nx_rect b) {
     /* Zero-advance marks do not enlarge a cluster's logical selection cell. */
-    if(!a.width)return b.width?b:a;
-    if(!b.width)return a;
+    if(a.width==0.0f)return b.width!=0.0f?b:a;
+    if(b.width==0.0f)return a;
     double left=fmin(a.x,b.x),top=fmin(a.y,b.y);
     double right=fmax((double)a.x+a.width,(double)b.x+b.width);
     double bottom=fmax((double)a.y+a.height,(double)b.y+b.height);
