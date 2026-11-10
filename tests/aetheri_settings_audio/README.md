@@ -65,6 +65,19 @@ the [transport notes](../../docs/concepts/atspi.md#numeric-value-controls) expla
 the retained actual failure and independent wire checks. No client library or
 SDK error contract is weakened to make a refusal look successful.
 
+Add `NEXAUI_AUDIO_OBSERVATION_FAILURE=1` to either action mode to make original
+session snapshot reads fail after the first submitted command. The independent
+peer requires the original stale-information label, retained volume60, disabled
+volume/mute/output controls and exactly one still-pending effect. Numeric mode
+also requires the standard Value setter's read-only error on the retained object.
+The full task restores readability and requires the same pending state before
+explicit acknowledgement; recovery must not replay or confirm the request.
+With `NEXAUI_AUDIO_CLOSE_PENDING=1`, the window instead closes while snapshots
+remain unreadable. The owner must retain its pending command and unchanged
+observed volume after window return. These variants retain all existing
+deadlines and frame/transcript guards. Observation failure is distinct from
+the full task's permanent session-loss fence.
+
 Keep sanitizer instrumentation and leak detection enabled for matching SDK and
 consumer builds. Record source/font/library hashes, build flags, actual native
 outcomes and failure logs. These tasks do not prove actual Aetheri compositor,

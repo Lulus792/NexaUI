@@ -116,6 +116,19 @@ static bool slider(AtspiAccessible *node,const char *expected,bool enabled) {
     }
     return false;
 }
+static bool label(AtspiAccessible *app,const char *name) {
+    for(unsigned attempt=0;attempt<300;++attempt) {
+        AtspiAccessible *node=lookup(app,name,ATSPI_ROLE_LABEL);
+        if(node){g_object_unref(node);return true;}pump();
+    }
+    return false;
+}
+static bool disabled(AtspiAccessible *app,const char *name,AtspiRole role) {
+    AtspiAccessible *node=lookup(app,name,role);if(!node)return false;
+    int index=action_index(node,"click");
+    bool ok=!state(node,ATSPI_STATE_ENABLED) && index>=0 && !invoke(node,index);
+    g_object_unref(node);return ok;
+}
 static bool command(int fd,const char *text,char *reply,size_t capacity) {
     if(send(fd,text,strlen(text),MSG_NOSIGNAL)!=(ssize_t)strlen(text))return false;
     struct pollfd p={fd,POLLIN,0};int ready;
@@ -251,6 +264,24 @@ int main(int argc,char **argv) {
     CHECK(!invoke(volume,increment));
     if(numeric)CHECK(numeric_values(volume,60,false) && numeric_rejected(62,DBUS_ERROR_PROPERTY_READ_ONLY));
     CHECK(observe(pair[0],"STATE 1 1 0 0.600000000 0 4"));
+    if(getenv("NEXAUI_AUDIO_OBSERVATION_FAILURE")) {
+        CHECK(update(pair[0],"OBS_FAIL"));
+        CHECK(label(app,"Audio information could not be refreshed."));
+        CHECK(!state(volume,ATSPI_STATE_DEFUNCT) && slider(volume,"60",false));
+        CHECK(!invoke(volume,increment));
+        CHECK(disabled(app,"Mute output",ATSPI_ROLE_SWITCH));
+        CHECK(disabled(app,"Headphones",ATSPI_ROLE_RADIO_BUTTON));
+        if(numeric)CHECK(numeric_values(volume,60,false) && numeric_rejected(62,DBUS_ERROR_PROPERTY_READ_ONLY));
+        CHECK(observe(pair[0],"STATE 1 1 0 0.600000000 0 4"));
+        puts("OBSERVATION_FAILURE_PENDING_VERIFIED");
+        if(!getenv("NEXAUI_AUDIO_CLOSE_PENDING")) {
+            CHECK(update(pair[0],"OBS_OK") && label(app,"Applying change…"));
+            CHECK(slider(volume,"60",false) && !invoke(volume,increment));
+            if(numeric)CHECK(numeric_values(volume,60,false) && numeric_rejected(62,DBUS_ERROR_PROPERTY_READ_ONLY));
+            CHECK(observe(pair[0],"STATE 1 1 0 0.600000000 0 4"));
+            puts("OBSERVATION_RECOVERY_PENDING_VERIFIED");
+        }
+    }
     if(!getenv("NEXAUI_AUDIO_CLOSE_PENDING")) {
         CHECK(update(pair[0],"ACK") && slider(volume,"61",true));
         if(numeric) {
@@ -298,6 +329,13 @@ done:
                 if(!strstr(transcript,retired)){fputs("original host did not retire cleanly\n",stderr);result=1;}
                 const char *retained=getenv("NEXAUI_AUDIO_CLOSE_PENDING")?"CONTROLLED_OWNER_AFTER_WINDOW 1 1":"CONTROLLED_OWNER_AFTER_WINDOW 3 3";
                 if(!strstr(transcript,retained)){fputs("owner uncertainty did not survive window return\n",stderr);result=1;}
+                if(getenv("NEXAUI_AUDIO_OBSERVATION_FAILURE")) {
+                    if(!strstr(transcript,"CONTROLLED_OBSERVE OBS_FAIL\n") ||
+                       !strstr(transcript,"CONTROLLED_SNAPSHOT_UNAVAILABLE\n") ||
+                       !strstr(transcript,"CONTROLLED_SNAPSHOT_READS ")) {
+                        fputs("original host did not consume an unavailable snapshot\n",stderr);result=1;
+                    }
+                }
                 if(!getenv("NEXAUI_AUDIO_CLOSE_PENDING")) {
                     const char *recover=strstr(transcript,"CONTROLLED_OBSERVE RECOVER\n");
                     const char *audio=recover?strstr(recover,"AUDIO state="):NULL;

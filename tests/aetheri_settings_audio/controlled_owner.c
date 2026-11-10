@@ -18,6 +18,8 @@ struct ae_audio_session_control {
     GThread *thread;
     struct ae_audio_session_snapshot snapshot;
     unsigned effects;
+    unsigned unreadable_snapshots;
+    bool readable;
     double volume;
     bool mute;
 };
@@ -26,6 +28,10 @@ static bool owned(struct ae_audio_session_control *s) {
 }
 bool ae_audio_session_control_snapshot(struct ae_audio_session_control *s,struct ae_audio_session_snapshot *out) {
     if(!owned(s) || !out)return false;
+    if(!s->readable) {
+        if(!s->unreadable_snapshots) {puts("CONTROLLED_SNAPSHOT_UNAVAILABLE");fflush(stdout);}
+        ++s->unreadable_snapshots;return false;
+    }
     *out=s->snapshot;return true;
 }
 bool ae_audio_session_control_poll(struct ae_audio_session_control *s,struct pollfd out[4],size_t *count,uint64_t *deadline) {
@@ -77,6 +83,10 @@ static gboolean control(gint fd,GIOCondition condition,gpointer data) {
             if(target && audio->command_kind==AE_AUDIO_MUTE)output->muted=s->mute;
         }
         audio->command_state=AE_AUDIO_COMMAND_OBSERVED;++audio->revision;strcpy(reply,"OK");
+    } else if(!strcmp(command,"OBS_FAIL")) {
+        s->readable=false;strcpy(reply,"OK");
+    } else if(!strcmp(command,"OBS_OK")) {
+        s->readable=true;strcpy(reply,"OK");
     } else if(!strcmp(command,"LOSS")) {
         s->snapshot.loss=AE_AUDIO_CONTROL_SESSION_LOST;
         if(audio->command_state==AE_AUDIO_COMMAND_PENDING)audio->command_state=AE_AUDIO_COMMAND_UNKNOWN;
@@ -96,7 +106,7 @@ int main(int argc,char **argv) {
     if(errno || !end || *end || number<0 || number>INT_MAX)return 2;
     int fd=(int)number,type=0;socklen_t size=sizeof(type);
     if(getsockopt(fd,SOL_SOCKET,SO_TYPE,&type,&size) || type!=SOCK_SEQPACKET)return 2;
-    struct ae_audio_session_control owner={0};owner.context=g_main_context_new();
+    struct ae_audio_session_control owner={.readable=true};owner.context=g_main_context_new();
     g_main_context_push_thread_default(owner.context);owner.thread=g_thread_self();
     owner.snapshot.audio=(struct ae_audio_snapshot){.revision=7,.state=AE_AUDIO_READY,.count=2};
     owner.snapshot.audio.outputs[0]=(struct ae_audio_output){.ref={33,101,4},.name="speakers",
@@ -114,6 +124,10 @@ int main(int argc,char **argv) {
                   owner.snapshot.audio.outputs[0].volume!=0.6))result=1;
     if(!pending && (owner.effects!=3 || owner.snapshot.audio.command_state!=AE_AUDIO_COMMAND_UNKNOWN ||
                    !owner.snapshot.audio.outputs[0].is_default))result=1;
+    if(getenv("NEXAUI_AUDIO_OBSERVATION_FAILURE")) {
+        if(!owner.unreadable_snapshots || owner.readable==pending)result=1;
+        printf("CONTROLLED_SNAPSHOT_READS %u %d\n",owner.unreadable_snapshots,owner.readable);
+    }
     printf("CONTROLLED_OWNER_AFTER_WINDOW %u %d\n",owner.effects,(int)owner.snapshot.audio.command_state);
     g_source_destroy(source);g_source_unref(source);close(fd);
     g_main_context_pop_thread_default(owner.context);g_main_context_unref(owner.context);
