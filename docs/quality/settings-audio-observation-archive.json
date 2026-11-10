@@ -1,0 +1,17 @@
+{
+  "path": "nexaui-settings-audio146-20261110.tar.gz",
+  "size": 77595077,
+  "sha256": "3df5b15ac4029978e39a730266e8a5a4ffcdff97845ee0a065e37473aa379248",
+  "verified_regular_files": 486,
+  "verified_symlinks": 2,
+  "manifest": {
+    "path": "settings-audio146-manifest.json",
+    "sha256": "d507822881858ece8f49d12da1119a6053cfde87d522e8e710968e546ea402e5"
+  },
+  "seconds": 18.31297922900012,
+  "excluded": [
+    "borrowed font",
+    "external Weston, libatspi, GLib and other system runtime binaries"
+  ],
+  "goal_complete": false
+}

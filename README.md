@@ -72,6 +72,9 @@ explicit caller-host target and controlled native pending/loss/close checks.
 SDK0.1.32 supplies [ordered slider/drag semantic steps](docs/quality/value-steps-report.md).
 SDK0.1.33 adds [copied numeric values and Linux AT-SPI assignment](docs/quality/numeric-value-report.md);
 UIA/AX numeric bindings and real session/device effects remain open.
+The [unreadable-observation follow-up](docs/quality/settings-audio-observation-report.md)
+checks retained pending state, disabled native controls, recovery without replay
+and close while original audio observations remain unavailable.
 
 The Editor's [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
 actual consumed clipboard bytes, held writers and original-model invalidation

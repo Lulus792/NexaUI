@@ -1,0 +1,134 @@
+{
+  "consumer_revision": "3f51e2bf22359b02b01c5fb2854d69cd3e31c5c5",
+  "run_id": 42762869909,
+  "run_url": "https://github.com/Lulus792/NexaUI/actions/runs/42762869909",
+  "run_attempt": 1,
+  "status": "completed",
+  "conclusion": "success",
+  "required_jobs": [
+    {
+      "id": 129652459330,
+      "name": "sanitizers",
+      "conclusion": "success",
+      "ctest_summaries": [
+        272,
+        272
+      ],
+      "actual_passed_case_lines": 544,
+      "log": {
+        "path": "settings-audio145-ci-129652459330.log",
+        "size": 340283,
+        "sha256": "321d99cb58c4fa29b3e719daabe3de63f4d2446861141f75ef9d13b13b2e8a47"
+      }
+    },
+    {
+      "id": 129652459418,
+      "name": "core (ubuntu-latest, OFF)",
+      "conclusion": "success",
+      "ctest_summaries": [
+        272,
+        1
+      ],
+      "actual_passed_case_lines": 273,
+      "log": {
+        "path": "settings-audio145-ci-129652459418.log",
+        "size": 346131,
+        "sha256": "5bac5c79716e129a22067452955f3964d1e169cd0a774f2c950b2f4dc19df533"
+      }
+    },
+    {
+      "id": 129652459529,
+      "name": "core (macos-latest, ON)",
+      "conclusion": "success",
+      "ctest_summaries": [
+        123
+      ],
+      "actual_passed_case_lines": 123,
+      "log": {
+        "path": "settings-audio145-ci-129652459529.log",
+        "size": 111408,
+        "sha256": "b5976789bd567dfdf74e89bc28783901779ee90fb4dd84c449d7cc2ba575168a"
+      }
+    },
+    {
+      "id": 129652459564,
+      "name": "core (macos-latest, OFF)",
+      "conclusion": "success",
+      "ctest_summaries": [
+        124
+      ],
+      "actual_passed_case_lines": 124,
+      "log": {
+        "path": "settings-audio145-ci-129652459564.log",
+        "size": 111717,
+        "sha256": "f3f31fd9ee4bf7865a111ebe6b1629dc1e8844302a066087661d30db44afd2f5"
+      }
+    },
+    {
+      "id": 129652459611,
+      "name": "core (ubuntu-latest, ON)",
+      "conclusion": "success",
+      "ctest_summaries": [
+        270
+      ],
+      "actual_passed_case_lines": 270,
+      "log": {
+        "path": "settings-audio145-ci-129652459611.log",
+        "size": 356547,
+        "sha256": "4b0cd9ab63b03cea1777538a08036ed7c63d13b0f8cf52eb75f4bdcf1c5a9fca"
+      }
+    },
+    {
+      "id": 129652459640,
+      "name": "core (windows-latest, ON)",
+      "conclusion": "success",
+      "ctest_summaries": [
+        147
+      ],
+      "actual_passed_case_lines": 147,
+      "log": {
+        "path": "settings-audio145-ci-129652459640.log",
+        "size": 103235,
+        "sha256": "13ae6f579ecf95a2c9a3b6760bf191c0a6439a075fcdc4d78f4c324a12b5c2c3"
+      }
+    },
+    {
+      "id": 129652459727,
+      "name": "core (windows-latest, OFF)",
+      "conclusion": "success",
+      "ctest_summaries": [
+        148
+      ],
+      "actual_passed_case_lines": 148,
+      "log": {
+        "path": "settings-audio145-ci-129652459727.log",
+        "size": 103373,
+        "sha256": "43836beb58d03a4ad7a27b8b7db8fe96763d86f1020f5784a238662e5faa1529"
+      }
+    }
+  ],
+  "optional_jobs": [
+    {
+      "id": 129652460984,
+      "name": "windows-asan",
+      "conclusion": "skipped"
+    },
+    {
+      "id": 129652461482,
+      "name": "fuzz-campaigns",
+      "conclusion": "skipped"
+    }
+  ],
+  "ctest_skips": 0,
+  "scope": "Generic SDK/package CI on exact consumer commit, not the standalone original Aetheri/audio fixture. The 30 consumer CTests and 24 native controlled-audio tasks have separate local evidence.",
+  "raw_run": {
+    "path": "settings-audio148-run.json",
+    "size": 13413,
+    "sha256": "38b35e6e24edc773ff2997488fff5eb83ee22c9f87a7ef3cac6989bc2d5a49a9"
+  },
+  "raw_jobs": {
+    "path": "settings-audio148-jobs.json",
+    "size": 38736,
+    "sha256": "700fe1d8828f9c87845b5fb8b448963a5373933233b67b566f6b7f182bc6432c"
+  }
+}

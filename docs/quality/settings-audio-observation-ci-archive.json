@@ -1,0 +1,14 @@
+{
+  "path": "nexaui-settings-audio149-20261110.tar.gz",
+  "size": 254571,
+  "sha256": "4c73265f0c23ad051211a4ad8a8afb2f381be64e6a97b74b3c1bf2e1e5ccd6e8",
+  "verified_regular_files": 14,
+  "verified_symlinks": 0,
+  "manifest": {
+    "path": "settings-audio149-manifest.json",
+    "size": 2205,
+    "sha256": "f563877ff3789a5c4fb9374a29193158ab61634cfbc3590250b3b6c26feb2b34"
+  },
+  "scope": "Complete decoded logs and receipts for all seven successful exact-source CI jobs; final user-facing documentation remains in Git.",
+  "goal_complete": false
+}

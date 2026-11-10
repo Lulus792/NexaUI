@@ -1,5 +1,16 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Original Sound observation failure: consumer`3f51e2b` retains installed0.1.33/
+`1e00a6f` and unchanged original Aetheri`de4b61d` inputs. Three profiles pass30
+consumer CTests and24 native tasks, including12 new post-submit unreadable-state
+tasks. Temporary failure retains observed60 and disables controls; recovery
+neither acknowledges nor replays the pending request. Closing while unreadable
+retains the owner's pending command after window return. Two compiled defects
+are rejected; all seven exact-source CI jobs pass. See the
+[failure/lifetime report](settings-audio-observation-report.md).
+This adds no SDK API/version or real device/service acceptance. All103 statuses,
+remaining packets6–8 and independent Aetheri development persist.
+
 Files capture-observation follow-up: source`87d8336` retains installed0.1.33/
 `1e00a6f` and all earlier e713880 application binaries. Six full native tasks
 pass with twelve independent read-only state expectations; all264 full image
