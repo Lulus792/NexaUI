@@ -1,0 +1,1719 @@
+{
+  "source_revision": "e7138808ede25a08bcc568a093a2d7de425e56d4",
+  "sdk_revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+  "sdk_version": "0.1.33",
+  "environment": {
+    "uid": 1000,
+    "boot": "8b915c0c-ab36-4cce-a8a3-e84e1c12627c",
+    "platform": "Linux-6.19.10-300.fc44.x86_64-x86_64-with-glibc2.43",
+    "libc": "ldd (GNU libc) 2.43",
+    "gcc": "gcc (GCC) 16.2.1 20260819 (Red Hat 16.2.1-2)"
+  },
+  "profiles": [
+    {
+      "profile": "shared",
+      "test_count": 27,
+      "tests": [
+        {
+          "name": "files_original_session",
+          "classname": "files_original_session",
+          "time": "0.276454",
+          "status": "run"
+        },
+        {
+          "name": "files_original_view_1x",
+          "classname": "files_original_view_1x",
+          "time": "0.373577",
+          "status": "run"
+        },
+        {
+          "name": "files_original_view_2x",
+          "classname": "files_original_view_2x",
+          "time": "0.746772",
+          "status": "run"
+        },
+        {
+          "name": "files.model",
+          "classname": "files.model",
+          "time": "0.375374",
+          "status": "run"
+        },
+        {
+          "name": "files.layout",
+          "classname": "files.layout",
+          "time": "0.099894",
+          "status": "run"
+        },
+        {
+          "name": "files.launch",
+          "classname": "files.launch",
+          "time": "0.0035999",
+          "status": "run"
+        },
+        {
+          "name": "files.create",
+          "classname": "files.create",
+          "time": "0.509519",
+          "status": "run"
+        },
+        {
+          "name": "files.rename",
+          "classname": "files.rename",
+          "time": "0.270536",
+          "status": "run"
+        },
+        {
+          "name": "files.move",
+          "classname": "files.move",
+          "time": "0.282215",
+          "status": "run"
+        },
+        {
+          "name": "text.graphemes",
+          "classname": "text.graphemes",
+          "time": "0.0022542",
+          "status": "run"
+        },
+        {
+          "name": "editor.document",
+          "classname": "editor.document",
+          "time": "0.101395",
+          "status": "run"
+        },
+        {
+          "name": "editor.modal",
+          "classname": "editor.modal",
+          "time": "0.0018787",
+          "status": "run"
+        },
+        {
+          "name": "editor.history",
+          "classname": "editor.history",
+          "time": "0.403527",
+          "status": "run"
+        },
+        {
+          "name": "editor.search",
+          "classname": "editor.search",
+          "time": "0.941913",
+          "status": "run"
+        },
+        {
+          "name": "editor.selection",
+          "classname": "editor.selection",
+          "time": "1.42662",
+          "status": "run"
+        },
+        {
+          "name": "editor.file",
+          "classname": "editor.file",
+          "time": "3.10971",
+          "status": "run"
+        },
+        {
+          "name": "editor.view",
+          "classname": "editor.view",
+          "time": "0.0218434",
+          "status": "run"
+        },
+        {
+          "name": "terminal.model",
+          "classname": "terminal.model",
+          "time": "0.399786",
+          "status": "run"
+        },
+        {
+          "name": "terminal.selection",
+          "classname": "terminal.selection",
+          "time": "0.0405784",
+          "status": "run"
+        },
+        {
+          "name": "terminal.paste",
+          "classname": "terminal.paste",
+          "time": "0.0018645",
+          "status": "run"
+        },
+        {
+          "name": "terminal.composition",
+          "classname": "terminal.composition",
+          "time": "0.0015356",
+          "status": "run"
+        },
+        {
+          "name": "files_paste_admission",
+          "classname": "files_paste_admission",
+          "time": "0.267336",
+          "status": "run"
+        },
+        {
+          "name": "files_appearance_layout",
+          "classname": "files_appearance_layout",
+          "time": "0.155767",
+          "status": "run"
+        },
+        {
+          "name": "files_appearance_fallback",
+          "classname": "files_appearance_fallback",
+          "time": "0.0526435",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_transactions",
+          "classname": "files_ime_transactions",
+          "time": "0.20936",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_view_1x",
+          "classname": "files_ime_view_1x",
+          "time": "0.380048",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_view_2x",
+          "classname": "files_ime_view_2x",
+          "time": "0.560219",
+          "status": "run"
+        }
+      ],
+      "test_xml": {
+        "path": "files110-shared/tests.xml",
+        "sha256": "bd9fa95edccfc56f3c123888ce66842a25b6f55512352dc343187e8664f74961"
+      },
+      "translation_units": 107,
+      "binaries": [
+        {
+          "path": "files110-shared/aetheri_files_candidate",
+          "sha256": "0d7fc14bf39c243d19f0fa2bf55e39f9e5e9378bf2ab349ca221cd138aff0ca3",
+          "size": 170592,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-shared/aetheri_files_ime_candidate",
+          "sha256": "d6393b08677a581f3f5336f99e38fff0e1fb34c66a7023de9846713382f67657",
+          "size": 179880,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-shared/aetheri_files_fault_candidate",
+          "sha256": "befadde49f228263ce6979d019b2869fb20cc67987609436b3f7b88016c03cac",
+          "size": 170816,
+          "fault_hook": true
+        },
+        {
+          "path": "files110-shared/aetheri_terminal_candidate",
+          "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e",
+          "size": 120448,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-shared/aetheri_editor_candidate",
+          "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4",
+          "size": 100896,
+          "fault_hook": false
+        }
+      ],
+      "flags": {
+        "x11": false,
+        "vulkan": false,
+        "atspi": true
+      },
+      "source_delta_sha256": "d5d9d84440030dec6e55b861f8178982a0baf3913abd092d722d406236807708"
+    },
+    {
+      "profile": "release",
+      "test_count": 27,
+      "tests": [
+        {
+          "name": "files_original_session",
+          "classname": "files_original_session",
+          "time": "0.268248",
+          "status": "run"
+        },
+        {
+          "name": "files_original_view_1x",
+          "classname": "files_original_view_1x",
+          "time": "0.352377",
+          "status": "run"
+        },
+        {
+          "name": "files_original_view_2x",
+          "classname": "files_original_view_2x",
+          "time": "0.532218",
+          "status": "run"
+        },
+        {
+          "name": "files.model",
+          "classname": "files.model",
+          "time": "0.310922",
+          "status": "run"
+        },
+        {
+          "name": "files.layout",
+          "classname": "files.layout",
+          "time": "0.0981015",
+          "status": "run"
+        },
+        {
+          "name": "files.launch",
+          "classname": "files.launch",
+          "time": "0.0054662",
+          "status": "run"
+        },
+        {
+          "name": "files.create",
+          "classname": "files.create",
+          "time": "0.524315",
+          "status": "run"
+        },
+        {
+          "name": "files.rename",
+          "classname": "files.rename",
+          "time": "0.24145",
+          "status": "run"
+        },
+        {
+          "name": "files.move",
+          "classname": "files.move",
+          "time": "0.49859",
+          "status": "run"
+        },
+        {
+          "name": "text.graphemes",
+          "classname": "text.graphemes",
+          "time": "0.002508",
+          "status": "run"
+        },
+        {
+          "name": "editor.document",
+          "classname": "editor.document",
+          "time": "0.100575",
+          "status": "run"
+        },
+        {
+          "name": "editor.modal",
+          "classname": "editor.modal",
+          "time": "0.0018569",
+          "status": "run"
+        },
+        {
+          "name": "editor.history",
+          "classname": "editor.history",
+          "time": "0.502911",
+          "status": "run"
+        },
+        {
+          "name": "editor.search",
+          "classname": "editor.search",
+          "time": "1.10821",
+          "status": "run"
+        },
+        {
+          "name": "editor.selection",
+          "classname": "editor.selection",
+          "time": "1.4507",
+          "status": "run"
+        },
+        {
+          "name": "editor.file",
+          "classname": "editor.file",
+          "time": "2.95021",
+          "status": "run"
+        },
+        {
+          "name": "editor.view",
+          "classname": "editor.view",
+          "time": "0.0127795",
+          "status": "run"
+        },
+        {
+          "name": "terminal.model",
+          "classname": "terminal.model",
+          "time": "0.413418",
+          "status": "run"
+        },
+        {
+          "name": "terminal.selection",
+          "classname": "terminal.selection",
+          "time": "0.0429517",
+          "status": "run"
+        },
+        {
+          "name": "terminal.paste",
+          "classname": "terminal.paste",
+          "time": "0.0018641",
+          "status": "run"
+        },
+        {
+          "name": "terminal.composition",
+          "classname": "terminal.composition",
+          "time": "0.0015843",
+          "status": "run"
+        },
+        {
+          "name": "files_paste_admission",
+          "classname": "files_paste_admission",
+          "time": "0.263612",
+          "status": "run"
+        },
+        {
+          "name": "files_appearance_layout",
+          "classname": "files_appearance_layout",
+          "time": "0.15327",
+          "status": "run"
+        },
+        {
+          "name": "files_appearance_fallback",
+          "classname": "files_appearance_fallback",
+          "time": "0.0061987",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_transactions",
+          "classname": "files_ime_transactions",
+          "time": "0.202165",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_view_1x",
+          "classname": "files_ime_view_1x",
+          "time": "0.384398",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_view_2x",
+          "classname": "files_ime_view_2x",
+          "time": "0.584257",
+          "status": "run"
+        }
+      ],
+      "test_xml": {
+        "path": "files110-release/tests.xml",
+        "sha256": "9273a2fbfc8cb2c80da2dcc1cca63ae96d270dbd1d862d21db7de3a5737a3989"
+      },
+      "translation_units": 107,
+      "binaries": [
+        {
+          "path": "files110-release/aetheri_files_candidate",
+          "sha256": "3a6beb744ac1693fbca244aef5f8ff7e356472da6c68304e1f896ff400e01ab7",
+          "size": 996904,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-release/aetheri_files_ime_candidate",
+          "sha256": "f1d8986f72b697b733ce099b4a23bffa6d330ba20dd35001f232c8e8458d57ac",
+          "size": 1001392,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-release/aetheri_files_fault_candidate",
+          "sha256": "f14482a72f3c5e214ed4a20e055a72c9805eff3fc20c7372239371478c7c73b7",
+          "size": 997112,
+          "fault_hook": true
+        },
+        {
+          "path": "files110-release/aetheri_terminal_candidate",
+          "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e",
+          "size": 120448,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-release/aetheri_editor_candidate",
+          "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4",
+          "size": 100896,
+          "fault_hook": false
+        }
+      ],
+      "flags": {
+        "x11": false,
+        "vulkan": false,
+        "atspi": true
+      },
+      "source_delta_sha256": "d5d9d84440030dec6e55b861f8178982a0baf3913abd092d722d406236807708"
+    },
+    {
+      "profile": "asan",
+      "test_count": 27,
+      "tests": [
+        {
+          "name": "files_original_session",
+          "classname": "files_original_session",
+          "time": "0.350558",
+          "status": "run"
+        },
+        {
+          "name": "files_original_view_1x",
+          "classname": "files_original_view_1x",
+          "time": "2.37857",
+          "status": "run"
+        },
+        {
+          "name": "files_original_view_2x",
+          "classname": "files_original_view_2x",
+          "time": "3.32915",
+          "status": "run"
+        },
+        {
+          "name": "files.model",
+          "classname": "files.model",
+          "time": "0.444878",
+          "status": "run"
+        },
+        {
+          "name": "files.layout",
+          "classname": "files.layout",
+          "time": "0.403061",
+          "status": "run"
+        },
+        {
+          "name": "files.launch",
+          "classname": "files.launch",
+          "time": "0.0284151",
+          "status": "run"
+        },
+        {
+          "name": "files.create",
+          "classname": "files.create",
+          "time": "0.62232",
+          "status": "run"
+        },
+        {
+          "name": "files.rename",
+          "classname": "files.rename",
+          "time": "0.280351",
+          "status": "run"
+        },
+        {
+          "name": "files.move",
+          "classname": "files.move",
+          "time": "0.323636",
+          "status": "run"
+        },
+        {
+          "name": "text.graphemes",
+          "classname": "text.graphemes",
+          "time": "0.0144068",
+          "status": "run"
+        },
+        {
+          "name": "editor.document",
+          "classname": "editor.document",
+          "time": "0.31397",
+          "status": "run"
+        },
+        {
+          "name": "editor.modal",
+          "classname": "editor.modal",
+          "time": "0.0149415",
+          "status": "run"
+        },
+        {
+          "name": "editor.history",
+          "classname": "editor.history",
+          "time": "1.26636",
+          "status": "run"
+        },
+        {
+          "name": "editor.search",
+          "classname": "editor.search",
+          "time": "8.20971",
+          "status": "run"
+        },
+        {
+          "name": "editor.selection",
+          "classname": "editor.selection",
+          "time": "5.47992",
+          "status": "run"
+        },
+        {
+          "name": "editor.file",
+          "classname": "editor.file",
+          "time": "6.18515",
+          "status": "run"
+        },
+        {
+          "name": "editor.view",
+          "classname": "editor.view",
+          "time": "0.0502097",
+          "status": "run"
+        },
+        {
+          "name": "terminal.model",
+          "classname": "terminal.model",
+          "time": "0.704982",
+          "status": "run"
+        },
+        {
+          "name": "terminal.selection",
+          "classname": "terminal.selection",
+          "time": "0.108381",
+          "status": "run"
+        },
+        {
+          "name": "terminal.paste",
+          "classname": "terminal.paste",
+          "time": "0.0127865",
+          "status": "run"
+        },
+        {
+          "name": "terminal.composition",
+          "classname": "terminal.composition",
+          "time": "0.0126084",
+          "status": "run"
+        },
+        {
+          "name": "files_paste_admission",
+          "classname": "files_paste_admission",
+          "time": "1.56654",
+          "status": "run"
+        },
+        {
+          "name": "files_appearance_layout",
+          "classname": "files_appearance_layout",
+          "time": "0.9273",
+          "status": "run"
+        },
+        {
+          "name": "files_appearance_fallback",
+          "classname": "files_appearance_fallback",
+          "time": "0.0470483",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_transactions",
+          "classname": "files_ime_transactions",
+          "time": "1.12945",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_view_1x",
+          "classname": "files_ime_view_1x",
+          "time": "2.28228",
+          "status": "run"
+        },
+        {
+          "name": "files_ime_view_2x",
+          "classname": "files_ime_view_2x",
+          "time": "2.93835",
+          "status": "run"
+        }
+      ],
+      "test_xml": {
+        "path": "files110-asan/tests.xml",
+        "sha256": "c0f833a1398b9af6a4728196328c8e3ac606aad05f658a3a623835b7f82746d6"
+      },
+      "translation_units": 107,
+      "binaries": [
+        {
+          "path": "files110-asan/aetheri_files_candidate",
+          "sha256": "3bad6e40d187e1ac306dbafea6021321172f131394328e5f8e4bae799ed88777",
+          "size": 9703112,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-asan/aetheri_files_ime_candidate",
+          "sha256": "b8e0fa94188594c043b4ca2d84549c94c2c0db578e16f2dd1346cfe33e8d3b6b",
+          "size": 9836840,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-asan/aetheri_files_fault_candidate",
+          "sha256": "a9238a92a941158436059cc268da63a265ae35f71e2a01d20ac3e1dca89e8dc6",
+          "size": 9709048,
+          "fault_hook": true
+        },
+        {
+          "path": "files110-asan/aetheri_terminal_candidate",
+          "sha256": "89e164d882c92164f3865bb5f334734ecbda91af109a1c672f10690944d11c4f",
+          "size": 1230288,
+          "fault_hook": false
+        },
+        {
+          "path": "files110-asan/aetheri_editor_candidate",
+          "sha256": "43c6d182902cbaedeb4363156a0b94b2ca4c0f7fe281514f5674a7ac2ffad6b2",
+          "size": 787456,
+          "fault_hook": false
+        }
+      ],
+      "flags": {
+        "x11": false,
+        "vulkan": false,
+        "atspi": true
+      },
+      "source_delta_sha256": "d5d9d84440030dec6e55b861f8178982a0baf3913abd092d722d406236807708"
+    }
+  ],
+  "native": [
+    {
+      "profile": "shared",
+      "case": "normal",
+      "path": "normal111-shared/files-view-native-ktzvpzx9/result.json",
+      "sha256": "62939d482d7797a4d9effb6459b1a4aba545d19be1fbca1764de00c48b78dccd",
+      "result": "passed",
+      "images": 66,
+      "checkpoints": 0,
+      "actors": {
+        "114341": {
+          "binary": "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+          "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e",
+          "parent": 114151
+        },
+        "114342": {
+          "binary": "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+          "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4",
+          "parent": 114341
+        }
+      },
+      "fault_cases": null,
+      "idle_cpu_ticks": 0,
+      "peer_sha256": "46a76810496ff3bb0aa16841b587be1f89f7abcd5f4f067b21ab13f2d725456b",
+      "sdk": {
+        "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "version": "0.1.33",
+        "library": "/var/tmp/nxf101/sdk-shared-prefix/lib/libnexaui.so.0.1.33",
+        "sha256": "a96d99d689ddf59a39137682fc197912c195bb83e5715a253fe38d9694ae3645",
+        "linkage": "shared"
+      },
+      "scope": "opt-in opaque NexaUI Files on private compositor; no default/physical/production admission"
+    },
+    {
+      "profile": "shared",
+      "case": "fault",
+      "path": "fault111-shared/files-view-fault-hzh086_d/result.json",
+      "sha256": "0e4d016c43d027116cd9569724795b7a1a0f490443b1389cff7c70aa37e265e2",
+      "result": "passed",
+      "images": 6,
+      "checkpoints": 0,
+      "actors": null,
+      "fault_cases": [
+        {
+          "kind": "create",
+          "one_syscall_attempt": true,
+          "inode": 1573073,
+          "retained_effect": true,
+          "close_wait": false
+        },
+        {
+          "kind": "rename",
+          "one_syscall_attempt": true,
+          "inode": 1573081,
+          "retained_effect": true,
+          "close_wait": false
+        },
+        {
+          "kind": "move",
+          "one_syscall_attempt": true,
+          "inode": 1573090,
+          "retained_effect": true,
+          "close_wait": true
+        }
+      ],
+      "idle_cpu_ticks": null,
+      "peer_sha256": null,
+      "sdk": null,
+      "scope": "separately linked native probe, actual effects/lost acknowledgements; no production power-loss recovery or grant/removal API"
+    },
+    {
+      "profile": "shared",
+      "case": "ime",
+      "path": "ime111-shared/result.json",
+      "sha256": "815fc49c1e5ab7c73b8f4a4b015d2e4487f14821d8896cd7b0d06e829080a91b",
+      "result": "passed",
+      "images": 66,
+      "checkpoints": 350,
+      "actors": null,
+      "fault_cases": null,
+      "idle_cpu_ticks": null,
+      "peer_sha256": null,
+      "sdk": {
+        "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "version": "0.1.33",
+        "atspi_compiled": true,
+        "library": "/var/tmp/nxf101/sdk-shared-prefix/lib/libnexaui.so.0.1.33",
+        "sha256": "a96d99d689ddf59a39137682fc197912c195bb83e5715a253fe38d9694ae3645",
+        "dbus_sdk": "/var/tmp/nxf101/dbus-sdk",
+        "dbus_headers": [
+          {
+            "path": "include/dbus-1.0/dbus/dbus-address.h",
+            "sha256": "5a6834badb73f871acaaea7f03f6497f50e958232a1dbe64f1f098e56c4557ce"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-bus.h",
+            "sha256": "c50a3f89fab412a98544d98a1c94dc07ad5b540ebbf63e63105877039ff2f374"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-connection.h",
+            "sha256": "f9496c07830e44fbda1668328b40c78527251c99e62919c80af479631ff794bf"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-errors.h",
+            "sha256": "00292ccbbc3d30603c293122155151fd21aa26aa0adbc8333972440544f37ded"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-macros.h",
+            "sha256": "78fc922e402466c826145dbfe31d2ae87682ef2df6233d436dc3399552f6362f"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-memory.h",
+            "sha256": "7e0487d09e88e705bd166432e3d581aafe2e90c5654224505b73c56ae8d8cf2f"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-message.h",
+            "sha256": "2dd354759e49fad23f25b3b85e73d9e6d4ad0034c08828af1d5f7226971f66d6"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-misc.h",
+            "sha256": "6ff2e2f874f55a6b4738aea905ee413d814fec320b48ffd7f30a2df3237894aa"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-pending-call.h",
+            "sha256": "0aee41fe9624a284935fee0d4b572a313f83230ac31bdead59dff96309b7d1e0"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-protocol.h",
+            "sha256": "533fd55283662d1c013792a29e9993e31babe20d5a5dfedae2c4b8e8bebafc6a"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-server.h",
+            "sha256": "f63bbd5503d13b1486b66a76cc9f289e19ff46d7b3c5f39df9953af3e6df0323"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-shared.h",
+            "sha256": "97ed7edf5baf42bdee4d5777d63158599667078499ca1b0360ccedb013d3531c"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-signature.h",
+            "sha256": "13a10246dee6a378899c88a9ac37e0eb618a1f91766fc27de0053309e6aac941"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-syntax.h",
+            "sha256": "200170d6ee508b6daa8a17dc9b804a0a35fa555d8d8c8768258edd75dd36cd43"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-threads.h",
+            "sha256": "16c10fafae90e9aaeaf0506f41432bfa389dfdf333115f8934680d88d83ae12d"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-types.h",
+            "sha256": "0228e51763888e7319f0b8c862f0ee928e3079340408512f7e4a594e1eeae48d"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus.h",
+            "sha256": "56ff456922bf6df191958a291fc5d6d66f39b82b156bc2d715ef87add155cea5"
+          },
+          {
+            "path": "lib64/dbus-1.0/include/dbus/dbus-arch-deps.h",
+            "sha256": "599da3a9e936fdd5a1702b48cf1c0db5226e37931ff5f957f5d2fbfe63f89eca"
+          }
+        ],
+        "observed_probe": {
+          "version": "0.1.33",
+          "features": 116,
+          "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b"
+        },
+        "scope": "Actually executed C17 installed-package probe; fresh same-source SDK, no old library relabel or launch tripwire."
+      },
+      "scope": "Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change"
+    },
+    {
+      "profile": "release",
+      "case": "normal",
+      "path": "normal111-release/files-view-native-medgw5kp/result.json",
+      "sha256": "c012b8ab1e5fb35d9707c36bf3d4ed198ff66778234c65c9e44ce9d47050b1a6",
+      "result": "passed",
+      "images": 66,
+      "checkpoints": 0,
+      "actors": {
+        "116401": {
+          "binary": "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+          "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e",
+          "parent": 115792
+        },
+        "116406": {
+          "binary": "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+          "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4",
+          "parent": 116401
+        }
+      },
+      "fault_cases": null,
+      "idle_cpu_ticks": 0,
+      "peer_sha256": "a2aa0a148e5d68f7b2c95ea5f9c8e58290176f698719413053e9c31ea0201f37",
+      "sdk": {
+        "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "version": "0.1.33",
+        "library": "/var/tmp/nxf101/sdk-release-prefix/lib/libnexaui.a",
+        "sha256": "ec3c661ce5a9e85690fff2b1b7fbeea04d46a0280b33b97e4d680b33241a060b",
+        "linkage": "static"
+      },
+      "scope": "opt-in opaque NexaUI Files on private compositor; no default/physical/production admission"
+    },
+    {
+      "profile": "release",
+      "case": "fault",
+      "path": "fault111-release/files-view-fault-vlqvmws0/result.json",
+      "sha256": "d414c2e3f93953ebecec08af0094a084e74ef08bea3193c68a06e80e7db5f0b4",
+      "result": "passed",
+      "images": 6,
+      "checkpoints": 0,
+      "actors": null,
+      "fault_cases": [
+        {
+          "kind": "create",
+          "one_syscall_attempt": true,
+          "inode": 1573308,
+          "retained_effect": true,
+          "close_wait": false
+        },
+        {
+          "kind": "rename",
+          "one_syscall_attempt": true,
+          "inode": 1573316,
+          "retained_effect": true,
+          "close_wait": false
+        },
+        {
+          "kind": "move",
+          "one_syscall_attempt": true,
+          "inode": 1573325,
+          "retained_effect": true,
+          "close_wait": true
+        }
+      ],
+      "idle_cpu_ticks": null,
+      "peer_sha256": null,
+      "sdk": null,
+      "scope": "separately linked native probe, actual effects/lost acknowledgements; no production power-loss recovery or grant/removal API"
+    },
+    {
+      "profile": "release",
+      "case": "ime",
+      "path": "ime111-release/result.json",
+      "sha256": "32e8a1a294fd65b89b78ab2ac92b87031577cdd09a14922c5931732226823389",
+      "result": "passed",
+      "images": 66,
+      "checkpoints": 350,
+      "actors": null,
+      "fault_cases": null,
+      "idle_cpu_ticks": null,
+      "peer_sha256": null,
+      "sdk": {
+        "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "version": "0.1.33",
+        "atspi_compiled": true,
+        "library": "/var/tmp/nxf101/sdk-shared-prefix/lib/libnexaui.so.0.1.33",
+        "sha256": "a96d99d689ddf59a39137682fc197912c195bb83e5715a253fe38d9694ae3645",
+        "dbus_sdk": "/var/tmp/nxf101/dbus-sdk",
+        "dbus_headers": [
+          {
+            "path": "include/dbus-1.0/dbus/dbus-address.h",
+            "sha256": "5a6834badb73f871acaaea7f03f6497f50e958232a1dbe64f1f098e56c4557ce"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-bus.h",
+            "sha256": "c50a3f89fab412a98544d98a1c94dc07ad5b540ebbf63e63105877039ff2f374"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-connection.h",
+            "sha256": "f9496c07830e44fbda1668328b40c78527251c99e62919c80af479631ff794bf"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-errors.h",
+            "sha256": "00292ccbbc3d30603c293122155151fd21aa26aa0adbc8333972440544f37ded"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-macros.h",
+            "sha256": "78fc922e402466c826145dbfe31d2ae87682ef2df6233d436dc3399552f6362f"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-memory.h",
+            "sha256": "7e0487d09e88e705bd166432e3d581aafe2e90c5654224505b73c56ae8d8cf2f"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-message.h",
+            "sha256": "2dd354759e49fad23f25b3b85e73d9e6d4ad0034c08828af1d5f7226971f66d6"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-misc.h",
+            "sha256": "6ff2e2f874f55a6b4738aea905ee413d814fec320b48ffd7f30a2df3237894aa"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-pending-call.h",
+            "sha256": "0aee41fe9624a284935fee0d4b572a313f83230ac31bdead59dff96309b7d1e0"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-protocol.h",
+            "sha256": "533fd55283662d1c013792a29e9993e31babe20d5a5dfedae2c4b8e8bebafc6a"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-server.h",
+            "sha256": "f63bbd5503d13b1486b66a76cc9f289e19ff46d7b3c5f39df9953af3e6df0323"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-shared.h",
+            "sha256": "97ed7edf5baf42bdee4d5777d63158599667078499ca1b0360ccedb013d3531c"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-signature.h",
+            "sha256": "13a10246dee6a378899c88a9ac37e0eb618a1f91766fc27de0053309e6aac941"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-syntax.h",
+            "sha256": "200170d6ee508b6daa8a17dc9b804a0a35fa555d8d8c8768258edd75dd36cd43"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-threads.h",
+            "sha256": "16c10fafae90e9aaeaf0506f41432bfa389dfdf333115f8934680d88d83ae12d"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-types.h",
+            "sha256": "0228e51763888e7319f0b8c862f0ee928e3079340408512f7e4a594e1eeae48d"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus.h",
+            "sha256": "56ff456922bf6df191958a291fc5d6d66f39b82b156bc2d715ef87add155cea5"
+          },
+          {
+            "path": "lib64/dbus-1.0/include/dbus/dbus-arch-deps.h",
+            "sha256": "599da3a9e936fdd5a1702b48cf1c0db5226e37931ff5f957f5d2fbfe63f89eca"
+          }
+        ],
+        "observed_probe": {
+          "version": "0.1.33",
+          "features": 116,
+          "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b"
+        },
+        "scope": "Actually executed C17 installed-package probe; fresh same-source SDK, no old library relabel or launch tripwire.",
+        "static_link": {
+          "archive": "/var/tmp/nxf101/sdk-release-prefix/lib/libnexaui.a",
+          "sha256": "ec3c661ce5a9e85690fff2b1b7fbeea04d46a0280b33b97e4d680b33241a060b",
+          "app": "/var/tmp/nxf101/files110-release/aetheri_files_ime_candidate",
+          "app_sha256": "f1d8986f72b697b733ce099b4a23bffa6d330ba20dd35001f232c8e8458d57ac"
+        }
+      },
+      "scope": "Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change"
+    },
+    {
+      "profile": "asan",
+      "case": "normal",
+      "path": "normal111-asan/files-view-native-z6i6army/result.json",
+      "sha256": "9ffe32256a847332c14c6624c7e979d73fed4225a2e2ea6362043ca7df1c9792",
+      "result": "passed",
+      "images": 66,
+      "checkpoints": 0,
+      "actors": {
+        "117038": {
+          "binary": "/var/tmp/nxf101/files110-asan/aetheri_terminal_candidate",
+          "sha256": "89e164d882c92164f3865bb5f334734ecbda91af109a1c672f10690944d11c4f",
+          "parent": 117028
+        },
+        "117039": {
+          "binary": "/var/tmp/nxf101/files110-asan/aetheri_editor_candidate",
+          "sha256": "43c6d182902cbaedeb4363156a0b94b2ca4c0f7fe281514f5674a7ac2ffad6b2",
+          "parent": 117038
+        }
+      },
+      "fault_cases": null,
+      "idle_cpu_ticks": 0,
+      "peer_sha256": "c218da001c1c8e999ee3d021ab1116621bdf5fa2abb0a2b5cae266c9530083ee",
+      "sdk": {
+        "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "version": "0.1.33",
+        "library": "/var/tmp/nxf101/sdk-asan-prefix/lib/libnexaui.a",
+        "sha256": "91048d1764621f946d4dbc9c4476b63f0e4da6a2526dfdfeeef3f79d41d0ea6b",
+        "linkage": "static"
+      },
+      "scope": "opt-in opaque NexaUI Files on private compositor; no default/physical/production admission"
+    },
+    {
+      "profile": "asan",
+      "case": "fault",
+      "path": "fault111-asan/files-view-fault-_dsye3p4/result.json",
+      "sha256": "11fc99e65c11806056b3ebf07d4eadc4b6b9017c5f5d0848250d0f6658c546bc",
+      "result": "passed",
+      "images": 6,
+      "checkpoints": 0,
+      "actors": null,
+      "fault_cases": [
+        {
+          "kind": "create",
+          "one_syscall_attempt": true,
+          "inode": 1573543,
+          "retained_effect": true,
+          "close_wait": false
+        },
+        {
+          "kind": "rename",
+          "one_syscall_attempt": true,
+          "inode": 1573551,
+          "retained_effect": true,
+          "close_wait": false
+        },
+        {
+          "kind": "move",
+          "one_syscall_attempt": true,
+          "inode": 1573560,
+          "retained_effect": true,
+          "close_wait": true
+        }
+      ],
+      "idle_cpu_ticks": null,
+      "peer_sha256": null,
+      "sdk": null,
+      "scope": "separately linked native probe, actual effects/lost acknowledgements; no production power-loss recovery or grant/removal API"
+    },
+    {
+      "profile": "asan",
+      "case": "ime",
+      "path": "ime111-asan/result.json",
+      "sha256": "2681294bdff3a97c9ebb42606e52dea09664072d7fd2f94b50825e08822e10a1",
+      "result": "passed",
+      "images": 66,
+      "checkpoints": 350,
+      "actors": null,
+      "fault_cases": null,
+      "idle_cpu_ticks": null,
+      "peer_sha256": null,
+      "sdk": {
+        "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "version": "0.1.33",
+        "atspi_compiled": true,
+        "library": "/var/tmp/nxf101/sdk-shared-prefix/lib/libnexaui.so.0.1.33",
+        "sha256": "a96d99d689ddf59a39137682fc197912c195bb83e5715a253fe38d9694ae3645",
+        "dbus_sdk": "/var/tmp/nxf101/dbus-sdk",
+        "dbus_headers": [
+          {
+            "path": "include/dbus-1.0/dbus/dbus-address.h",
+            "sha256": "5a6834badb73f871acaaea7f03f6497f50e958232a1dbe64f1f098e56c4557ce"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-bus.h",
+            "sha256": "c50a3f89fab412a98544d98a1c94dc07ad5b540ebbf63e63105877039ff2f374"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-connection.h",
+            "sha256": "f9496c07830e44fbda1668328b40c78527251c99e62919c80af479631ff794bf"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-errors.h",
+            "sha256": "00292ccbbc3d30603c293122155151fd21aa26aa0adbc8333972440544f37ded"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-macros.h",
+            "sha256": "78fc922e402466c826145dbfe31d2ae87682ef2df6233d436dc3399552f6362f"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-memory.h",
+            "sha256": "7e0487d09e88e705bd166432e3d581aafe2e90c5654224505b73c56ae8d8cf2f"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-message.h",
+            "sha256": "2dd354759e49fad23f25b3b85e73d9e6d4ad0034c08828af1d5f7226971f66d6"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-misc.h",
+            "sha256": "6ff2e2f874f55a6b4738aea905ee413d814fec320b48ffd7f30a2df3237894aa"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-pending-call.h",
+            "sha256": "0aee41fe9624a284935fee0d4b572a313f83230ac31bdead59dff96309b7d1e0"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-protocol.h",
+            "sha256": "533fd55283662d1c013792a29e9993e31babe20d5a5dfedae2c4b8e8bebafc6a"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-server.h",
+            "sha256": "f63bbd5503d13b1486b66a76cc9f289e19ff46d7b3c5f39df9953af3e6df0323"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-shared.h",
+            "sha256": "97ed7edf5baf42bdee4d5777d63158599667078499ca1b0360ccedb013d3531c"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-signature.h",
+            "sha256": "13a10246dee6a378899c88a9ac37e0eb618a1f91766fc27de0053309e6aac941"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-syntax.h",
+            "sha256": "200170d6ee508b6daa8a17dc9b804a0a35fa555d8d8c8768258edd75dd36cd43"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-threads.h",
+            "sha256": "16c10fafae90e9aaeaf0506f41432bfa389dfdf333115f8934680d88d83ae12d"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus-types.h",
+            "sha256": "0228e51763888e7319f0b8c862f0ee928e3079340408512f7e4a594e1eeae48d"
+          },
+          {
+            "path": "include/dbus-1.0/dbus/dbus.h",
+            "sha256": "56ff456922bf6df191958a291fc5d6d66f39b82b156bc2d715ef87add155cea5"
+          },
+          {
+            "path": "lib64/dbus-1.0/include/dbus/dbus-arch-deps.h",
+            "sha256": "599da3a9e936fdd5a1702b48cf1c0db5226e37931ff5f957f5d2fbfe63f89eca"
+          }
+        ],
+        "observed_probe": {
+          "version": "0.1.33",
+          "features": 116,
+          "revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b"
+        },
+        "scope": "Actually executed C17 installed-package probe; fresh same-source SDK, no old library relabel or launch tripwire.",
+        "static_link": {
+          "archive": "/var/tmp/nxf101/sdk-asan-prefix/lib/libnexaui.a",
+          "sha256": "91048d1764621f946d4dbc9c4476b63f0e4da6a2526dfdfeeef3f79d41d0ea6b",
+          "app": "/var/tmp/nxf101/files110-asan/aetheri_files_ime_candidate",
+          "app_sha256": "b8e0fa94188594c043b4ca2d84549c94c2c0db578e16f2dd1346cfe33e8d3b6b"
+        }
+      },
+      "scope": "Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change"
+    }
+  ],
+  "commands": [
+    {
+      "profile": "shared",
+      "case": "normal",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-shared.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "shared",
+        "--app",
+        "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-shared",
+        "--output",
+        "/var/tmp/nxf101/normal111-shared"
+      ],
+      "exit": 0,
+      "seconds": 30.68311410000024,
+      "log": "native111-shared-normal.log",
+      "sha256": "8e48695641f8fe5b828883a6cbbb8b830e2d64f164c6ed59dd80b696d9e98581"
+    },
+    {
+      "profile": "shared",
+      "case": "fault",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input111-shared-fault.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "shared",
+        "--mode",
+        "fault",
+        "--app",
+        "/var/tmp/nxf101/files110-shared/aetheri_files_fault_candidate",
+        "--output",
+        "/var/tmp/nxf101/fault111-shared"
+      ],
+      "exit": 0,
+      "seconds": 2.0306921000010334,
+      "log": "native111-shared-fault.log",
+      "sha256": "dd8ae19d27433f230cf31d2f0ed2756d7d8e7b70979bc0417fe5dfac1176f190"
+    },
+    {
+      "profile": "shared",
+      "case": "ime",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/var/tmp/nxf101/files110-shared",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--atspi-fixture",
+        "/var/tmp/nxf101/fixture106-shared",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-shared.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--linkage",
+        "shared",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/var/tmp/nxf101/ime111-shared",
+        "--transactions",
+        "--pressure",
+        "--clipboard-tools",
+        "/var/tmp/nxf101/foreign/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/var/tmp/nxf101/input/fallback/NotoSansSymbols2-Regular.ttf",
+        "--font-errors",
+        "--paste-timeout-guard",
+        "--clipboard-stream-gate",
+        "/var/tmp/nxf101/foreign/libeditor_foreign_stream_gate.so"
+      ],
+      "exit": 0,
+      "seconds": 33.373290099996666,
+      "log": "native111-shared-ime.log",
+      "sha256": "2cb8aeb3c439b8ebfa5b0229c6ad8742e85072964d37d6ec4aa6db2fa0ccaea3"
+    },
+    {
+      "profile": "release",
+      "case": "normal",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-release.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "static",
+        "--app",
+        "/var/tmp/nxf101/files110-release/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-release",
+        "--output",
+        "/var/tmp/nxf101/normal111-release"
+      ],
+      "exit": 0,
+      "seconds": 43.57028849999915,
+      "log": "native111-release-normal.log",
+      "sha256": "016791bed3a727b6447052265be6fa01e2a7758abd3df2ddf9e90011a9b9bdaa"
+    },
+    {
+      "profile": "release",
+      "case": "fault",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input111-release-fault.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "static",
+        "--mode",
+        "fault",
+        "--app",
+        "/var/tmp/nxf101/files110-release/aetheri_files_fault_candidate",
+        "--output",
+        "/var/tmp/nxf101/fault111-release"
+      ],
+      "exit": 0,
+      "seconds": 2.125378999997338,
+      "log": "native111-release-fault.log",
+      "sha256": "7e0672b7a904cc026489dec9c72cafcbb79bac4084017932297b773b473a08d8"
+    },
+    {
+      "profile": "release",
+      "case": "ime",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/var/tmp/nxf101/files110-release",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--atspi-fixture",
+        "/var/tmp/nxf101/fixture106-release",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-release.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--linkage",
+        "static",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/var/tmp/nxf101/ime111-release",
+        "--transactions",
+        "--pressure",
+        "--clipboard-tools",
+        "/var/tmp/nxf101/foreign/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/var/tmp/nxf101/input/fallback/NotoSansSymbols2-Regular.ttf",
+        "--font-errors",
+        "--paste-timeout-guard",
+        "--clipboard-stream-gate",
+        "/var/tmp/nxf101/foreign/libeditor_foreign_stream_gate.so"
+      ],
+      "exit": 0,
+      "seconds": 29.67569740000181,
+      "log": "native111-release-ime.log",
+      "sha256": "04187327e793e0785f5363e83fb5a5375bf43a6b0d2472b83031eb660b1dfd87"
+    },
+    {
+      "profile": "asan",
+      "case": "normal",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-asan.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-debug-13dad161969d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-asan/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-asan/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "static",
+        "--app",
+        "/var/tmp/nxf101/files110-asan/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-asan",
+        "--output",
+        "/var/tmp/nxf101/normal111-asan"
+      ],
+      "exit": 0,
+      "seconds": 59.92233519999718,
+      "log": "native111-asan-normal.log",
+      "sha256": "814c75b78161e81de777667f645df773d00443a057a4128350fbdeeaaf28eaa7"
+    },
+    {
+      "profile": "asan",
+      "case": "fault",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input111-asan-fault.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-debug-13dad161969d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-asan/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-asan/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "static",
+        "--mode",
+        "fault",
+        "--app",
+        "/var/tmp/nxf101/files110-asan/aetheri_files_fault_candidate",
+        "--output",
+        "/var/tmp/nxf101/fault111-asan"
+      ],
+      "exit": 0,
+      "seconds": 5.639804899998126,
+      "log": "native111-asan-fault.log",
+      "sha256": "f66efc154805ca1d9beb71c60c20e3a9dd7abca2dc3eea60db8dd1739591cbc8"
+    },
+    {
+      "profile": "asan",
+      "case": "ime",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/var/tmp/nxf101/files110-asan",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--atspi-fixture",
+        "/var/tmp/nxf101/fixture106-asan",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-asan.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--linkage",
+        "static",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-debug-13dad161969d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/var/tmp/nxf101/ime111-asan",
+        "--transactions",
+        "--pressure",
+        "--clipboard-tools",
+        "/var/tmp/nxf101/foreign/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/var/tmp/nxf101/input/fallback/NotoSansSymbols2-Regular.ttf",
+        "--font-errors",
+        "--paste-timeout-guard",
+        "--clipboard-stream-gate",
+        "/var/tmp/nxf101/foreign/libeditor_foreign_stream_gate.so"
+      ],
+      "exit": 0,
+      "seconds": 53.65924690000247,
+      "log": "native111-asan-ime.log",
+      "sha256": "4f0ef886bffbdf48e55ed95fc1d963c28fe5c5ad34c30e18b083c4a639ffc3f5"
+    }
+  ],
+  "guards": {
+    "result": "passed",
+    "cases": [
+      {
+        "case": "revision",
+        "profile": "shared",
+        "command": [
+          "/usr/bin/python3",
+          "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+          "--original",
+          "/var/tmp/nxf101/input/original",
+          "--sdk-input",
+          "/var/tmp/nxf101/guards114/revision.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--server",
+          "/var/tmp/nxf101/producer103/files_ime_producer",
+          "--font",
+          "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--terminal",
+          "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+          "--editor",
+          "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--linkage",
+          "shared",
+          "--app",
+          "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+          "--atspi",
+          "/var/tmp/nxf101/fixture106-shared",
+          "--output",
+          "/var/tmp/nxf101/guards114/revision-output"
+        ],
+        "exit": 1,
+        "expected_error": "Wrong candidate SDK declaration",
+        "output_created": false,
+        "log": "/var/tmp/nxf101/guards114/revision.log",
+        "log_sha256": "f68796525fc43bc30aaafeac5f7fa3c4b6dca78db332121fda5583870fa161c8"
+      },
+      {
+        "case": "version",
+        "profile": "shared",
+        "command": [
+          "/usr/bin/python3",
+          "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+          "--original",
+          "/var/tmp/nxf101/input/original",
+          "--sdk-input",
+          "/var/tmp/nxf101/guards114/version.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--server",
+          "/var/tmp/nxf101/producer103/files_ime_producer",
+          "--font",
+          "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--terminal",
+          "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+          "--editor",
+          "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--linkage",
+          "shared",
+          "--app",
+          "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+          "--atspi",
+          "/var/tmp/nxf101/fixture106-shared",
+          "--output",
+          "/var/tmp/nxf101/guards114/version-output"
+        ],
+        "exit": 1,
+        "expected_error": "Wrong candidate SDK declaration",
+        "output_created": false,
+        "log": "/var/tmp/nxf101/guards114/version.log",
+        "log_sha256": "f68796525fc43bc30aaafeac5f7fa3c4b6dca78db332121fda5583870fa161c8"
+      },
+      {
+        "case": "shared-library",
+        "profile": "shared",
+        "command": [
+          "/usr/bin/python3",
+          "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+          "--original",
+          "/var/tmp/nxf101/input/original",
+          "--sdk-input",
+          "/var/tmp/nxf101/guards114/shared-library.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--server",
+          "/var/tmp/nxf101/producer103/files_ime_producer",
+          "--font",
+          "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--terminal",
+          "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+          "--editor",
+          "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--linkage",
+          "shared",
+          "--app",
+          "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+          "--atspi",
+          "/var/tmp/nxf101/fixture106-shared",
+          "--output",
+          "/var/tmp/nxf101/guards114/shared-library-output"
+        ],
+        "exit": 1,
+        "expected_error": "Changed candidate SDK library",
+        "output_created": false,
+        "log": "/var/tmp/nxf101/guards114/shared-library.log",
+        "log_sha256": "178bcca04a5a769b96bcd2390bc7e76f20ccb0d2e2bb96bc000e02b39ae5807d"
+      },
+      {
+        "case": "static-archive",
+        "profile": "release",
+        "command": [
+          "/usr/bin/python3",
+          "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+          "--original",
+          "/var/tmp/nxf101/input/original",
+          "--sdk-input",
+          "/var/tmp/nxf101/guards114/static-archive.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--server",
+          "/var/tmp/nxf101/producer103/files_ime_producer",
+          "--font",
+          "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--terminal",
+          "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+          "--editor",
+          "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--linkage",
+          "static",
+          "--app",
+          "/var/tmp/nxf101/files110-release/aetheri_files_ime_candidate",
+          "--atspi",
+          "/var/tmp/nxf101/fixture106-release",
+          "--output",
+          "/var/tmp/nxf101/guards114/static-archive-output"
+        ],
+        "exit": 1,
+        "expected_error": "Changed static SDK archive or application",
+        "output_created": false,
+        "log": "/var/tmp/nxf101/guards114/static-archive.log",
+        "log_sha256": "c10b313fd18efdc5bb4702cfba8259e3ae5f1a106a192196686bed63329cbd8d"
+      },
+      {
+        "case": "static-app",
+        "profile": "release",
+        "command": [
+          "/usr/bin/python3",
+          "/var/tmp/nxf101/consumer110/examples/35_aetheri_files_consumer/run_native.py",
+          "--original",
+          "/var/tmp/nxf101/input/original",
+          "--sdk-input",
+          "/var/tmp/nxf101/guards114/static-app.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--server",
+          "/var/tmp/nxf101/producer103/files_ime_producer",
+          "--font",
+          "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+          "--terminal",
+          "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+          "--editor",
+          "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+          "--mono",
+          "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+          "--linkage",
+          "static",
+          "--app",
+          "/var/tmp/nxf101/files110-release/aetheri_files_ime_candidate",
+          "--atspi",
+          "/var/tmp/nxf101/fixture106-release",
+          "--output",
+          "/var/tmp/nxf101/guards114/static-app-output"
+        ],
+        "exit": 1,
+        "expected_error": "Changed static SDK archive or application",
+        "output_created": false,
+        "log": "/var/tmp/nxf101/guards114/static-app.log",
+        "log_sha256": "c10b313fd18efdc5bb4702cfba8259e3ae5f1a106a192196686bed63329cbd8d"
+      }
+    ],
+    "scope": "Five actual pre-launch provenance refusals; no native app/compositor start and no source/pin modification."
+  },
+  "owned_processes": [],
+  "scope": "Three real glibc full original/component/native profiles; unchanged Files owner, real original document children, separately generated optional-IME fallback. No launch tripwire, relaxed deadlines or active Aetheri mutation. No physical/human/performance/final adoption claim.",
+  "remaining": [
+    "Four unfenced sanitizer capture differences; no complete frame/focus parity claim.",
+    "Actual current Aetheri compositor/IME, ordinary owner adoption and broader app/service integration.",
+    "Physical/human/design/performance and complete catalogue gates."
+  ]
+}

@@ -9,8 +9,15 @@ renderer, version or Aetheri pin changes.
 
 This extends the generated Files IME consumer. It is **not full current-SDK
 document-child or normal application acceptance**. Preserve the historical
-full0.1.26 [Files result](files-paste-report.md) with its own original
-launch/Terminal/editor evidence; current scoped runs do not relabel it.
+27-group0.1.26 [component/native-IME result](files-paste-report.md) and the
+separate original0.1.23 [native document-child result](files-native-report.md).
+The0.1.26 native task did not repeat document-child GUI acceptance. Current
+scoped runs do not relabel either result.
+
+Later independent [glibc full follow-up](files-full-report.md) repeats the
+original document-child workflow on0.1.33 without the tripwire. It retains four
+unfenced sanitizer capture differences as open observation evidence; the scope
+of the musl results and immutable archive in this report is unchanged.
 
 Affected evidence: B01/B03/B04, T01/T03/T04, I01/I02/I05, A02/A04,
 P04/P05 and Q02/Q03/Q06/Q08. All status columns remain unchanged. This uses
@@ -103,8 +110,8 @@ Real original Terminal/editor executables were built separately and supplied,
 but this runner does not invoke them.
 
 Thus the9 groups exclude the18 additional original child/regression groups in
-the historical27-group full profile. Current-SDK document-child launch,
-FD/group/environment assertions and child runtime remain open. The optional
+the historical27-group full profile. At this checkpoint, current-SDK document-child
+launch, FD/group/environment assertions and child runtime remained open. The optional
 musl bridge reuses Example23's Terminal syscalls only; it does not implement
 Files' missing closefrom action or normalize termios.
 
@@ -118,8 +125,9 @@ WSL Git-path failure are kept separately, not counted as product passes.
 
 ## Remaining work
 
-Re-run the full current-SDK original child/document regression on the required
-libc without the tripwire. Continue wider interruption/provider/clipboard
+The later [glibc follow-up](files-full-report.md) executes the original current-SDK
+child/document regression without the tripwire; four capture observations remain
+open. Continue wider interruption/provider/clipboard
 pressure/deadline/error combinations, installed IME/font/screenreader and actual
 Aetheri compositor/session acceptance. Physical/human, design, performance and
 normal-owner adoption remain separate gates. Bounded atomic text edits supersede

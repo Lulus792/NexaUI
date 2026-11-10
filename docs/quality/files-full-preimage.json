@@ -1,0 +1,166 @@
+{
+  "source_revision": "e7138808ede25a08bcc568a093a2d7de425e56d4",
+  "preimage": {
+    "result": "passed",
+    "only_generated_view_change": {
+      "before_sha256": "c6c39ebf50af85ecf572821fe5fe4bc09f241bf4b997584eaf0bd921b37d5289",
+      "after_sha256": "a5b4fb143ebdedbc03ee79edd18ebaf6b853e88dc5e1eab4bf4e658f644ba929",
+      "before": "    if(nx_window_set_ime_transaction_events(window,1)!=NX_OK) return false;\n",
+      "after": "    nx_result ime=nx_window_set_ime_transaction_events(window,1);\n    if(ime!=NX_OK && ime!=NX_ERROR_UNSUPPORTED) return false;\n"
+    },
+    "preimage_app_sha256": "e67744cda54896dd41aa585768589717650d06fe0dc93835cc8e154280b9c78f",
+    "failed_log": {
+      "path": "/var/tmp/nxf101/normal109-shared/files-view-native-0l6vyxl9/app.log",
+      "sha256": "cd95fc1665428b062d536b19429e5ba3e04fdbd3f494d402f7036c567eeac4fb"
+    },
+    "protocol_observations": [
+      {
+        "profile": "shared",
+        "normal_text_input_advertised": false,
+        "ime_text_input_advertised": true,
+        "normal_server_sha256": "b356caaf23cc1d62af943dac8227b64f9d6013191ca3bb364703ef13e763bf0a",
+        "ime_client_sha256": "364bbf9266be02124ea684df6280c568f6aa10e063bd6d2faabbc69be342c91e"
+      },
+      {
+        "profile": "release",
+        "normal_text_input_advertised": false,
+        "ime_text_input_advertised": true,
+        "normal_server_sha256": "277fca2c54b05022bbfb4c3404e259cbc0c1cf041d374f5b74231654f5841073",
+        "ime_client_sha256": "bd996dbe14a200e7ad476786df9316d619e6b508352674df3e4984cb9a95008d"
+      },
+      {
+        "profile": "asan",
+        "normal_text_input_advertised": false,
+        "ime_text_input_advertised": true,
+        "normal_server_sha256": "4e1b5c83ee461190d48f3b557a5b064b3c604bcc4f5683b4a93a03ecf581c148",
+        "ime_client_sha256": "8a334b24adc39aca0aa529ce0de08791b3a607a31ebb221ff32a6b42c763643a"
+      }
+    ],
+    "files": [
+      {
+        "path": "files-shared/aetheri_files_ime_candidate",
+        "sha256": "e67744cda54896dd41aa585768589717650d06fe0dc93835cc8e154280b9c78f",
+        "size": 179880
+      },
+      {
+        "path": "files-shared/files-ime-generated/nexaui_view.c",
+        "sha256": "c6c39ebf50af85ecf572821fe5fe4bc09f241bf4b997584eaf0bd921b37d5289",
+        "size": 66082
+      },
+      {
+        "path": "files-shared/files-ime-generated/nexaui_main.c",
+        "sha256": "762a7466a0d0207e8bf35204d98a3e322ba6a6ec01e0a3586d95582ddeb57230",
+        "size": 18233
+      },
+      {
+        "path": "files-shared/files-ime-generated/nexaui_view.h",
+        "sha256": "7912ba247703bb7cac9d0f226b5d588052afa152bdea26fcc4e1ce0e1117d73a",
+        "size": 2074
+      },
+      {
+        "path": "files-shared/files-ime-generated/source-delta.json",
+        "sha256": "f2a08fa98e6fd8dd92edcc333999894a27374e0c30af8685ed2c8eb9f90cd9f5",
+        "size": 24841
+      },
+      {
+        "path": "files-shared/compile_commands.json",
+        "sha256": "582a7585624658cb4064036545b86f155f353701f730461e729a59e7f868c3df",
+        "size": 30455
+      },
+      {
+        "path": "files-shared/CMakeCache.txt",
+        "sha256": "e51ec29c468d2ae7f0f13dd511e355ec10ed1abb31c9292041700118d037521e",
+        "size": 29574
+      },
+      {
+        "path": "audit117.json",
+        "sha256": "660420e4b742e7138be18df9b61a86d07bfb8689fc4b77091d898ac599cdea8b",
+        "size": 282028
+      }
+    ],
+    "scope": "Actual failed binary/source preserved; generated view differs only at optional IME startup boundary. No protocol advertisement in the failed and three successful normal workflows; all three separate IME tasks advertise it."
+  },
+  "archives": [
+    {
+      "path": "/mnt/d/NexaUI/out/files-full-preimage120.tar.gz",
+      "sha256": "cfb4be9457e30942c73f69db4cf97c5eb6e0528960056ba454e15f88023d0710",
+      "size": 148390,
+      "members": [
+        "files-shared/aetheri_files_ime_candidate",
+        "files-shared/files-ime-generated/nexaui_view.c",
+        "files-shared/files-ime-generated/nexaui_main.c",
+        "files-shared/files-ime-generated/nexaui_view.h",
+        "files-shared/files-ime-generated/source-delta.json",
+        "files-shared/compile_commands.json",
+        "files-shared/CMakeCache.txt",
+        "audit117.json",
+        "preimage120.json"
+      ]
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/files-full-generated121.tar.gz",
+      "sha256": "a8bef57b67fc32a9c5583961152fbd40a8801e397e3c18b57824e216ecbf9b6c",
+      "size": 178378,
+      "members": [
+        "sdk-shared/CMakeCache.txt",
+        "sdk-shared/CMakeFiles/4.3.0/CompilerIdC/CMakeCCompilerId.c",
+        "sdk-shared/CMakeFiles/InstallScripts.json",
+        "sdk-shared/build.ninja",
+        "sdk-shared/compile_commands.json",
+        "sdk-shared/generated/source_revision.h",
+        "sdk-shared/generated/wayland/fractional-scale-v1-client-protocol.h",
+        "sdk-shared/generated/wayland/fractional-scale-v1-protocol.c",
+        "sdk-shared/generated/wayland/text-input-unstable-v1-client-protocol.h",
+        "sdk-shared/generated/wayland/text-input-unstable-v1-protocol.c",
+        "sdk-shared/generated/wayland/text-input-unstable-v3-client-protocol.h",
+        "sdk-shared/generated/wayland/text-input-unstable-v3-protocol.c",
+        "sdk-shared/generated/wayland/viewporter-client-protocol.h",
+        "sdk-shared/generated/wayland/viewporter-protocol.c",
+        "sdk-shared/generated/wayland/xdg-decoration-client-protocol.h",
+        "sdk-shared/generated/wayland/xdg-decoration-protocol.c",
+        "sdk-shared/generated/wayland/xdg-shell-client-protocol.h",
+        "sdk-shared/generated/wayland/xdg-shell-protocol.c",
+        "sdk-release/CMakeCache.txt",
+        "sdk-release/CMakeFiles/4.3.0/CompilerIdC/CMakeCCompilerId.c",
+        "sdk-release/CMakeFiles/InstallScripts.json",
+        "sdk-release/build.ninja",
+        "sdk-release/compile_commands.json",
+        "sdk-release/generated/source_revision.h",
+        "sdk-release/generated/wayland/fractional-scale-v1-client-protocol.h",
+        "sdk-release/generated/wayland/fractional-scale-v1-protocol.c",
+        "sdk-release/generated/wayland/text-input-unstable-v1-client-protocol.h",
+        "sdk-release/generated/wayland/text-input-unstable-v1-protocol.c",
+        "sdk-release/generated/wayland/text-input-unstable-v3-client-protocol.h",
+        "sdk-release/generated/wayland/text-input-unstable-v3-protocol.c",
+        "sdk-release/generated/wayland/viewporter-client-protocol.h",
+        "sdk-release/generated/wayland/viewporter-protocol.c",
+        "sdk-release/generated/wayland/xdg-decoration-client-protocol.h",
+        "sdk-release/generated/wayland/xdg-decoration-protocol.c",
+        "sdk-release/generated/wayland/xdg-shell-client-protocol.h",
+        "sdk-release/generated/wayland/xdg-shell-protocol.c",
+        "sdk-asan/CMakeCache.txt",
+        "sdk-asan/CMakeFiles/4.3.0/CompilerIdC/CMakeCCompilerId.c",
+        "sdk-asan/CMakeFiles/InstallScripts.json",
+        "sdk-asan/build.ninja",
+        "sdk-asan/compile_commands.json",
+        "sdk-asan/generated/source_revision.h",
+        "sdk-asan/generated/wayland/fractional-scale-v1-client-protocol.h",
+        "sdk-asan/generated/wayland/fractional-scale-v1-protocol.c",
+        "sdk-asan/generated/wayland/text-input-unstable-v1-client-protocol.h",
+        "sdk-asan/generated/wayland/text-input-unstable-v1-protocol.c",
+        "sdk-asan/generated/wayland/text-input-unstable-v3-client-protocol.h",
+        "sdk-asan/generated/wayland/text-input-unstable-v3-protocol.c",
+        "sdk-asan/generated/wayland/viewporter-client-protocol.h",
+        "sdk-asan/generated/wayland/viewporter-protocol.c",
+        "sdk-asan/generated/wayland/xdg-decoration-client-protocol.h",
+        "sdk-asan/generated/wayland/xdg-decoration-protocol.c",
+        "sdk-asan/generated/wayland/xdg-shell-client-protocol.h",
+        "sdk-asan/generated/wayland/xdg-shell-protocol.c",
+        "generated121.json"
+      ]
+    }
+  ],
+  "raw_translation_units_verified": 321,
+  "png_full_rgb_roundtrips": 8,
+  "catalogue_rows_unchanged": 103
+}

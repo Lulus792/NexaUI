@@ -314,6 +314,14 @@ Three profiles pass two affected CTests and five native cases each;66 native
 checkpoints and two compiled worker failure controls are retained. Ordinary
 host/model/view/worker and installed SDK0.1.23 remain unchanged.
 
+Files glibc full follow-up: `e7138808ede25a08bcc568a093a2d7de425e56d4`,
+[optional-IME startup fallback and original real document workflows](files-full-report.md).
+Installed SDK0.1.33/source1e00a6f supplies three full profiles,81 original/component
+CTests and nine native document/AT-SPI, lost-result and IME tasks, without a launch
+tripwire. Five false provenance declarations are rejected. Full capture comparison
+matches272/276 pairs; four sanitizer input/focus observations remain open. SDK
+production, Aetheri pin/default and all103 statuses remain unchanged.
+
 Files current-SDK pressure/lifetime follow-up: `5f14a9ca74ce3f389c5475cc41016589548307c4`,
 [14 host-token cases, native packet pressure and strict clipboard timeout rejection](files-pressure-report.md).
 Installed SDK0.1.33 supplies three scoped profiles:9 CTests and350 native
@@ -321,10 +329,10 @@ IME/clipboard/create/rename checkpoints per profile,198 captures and198 equal
 whole-image pairs overall. An exact old peer and two compiled defects are
 rejected. Local libc lacks the original Files closefrom spawn action; an
 aborting private tripwire is never reached, and full current-SDK original
-document-child regression remains open. This does not supersede the following
-historical full original-child result or change any103 requirement status.
+document-child regression remained open at that scoped checkpoint. This does not supersede the following
+historical full component/native-IME result or change any103 requirement status.
 
-Full original-child Files consumer checkpoint: `713c26ee3db9c9fd3da61370bd290d54732b29ef`,
+Full27-group Files component/native-IME checkpoint: `713c26ee3db9c9fd3da61370bd290d54732b29ef`,
 [whole-proposal paste admission, retained selection/history and explicit native
 assistive rejection](files-paste-report.md), using SDK0.1.26. It continues
 [atomic edits](files-ime-atomic-report.md), [foreign clipboard/close lifetime](files-clipboard-report.md)
@@ -391,7 +399,7 @@ exercised older header exactly; this is not current-runtime acceptance.
 
 | Required composition | Existing source/evidence | Next consumer work | External owner obligation |
 | --- | --- | --- | --- |
-| Files application | Original7483286 candidate plus separate generated IME consumer713c26e/SDK0.1.26; native document/unknown-worker/OS AT-SPI, atomic edits, foreign clipboard/close, selected fallback and EN/DE cancellation evidence | Full replacement/delete and remaining interruption paths, broader clipboard pressure/deadline/provider/error paths, font/locale/IME coverage and normal application adoption; preserve actual original validation/explicit rejection barrier and service boundaries | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
+| Files application | Original7483286 owner; historical SDK0.1.23 native documents and SDK0.1.26 component/native-IME; [SDK0.1.33 full glibc follow-up](files-full-report.md) adds real document children on three profiles and optional-IME startup fallback alongside scoped pressure/lifetime evidence | Four unfenced sanitizer input/focus captures, remaining interruption/provider/error paths, broader font/locale/IME coverage and normal application adoption; preserve actual original validation/explicit rejection barrier and service boundaries | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
 | Settings and devices | Original Settings model contains transient display observations and appearance/language/text settings; [example21](../../examples/21_aetheri_model/README.md) and ordinary Settings evidence already exist | Reuse controls/status/wakeup for additional actual device models, with unavailable/pending/error/reconnect states | Real audio, network, Bluetooth/input, power/account observations and authorized control; compositor output observation alone changes no display/device configuration |
 | Software/apps | Original `ae_catalogue_resolve_app` returns an exact recipient-scoped active-app observation; [example34](../../examples/34_aetheri_software/README.md) has a bounded worker, native list/filter/full details, keyboard/controlled IME/OS AT-SPI, held-query wake/close, foreign clipboard, measured action rows and compact Escape/draft/focus evidence | Output/scale/workarea migration, open AT-SPI stability finding and broader fonts/locales/design/clipboard/IME; actual full inventory/management data | Actual eligible target discovery, full inventory protocol, authenticated source/recipient admission and operation APIs |
 | Components/dependencies | Original manifest decoder and shared owned document reader expose declared component/version/publisher/files/actions/dependency IDs; example34 binds exact observed artifact/component/publisher and shows all declared dependencies plus complete file/action inspection | Compose actual dependency/ownership/process graph data; retain missing/unverified state and expand native lifetime/resource checks | Installed dependency/ownership state, trusted expected artifact provenance and complete inventory; declarations are no installed-files or current-process inventory |

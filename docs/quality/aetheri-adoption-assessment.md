@@ -1,12 +1,22 @@
 # Aetheri adoption: initial source assessment
 
+Files glibc full follow-up: source`e713880` uses installed0.1.33/`1e00a6f`
+and original7483286 ownership. All81 original/component CTests and nine native
+document/AT-SPI, lost-result and IME tasks pass on three full profiles without a
+launch tripwire. Optional native IME absence no longer aborts startup; ordinary
+keyboard/clipboard remain bound. Five false SDK/archive/app declarations fail
+before launch. Full capture comparison matches272/276 pairs; four sanitizer
+input/focus observations remain open. No SDK production, active Aetheri pin/default
+or103 status changes. See the [full follow-up](files-full-report.md).
+
 Files pressure/lifetime follow-up: `5f14a9c` reuses installed0.1.33 and original
 7483286 ownership. Three scoped profiles each pass9 component groups and350
 native IME/clipboard/create/rename checkpoints;198 full image pairs match.
 The exact preceding peer's real NoReply false success and two compiled defects
-are rejected. Full current-SDK document-child acceptance remains open: local
+are rejected. At that scoped checkpoint, document-child acceptance remained open: local
 libc lacks the original closefrom spawn action, and the private aborting tripwire
-supplies no launch. Historical full0.1.26 evidence remains separate. See the
+supplies no launch. Historical0.1.26 component/native-IME and0.1.23 native
+document-child evidence remain separate. See the
 [pressure report](files-pressure-report.md). SDK production, Aetheri pin/default
 and all103 statuses remain unchanged; packet6 and packets7–8 continue.
 

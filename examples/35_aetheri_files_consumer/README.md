@@ -240,6 +240,12 @@ migration and physical/human/performance acceptance remain separate gates.
 
 ## Current SDK pressure and view-lifetime follow-up
 
+The generated host accepts an unavailable optional native text-input protocol
+and keeps ordinary keyboard editing and the window clipboard binding. Other
+errors enabling transaction events still fail startup. The original native
+document driver leaves the text-input protocol disabled, so that workflow also
+checks this fallback; the separate IME driver explicitly enables the protocol.
+
 The IME consumer can explicitly select `-DFILES_IME_SDK_VERSION=0.1.33` with
 the matching `NEXAUI_EXPECTED_REVISION`. Its default remains exactly0.1.26;
 `FILES_BUILD_IME_HOST=OFF` still selects exactly0.1.23. No Aetheri pin changes.
@@ -264,14 +270,19 @@ AT-SPI deadline, requires peer exit1 with an actual NoReply, closes the writer,
 and checks the unchanged original name/files. This deliberate failure is
 separate from ordinary successful native replies and semantic refusals.
 
-The current scoped0.1.33 follow-up passes nine component CTests and the native
+The earlier scoped0.1.33 follow-up passes nine component CTests and the native
 IME/clipboard/create/rename runner on each of Release-static, Release-shared and
-Debug-O1 ASan/UBSan/LSan. It does not supersede the historical0.1.26 full original
-document-child regression. The local musl libc lacks the original launch module's
+Debug-O1 ASan/UBSan/LSan. It does not supersede the historical0.1.26 full component
+and native-IME suite or the original0.1.23 native document-child regression.
+The local musl libc lacks the original launch module's
 `posix_spawn_file_actions_addclosefrom_np`; the private scoped tests use an
 aborting tripwire for that unavailable function and never accept document launch.
 The optional `NEXAUI_AETHERI_MUSL_COMPAT` reuses Example23's Terminal syscall
 bridge only; it does not supply that missing Files spawn action or change FD
-closing policy. Full0.1.33 document-child regression on the required libc,
+closing policy. A separate [glibc full follow-up](../../docs/quality/files-full-report.md)
+now passes27 original/component CTests plus the original real document-child,
+lost-result and IME workflows on each of three profiles. `run_native.py` accepts
+an explicit0.1.33 declaration and `--linkage static` with exact archive/app
+bindings; shared remains the default. Four unfenced sanitizer capture differences,
 actual Aetheri compositor/IME, broader pressure/lifetime and normal adoption
 remain open.

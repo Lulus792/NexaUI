@@ -1,0 +1,40 @@
+{
+  "source_revision": "e7138808ede25a08bcc568a093a2d7de425e56d4",
+  "archive": {
+    "path": "/var/tmp/nxf101/files-full113-evidence.tar.gz",
+    "size": 58484219,
+    "sha256": "4cc56323fb89253aed226cb7d83f1b1de5d55e365ee87d5e9e1c800a097c7f16",
+    "files": 1542,
+    "symlinks": 2,
+    "object_hashes": 189,
+    "summary_sha256": "b173bd9843230cfeffb135abd244edb19a31ecb27924f81c63bad095b10b2038",
+    "scope": "Borrowed primary/mono/fallback font bytes, external SDK/runtime library fixtures and cache contents. Exact dependency manifests, successful independent original input checks and prior fixture archive references are retained; these external dependencies are not claimed bundled.",
+    "local_path": "D:/NexaUI/out/nexaui-files-full113-20261110.tar.gz"
+  },
+  "verified_regular_members": 1542,
+  "symlinks": [
+    {
+      "path": "sdk-shared-prefix/lib/libnexaui.so.0",
+      "target": "libnexaui.so.0.1.33"
+    },
+    {
+      "path": "sdk-shared-prefix/lib/libnexaui.so",
+      "target": "libnexaui.so.0"
+    }
+  ],
+  "additional_audit": {
+    "path": "D:/NexaUI/out/files-full117-audit.json",
+    "sha256": "660420e4b742e7138be18df9b61a86d07bfb8689fc4b77091d898ac599cdea8b"
+  },
+  "scope": "Every retained regular member and symlink declaration verified after transfer. The archive deliberately excludes external dependency/runtime libraries and borrowed font bytes; independent pinned input checks and manifests are retained. CI and the later audit/controller receipts are separate supplemental evidence.",
+  "completion_bundle": {
+    "source_revision": "e7138808ede25a08bcc568a093a2d7de425e56d4",
+    "path": "D:/NexaUI/out/nexaui-files-full125-20261110.tar.gz",
+    "size": 58049467,
+    "sha256": "35be67434f9bfb3c139685391dd3a97f392e300787e5a8bc0079ed371e8c96e8",
+    "regular_members": 93,
+    "all_members_verified": true,
+    "contains_ci_logs": 7,
+    "scope": "Completion bundle: immutable primary raw archive, separately verified pre-fix binary and generated SDK sources, controller/verification receipts and all seven decoded CI logs. External runtime/dependency libraries and borrowed font bytes remain excluded; no full distribution manifest or whole-goal acceptance."
+  }
+}

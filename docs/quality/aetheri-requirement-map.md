@@ -1,14 +1,24 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Files glibc document follow-up: consumer`e713880` retains installed0.1.33/
+`1e00a6f` and original7483286 ownership. Three fresh full profiles each pass27
+CTests and original native document/AT-SPI, lost-result and IME workflows, without
+a launch tripwire. The no-IME startup failure is fixed while keyboard/clipboard
+remain available. Five false provenance declarations are rejected before launch.
+Of276 full capture pairs,272 match; four sanitizer input/focus observations remain
+open. SDK production/pin/default and all103 statuses stay unchanged; packet6 and
+packets7–8 continue. See the [full follow-up](files-full-report.md).
+
 Files current-SDK pressure/lifetime: consumer`5f14a9c` uses installed0.1.33/
 `1e00a6f` with unchanged original7483286 ownership. Three scoped profiles each
 pass9 component CTests/14 IME cases and350 native IME/clipboard/create/rename
 checkpoints. An exact old clipboard peer falsely accepts real NoReply and is
 rejected; two compiled controller/lifetime defects fail. All198 whole-image
-pairs match. Full current-SDK document-child regression remains open because
+pairs match. At that scoped checkpoint, document-child regression remained open because
 local libc lacks the original closefrom spawn action: the scoped test uses an
-aborting tripwire and supplies no successful launch. The historical full0.1.26
-result remains separately attributed. See the [pressure report](files-pressure-report.md).
+aborting tripwire and supplies no successful launch. The historical27-group0.1.26
+component/native-IME result remains separately attributed; original0.1.23 native
+document-child evidence is separate. See the [pressure report](files-pressure-report.md).
 No SDK production/pin/default change; all103 statuses and packets6–8 persist.
 
 Original Editor observation checkpoint: source `2dc70e9` reuses installed
