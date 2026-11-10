@@ -1,5 +1,16 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Files current-SDK pressure/lifetime: consumer`5f14a9c` uses installed0.1.33/
+`1e00a6f` with unchanged original7483286 ownership. Three scoped profiles each
+pass9 component CTests/14 IME cases and350 native IME/clipboard/create/rename
+checkpoints. An exact old clipboard peer falsely accepts real NoReply and is
+rejected; two compiled controller/lifetime defects fail. All198 whole-image
+pairs match. Full current-SDK document-child regression remains open because
+local libc lacks the original closefrom spawn action: the scoped test uses an
+aborting tripwire and supplies no successful launch. The historical full0.1.26
+result remains separately attributed. See the [pressure report](files-pressure-report.md).
+No SDK production/pin/default change; all103 statuses and packets6–8 persist.
+
 Original Editor observation checkpoint: source `2dc70e9` reuses installed
 SDK0.1.33/`1e00a6f` and original7bbe704 ownership. All four native profiles now
 complete336 captures/104 forced pre-EOF frames, with56 actual ordinary paste
@@ -464,8 +475,10 @@ original document regression retain 129 checked virtual captures. Complete nativ
 commit buffering, preedit cancellation/command suppression and placeholder
 overlap correction have scoped evidence and two compiled negative controls.
 See [source, images and remaining work](files-ime-report.md). Native replacement/
-delete transactions, interruption/lifetime coverage, foreign clipboard, font and
-localization work and final adoption remain open. No SDK API/ABI/version or live
+delete transactions, foreign clipboard, font and localization were then open;
+the later atomic/clipboard/appearance reports above supersede those notes only
+within their tested scope. Broader interruption/lifetime and final adoption
+remain open. No SDK API/ABI/version or live
 Aetheri/pin changes; packet 6, packets 7–8 and all 103 catalogue IDs remain active.
 
 B01/B03/B04/D07/L05/L06/L11/I01/I05/T01/T02/A02/A06/P04/P05/P07/Q02/Q04/Q08:

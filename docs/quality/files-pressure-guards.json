@@ -1,0 +1,104 @@
+{
+  "result": "expected_refusals_passed",
+  "cases": [
+    {
+      "case": "unsupported-sdk",
+      "command": [
+        "cmake",
+        "-S",
+        "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/35_aetheri_files_consumer",
+        "-B",
+        "/tmp/nexaui-files-current75/guard98-unsupported-sdk",
+        "-G",
+        "Ninja",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/shared-prefix",
+        "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+        "-DFILES_BUILD_TESTS=OFF",
+        "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DFILES_IME_SDK_VERSION=0.1.32"
+      ],
+      "exit": 1,
+      "stdout": "-- The C compiler identification is Clang 22.1.3\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/clang - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Found Python3: /usr/bin/python3.14 (found suitable version \"3.14.8\", minimum required is \"3.11\") found components: Interpreter\n-- Configuring incomplete, errors occurred!\n",
+      "stderr": "CMake Error at CMakeLists.txt:12 (message):\n  FILES_IME_SDK_VERSION must select checked 0.1.26 or 0.1.33\n\n\n"
+    },
+    {
+      "case": "ime-default-026",
+      "command": [
+        "cmake",
+        "-S",
+        "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/35_aetheri_files_consumer",
+        "-B",
+        "/tmp/nexaui-files-current75/guard98-ime-default-026",
+        "-G",
+        "Ninja",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/shared-prefix",
+        "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+        "-DFILES_BUILD_TESTS=OFF",
+        "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "-DFILES_BUILD_IME_HOST=ON"
+      ],
+      "exit": 1,
+      "stdout": "-- The C compiler identification is Clang 22.1.3\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/clang - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Found Python3: /usr/bin/python3.14 (found suitable version \"3.14.8\", minimum required is \"3.11\") found components: Interpreter\n-- Configuring incomplete, errors occurred!\n",
+      "stderr": "CMake Error at CMakeLists.txt:14 (find_package):\n  Could not find a configuration file for package \"NexaUI\" that exactly\n  matches requested version \"0.1.26\".\n\n  The following configuration files were considered but not accepted:\n\n    /tmp/nexaui-numeric-value-sdk2/shared-prefix/lib/cmake/NexaUI/NexaUIConfig.cmake, version: 0.1.33\n      The version found is not compatible with the version requested.\n\n\n\n"
+    },
+    {
+      "case": "original-default-023",
+      "command": [
+        "cmake",
+        "-S",
+        "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/35_aetheri_files_consumer",
+        "-B",
+        "/tmp/nexaui-files-current75/guard98-original-default-023",
+        "-G",
+        "Ninja",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/shared-prefix",
+        "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+        "-DFILES_BUILD_TESTS=OFF",
+        "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b"
+      ],
+      "exit": 1,
+      "stdout": "-- The C compiler identification is Clang 22.1.3\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/clang - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Found Python3: /usr/bin/python3.14 (found suitable version \"3.14.8\", minimum required is \"3.11\") found components: Interpreter\n-- Configuring incomplete, errors occurred!\n",
+      "stderr": "CMake Error at CMakeLists.txt:16 (find_package):\n  Could not find a configuration file for package \"NexaUI\" that exactly\n  matches requested version \"0.1.23\".\n\n  The following configuration files were considered but not accepted:\n\n    /tmp/nexaui-numeric-value-sdk2/shared-prefix/lib/cmake/NexaUI/NexaUIConfig.cmake, version: 0.1.33\n      The version found is not compatible with the version requested.\n\n\n\n"
+    },
+    {
+      "case": "wrong-source",
+      "command": [
+        "cmake",
+        "-S",
+        "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/35_aetheri_files_consumer",
+        "-B",
+        "/tmp/nexaui-files-current75/guard98-wrong-source",
+        "-G",
+        "Ninja",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/shared-prefix",
+        "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+        "-DFILES_BUILD_TESTS=OFF",
+        "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "-DFILES_BUILD_IME_HOST=ON",
+        "-DFILES_IME_SDK_VERSION=0.1.33",
+        "-DNEXAUI_EXPECTED_REVISION=0000000000000000000000000000000000000000"
+      ],
+      "exit": 1,
+      "stdout": "-- The C compiler identification is Clang 22.1.3\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/clang - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Found Python3: /usr/bin/python3.14 (found suitable version \"3.14.8\", minimum required is \"3.11\") found components: Interpreter\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n-- Found Threads: TRUE\n-- Found PkgConfig: /usr/bin/pkg-config (found version \"2.5.1\")\n-- Checking for module 'wayland-client'\n--   Found wayland-client, version 1.25.0\n-- Checking for module 'xkbcommon'\n--   Found xkbcommon, version 1.13.1\n-- Configuring incomplete, errors occurred!\n",
+      "stderr": "CMake Error at CMakeLists.txt:24 (message):\n  Select the exact installed SDK source declaration with\n  NEXAUI_EXPECTED_REVISION\n\n\n"
+    },
+    {
+      "case": "toolchain-original-output-refused",
+      "command": [
+        "python3",
+        "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/35_aetheri_files_consumer/prepare_toolchain.py",
+        "/mnt/d/NexaUI/out/files-current83-source/original",
+        "/mnt/d/NexaUI/out/files-current83-source/original"
+      ],
+      "exit": 1,
+      "stdout": "",
+      "stderr": "Separate toolchain output required\n",
+      "original_unchanged_sha256": "b69c9790b2a0a85d61ca06cb960fa087dd573760f7db8d802ac17714835b423c"
+    }
+  ]
+}

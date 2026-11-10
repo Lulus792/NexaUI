@@ -1,5 +1,15 @@
 # Aetheri adoption: initial source assessment
 
+Files pressure/lifetime follow-up: `5f14a9c` reuses installed0.1.33 and original
+7483286 ownership. Three scoped profiles each pass9 component groups and350
+native IME/clipboard/create/rename checkpoints;198 full image pairs match.
+The exact preceding peer's real NoReply false success and two compiled defects
+are rejected. Full current-SDK document-child acceptance remains open: local
+libc lacks the original closefrom spawn action, and the private aborting tripwire
+supplies no launch. Historical full0.1.26 evidence remains separate. See the
+[pressure report](files-pressure-report.md). SDK production, Aetheri pin/default
+and all103 statuses remain unchanged; packet6 and packets7–8 continue.
+
 Original Editor observation checkpoint: source `2dc70e9` reuses installed
 SDK0.1.33/`1e00a6f` and original7bbe704 ownership. All four native profiles now
 complete336 captures/104 forced pre-EOF frames, with56 actual ordinary paste

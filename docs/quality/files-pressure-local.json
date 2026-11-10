@@ -1,0 +1,1071 @@
+{
+  "result": "passed_scoped",
+  "source_revision": "5f14a9ca74ce3f389c5475cc41016589548307c4",
+  "profiles": [
+    {
+      "profile": "shared",
+      "build": "/tmp/nexaui-files-current75/component83-shared",
+      "receipt": {
+        "commands": [
+          {
+            "command": [
+              "cmake",
+              "-S",
+              "/mnt/d/NexaUI/out/files-current83-source/repo/examples/35_aetheri_files_consumer",
+              "-B",
+              "/tmp/nexaui-files-current75/component83-shared",
+              "-G",
+              "Ninja",
+              "-DCMAKE_PROJECT_NexaUIOriginalFilesConsumer_INCLUDE=/mnt/d/NexaUI/out/files-current83-source/component-scope.cmake",
+              "-DCMAKE_BUILD_TYPE=Release",
+              "-DCMAKE_C_COMPILER=clang",
+              "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+              "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/shared-prefix",
+              "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+              "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+              "-DFILES_BUILD_IME_HOST=ON",
+              "-DFILES_IME_SDK_VERSION=0.1.33",
+              "-DFILES_TEST_FONT=/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+              "-DFILES_TEST_FALLBACK_FONT=/mnt/d/NexaUI/out/files-font-inputs/NotoSansSymbols2-Regular.ttf"
+            ],
+            "phase": "configure",
+            "exit": 0,
+            "seconds": 6.5398810339999995,
+            "log": "files-current83-configure.log",
+            "sha256": "f2b21a40c43d0be861fa9e8b57c8fade20b5b6aa0b4eb0bfe20edb469f079408"
+          },
+          {
+            "command": [
+              "cmake",
+              "--build",
+              "/tmp/nexaui-files-current75/component83-shared",
+              "--parallel",
+              "2",
+              "--target",
+              "files_ime_transaction_test",
+              "files_session_original_test",
+              "files_view_original_test",
+              "files_paste_admission_test",
+              "files_appearance_test",
+              "files_ime_view_original_test",
+              "aetheri_files_ime_candidate"
+            ],
+            "phase": "build",
+            "exit": 0,
+            "seconds": 4.785722470000001,
+            "log": "files-current83-build.log",
+            "sha256": "b5042a0fb508c950ea6753a25d829171212a57261a282f1adce5aa9fcdfcfcc1"
+          },
+          {
+            "command": [
+              "ctest",
+              "--test-dir",
+              "/tmp/nexaui-files-current75/component83-shared",
+              "--output-on-failure",
+              "--no-tests=error",
+              "--output-junit",
+              "/tmp/nexaui-files-current75/component83-shared/tests.xml"
+            ],
+            "phase": "test",
+            "exit": 0,
+            "seconds": 3.9844995500000024,
+            "log": "files-current83-test.log",
+            "sha256": "08ca5a895c015c8a3ac2a2db9b4b286627c984ee772fe9f4f5ce8676c8ff68f5"
+          }
+        ]
+      },
+      "ctests": 9,
+      "binary": {
+        "path": "/tmp/nexaui-files-current75/component83-shared/aetheri_files_ime_candidate",
+        "sha256": "f3f249fd8d3b5a2a5678ba5c7bf0c7150591f04b326f9f6ad0928b9eaea28e0f"
+      },
+      "spawn_tripwire": {
+        "path": "/mnt/d/NexaUI/out/files-current83-source/missing-spawn-tripwire.h",
+        "sha256": "abba9f4e215db73c4cf742a539b70278ff4173f66affc8a08706da6c248f1cdc",
+        "scope": "Unavailable libc function aborts if reached. No native document launch acceptance."
+      },
+      "scope": "Nine component tests and IME/clipboard/create/rename native task; full child/document regressions not executed on this libc."
+    },
+    {
+      "profile": "asan",
+      "build": "/tmp/nexaui-files-current75/component85-asan",
+      "receipt": [
+        {
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/files-current83-source/repo/examples/35_aetheri_files_consumer",
+            "-B",
+            "/tmp/nexaui-files-current75/component85-asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_FLAGS=-O1 -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined",
+            "-DCMAKE_PROJECT_NexaUIOriginalFilesConsumer_INCLUDE=/mnt/d/NexaUI/out/files-current83-source/component-scope.cmake",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/asan-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+            "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+            "-DFILES_BUILD_IME_HOST=ON",
+            "-DFILES_IME_SDK_VERSION=0.1.33",
+            "-DFILES_TEST_FONT=/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+            "-DFILES_TEST_FALLBACK_FONT=/mnt/d/NexaUI/out/files-font-inputs/NotoSansSymbols2-Regular.ttf"
+          ],
+          "phase": "configure",
+          "exit": 0,
+          "seconds": 7.04005840100001,
+          "sha256": "22b87702bf709df7e53ca41ed0b6353c2d85d9f684dcda080a933b7eb63f07a4"
+        },
+        {
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-files-current75/component85-asan",
+            "--parallel",
+            "2",
+            "--target",
+            "files_ime_transaction_test",
+            "files_session_original_test",
+            "files_view_original_test",
+            "files_paste_admission_test",
+            "files_appearance_test",
+            "files_ime_view_original_test",
+            "aetheri_files_ime_candidate"
+          ],
+          "phase": "build",
+          "exit": 0,
+          "seconds": 14.270417963,
+          "sha256": "ca0f91594ecfbde47328237da017a7776f5662cb96548942a1ce288ca6d27465"
+        },
+        {
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-files-current75/component85-asan",
+            "--output-on-failure",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-files-current75/component85-asan/tests.xml"
+          ],
+          "phase": "test",
+          "exit": 0,
+          "seconds": 11.878391813000007,
+          "sha256": "a971ec993dae0e0a94e8d85ed3111b0abeb2533ed38e770230b995cf20008e0a"
+        }
+      ],
+      "ctests": 9,
+      "binary": {
+        "path": "/tmp/nexaui-files-current75/component85-asan/aetheri_files_ime_candidate",
+        "sha256": "a729bea66ae1741d73cd92cffaef26591673b7c2ee3242e5944e9ae8b2b70234"
+      },
+      "spawn_tripwire": {
+        "path": "/mnt/d/NexaUI/out/files-current83-source/missing-spawn-tripwire.h",
+        "sha256": "abba9f4e215db73c4cf742a539b70278ff4173f66affc8a08706da6c248f1cdc",
+        "scope": "Unavailable libc function aborts if reached. No native document launch acceptance."
+      },
+      "scope": "Nine component tests and IME/clipboard/create/rename native task; full child/document regressions not executed on this libc."
+    },
+    {
+      "profile": "release",
+      "build": "/tmp/nexaui-files-current75/component91-release",
+      "receipt": [
+        {
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/files-current83-source/repo/examples/35_aetheri_files_consumer",
+            "-B",
+            "/tmp/nexaui-files-current75/component91-release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_PROJECT_NexaUIOriginalFilesConsumer_INCLUDE=/mnt/d/NexaUI/out/files-current83-source/component-scope.cmake",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/release-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+            "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+            "-DFILES_BUILD_IME_HOST=ON",
+            "-DFILES_IME_SDK_VERSION=0.1.33",
+            "-DFILES_TEST_FONT=/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+            "-DFILES_TEST_FALLBACK_FONT=/mnt/d/NexaUI/out/files-font-inputs/NotoSansSymbols2-Regular.ttf"
+          ],
+          "phase": "configure",
+          "exit": 0,
+          "seconds": 6.4851365869999995,
+          "sha256": "6780b6e9ce3f07531da81ff46bf21e47c336d659eb122f87d1b5c3ea5670de57"
+        },
+        {
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-files-current75/component91-release",
+            "--parallel",
+            "2",
+            "--target",
+            "files_ime_transaction_test",
+            "files_session_original_test",
+            "files_view_original_test",
+            "files_paste_admission_test",
+            "files_appearance_test",
+            "files_ime_view_original_test",
+            "aetheri_files_ime_candidate"
+          ],
+          "phase": "build",
+          "exit": 0,
+          "seconds": 4.9833264619999795,
+          "sha256": "b5042a0fb508c950ea6753a25d829171212a57261a282f1adce5aa9fcdfcfcc1"
+        },
+        {
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-files-current75/component91-release",
+            "--output-on-failure",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-files-current75/component91-release/tests.xml"
+          ],
+          "phase": "test",
+          "exit": 0,
+          "seconds": 3.7364722670000106,
+          "sha256": "a778eec295dde49f2e98d7c00680c5baa51cbcf64c84fccd151969c167e0244f"
+        }
+      ],
+      "ctests": 9,
+      "binary": {
+        "path": "/tmp/nexaui-files-current75/component91-release/aetheri_files_ime_candidate",
+        "sha256": "dca79be11b630058dfbe9596f8e3b0734438f7a7b26ada86cd18821cff343999"
+      },
+      "spawn_tripwire": {
+        "path": "/mnt/d/NexaUI/out/files-current83-source/missing-spawn-tripwire.h",
+        "sha256": "abba9f4e215db73c4cf742a539b70278ff4173f66affc8a08706da6c248f1cdc",
+        "scope": "Unavailable libc function aborts if reached. No native document launch acceptance."
+      },
+      "scope": "Nine component tests and IME/clipboard/create/rename native task; full child/document regressions not executed on this libc."
+    }
+  ],
+  "total_ctests": 27,
+  "ime_cases_per_profile": 14,
+  "native": [
+    {
+      "profile": "shared",
+      "path": "/tmp/nexaui-files-current75/native86-shared",
+      "receipt": {
+        "command": [
+          "python3",
+          "/mnt/d/NexaUI/out/files-current86-source/repo/examples/35_aetheri_files_consumer/run_ime.py",
+          "--binaries",
+          "/tmp/nexaui-files-current75/component83-shared",
+          "--original",
+          "/mnt/d/NexaUI/out/files-current83-source/original",
+          "--atspi-fixture",
+          "/tmp/nexaui-files-current75/atspi-fixture84",
+          "--sdk-input",
+          "/mnt/d/NexaUI/out/files-current75-sdk-input.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--linkage",
+          "shared",
+          "--server",
+          "/tmp/nexaui-files-current75/producer83/files_ime_producer",
+          "--font",
+          "/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/mnt/d/NexaUI/out/borrowed-font-metadata-LiberationMono.ttf",
+          "--work-dir",
+          "/tmp/nexaui-files-current75/native86-shared",
+          "--transactions",
+          "--pressure",
+          "--clipboard-tools",
+          "/tmp/nexaui-editor-native54/clipboard-tools",
+          "--clipboard-budget",
+          "--fallback-font",
+          "/mnt/d/NexaUI/out/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+          "--font-errors",
+          "--paste-timeout-guard",
+          "--clipboard-stream-gate",
+          "/tmp/nexaui-editor-native54/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so"
+        ],
+        "exit": 0,
+        "seconds": 29.575740831999997,
+        "log": "files-current86-native.log",
+        "sha256": "db79d4604b492a0d4106d6c5303bda2ff9d91bba8478be21e08bb2067ac23d16",
+        "scope": "Native IME/clipboard/create/rename only. Launch-specific missing musl API trips abort if called; original child programs real but document-start acceptance explicitly unavailable."
+      },
+      "checks": 350,
+      "captures": 66,
+      "ordinary_peer_replies": 155,
+      "guard": {
+        "helper_sha256": "dfdc47b3250f8007c5d5a3dae63c4dc1d64d61b85fe6aaf7a74db738733780b8",
+        "clipboard_tool_inputs": {
+          "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+          "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+          "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+          "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+          "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+        },
+        "clipboard_checks": [
+          {
+            "foreign_read_exit": 0,
+            "length": 12,
+            "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+          }
+        ],
+        "gate_library": {
+          "path": "/tmp/nexaui-editor-native54/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+          "sha256": "4b4f1b3eec6db3fbc649cf2f0ef6e214400f1335ac9b4c95b0e7b9792857982c"
+        },
+        "stream_events": [
+          {
+            "pid": 45,
+            "stage": 1,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[1242]"
+          },
+          {
+            "pid": 45,
+            "stage": 5,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[1242]"
+          },
+          {
+            "pid": 45,
+            "stage": 3,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe_closed": true
+          }
+        ],
+        "command": [
+          "/tmp/nexaui-files-current75/native86-shared/peer",
+          "29",
+          "clipboard-paste-rejected"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Clipboard peer mode=clipboard-paste-rejected count=1 edit=1 error=Did not receive a reply. Possible causes include: the remote application did not send a reply, the message bus security policy blocked the reply, the reply timeout expired, or the network connection was broken.\nNative clipboard AT-SPI transport failed\n",
+        "held": {
+          "pid": 45,
+          "writer_pipe": "pipe:[1242]",
+          "written": 3,
+          "stage": 5
+        },
+        "expected_peer_failure": true,
+        "closed": {
+          "pid": 45,
+          "stage": 3,
+          "total": 12,
+          "written": 3,
+          "error": 0,
+          "pipe_fd": 5,
+          "queued": 0,
+          "writer_pipe_closed": true
+        }
+      },
+      "peer": {
+        "path": "/tmp/nexaui-files-current75/native86-shared/peer",
+        "sha256": "dc17de9819699c73fe5092b3e153acacf4f92ff2980f0e35765798b08628a1d0"
+      }
+    },
+    {
+      "profile": "asan",
+      "path": "/tmp/nexaui-files-current75/native88-asan",
+      "receipt": {
+        "command": [
+          "python3",
+          "/mnt/d/NexaUI/out/files-current86-source/repo/examples/35_aetheri_files_consumer/run_ime.py",
+          "--binaries",
+          "/tmp/nexaui-files-current75/component85-asan",
+          "--original",
+          "/mnt/d/NexaUI/out/files-current83-source/original",
+          "--atspi-fixture",
+          "/tmp/nexaui-files-current75/atspi-fixture84",
+          "--sdk-input",
+          "/mnt/d/NexaUI/out/files-current75-sdk-input.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--linkage",
+          "static",
+          "--server",
+          "/tmp/nexaui-files-current75/producer83/files_ime_producer",
+          "--font",
+          "/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/mnt/d/NexaUI/out/borrowed-font-metadata-LiberationMono.ttf",
+          "--work-dir",
+          "/tmp/nexaui-files-current75/native88-asan",
+          "--transactions",
+          "--pressure",
+          "--clipboard-tools",
+          "/tmp/nexaui-editor-native54/clipboard-tools",
+          "--clipboard-budget",
+          "--fallback-font",
+          "/mnt/d/NexaUI/out/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+          "--font-errors",
+          "--paste-timeout-guard",
+          "--clipboard-stream-gate",
+          "/tmp/nexaui-editor-native54/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so"
+        ],
+        "exit": 0,
+        "seconds": 39.26525987000001,
+        "log": "files-current88-native.log",
+        "sha256": "b195b73f04b15172c3a3bd2c94a07cabcc2de81abe7b3107d5306306889ee1dc",
+        "scope": "Native IME/clipboard/create/rename only. Launch-specific missing musl API trips abort if called; original child programs real but document-start acceptance explicitly unavailable."
+      },
+      "checks": 350,
+      "captures": 66,
+      "ordinary_peer_replies": 155,
+      "guard": {
+        "helper_sha256": "dfdc47b3250f8007c5d5a3dae63c4dc1d64d61b85fe6aaf7a74db738733780b8",
+        "clipboard_tool_inputs": {
+          "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+          "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+          "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+          "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+          "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+        },
+        "clipboard_checks": [
+          {
+            "foreign_read_exit": 0,
+            "length": 12,
+            "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+          }
+        ],
+        "gate_library": {
+          "path": "/tmp/nexaui-editor-native54/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+          "sha256": "4b4f1b3eec6db3fbc649cf2f0ef6e214400f1335ac9b4c95b0e7b9792857982c"
+        },
+        "stream_events": [
+          {
+            "pid": 92,
+            "stage": 1,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[873]"
+          },
+          {
+            "pid": 92,
+            "stage": 5,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[873]"
+          },
+          {
+            "pid": 92,
+            "stage": 3,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe_closed": true
+          }
+        ],
+        "command": [
+          "/tmp/nexaui-files-current75/native88-asan/peer",
+          "76",
+          "clipboard-paste-rejected"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Clipboard peer mode=clipboard-paste-rejected count=1 edit=1 error=Did not receive a reply. Possible causes include: the remote application did not send a reply, the message bus security policy blocked the reply, the reply timeout expired, or the network connection was broken.\nNative clipboard AT-SPI transport failed\n",
+        "held": {
+          "pid": 92,
+          "writer_pipe": "pipe:[873]",
+          "written": 3,
+          "stage": 5
+        },
+        "expected_peer_failure": true,
+        "closed": {
+          "pid": 92,
+          "stage": 3,
+          "total": 12,
+          "written": 3,
+          "error": 0,
+          "pipe_fd": 5,
+          "queued": 0,
+          "writer_pipe_closed": true
+        }
+      },
+      "peer": {
+        "path": "/tmp/nexaui-files-current75/native88-asan/peer",
+        "sha256": "dc17de9819699c73fe5092b3e153acacf4f92ff2980f0e35765798b08628a1d0"
+      }
+    },
+    {
+      "profile": "release",
+      "path": "/tmp/nexaui-files-current75/native92-release",
+      "receipt": {
+        "command": [
+          "python3",
+          "/mnt/d/NexaUI/out/files-current86-source/repo/examples/35_aetheri_files_consumer/run_ime.py",
+          "--binaries",
+          "/tmp/nexaui-files-current75/component91-release",
+          "--original",
+          "/mnt/d/NexaUI/out/files-current83-source/original",
+          "--atspi-fixture",
+          "/tmp/nexaui-files-current75/atspi-fixture84",
+          "--sdk-input",
+          "/mnt/d/NexaUI/out/files-current75-sdk-input.json",
+          "--expected-sdk-revision",
+          "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+          "--linkage",
+          "static",
+          "--server",
+          "/tmp/nexaui-files-current75/producer83/files_ime_producer",
+          "--font",
+          "/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+          "--mono",
+          "/mnt/d/NexaUI/out/borrowed-font-metadata-LiberationMono.ttf",
+          "--work-dir",
+          "/tmp/nexaui-files-current75/native92-release",
+          "--transactions",
+          "--pressure",
+          "--clipboard-tools",
+          "/tmp/nexaui-editor-native54/clipboard-tools",
+          "--clipboard-budget",
+          "--fallback-font",
+          "/mnt/d/NexaUI/out/files-font-inputs/NotoSansSymbols2-Regular.ttf",
+          "--font-errors",
+          "--paste-timeout-guard",
+          "--clipboard-stream-gate",
+          "/tmp/nexaui-editor-native54/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so"
+        ],
+        "exit": 0,
+        "seconds": 30.625386827,
+        "log": "files-current92-native.log",
+        "sha256": "cf7829ed0bc0004f2addfc6c9deb2f2906071f8aca0fb7641b4a89496f30c853",
+        "scope": "Native IME/clipboard/create/rename only. Launch-specific missing musl API trips abort if called; original child programs real but document-start acceptance explicitly unavailable."
+      },
+      "checks": 350,
+      "captures": 66,
+      "ordinary_peer_replies": 155,
+      "guard": {
+        "helper_sha256": "dfdc47b3250f8007c5d5a3dae63c4dc1d64d61b85fe6aaf7a74db738733780b8",
+        "clipboard_tool_inputs": {
+          "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+          "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+          "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+          "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+          "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+        },
+        "clipboard_checks": [
+          {
+            "foreign_read_exit": 0,
+            "length": 12,
+            "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+          }
+        ],
+        "gate_library": {
+          "path": "/tmp/nexaui-editor-native54/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+          "sha256": "4b4f1b3eec6db3fbc649cf2f0ef6e214400f1335ac9b4c95b0e7b9792857982c"
+        },
+        "stream_events": [
+          {
+            "pid": 198,
+            "stage": 1,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[17726]"
+          },
+          {
+            "pid": 198,
+            "stage": 5,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe": "pipe:[17726]"
+          },
+          {
+            "pid": 198,
+            "stage": 3,
+            "total": 12,
+            "written": 3,
+            "error": 0,
+            "pipe_fd": 5,
+            "queued": 0,
+            "writer_pipe_closed": true
+          }
+        ],
+        "command": [
+          "/tmp/nexaui-files-current75/native92-release/peer",
+          "182",
+          "clipboard-paste-rejected"
+        ],
+        "exit": 1,
+        "stdout": "",
+        "stderr": "Clipboard peer mode=clipboard-paste-rejected count=1 edit=1 error=Did not receive a reply. Possible causes include: the remote application did not send a reply, the message bus security policy blocked the reply, the reply timeout expired, or the network connection was broken.\nNative clipboard AT-SPI transport failed\n",
+        "held": {
+          "pid": 198,
+          "writer_pipe": "pipe:[17726]",
+          "written": 3,
+          "stage": 5
+        },
+        "expected_peer_failure": true,
+        "closed": {
+          "pid": 198,
+          "stage": 3,
+          "total": 12,
+          "written": 3,
+          "error": 0,
+          "pipe_fd": 5,
+          "queued": 0,
+          "writer_pipe_closed": true
+        }
+      },
+      "peer": {
+        "path": "/tmp/nexaui-files-current75/native92-release/peer",
+        "sha256": "dc17de9819699c73fe5092b3e153acacf4f92ff2980f0e35765798b08628a1d0"
+      }
+    }
+  ],
+  "total_native_checkpoints": 1050,
+  "total_captures": 198,
+  "compiled_object_count": 54,
+  "old_peer_negative": {
+    "result": "expected_old_false_success_detected",
+    "guard": {
+      "helper_sha256": "dfdc47b3250f8007c5d5a3dae63c4dc1d64d61b85fe6aaf7a74db738733780b8",
+      "clipboard_tool_inputs": {
+        "bin/wl-copy": "75f5428d5a36c0c9d06611d4020f580a4622400e2f64579ecb45644dc888a921",
+        "bin/wl-paste": "7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356",
+        "lib/ld-musl-x86_64.so.1": "38d022ce7425ff105ccfb53598f606e6e5f5f0a34bfbc793d65e6f34c9d72806",
+        "lib/libffi.so.8": "05ff2c2379c35e867e039cf48b4eb390c0faa30c73b04b3b66f1cb86fb287fa2",
+        "lib/libwayland-client.so.0": "611dc1178c2369292b74040040dd152b7884a865eccc2c8b74e9eaff3d2f2839"
+      },
+      "clipboard_checks": [
+        {
+          "foreign_read_exit": 0,
+          "length": 12,
+          "sha256": "3cf3f503752bb958fb5b4da784757340116abcb5755e4f199ab5c8c573549407"
+        }
+      ],
+      "gate_library": {
+        "path": "/tmp/nexaui-editor-native54/editor-foreign-gate43-musl/libeditor_foreign_stream_gate.so",
+        "sha256": "4b4f1b3eec6db3fbc649cf2f0ef6e214400f1335ac9b4c95b0e7b9792857982c"
+      },
+      "stream_events": [
+        {
+          "pid": 46,
+          "stage": 1,
+          "total": 12,
+          "written": 3,
+          "error": 0,
+          "pipe_fd": 5,
+          "queued": 0,
+          "writer_pipe": "pipe:[4032]"
+        },
+        {
+          "pid": 46,
+          "stage": 5,
+          "total": 12,
+          "written": 3,
+          "error": 0,
+          "pipe_fd": 5,
+          "queued": 0,
+          "writer_pipe": "pipe:[4032]"
+        }
+      ],
+      "command": [
+        "/tmp/nexaui-files-current75/native89-old-peer/peer",
+        "30",
+        "clipboard-paste-rejected"
+      ],
+      "exit": 0,
+      "stdout": "Native clipboard AT-SPI paste proposal rejected\n",
+      "stderr": "Clipboard peer mode=clipboard-paste-rejected count=1 edit=1 error=Did not receive a reply. Possible causes include: the remote application did not send a reply, the message bus security policy blocked the reply, the reply timeout expired, or the network connection was broken.\n",
+      "held": {
+        "pid": 46,
+        "writer_pipe": "pipe:[4032]",
+        "written": 3,
+        "stage": 5
+      },
+      "expected_peer_failure": true
+    }
+  },
+  "compiled_negatives": [
+    {
+      "case": "rejected-then-valid",
+      "changes": {
+        "file": "ime_transactions.inc",
+        "before": "!editing(v) || v->native_reject_pending ||",
+        "after": "!editing(v) ||"
+      },
+      "inputs": [
+        {
+          "path": "CMakeLists.txt",
+          "sha256": "eb0e71286af4402509c555aa90067d337506527749e178d4483edb8feb82e58f"
+        },
+        {
+          "path": "README.md",
+          "sha256": "44172efd1282652a3a91f15dbe918b80e8fc6e297f7c33836721b7acabc12655"
+        },
+        {
+          "path": "appearance-font-inputs.json",
+          "sha256": "d4dd644d502307dbd6d004e4a3159a685961dea636a9abc8ce36a1685024f259"
+        },
+        {
+          "path": "appearance.inc",
+          "sha256": "bdc71a561705b730b0a916c2006b3018f6f3c03f16880c2fa10d4c2da4b7b44c"
+        },
+        {
+          "path": "appearance_test.c",
+          "sha256": "487efaa2897049fa63cd8f6784701a116a569e9910eefe9d426ded72f43b4413"
+        },
+        {
+          "path": "check_source.py",
+          "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+        },
+        {
+          "path": "clipboard_task.py",
+          "sha256": "e87fb2cc8279c3f4e53b1c52fe9c5e19f67cc3ce504448d8fcb638d1a911e3da"
+        },
+        {
+          "path": "ime-producer-inputs.json",
+          "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+        },
+        {
+          "path": "ime_atspi.c",
+          "sha256": "7c239a06fa1fd2db7a44297a15a21f9fe8dbe616e0da842e3c398c241a1c0e9b"
+        },
+        {
+          "path": "ime_consumer.cmake",
+          "sha256": "2448596351f5d763057e7cd23e81910b5b2fe64a53d21a2830720700513b2730"
+        },
+        {
+          "path": "ime_producer/CMakeLists.txt",
+          "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+        },
+        {
+          "path": "ime_producer/prepare.py",
+          "sha256": "edac3031bb8ca0c91218fa98d6fae40b399a031cd836ffde47ac607574d6f64c"
+        },
+        {
+          "path": "ime_transaction_test.c",
+          "sha256": "b94169c6efa09b281e6cabeba0f34a00727141ec1c8d4fd9ffb40d607b50f1c9"
+        },
+        {
+          "path": "ime_transactions.inc",
+          "sha256": "54a62db496f0bd952b9cc9a5cc17d4fb2ef89765394c3df6dc927d9b80a98373"
+        },
+        {
+          "path": "native-inputs.json",
+          "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+        },
+        {
+          "path": "native_children.cmake",
+          "sha256": "91b65bc2ba89dd85ebaa4ad2af86d3ba828772451827fe8c814bf8c40e240c93"
+        },
+        {
+          "path": "paste_admission.inc",
+          "sha256": "8c3aea6b0d07bffbfc7d06777ea1157e3cc2bcb4c5a109ab0f5dda932dbbca0f"
+        },
+        {
+          "path": "paste_admission_test.c",
+          "sha256": "777aae8719d56bb6c65b4b4cbcafe6fe2c1e696fd8b8d70a57bfa74dd47e983e"
+        },
+        {
+          "path": "prepare_ime_host.py",
+          "sha256": "666ec3d8c44907c77d1c10561336e58b7e447affd2f7d88f1095f124d81f84b3"
+        },
+        {
+          "path": "prepare_toolchain.py",
+          "sha256": "db5680e4d1e2fd6d8613cb3f5e7e58085aabee5723dd832e114dfd356ca0447a"
+        },
+        {
+          "path": "run_ime.py",
+          "sha256": "018352a303afea336c0df190ba324ac1254aed1647ffebfdfd6f625a7df39a81"
+        },
+        {
+          "path": "run_native.py",
+          "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+        },
+        {
+          "path": "source-inputs.json",
+          "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+        }
+      ],
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/files-current90-rejected-then-valid-source",
+            "-B",
+            "/tmp/nexaui-files-current75/mutant90-rejected-then-valid",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_PROJECT_NexaUIOriginalFilesConsumer_INCLUDE=/mnt/d/NexaUI/out/files-current83-source/component-scope.cmake",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/shared-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+            "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+            "-DFILES_BUILD_IME_HOST=ON",
+            "-DFILES_IME_SDK_VERSION=0.1.33",
+            "-DFILES_TEST_FONT=/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+          ],
+          "exit": 0,
+          "seconds": 6.233969523000013,
+          "log": "files-current90-rejected-then-valid-configure.log",
+          "sha256": "f4cf6d189118f6939903b820d56d287a052e4f95baaf018dee0b67f7d71bfe84"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-files-current75/mutant90-rejected-then-valid",
+            "--target",
+            "files_ime_transaction_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 2.3253269430000216,
+          "log": "files-current90-rejected-then-valid-build.log",
+          "sha256": "8f23de924d0fd92cd6a1027bf6b10d43789080b601b3d66cc5d5d3547b8e9b3e"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-files-current75/mutant90-rejected-then-valid",
+            "-R",
+            "^files_ime_transactions$",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 8,
+          "seconds": 0.32020663899999136,
+          "log": "files-current90-rejected-then-valid-test.log",
+          "sha256": "8ac5aea1c9ad72d388a34371d24fceb4289252c54fcdb2817401a93f040d91de"
+        }
+      ],
+      "result": "expected_defect_detected"
+    },
+    {
+      "case": "unpainted-preview-owner",
+      "changes": {
+        "file": "prepare_ime_host.py",
+        "before": "nx_context_destroy(v->ui);nx_text_buffer_destroy(v->native_preview);",
+        "after": "nx_context_destroy(v->ui);"
+      },
+      "inputs": [
+        {
+          "path": "CMakeLists.txt",
+          "sha256": "eb0e71286af4402509c555aa90067d337506527749e178d4483edb8feb82e58f"
+        },
+        {
+          "path": "README.md",
+          "sha256": "44172efd1282652a3a91f15dbe918b80e8fc6e297f7c33836721b7acabc12655"
+        },
+        {
+          "path": "appearance-font-inputs.json",
+          "sha256": "d4dd644d502307dbd6d004e4a3159a685961dea636a9abc8ce36a1685024f259"
+        },
+        {
+          "path": "appearance.inc",
+          "sha256": "bdc71a561705b730b0a916c2006b3018f6f3c03f16880c2fa10d4c2da4b7b44c"
+        },
+        {
+          "path": "appearance_test.c",
+          "sha256": "487efaa2897049fa63cd8f6784701a116a569e9910eefe9d426ded72f43b4413"
+        },
+        {
+          "path": "check_source.py",
+          "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402"
+        },
+        {
+          "path": "clipboard_task.py",
+          "sha256": "e87fb2cc8279c3f4e53b1c52fe9c5e19f67cc3ce504448d8fcb638d1a911e3da"
+        },
+        {
+          "path": "ime-producer-inputs.json",
+          "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075"
+        },
+        {
+          "path": "ime_atspi.c",
+          "sha256": "7c239a06fa1fd2db7a44297a15a21f9fe8dbe616e0da842e3c398c241a1c0e9b"
+        },
+        {
+          "path": "ime_consumer.cmake",
+          "sha256": "2448596351f5d763057e7cd23e81910b5b2fe64a53d21a2830720700513b2730"
+        },
+        {
+          "path": "ime_producer/CMakeLists.txt",
+          "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a"
+        },
+        {
+          "path": "ime_producer/prepare.py",
+          "sha256": "edac3031bb8ca0c91218fa98d6fae40b399a031cd836ffde47ac607574d6f64c"
+        },
+        {
+          "path": "ime_transaction_test.c",
+          "sha256": "b94169c6efa09b281e6cabeba0f34a00727141ec1c8d4fd9ffb40d607b50f1c9"
+        },
+        {
+          "path": "ime_transactions.inc",
+          "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee"
+        },
+        {
+          "path": "native-inputs.json",
+          "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb"
+        },
+        {
+          "path": "native_children.cmake",
+          "sha256": "91b65bc2ba89dd85ebaa4ad2af86d3ba828772451827fe8c814bf8c40e240c93"
+        },
+        {
+          "path": "paste_admission.inc",
+          "sha256": "8c3aea6b0d07bffbfc7d06777ea1157e3cc2bcb4c5a109ab0f5dda932dbbca0f"
+        },
+        {
+          "path": "paste_admission_test.c",
+          "sha256": "777aae8719d56bb6c65b4b4cbcafe6fe2c1e696fd8b8d70a57bfa74dd47e983e"
+        },
+        {
+          "path": "prepare_ime_host.py",
+          "sha256": "c1c8395117e17f234bc29e1834f60d62136876bd994b0abf6c1bd60df3d4b8bb"
+        },
+        {
+          "path": "prepare_toolchain.py",
+          "sha256": "db5680e4d1e2fd6d8613cb3f5e7e58085aabee5723dd832e114dfd356ca0447a"
+        },
+        {
+          "path": "run_ime.py",
+          "sha256": "018352a303afea336c0df190ba324ac1254aed1647ffebfdfd6f625a7df39a81"
+        },
+        {
+          "path": "run_native.py",
+          "sha256": "6e444d6cbf24d9567e395bb84c3c8536b0849867d9712e1523cc728b8c81ebe4"
+        },
+        {
+          "path": "source-inputs.json",
+          "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899"
+        }
+      ],
+      "commands": [
+        {
+          "phase": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/mnt/d/NexaUI/out/files-current90-unpainted-preview-owner-source",
+            "-B",
+            "/tmp/nexaui-files-current75/mutant90-unpainted-preview-owner",
+            "-G",
+            "Ninja",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_PROJECT_NexaUIOriginalFilesConsumer_INCLUDE=/mnt/d/NexaUI/out/files-current83-source/component-scope.cmake",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-numeric-value-sdk2/asan-prefix",
+            "-DAETHERI_SOURCE_DIR=/mnt/d/NexaUI/out/files-current83-source/original",
+            "-DNEXAUI_EXPECTED_REVISION=1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+            "-DFILES_BUILD_IME_HOST=ON",
+            "-DFILES_IME_SDK_VERSION=0.1.33",
+            "-DFILES_TEST_FONT=/tmp/nexaui-editor-native54/fonts/LiberationSans-Regular.ttf",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-O1 -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_EXE_LINKER_FLAGS=-fsanitize=address,undefined"
+          ],
+          "exit": 0,
+          "seconds": 5.935378995999997,
+          "log": "files-current90-unpainted-preview-owner-configure.log",
+          "sha256": "ae03fc66cff2f85eaaf757ff62b60083c511f2dac19820dfe0fb59201ee797ab"
+        },
+        {
+          "phase": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-files-current75/mutant90-unpainted-preview-owner",
+            "--target",
+            "files_ime_transaction_test",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 6.0915741860000026,
+          "log": "files-current90-unpainted-preview-owner-build.log",
+          "sha256": "c53c22397f9e30686bc7ab87198fc17959dc07a35e0cdb4d5cad5a909ec9d565"
+        },
+        {
+          "phase": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-files-current75/mutant90-unpainted-preview-owner",
+            "-R",
+            "^files_ime_transactions$",
+            "--output-on-failure",
+            "--no-tests=error"
+          ],
+          "exit": 8,
+          "seconds": 1.1722864850000008,
+          "log": "files-current90-unpainted-preview-owner-test.log",
+          "sha256": "18187c1dcc8fcbc7b3b6b7dd76992190b39a9cc6ec398c64554aac7d867ffbeb"
+        }
+      ],
+      "result": "expected_defect_detected"
+    }
+  ],
+  "sdk_receipt": {
+    "path": "/mnt/d/NexaUI/out/numeric-value-sdk2-local.json",
+    "sha256": "80dc4a83bccb09797c124da4e7cfdab1d265953a0868e1a599ef8dae522a482c"
+  },
+  "sdk_libraries": [
+    {
+      "profile": "release",
+      "path": "/tmp/nexaui-numeric-value-sdk2/release-prefix/lib/libnexaui.a",
+      "size": 1179804,
+      "sha256": "278c5a0b3d490ed7a090ef7a42b2d0e7a82d32be34eb2491d9362c2764c591fc"
+    },
+    {
+      "profile": "shared",
+      "path": "/tmp/nexaui-numeric-value-sdk2/shared-prefix/lib/libnexaui.so.0.1.33",
+      "size": 930296,
+      "sha256": "5d8b2d574bcd414895b6ec0d50558a62482bd9fc7e7979c4b29a14132a3d3b79"
+    },
+    {
+      "profile": "asan",
+      "path": "/tmp/nexaui-numeric-value-sdk2/asan-prefix/lib/libnexaui.a",
+      "size": 11544298,
+      "sha256": "ed75b593ebb461763d74d4554b2fe5ae601865770bf35655b9ba2df34f24666d"
+    }
+  ],
+  "open": [
+    "Full current-SDK original document/Terminal launch regression requires the original closefrom spawn action; local musl has no such symbol and previous glibc access is unavailable.",
+    "Actual Aetheri compositor/session, installed external IME/screenreader, wider provider/pressure/error cases, hardware/human/performance/design and normal adoption.",
+    "Remaining packet6 and packets7-8; all103 requirement statuses remain unchanged."
+  ],
+  "goal_complete": false
+}

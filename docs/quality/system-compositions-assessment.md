@@ -314,22 +314,36 @@ Three profiles pass two affected CTests and five native cases each;66 native
 checkpoints and two compiled worker failure controls are retained. Ordinary
 host/model/view/worker and installed SDK0.1.23 remain unchanged.
 
-Current Files consumer checkpoint: `713c26ee3db9c9fd3da61370bd290d54732b29ef`,
+Files current-SDK pressure/lifetime follow-up: `5f14a9ca74ce3f389c5475cc41016589548307c4`,
+[14 host-token cases, native packet pressure and strict clipboard timeout rejection](files-pressure-report.md).
+Installed SDK0.1.33 supplies three scoped profiles:9 CTests and350 native
+IME/clipboard/create/rename checkpoints per profile,198 captures and198 equal
+whole-image pairs overall. An exact old peer and two compiled defects are
+rejected. Local libc lacks the original Files closefrom spawn action; an
+aborting private tripwire is never reached, and full current-SDK original
+document-child regression remains open. This does not supersede the following
+historical full original-child result or change any103 requirement status.
+
+Full original-child Files consumer checkpoint: `713c26ee3db9c9fd3da61370bd290d54732b29ef`,
 [whole-proposal paste admission, retained selection/history and explicit native
 assistive rejection](files-paste-report.md), using SDK0.1.26. It continues
 [atomic edits](files-ime-atomic-report.md), [foreign clipboard/close lifetime](files-clipboard-report.md)
 and [visible fallback/localized cancellation](files-appearance-report.md).
 Three profiles each pass27/27 CTests,326 native checkpoints and60 captures.
-Full replacement/delete and remaining interruption paths, broader clipboard
-pressure/deadline/provider/error handling, font/locale/IME and normal Files
-adoption remain open. The checkpoints below are historical; their
+Atomic IME replacement, delete-to-empty, Unicode selection and Undo are covered
+by the linked atomic result. Remaining interruption/lifetime combinations,
+broader clipboard pressure/deadline/provider/error handling, font/locale/IME and
+normal Files adoption remain open. No filesystem-delete capability is implied.
+The checkpoints below are historical; their
 then-open IME/clipboard/font/transaction claims are superseded only by these
 specific later results, not by full application or catalogue acceptance.
 
 Files IME integration: `3fd58c7a507ed94eaf4bb9c623c1b7acbbce394a`,
 [separate default-OFF generated host, native preedit/complete commits and cancellation](files-ime-report.md).
 Three profiles pass 23/23 CTests; four final native runs retain 129 checked captures.
-Replacement/delete transactions, interruption/lifetime and final adoption remain open.
+Replacement/delete transactions were then open; the later atomic text result
+above supersedes that note within its tested scope. Broader interruption/lifetime
+and final adoption remain open.
 
 Original Files native source `d5018d36261da45289a46db51e8fa6dbe0e99a5e`: [real document children,
 independent AT-SPI tasks and nine unknown operations; 3×21 CTests/five final native runs](files-native-report.md).

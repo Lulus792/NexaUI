@@ -1,0 +1,1883 @@
+{
+  "result": "scoped_images_compared",
+  "captures": 198,
+  "pairs": [
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native query preedit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native query preedit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "910af571b7e082877dca5101c11a32fd15730e4823b0ffda0a2d1e3916054b51",
+      "right_sha256": "910af571b7e082877dca5101c11a32fd15730e4823b0ffda0a2d1e3916054b51"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native query preedit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "query after Escape cancellation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "query after Escape cancellation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "2010b9cd094155e8a6f8d6f881743a623f33a7ca7015556d522791ee1fe0621e",
+      "right_sha256": "2010b9cd094155e8a6f8d6f881743a623f33a7ca7015556d522791ee1fe0621e"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "query after Escape cancellation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native Unicode query",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native Unicode query",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "9fcb413cb0f589f43e664c24bfe9984d240ac3e08f1f97ad21e93aca33207900",
+      "right_sha256": "9fcb413cb0f589f43e664c24bfe9984d240ac3e08f1f97ad21e93aca33207900"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native Unicode query",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native preedit at 200 percent",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native preedit at 200 percent",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "9c5243a9a5e030c09f8d2f5e241eb25717e552c74f1368ce7fa25b771bcc256d",
+      "right_sha256": "9c5243a9a5e030c09f8d2f5e241eb25717e552c74f1368ce7fa25b771bcc256d"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native preedit at 200 percent",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native combining preedit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native combining preedit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "efd34e9161b65c2f073df01a0182c951f1aefeb35a01ff0ec59cde52190285cf",
+      "right_sha256": "efd34e9161b65c2f073df01a0182c951f1aefeb35a01ff0ec59cde52190285cf"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native combining preedit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "5fbfd4b9cc3d9b07f2c4414a9d7449346deee90e56aa452700d4938929764340",
+      "right_sha256": "5fbfd4b9cc3d9b07f2c4414a9d7449346deee90e56aa452700d4938929764340"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "671c0d0da411ffe8829c37e480767c18ce59c397fcb0b267f5f835536c6ab7e5",
+      "right_sha256": "671c0d0da411ffe8829c37e480767c18ce59c397fcb0b267f5f835536c6ab7e5"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "648abdde5eafdc1ed6bbcf703ac329cbd06091a726d647620ce87f5ffe3d2352",
+      "right_sha256": "648abdde5eafdc1ed6bbcf703ac329cbd06091a726d647620ce87f5ffe3d2352"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "89c32c88bc195ff17dbffbf5fad533753324683dce4fe8897ecd3d4275bfd0d0",
+      "right_sha256": "89c32c88bc195ff17dbffbf5fad533753324683dce4fe8897ecd3d4275bfd0d0"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "3164840c2426f54af4e8b86857d0117404d08d47e69a2f95197a9a128ee5a7ef",
+      "right_sha256": "3164840c2426f54af4e8b86857d0117404d08d47e69a2f95197a9a128ee5a7ef"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "56cd681cb7121b5f9f7327fcac06933c88fcabaad6d0b7648ce44393b6e04297",
+      "right_sha256": "56cd681cb7121b5f9f7327fcac06933c88fcabaad6d0b7648ce44393b6e04297"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected search paste retains reversed selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected search paste retains reversed selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "0db5099e4f53252f387177188f4a1e45b87cc78c06fbcfa0021d33555352759e",
+      "right_sha256": "0db5099e4f53252f387177188f4a1e45b87cc78c06fbcfa0021d33555352759e"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected search paste retains reversed selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native deletion and Unicode replacement",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native deletion and Unicode replacement",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f",
+      "right_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native deletion and Unicode replacement",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "two native packets keep separate undo",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "two native packets keep separate undo",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "e884e012b0a7b25b5800b4493f52934cc70415eefa493ce39f98c1666604c1aa",
+      "right_sha256": "e884e012b0a7b25b5800b4493f52934cc70415eefa493ce39f98c1666604c1aa"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "two native packets keep separate undo",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "bounded native packet overflow",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "bounded native packet overflow",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "bounded native packet overflow",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "00e41e8b5391e29b3ec049f16957ccdb21d97022e23f66ab0a0643615d10476d",
+      "right_sha256": "00e41e8b5391e29b3ec049f16957ccdb21d97022e23f66ab0a0643615d10476d"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "71a13f58e0087d94e4351cca83a1869131da1b192df1ec8c3e22a4b9beaa83de",
+      "right_sha256": "71a13f58e0087d94e4351cca83a1869131da1b192df1ec8c3e22a4b9beaa83de"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native name commit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native name commit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "19b0c5146951e4cb98f2b1cb53206b123a2879be4546a962e7560315394c6579",
+      "right_sha256": "19b0c5146951e4cb98f2b1cb53206b123a2879be4546a962e7560315394c6579"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "native name commit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "c41d16af6fea6c5708ae9a320acc17e379f4f8a1bb2c22f10661be2a661ec4c5",
+      "right_sha256": "c41d16af6fea6c5708ae9a320acc17e379f4f8a1bb2c22f10661be2a661ec4c5"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "original rename with native packets and separate undo",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "original rename with native packets and separate undo",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "7d3bbece8de1ec1b579e45cffcf43ff0795d6f62b6ce8b921c656db4ca7d0e6e",
+      "right_sha256": "7d3bbece8de1ec1b579e45cffcf43ff0795d6f62b6ce8b921c656db4ca7d0e6e"
+    },
+    {
+      "left": "shared",
+      "right": "asan",
+      "case": "original rename with native packets and separate undo",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native query preedit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native query preedit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "910af571b7e082877dca5101c11a32fd15730e4823b0ffda0a2d1e3916054b51",
+      "right_sha256": "910af571b7e082877dca5101c11a32fd15730e4823b0ffda0a2d1e3916054b51"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native query preedit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "query after Escape cancellation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "query after Escape cancellation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "2010b9cd094155e8a6f8d6f881743a623f33a7ca7015556d522791ee1fe0621e",
+      "right_sha256": "2010b9cd094155e8a6f8d6f881743a623f33a7ca7015556d522791ee1fe0621e"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "query after Escape cancellation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native Unicode query",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native Unicode query",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "9fcb413cb0f589f43e664c24bfe9984d240ac3e08f1f97ad21e93aca33207900",
+      "right_sha256": "9fcb413cb0f589f43e664c24bfe9984d240ac3e08f1f97ad21e93aca33207900"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native Unicode query",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native preedit at 200 percent",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native preedit at 200 percent",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "9c5243a9a5e030c09f8d2f5e241eb25717e552c74f1368ce7fa25b771bcc256d",
+      "right_sha256": "9c5243a9a5e030c09f8d2f5e241eb25717e552c74f1368ce7fa25b771bcc256d"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native preedit at 200 percent",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native combining preedit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native combining preedit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "efd34e9161b65c2f073df01a0182c951f1aefeb35a01ff0ec59cde52190285cf",
+      "right_sha256": "efd34e9161b65c2f073df01a0182c951f1aefeb35a01ff0ec59cde52190285cf"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native combining preedit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "5fbfd4b9cc3d9b07f2c4414a9d7449346deee90e56aa452700d4938929764340",
+      "right_sha256": "5fbfd4b9cc3d9b07f2c4414a9d7449346deee90e56aa452700d4938929764340"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "671c0d0da411ffe8829c37e480767c18ce59c397fcb0b267f5f835536c6ab7e5",
+      "right_sha256": "671c0d0da411ffe8829c37e480767c18ce59c397fcb0b267f5f835536c6ab7e5"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "648abdde5eafdc1ed6bbcf703ac329cbd06091a726d647620ce87f5ffe3d2352",
+      "right_sha256": "648abdde5eafdc1ed6bbcf703ac329cbd06091a726d647620ce87f5ffe3d2352"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "89c32c88bc195ff17dbffbf5fad533753324683dce4fe8897ecd3d4275bfd0d0",
+      "right_sha256": "89c32c88bc195ff17dbffbf5fad533753324683dce4fe8897ecd3d4275bfd0d0"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "3164840c2426f54af4e8b86857d0117404d08d47e69a2f95197a9a128ee5a7ef",
+      "right_sha256": "3164840c2426f54af4e8b86857d0117404d08d47e69a2f95197a9a128ee5a7ef"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "56cd681cb7121b5f9f7327fcac06933c88fcabaad6d0b7648ce44393b6e04297",
+      "right_sha256": "56cd681cb7121b5f9f7327fcac06933c88fcabaad6d0b7648ce44393b6e04297"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected search paste retains reversed selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected search paste retains reversed selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "0db5099e4f53252f387177188f4a1e45b87cc78c06fbcfa0021d33555352759e",
+      "right_sha256": "0db5099e4f53252f387177188f4a1e45b87cc78c06fbcfa0021d33555352759e"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected search paste retains reversed selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native deletion and Unicode replacement",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native deletion and Unicode replacement",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f",
+      "right_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native deletion and Unicode replacement",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "two native packets keep separate undo",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "two native packets keep separate undo",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "e884e012b0a7b25b5800b4493f52934cc70415eefa493ce39f98c1666604c1aa",
+      "right_sha256": "e884e012b0a7b25b5800b4493f52934cc70415eefa493ce39f98c1666604c1aa"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "two native packets keep separate undo",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "bounded native packet overflow",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "bounded native packet overflow",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "bounded native packet overflow",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "00e41e8b5391e29b3ec049f16957ccdb21d97022e23f66ab0a0643615d10476d",
+      "right_sha256": "00e41e8b5391e29b3ec049f16957ccdb21d97022e23f66ab0a0643615d10476d"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "71a13f58e0087d94e4351cca83a1869131da1b192df1ec8c3e22a4b9beaa83de",
+      "right_sha256": "71a13f58e0087d94e4351cca83a1869131da1b192df1ec8c3e22a4b9beaa83de"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native name commit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native name commit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "19b0c5146951e4cb98f2b1cb53206b123a2879be4546a962e7560315394c6579",
+      "right_sha256": "19b0c5146951e4cb98f2b1cb53206b123a2879be4546a962e7560315394c6579"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "native name commit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "c41d16af6fea6c5708ae9a320acc17e379f4f8a1bb2c22f10661be2a661ec4c5",
+      "right_sha256": "c41d16af6fea6c5708ae9a320acc17e379f4f8a1bb2c22f10661be2a661ec4c5"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "original rename with native packets and separate undo",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "original rename with native packets and separate undo",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "7d3bbece8de1ec1b579e45cffcf43ff0795d6f62b6ce8b921c656db4ca7d0e6e",
+      "right_sha256": "7d3bbece8de1ec1b579e45cffcf43ff0795d6f62b6ce8b921c656db4ca7d0e6e"
+    },
+    {
+      "left": "shared",
+      "right": "release",
+      "case": "original rename with native packets and separate undo",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native query preedit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native query preedit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "910af571b7e082877dca5101c11a32fd15730e4823b0ffda0a2d1e3916054b51",
+      "right_sha256": "910af571b7e082877dca5101c11a32fd15730e4823b0ffda0a2d1e3916054b51"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native query preedit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "query after Escape cancellation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "query after Escape cancellation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "2010b9cd094155e8a6f8d6f881743a623f33a7ca7015556d522791ee1fe0621e",
+      "right_sha256": "2010b9cd094155e8a6f8d6f881743a623f33a7ca7015556d522791ee1fe0621e"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "query after Escape cancellation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native Unicode query",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native Unicode query",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "9fcb413cb0f589f43e664c24bfe9984d240ac3e08f1f97ad21e93aca33207900",
+      "right_sha256": "9fcb413cb0f589f43e664c24bfe9984d240ac3e08f1f97ad21e93aca33207900"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native Unicode query",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native preedit at 200 percent",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native preedit at 200 percent",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "9c5243a9a5e030c09f8d2f5e241eb25717e552c74f1368ce7fa25b771bcc256d",
+      "right_sha256": "9c5243a9a5e030c09f8d2f5e241eb25717e552c74f1368ce7fa25b771bcc256d"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native preedit at 200 percent",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native combining preedit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native combining preedit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "efd34e9161b65c2f073df01a0182c951f1aefeb35a01ff0ec59cde52190285cf",
+      "right_sha256": "efd34e9161b65c2f073df01a0182c951f1aefeb35a01ff0ec59cde52190285cf"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native combining preedit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "5fbfd4b9cc3d9b07f2c4414a9d7449346deee90e56aa452700d4938929764340",
+      "right_sha256": "5fbfd4b9cc3d9b07f2c4414a9d7449346deee90e56aa452700d4938929764340"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "foreign Unicode clipboard pasted into original filename",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "671c0d0da411ffe8829c37e480767c18ce59c397fcb0b267f5f835536c6ab7e5",
+      "right_sha256": "671c0d0da411ffe8829c37e480767c18ce59c397fcb0b267f5f835536c6ab7e5"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "independent AT-SPI clipboard copy cut and paste",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "648abdde5eafdc1ed6bbcf703ac329cbd06091a726d647620ce87f5ffe3d2352",
+      "right_sha256": "648abdde5eafdc1ed6bbcf703ac329cbd06091a726d647620ce87f5ffe3d2352"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "foreign replacement and one undo preserve selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "89c32c88bc195ff17dbffbf5fad533753324683dce4fe8897ecd3d4275bfd0d0",
+      "right_sha256": "89c32c88bc195ff17dbffbf5fad533753324683dce4fe8897ecd3d4275bfd0d0"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected foreign paste retains reversed Unicode selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "3164840c2426f54af4e8b86857d0117404d08d47e69a2f95197a9a128ee5a7ef",
+      "right_sha256": "3164840c2426f54af4e8b86857d0117404d08d47e69a2f95197a9a128ee5a7ef"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "independent AT-SPI reports rejected whole paste",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "56cd681cb7121b5f9f7327fcac06933c88fcabaad6d0b7648ce44393b6e04297",
+      "right_sha256": "56cd681cb7121b5f9f7327fcac06933c88fcabaad6d0b7648ce44393b6e04297"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "oversized or invalid foreign paste retains prefix and blocks confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected search paste retains reversed selection",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected search paste retains reversed selection",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "0db5099e4f53252f387177188f4a1e45b87cc78c06fbcfa0021d33555352759e",
+      "right_sha256": "0db5099e4f53252f387177188f4a1e45b87cc78c06fbcfa0021d33555352759e"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected search paste retains reversed selection",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native deletion and Unicode replacement",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native deletion and Unicode replacement",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f",
+      "right_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native deletion and Unicode replacement",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "two native packets keep separate undo",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "two native packets keep separate undo",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "e884e012b0a7b25b5800b4493f52934cc70415eefa493ce39f98c1666604c1aa",
+      "right_sha256": "e884e012b0a7b25b5800b4493f52934cc70415eefa493ce39f98c1666604c1aa"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "two native packets keep separate undo",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "invalid whole filename retains prefix and blocks confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "bounded native packet overflow",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "bounded native packet overflow",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "bounded native packet overflow",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "right_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "00e41e8b5391e29b3ec049f16957ccdb21d97022e23f66ab0a0643615d10476d",
+      "right_sha256": "00e41e8b5391e29b3ec049f16957ccdb21d97022e23f66ab0a0643615d10476d"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "atomic deletion avoids intermediate grapheme caret snapping",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "71a13f58e0087d94e4351cca83a1869131da1b192df1ec8c3e22a4b9beaa83de",
+      "right_sha256": "71a13f58e0087d94e4351cca83a1869131da1b192df1ec8c3e22a4b9beaa83de"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "valid first packet retained with rejected second packet",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native name commit",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native name commit",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "19b0c5146951e4cb98f2b1cb53206b123a2879be4546a962e7560315394c6579",
+      "right_sha256": "19b0c5146951e4cb98f2b1cb53206b123a2879be4546a962e7560315394c6579"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "native name commit",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "c41d16af6fea6c5708ae9a320acc17e379f4f8a1bb2c22f10661be2a661ec4c5",
+      "right_sha256": "c41d16af6fea6c5708ae9a320acc17e379f4f8a1bb2c22f10661be2a661ec4c5"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "filtered native commit retains prefix and disables confirmation",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "original rename with native packets and separate undo",
+      "output": 0,
+      "equal": true,
+      "left_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f",
+      "right_sha256": "245bf4efbe1548cc5739fc31d5143d8b273d0a10e412ae66117832a5d02aa25f"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "original rename with native packets and separate undo",
+      "output": 1,
+      "equal": true,
+      "left_sha256": "7d3bbece8de1ec1b579e45cffcf43ff0795d6f62b6ce8b921c656db4ca7d0e6e",
+      "right_sha256": "7d3bbece8de1ec1b579e45cffcf43ff0795d6f62b6ce8b921c656db4ca7d0e6e"
+    },
+    {
+      "left": "release",
+      "right": "asan",
+      "case": "original rename with native packets and separate undo",
+      "output": 2,
+      "equal": true,
+      "left_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178",
+      "right_sha256": "da812c2caf51be7a49b3f305c37e17d1956396ba0180a6903bf09751dda50178"
+    }
+  ],
+  "equal": 198,
+  "different": 0,
+  "inspection": [
+    {
+      "profile": "shared",
+      "case": "native deletion and Unicode replacement",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-shared-1.png",
+      "sha256": "40b78d730230123f9fc7fbf858a6cb1b8245088d15c2dbcc17e3a2e0d0e64633",
+      "raw_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "shared",
+      "case": "bounded native packet overflow",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-shared-2.png",
+      "sha256": "14884234ec481ebc57d678e82854d673a9bbd4f22160b02e42f5d9072f4b75d7",
+      "raw_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "shared",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-shared-3.png",
+      "sha256": "14884234ec481ebc57d678e82854d673a9bbd4f22160b02e42f5d9072f4b75d7",
+      "raw_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "asan",
+      "case": "native deletion and Unicode replacement",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-asan-1.png",
+      "sha256": "40b78d730230123f9fc7fbf858a6cb1b8245088d15c2dbcc17e3a2e0d0e64633",
+      "raw_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "asan",
+      "case": "bounded native packet overflow",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-asan-2.png",
+      "sha256": "14884234ec481ebc57d678e82854d673a9bbd4f22160b02e42f5d9072f4b75d7",
+      "raw_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "asan",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-asan-3.png",
+      "sha256": "14884234ec481ebc57d678e82854d673a9bbd4f22160b02e42f5d9072f4b75d7",
+      "raw_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "release",
+      "case": "native deletion and Unicode replacement",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-release-1.png",
+      "sha256": "40b78d730230123f9fc7fbf858a6cb1b8245088d15c2dbcc17e3a2e0d0e64633",
+      "raw_sha256": "c4ae1bae481c134148e2c2cb9b051507b06dd0284e5c3988b0dfa73739dc405f",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "release",
+      "case": "bounded native packet overflow",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-release-2.png",
+      "sha256": "14884234ec481ebc57d678e82854d673a9bbd4f22160b02e42f5d9072f4b75d7",
+      "raw_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "width": 2560,
+      "height": 1440
+    },
+    {
+      "profile": "release",
+      "case": "rejected packet cannot be rescued by following valid packet",
+      "output": 1,
+      "path": "/mnt/d/NexaUI/out/files-current93-release-3.png",
+      "sha256": "14884234ec481ebc57d678e82854d673a9bbd4f22160b02e42f5d9072f4b75d7",
+      "raw_sha256": "99e77d3841afc98523a6f09ae948c6c5b80da1e6f567d9fed959796138be039e",
+      "width": 2560,
+      "height": 1440
+    }
+  ],
+  "inspection_observation": "All nine selected full outputs inspected: Unicode replacement visible; overflow and rejected-then-valid retain abcde with red validation border/disabled confirmation and no new file. This is controlled virtual output, not final design/human acceptance."
+}
