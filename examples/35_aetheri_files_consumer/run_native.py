@@ -21,6 +21,7 @@ def main():
     parser.add_argument("--original", type=Path, required=True)
     parser.add_argument("--sdk-input", type=Path, required=True)
     parser.add_argument("--expected-sdk-revision", required=True)
+    parser.add_argument("--linkage", choices=("shared", "static"), default="shared")
     parser.add_argument("--mode", choices=("normal", "fault"), default="normal")
     parser.add_argument("--atspi", type=Path)
     for name in ("server", "app", "font", "terminal", "editor", "mono", "output"):
@@ -34,7 +35,7 @@ def main():
     sdk = json.loads(args.sdk_input.read_text())
     if (not re.fullmatch(r"[0-9a-f]{40}", args.expected_sdk_revision)
             or sdk["revision"] != args.expected_sdk_revision
-            or sdk["version"] != "0.1.23" or sdk["atspi_compiled"] is not True):
+            or sdk["version"] not in ("0.1.23", "0.1.33") or sdk["atspi_compiled"] is not True):
         raise SystemExit("Wrong candidate SDK declaration")
     library = Path(sdk["library"]).resolve(strict=True)
     if library.name != "libnexaui.so." + sdk["version"] or sha256(library) != sdk["sha256"]:
@@ -46,6 +47,18 @@ def main():
             raise SystemExit("Changed peer D-Bus header")
     if not sdk["dbus_headers"]:
         raise SystemExit("Missing peer D-Bus headers")
+    static_archive = None
+    static_metadata = None
+    if args.linkage == "static":
+        binding = sdk.get("static_link", {})
+        if not all(name in binding for name in ("archive", "sha256", "app", "app_sha256")):
+            raise SystemExit("Static native checks require the exact archive and application binding")
+        static_archive = Path(binding["archive"]).resolve(strict=True)
+        if (static_archive.name != "libnexaui.a" or sha256(static_archive) != binding["sha256"]
+                or Path(binding["app"]).resolve(strict=True) != args.app.resolve(strict=True)
+                or sha256(args.app) != binding["app_sha256"]):
+            raise SystemExit("Changed static SDK archive or application")
+        static_metadata = dict(sdk, sha256=binding["sha256"])
     args.output.mkdir(parents=True, exist_ok=True)
     suffix = "_fault" if args.mode == "fault" else ""
     driver = original / ("tools/test_files_view" + suffix + ".py")
@@ -69,6 +82,16 @@ def main():
         assert digest(library)==metadata["artifacts"][library.relative_to(candidate).as_posix()]''',
                      "library=loaded.pop();metadata=_candidate_metadata\n"
                      "        assert library==_candidate_library and digest(library)==metadata['sha256']")
+        if args.linkage == "static":
+            replace_once(";assert len(loaded)==1", ";assert not loaded")
+            replace_once("library=loaded.pop();metadata=_candidate_metadata\n"
+                         "        assert library==_candidate_library and digest(library)==metadata['sha256']",
+                         "library=_candidate_static_archive;metadata=_candidate_static_metadata\n"
+                         "        assert digest(library)==metadata['sha256']\n"
+                         "        assert app_bin==_candidate_bound_app and digest(app_bin)==metadata['static_link']['app_sha256']")
+        replace_once('''result["font"]={"path":str(font),"sha256":digest(font)}''',
+                     '''result["sdk"]["linkage"]=_candidate_linkage
+        result["font"]={"path":str(font),"sha256":digest(font)}''')
     elif args.atspi:
         raise SystemExit("The original fault driver has no AT-SPI mode")
     adapted = args.output / ("candidate-test-files-view" + suffix + ".py")
@@ -76,6 +99,7 @@ def main():
     record = {"original_driver": str(driver), "original_sha256": sha256(driver),
               "adapted_sha256": sha256(adapted), "changes": changes,
               "sdk_input": sdk, "sdk_input_sha256": sha256(args.sdk_input),
+              "linkage": args.linkage,
               "scope": "Explicit candidate experiment; original reviewed pin preserved; all behavior/assertions/deadlines retained"}
     (args.output / ("driver-adaptation" + suffix + ".json")).write_text(json.dumps(record, indent=2) + "\n")
     sys.argv = [str(driver)] + [str(getattr(args, name).resolve(strict=True)) for name in
@@ -83,7 +107,9 @@ def main():
     if args.atspi:
         sys.argv += ["--atspi", str(args.atspi.resolve(strict=True))]
     namespace = {"__name__": "__main__", "__file__": str(driver),
-                 "_candidate_metadata": sdk, "_candidate_library": library, "_candidate_dbus": dbus}
+                 "_candidate_metadata": sdk, "_candidate_library": library, "_candidate_dbus": dbus,
+                 "_candidate_static_archive": static_archive, "_candidate_static_metadata": static_metadata,
+                 "_candidate_bound_app": args.app.resolve(strict=True), "_candidate_linkage": args.linkage}
     exec(compile(source, str(adapted), "exec"), namespace)
 
 
