@@ -1,6 +1,7 @@
 """Run original Files native assertions with an explicit candidate SDK binding.
 
-Only the upstream SDK selection/provenance block and peer header path change.
+SDK selection/provenance and peer header paths are recorded adaptations.
+Optional capture observations add independent read-only native expectations.
 The original source export and its reviewed SDK pin are never written.
 """
 import argparse
@@ -24,9 +25,13 @@ def main():
     parser.add_argument("--linkage", choices=("shared", "static"), default="shared")
     parser.add_argument("--mode", choices=("normal", "fault"), default="normal")
     parser.add_argument("--atspi", type=Path)
+    parser.add_argument("--observe-captures", action="store_true",
+                        help="Require independent native text/focus expectations before four original captures")
     for name in ("server", "app", "font", "terminal", "editor", "mono", "output"):
         parser.add_argument("--" + name, type=Path, required=True)
     args = parser.parse_args()
+    if args.observe_captures and (args.mode != "normal" or not args.atspi):
+        parser.error("--observe-captures requires normal mode and --atspi")
     here = Path(__file__).resolve().parent
     original = args.original.resolve(strict=True)
     for manifest in ("source-inputs.json", "native-inputs.json"):
@@ -94,13 +99,18 @@ def main():
         result["font"]={"path":str(font),"sha256":digest(font)}''')
     elif args.atspi:
         raise SystemExit("The original fault driver has no AT-SPI mode")
+    if args.observe_captures:
+        from capture_observation import prepare
+        source, observations = prepare(source)
+        changes.extend(observations)
     adapted = args.output / ("candidate-test-files-view" + suffix + ".py")
     adapted.write_text(source)
     record = {"original_driver": str(driver), "original_sha256": sha256(driver),
               "adapted_sha256": sha256(adapted), "changes": changes,
               "sdk_input": sdk, "sdk_input_sha256": sha256(args.sdk_input),
               "linkage": args.linkage,
-              "scope": "Explicit candidate experiment; original reviewed pin preserved; all behavior/assertions/deadlines retained"}
+              "observe_captures": args.observe_captures,
+              "scope": "Explicit candidate experiment; original reviewed pin preserved; all original behavior/assertions/deadlines retained, with optional read-only capture expectations"}
     (args.output / ("driver-adaptation" + suffix + ".json")).write_text(json.dumps(record, indent=2) + "\n")
     sys.argv = [str(driver)] + [str(getattr(args, name).resolve(strict=True)) for name in
                                ("server", "app", "font", "terminal", "editor", "mono", "output")]
@@ -109,7 +119,8 @@ def main():
     namespace = {"__name__": "__main__", "__file__": str(driver),
                  "_candidate_metadata": sdk, "_candidate_library": library, "_candidate_dbus": dbus,
                  "_candidate_static_archive": static_archive, "_candidate_static_metadata": static_metadata,
-                 "_candidate_bound_app": args.app.resolve(strict=True), "_candidate_linkage": args.linkage}
+                 "_candidate_bound_app": args.app.resolve(strict=True), "_candidate_linkage": args.linkage,
+                 "_capture_observer_source": here / "ime_atspi.c"}
     exec(compile(source, str(adapted), "exec"), namespace)
 
 

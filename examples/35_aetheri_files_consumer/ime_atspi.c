@@ -5,6 +5,20 @@
 #undef main
 
 int main(int argc,char **argv) {
+    if(argc==4 && !strcmp(argv[2],"focus")) {
+        char *end=NULL;unsigned long pid=strtoul(argv[1],&end,10);
+        if(!pid || !end || *end || atspi_init()) return 2;
+        atspi_set_timeout(1000,1000);
+        AtspiAccessible *desktop=atspi_get_desktop(0),*app=desktop?target(desktop,pid):NULL;
+        AtspiAccessible *node=app?await(app,argv[3],ATSPI_ROLE_PUSH_BUTTON):NULL;
+        int okay=node && expect_state(node,ATSPI_STATE_FOCUSED);
+        if(node) g_object_unref(node);
+        if(app) g_object_unref(app);
+        if(desktop) g_object_unref(desktop);
+        atspi_exit();
+        if(!okay) {fputs("Native Files focused-control expectation failed\n",stderr);return 1;}
+        puts("Native Files independent focus check passed");return 0;
+    }
     if(argc==3 && (!strcmp(argv[2],"clipboard-copy") || !strcmp(argv[2],"clipboard-cut") || !strcmp(argv[2],"clipboard-paste") || !strcmp(argv[2],"clipboard-paste-rejected"))) {
         int expected_rejection=!strcmp(argv[2],"clipboard-paste-rejected"),tried=0;
         char *end=NULL;unsigned long pid=strtoul(argv[1],&end,10);
