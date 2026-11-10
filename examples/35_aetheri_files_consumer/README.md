@@ -196,7 +196,8 @@ The private task supplies a fresh Shift key before AT-SPI Cut after a foreign
 receiver's focus popup; it does not synthesize a serial or grant app admission.
 The extended task also checks rejected reversed Unicode selection, explicit
 independent AT-SPI rejection and the original query control-character rule. Its
-`clipboard-paste-rejected` peer mode requires an attempted Paste to return false;
+`clipboard-paste-rejected` peer mode requires an attempted Paste to return false
+without a transport error;
 the driver separately observes the app's new rejection state and retained text.
 
 ## Explicit font fallback and complete naming captions
@@ -236,3 +237,41 @@ test. Font bytes are not shipped by this example. U+1F30D is rendered as a
 monochrome outline; this does not establish color emoji or complete script
 coverage. Broader localization, font distribution/admission, normal Aetheri
 migration and physical/human/performance acceptance remain separate gates.
+
+## Current SDK pressure and view-lifetime follow-up
+
+The IME consumer can explicitly select `-DFILES_IME_SDK_VERSION=0.1.33` with
+the matching `NEXAUI_EXPECTED_REVISION`. Its default remains exactly0.1.26;
+`FILES_BUILD_IME_HOST=OFF` still selects exactly0.1.23. No Aetheri pin changes.
+For the explicit0.1.33 Clang profile, `prepare_toolchain.py` records a separate
+layout source with one equivalent float zero/nonzero predicate. The original
+export and strict conversion diagnostics remain intact.
+
+The component IME test has14 cases. Added cases retain a rejected draft when a
+valid packet follows before the frame, reject event-buffer overflow, and destroy
+and recreate the real view with an incomplete or accepted-but-unpainted packet.
+Retired tokens must not edit the new draft; current edits and Undo still work.
+The private producer adds commands28/29; use `--transactions --pressure` to
+exercise native oversized and rejected-then-valid packets. These are text
+transactions, not filesystem delete operations or a new file-operation owner.
+
+`run_ime.py --paste-timeout-guard --clipboard-tools TOOLS
+--clipboard-stream-gate LIBRARY` additionally reuses the Editor's
+`../36_aetheri_editor_consumer/foreign_stream_task.py`. Keep that helper in
+isolated source exports. Only the independent `wl-copy` child loads the gate.
+The guard holds a real incomplete UTF-8 writer beyond the unchanged one-second
+AT-SPI deadline, requires peer exit1 with an actual NoReply, closes the writer,
+and checks the unchanged original name/files. This deliberate failure is
+separate from ordinary successful native replies and semantic refusals.
+
+The current scoped0.1.33 follow-up passes nine component CTests and the native
+IME/clipboard/create/rename runner on each of Release-static, Release-shared and
+Debug-O1 ASan/UBSan/LSan. It does not supersede the historical0.1.26 full original
+document-child regression. The local musl libc lacks the original launch module's
+`posix_spawn_file_actions_addclosefrom_np`; the private scoped tests use an
+aborting tripwire for that unavailable function and never accept document launch.
+The optional `NEXAUI_AETHERI_MUSL_COMPAT` reuses Example23's Terminal syscall
+bridge only; it does not supply that missing Files spawn action or change FD
+closing policy. Full0.1.33 document-child regression on the required libc,
+actual Aetheri compositor/IME, broader pressure/lifetime and normal adoption
+remain open.

@@ -3,7 +3,7 @@
 Uses fresh owned fixtures and real original child programs; not human/physical
 acceptance, normal app admission or the unchanged-original host.
 """
-import argparse,gzip,hashlib,json,os,re,signal,socket,subprocess,sys,tempfile,time
+import argparse,gzip,hashlib,json,os,re,shutil,signal,socket,subprocess,sys,tempfile,time
 from pathlib import Path
 parser=argparse.ArgumentParser(description=__doc__)
 for name in ('binaries','original','atspi-fixture','sdk-input','server','font','mono','work-dir'):
@@ -11,12 +11,17 @@ for name in ('binaries','original','atspi-fixture','sdk-input','server','font','
 parser.add_argument('--expected-sdk-revision',required=True)
 parser.add_argument('--linkage',choices=('static','shared'),required=True)
 parser.add_argument('--transactions',action='store_true',help='Require the separately built private producer and exercise replacement/undo packets')
+parser.add_argument('--pressure',action='store_true',help='Also require producer commands28/29 for rejected packet pressure and rejected-then-valid packets')
 parser.add_argument('--clipboard-tools',type=Path,help='Private checked wl-clipboard tools and musl loader/runtime')
 parser.add_argument('--clipboard-budget',action='store_true',help='Also exercise a 65537-byte foreign paste proposal')
+parser.add_argument('--paste-timeout-guard',action='store_true',help='Require a deliberate native paste timeout to fail the independent peer')
+parser.add_argument('--clipboard-stream-gate',type=Path,help='Existing private foreign wl-copy stream gate, used only by the deliberate timeout guard')
 parser.add_argument('--fallback-font',type=Path,action='append',default=[],help='Explicit optional app fallback font; may be repeated up to four times')
 parser.add_argument('--font-errors',action='store_true',help='Check private startup refusals for missing, oversized, malformed and excess fallback inputs')
 args=parser.parse_args();b=args.binaries.resolve(strict=True);original=args.original.resolve(strict=True);fixture=args.atspi_fixture.resolve(strict=True);src=Path(__file__).resolve().parent;sdk=json.loads(args.sdk_input.read_text());profile=args.linkage;case='native-ime-'+profile
-if not re.fullmatch(r'[0-9a-f]{40}',args.expected_sdk_revision) or sdk['revision']!=args.expected_sdk_revision or sdk['version']!='0.1.26' or sdk['atspi_compiled'] is not True:raise SystemExit('Wrong candidate SDK declaration')
+if args.pressure and not args.transactions:parser.error('--pressure requires --transactions')
+if args.paste_timeout_guard and (not args.clipboard_tools or not args.clipboard_stream_gate):parser.error('--paste-timeout-guard requires --clipboard-tools and --clipboard-stream-gate')
+if not re.fullmatch(r'[0-9a-f]{40}',args.expected_sdk_revision) or sdk['revision']!=args.expected_sdk_revision or sdk['version'] not in ('0.1.26','0.1.33') or sdk['atspi_compiled'] is not True:raise SystemExit('Wrong candidate SDK declaration')
 library=Path(sdk['library']).resolve(strict=True)
 if library.name!='libnexaui.so.'+sdk['version'] or hashlib.sha256(library.read_bytes()).hexdigest()!=sdk['sha256']:raise SystemExit('Changed candidate SDK library')
 dbus=Path(sdk['dbus_sdk']).resolve(strict=True)
@@ -45,7 +50,7 @@ clipboard_task=None
 fallback_fonts=[p.resolve(strict=True) for p in args.fallback_font]
 fallback_arguments=[value for p in fallback_fonts for value in ('--fallback-font',str(p))]
 peer=root/'peer';dbus=Path(sdk['dbus_sdk']);command=['cc','-std=c17','-Wall','-Wextra','-Wpedantic','-Werror','-O2',str(src/'ime_atspi.c'),'-I'+str(original/'tests'),'-o',str(peer)]+['-I'+str(fixture/p) for p in ('usr/include/at-spi-2.0','usr/include/glib-2.0','usr/lib64/glib-2.0/include')]+['-I'+str(dbus/p) for p in ('include/dbus-1.0','lib64/dbus-1.0/include')]+[str(fixture/'usr/lib64/libatspi.so.0.0.1'),'-l:libgobject-2.0.so.0','-l:libglib-2.0.so.0','-Wl,-rpath,'+str(fixture/'usr/lib64'),'-Wl,-rpath-link,'+str(fixture/'usr/lib64')];compiled=subprocess.run(command,capture_output=True,text=True);(root/'peer-build.log').write_text(compiled.stdout+compiled.stderr);assert compiled.returncode==0,compiled.stderr
-left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];images=[];checks=[];app=None;server=None;result=dict(result='failed',case=case,peer_build_command=command,transactions=args.transactions,sdk=sdk,producer=dict(path=str(server_binary),sha256=hashlib.sha256(server_binary.read_bytes()).hexdigest(),source_delta=producer_delta),scope='Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change')
+left,right=socket.socketpair(socket.AF_UNIX,socket.SOCK_SEQPACKET);left.settimeout(4);children=[];streams=[];images=[];checks=[];app=None;server=None;result=dict(result='failed',case=case,peer_build_command=command,transactions=args.transactions,pressure=args.pressure,sdk=sdk,producer=dict(path=str(server_binary),sha256=hashlib.sha256(server_binary.read_bytes()).hexdigest(),source_delta=producer_delta),scope='Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change')
 def log(name='app'):return (root/(name+'.log')).read_text(errors='replace') if (root/(name+'.log')).exists() else ''
 def start(binary,name,*args,pass_fds=()):
     stream=(root/(name+'.log')).open('xb');streams.append(stream);p=subprocess.Popen([str(binary),*map(str,args)],env=env,stdin=subprocess.DEVNULL,stdout=stream,stderr=subprocess.STDOUT,pass_fds=pass_fds);children.append(p);return p
@@ -113,6 +118,13 @@ def transaction_cases():
         assert {p.name:p.read_bytes() for p in documents.iterdir()}==seeds
         checks.append('rejected packet '+str(mode)+' cannot confirm retained valid prefix')
         if mode==22:capture('invalid whole filename retains prefix and blocks confirmation')
+    if args.pressure:
+        for mode in (28,29):
+            seed();event('I '+str(mode));wait(lambda:state(name_bad=1),'whole native pressure rejection '+str(mode))
+            text('Name','abcde',5);native_case('invalid');key(28)
+            assert state(dialog=1,name_bad=1) and {p.name:p.read_bytes() for p in documents.iterdir()}==seeds
+            capture('bounded native packet overflow' if mode==28 else 'rejected packet cannot be rescued by following valid packet')
+        checks.append('native packet pressure and rejected-then-valid sequence retain original draft and reject file creation')
     cut=len(log('server'));key(22,True);text('Name','',0);snapshot('',0,after=cut)
     event('I 26');expect('aX́b',4);key(102);key(106);expect('aX́b',1)
     event('I 25');expect('aq́b',3);key(44,True);expect('aX́b',1);key(21,True);expect('aq́b',3)
@@ -135,7 +147,14 @@ try:
     bus=start(fixture/'usr/bin/dbus-daemon','bus','--nofork','--config-file='+str(conf));wait(lambda:(runtime/'bus').is_socket(),'private bus')
     registry=start(fixture/'usr/libexec/at-spi2-registryd','registry')
     def registry_ready():
-        p=subprocess.run(['busctl','--address='+address,'--timeout=1','call','org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus','NameHasOwner','s','org.a11y.atspi.Registry'],env=env,capture_output=True,text=True,timeout=2);return p.returncode==0 and p.stdout.strip()=='b true'
+        if shutil.which('busctl'):
+            command=['busctl','--address='+address,'--timeout=1','call','org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus','NameHasOwner','s','org.a11y.atspi.Registry']
+            expected='b true'
+        else:
+            command=['dbus-send','--bus='+address,'--print-reply','--reply-timeout=1000','--dest=org.freedesktop.DBus','/org/freedesktop/DBus','org.freedesktop.DBus.NameHasOwner','string:org.a11y.atspi.Registry']
+            expected='boolean true'
+        p=subprocess.run(command,env=env,capture_output=True,text=True,timeout=2)
+        return p.returncode==0 and p.stdout.strip().endswith(expected)
     wait(registry_ready,'private registry');server=start(server_binary,'server','--headless',env['WAYLAND_DISPLAY'],captures,right.fileno(),pass_fds=(right.fileno(),));right.close();wait(lambda:'READY ' in log('server'),'native server');event('I on')
     result['font_inputs']=[dict(path=str(p),size=p.stat().st_size,sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in (font,*fallback_fonts)]
     host_arguments=['--root',str(documents),'--font',str(font),'--cache',str(cache),'--terminal',str(b/'aetheri_terminal_candidate'),'--editor',str(b/'aetheri_editor_candidate'),'--terminal-font',str(mono),'--diagnostics']
@@ -170,6 +189,37 @@ try:
     key(49,True);wait(lambda:state(dialog=1),'original naming opened');text('Name','',0);wait(enabled,'name native IME activation')
     if args.clipboard_tools:
         from clipboard_task import ClipboardTask
+        if args.paste_timeout_guard:
+            # Reuse the Editor's independent foreign writer control. The gate
+            # is loaded into wl-copy only, never into Files, its peer or SDK.
+            helper=(src/'../36_aetheri_editor_consumer/foreign_stream_task.py').resolve(strict=True)
+            sys.path.insert(0,str(helper.parent))
+            from foreign_stream_task import task_type
+            guard_result=result['paste_timeout_guard']=dict(helper_sha256=hashlib.sha256(helper.read_bytes()).hexdigest())
+            guard=task_type(ClipboardTask)(root,args.clipboard_tools,env,key,text,snapshot,state,native_case,wait,capture,guard_result,lambda:app,gate=args.clipboard_stream_gate)
+            pending_peer=None
+            try:
+                guard.seed();source=guard.offer('é🌍\r\nlate'.encode());key(42);guard.arm(source)
+                cut=len(log());command=[str(peer),str(app.pid),'clipboard-paste-rejected']
+                pending_peer=subprocess.Popen(command,env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True)
+                wait(lambda:'.receive(' in log()[cut:],'deliberate timeout native receive actually requested')
+                first=guard.message(source,1);assert first['written']==3
+                wait(lambda:guard.drained(source),'deliberate timeout prefix actually consumed')
+                stdout,stderr=pending_peer.communicate(timeout=4)
+                guard_result.update(command=command,exit=pending_peer.returncode,stdout=stdout,stderr=stderr,held=guard.held(source),expected_peer_failure=True)
+                (root/'paste-timeout-guard.json').write_text(json.dumps(guard_result,indent=2)+'\n')
+                assert pending_peer.returncode==1 and 'paste proposal rejected' not in stdout
+                assert 'error=Did not receive a reply.' in stderr and 'AT-SPI transport failed' in stderr
+                guard.send(source,b'E');closed=guard.message(source,3)
+                assert closed['writer_pipe_closed'] and closed['written']==3 and not closed['error']
+                guard_result['closed']=closed;text('Name','s',1)
+                assert not state(name_bad=1) and {p.name:p.read_bytes() for p in documents.iterdir()}==seeds
+                guard.clear();checks.append('deliberate native NoReply fails the peer; truncated EOF preserves original name and files')
+            finally:
+                if pending_peer is not None and pending_peer.poll() is None:
+                    pending_peer.terminate();pending_peer.communicate(timeout=4)
+                guard.close()
+                (root/'paste-timeout-guard.json').write_text(json.dumps(guard_result,indent=2)+'\n')
         clipboard_task=ClipboardTask(root,args.clipboard_tools,env,key,text,snapshot,state,native_case,wait,capture,result,lambda:app)
         clipboard_task.run(args.clipboard_budget)
     if args.transactions:transaction_cases()

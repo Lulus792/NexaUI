@@ -1,6 +1,6 @@
 /* App-owned font faces borrow host byte buffers until view destruction. */
 bool ae_files_view_add_fallback(struct ae_files_view *v,const void *bytes,size_t length) {
-    if(!v || !bytes || !length || length>4u*1024u*1024u || v->width || v->height ||
+    if(!v || !bytes || !length || length>4u*1024u*1024u || v->width!=0.0f || v->height!=0.0f ||
        v->fallback_count==sizeof(v->fallback_fonts)/sizeof(v->fallback_fonts[0])) return false;
     nx_font *font=NULL;
     if(nx_font_open(bytes,length,NULL,&font)!=NX_OK) return false;

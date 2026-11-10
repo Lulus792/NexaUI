@@ -111,6 +111,34 @@ static void run_case(unsigned test,const void *font,size_t font_size,int root) {
     } else if(test==7) {
         seed(view,"fresh");deliver(view,begin);deliver(view,character(begin,'x',NX_IME_COMMIT_START|NX_IME_COMMIT_END));deliver(view,end);tick(view);
         name_is(view,"fresh",5,5);VERIFY(!session.name_bad);complete(view,'y');name_is(view,"freshy",6,6);
+    } else if(test==10 || test==11) {
+        /* A rejected packet must not be rescued by a later valid packet
+           coqueued before the frame applies the rejection to the model. */
+        deliver(view,begin);
+        if(test==10) deliver(view,character(begin,'/',NX_IME_COMMIT_START|NX_IME_COMMIT_END));
+        else for(unsigned i=0;i<300;++i)
+            deliver(view,character(begin,'x',i==0?NX_IME_COMMIT_START:i==299?NX_IME_COMMIT_END:0));
+        deliver(view,end);
+        deliver(view,begin);deliver(view,character(begin,'y',NX_IME_COMMIT_START|NX_IME_COMMIT_END));deliver(view,end);
+        tick(view);name_is(view,"ABCDE",5,5);VERIFY(session.name_bad);
+        keypress(view,NX_KEY_ENTER);VERIFY(!work_attempts);
+        seed(view,"");complete(view,'z');name_is(view,"z",1,1);
+    } else if(test==12 || test==13) {
+        /* Both an incomplete envelope and an accepted-but-not-yet-painted
+           preview must retire with their actual context/field owner. */
+        deliver(view,begin);deliver(view,character(begin,'x',NX_IME_COMMIT_START|NX_IME_COMMIT_END));
+        if(test==13) deliver(view,end);
+        VERIFY(!strcmp(session.name,"ABCDE"));
+        ae_files_view_destroy(view);guard_view=NULL;view=NULL;
+        VERIFY(ae_files_view_create(&session,font,font_size,&view));guard_view=view;
+        VERIFY(nx_context_queue_event(view->ui,&focus)==NX_OK);tick(view);
+        VERIFY(nx_text_field_set_host_ime(view->edits[1].field,1)==NX_OK);tick(view);seed(view,"fresh");
+        nx_event current=boundary(view,NX_EVENT_IME_TRANSACTION_BEGIN);
+        VERIFY(current.ime_target!=begin.ime_target || current.ime_revision!=begin.ime_revision);
+        deliver(view,end);deliver(view,begin);
+        deliver(view,character(begin,'x',NX_IME_COMMIT_START|NX_IME_COMMIT_END));deliver(view,end);tick(view);
+        name_is(view,"fresh",5,5);VERIFY(!session.name_bad);
+        complete(view,'z');name_is(view,"freshz",6,6);keypress(view,NX_KEY_Z);name_is(view,"fresh",5,5);
     }
     VERIFY(!work_attempts);ae_files_session_dialog_close(&session);ae_files_view_destroy(view);guard_view=NULL;ae_files_destroy(session.files);
     printf("Controller IME case%u passed\n",test);fflush(stdout);
@@ -119,6 +147,6 @@ int main(int argc,char **argv) {
     VERIFY(argc==2 && getuid()!=0);FILE *file=fopen(argv[1],"rb");VERIFY(file && !fseek(file,0,SEEK_END));long size=ftell(file);VERIFY(size>0 && !fseek(file,0,SEEK_SET));
     void *font=malloc((size_t)size);VERIFY(font && fread(font,1,(size_t)size,file)==(size_t)size && !fclose(file));
     char path[]="files-ime-controller-XXXXXX";VERIFY(mkdtemp(path));int root=open(path,O_RDONLY|O_DIRECTORY|O_CLOEXEC);VERIFY(root>=0);
-    for(unsigned i=0;i<10;++i) run_case(i,font,(size_t)size,root);
-    VERIFY(!close(root) && !rmdir(path));free(font);puts("Files IME controller:10 public-host-token parser/model cases passed");return 0;
+    for(unsigned i=0;i<14;++i) run_case(i,font,(size_t)size,root);
+    VERIFY(!close(root) && !rmdir(path));free(font);puts("Files IME controller:14 public-host-token parser/model cases passed");return 0;
 }

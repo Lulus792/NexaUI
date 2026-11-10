@@ -24,7 +24,7 @@ transform('compositor_text_input.c',[
         (long)t->current.surrounding.cursor,(long)t->current.surrounding.anchor);
     for(size_t i=0;text[i];++i) printf("%02x",(unsigned)text[i]);
     putchar('\\n');'''),
-    ('if (!f || command>6) return false;','if (!f || (command>6 && (command<16 || command>27))) return false;'),
+    ('if (!f || command>6) return false;','if (!f || (command>6 && (command<16 || command>29))) return false;'),
     ('    wlr_text_input_v3_send_done(t);printf("IME produced=%u\\n",command);return true;',r'''    if (command==16 || command==17 || command==18 || command==19) {
         wlr_text_input_v3_send_delete_surrounding_text(t,1,0);
         if (command!=19) wlr_text_input_v3_send_commit_string(t,command==16?"x\xc3\xa9":command==17?"bad\nname":"");
@@ -43,6 +43,13 @@ transform('compositor_text_input.c',[
             wlr_text_input_v3_send_delete_surrounding_text(t,1,0);wlr_text_input_v3_send_commit_string(t,"z");
         }
     } else if (command==26) wlr_text_input_v3_send_commit_string(t,"aX\xcc\x81" "b");
+    else if (command==28) {
+        char pressure[301];memset(pressure,'x',300);pressure[300]=0;
+        wlr_text_input_v3_send_commit_string(t,pressure);
+    } else if (command==29) {
+        wlr_text_input_v3_send_commit_string(t,"bad/name");wlr_text_input_v3_send_done(t);
+        wlr_text_input_v3_send_commit_string(t,"good");
+    }
     wlr_text_input_v3_send_done(t);printf("IME produced=%u\n",command);return true;''')])
 
 transform('compositor_input_driver.c',[(

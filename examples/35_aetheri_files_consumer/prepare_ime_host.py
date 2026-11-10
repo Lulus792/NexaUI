@@ -59,7 +59,7 @@ def main():
         "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }",
         "nx_context *ae_files_view_context(struct ae_files_view *v) { return v?v->ui:NULL; }\n"
         "bool ae_files_view_set_ime_window(struct ae_files_view *v,nx_window *window) {\n"
-        "    if(!v || !window || v->ime_window || v->width || v->height) return false;\n"
+        "    if(!v || !window || v->ime_window || v->width!=0.0f || v->height!=0.0f) return false;\n"
         "    if(nx_window_set_ime_transaction_events(window,1)!=NX_OK) return false;\n"
         "    if(nx_text_clipboard_for_window(window,&v->clipboard)!=NX_OK) return false;\n"
         "    v->ime_window=window;return true;\n}"
