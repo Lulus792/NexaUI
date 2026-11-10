@@ -1,0 +1,30 @@
+{
+  "source_revision": "2dc70e97f50b58cba6ba4101cab150d2a5d08ac8",
+  "emission": {
+    "rows": [
+      {
+        "restored": "build_editor_focus64.py",
+        "restored_sha256": "b41563c7d971dc9559c3347dc362f7e850e0df62596fad84e4340c008430044a",
+        "new": "build_editor_observation70.py",
+        "new_sha256": "c5d7701b47c36c130d405235a91a13070f34c8cd06bbe6c594c48da8001ec8bf"
+      },
+      {
+        "restored": "run_editor_focus64.py",
+        "restored_sha256": "7b3819175c0ec72bdf3384f8de2fd0269510b27806499a130a6aa1f6d59d77c6",
+        "new": "run_editor_observation70.py",
+        "new_sha256": "c49360de2030538170e5accbf688f25001b589f76542aa9a9603f0d355dc7daa"
+      }
+    ],
+    "scope": "Private freezer helper filename substitution failed after110-input export completed. Two old helper paths were overwritten; exact archived bytes restored and verified, new helpers moved to separate70 names. No source/binary/log/receipt or archive modified; no consumer task launched before recovery. Export is retained, not restarted."
+  },
+  "ordering": {
+    "failed_log": "editor-native70-off-shared.log",
+    "failed_log_sha256": "22a759732f8fc875105bcc3f98250fe2a1495c3194f2a76bcb4eb12ce18993a4",
+    "failed_log_mtime": 1794267392.4613473,
+    "peer_path": "/tmp/nexaui-editor-native54/peer70-shared/editor_document_client",
+    "peer_now_sha256": "0d75b2338fe0fe0394cb88975b2fa6d22cbee83a21978e230b81ffeeaf98eda3",
+    "peer_link_mtime": 1794267394.5162482,
+    "scope": "The off-peer helper receipt describes intended ordering, not actual ordering: OFF preflight failed before the peer linked. Original failure and receipt preserved. No Editor application started in that failed OFF preflight. This resumption verifies the dependency first and uses new native74 output; successful Release70 is retained without rerun."
+  },
+  "scope": "Actual private fixture setup failures and corrections. Historical raw scope wording is retained and superseded by observed timestamps, exact archive restoration and source/object binding. Neither setup failure is an Editor runtime failure."
+}

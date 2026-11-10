@@ -1,5 +1,16 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Original Editor observation checkpoint: source `2dc70e9` reuses installed
+SDK0.1.33/`1e00a6f` and original7bbe704 ownership. All four native profiles now
+complete336 captures/104 forced pre-EOF frames, with56 actual ordinary paste
+replies under the original one-second deadline and four separate deliberate
+timeout rejections. The exact old peer's false success and OFF attribute omission
+are rejected. Full-log parity/work-count checks,91 local CTests and seven CI jobs
+pass;246/252 full image pairs match, with six temporary-path label differences.
+Prior runtime failures and current fixture setup failures remain archived. No
+SDK production/API/version or active Aetheri changes; all103 IDs/packets6–8 remain.
+See the [observation report](editor-observation-report.md).
+
 Original Editor focus-paint followup: source `b0a254c` uses installed SDK0.1.33/
 `1e00a6f` and original7bbe704 sources. A regression rejects the old late-focus
 dirty reset;91 local CTests and24 actual modal-paint cases pass. Shared and
