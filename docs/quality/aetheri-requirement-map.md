@@ -1,12 +1,21 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Files capture-observation follow-up: source`87d8336` retains installed0.1.33/
+`1e00a6f` and all earlier e713880 application binaries. Six full native tasks
+pass with twelve independent read-only state expectations; all264 full image
+pairs match. Exactly the four prior sanitizer snapshots change to the reference
+pixels;392 other old/new pairs stay identical. Three wrong-state expectations
+fail before capture, and actual adaptations recover the exact original driver.
+All103 statuses and remaining packets6–8 persist; no SDK/pin/default change.
+See the [observation follow-up](files-observation-report.md).
+
 Files glibc document follow-up: consumer`e713880` retains installed0.1.33/
 `1e00a6f` and original7483286 ownership. Three fresh full profiles each pass27
 CTests and original native document/AT-SPI, lost-result and IME workflows, without
 a launch tripwire. The no-IME startup failure is fixed while keyboard/clipboard
 remain available. Five false provenance declarations are rejected before launch.
-Of276 full capture pairs,272 match; four sanitizer input/focus observations remain
-open. SDK production/pin/default and all103 statuses stay unchanged; packet6 and
+Of276 full capture pairs,272 match; four sanitizer input/focus observations were
+open at that checkpoint. SDK production/pin/default and all103 statuses stay unchanged; packet6 and
 packets7–8 continue. See the [full follow-up](files-full-report.md).
 
 Files current-SDK pressure/lifetime: consumer`5f14a9c` uses installed0.1.33/

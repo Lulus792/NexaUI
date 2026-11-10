@@ -1,0 +1,34 @@
+{
+  "source_revision": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+  "archives": [
+    {
+      "path": "/mnt/d/NexaUI/out/nexaui-files-observation130-20261110.tar.gz",
+      "size": 2179170,
+      "sha256": "b7fec1aee566a29d348ef0fd570a1422b1a6f64d25e3499ca909750c5cfdd5bf",
+      "regular_files": 612,
+      "all_members_verified": true
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/nexaui-files-observation133-20261110.tar.gz",
+      "size": 778983,
+      "sha256": "0b70cefa5499bf7723039be8bf5d47297048f4bee9b7fb2008ee5fe30cd0ad9d",
+      "regular_files": 259,
+      "all_members_verified": true
+    }
+  ],
+  "prior_sdk_application_archive": {
+    "path": "D:/NexaUI/out/nexaui-files-full125-20261110.tar.gz",
+    "sha256": "35be67434f9bfb3c139685391dd3a97f392e300787e5a8bc0079ed371e8c96e8"
+  },
+  "scope": "Every new raw positive/negative archive member verified after transfer. New captures/logs, peers and frozen driver sources retained; unchanged SDK/app and dependency evidence remains attributed to the earlier archive. Borrowed fonts and runtime/dependency libraries excluded.",
+  "checkpoint_bundle": {
+    "source_revision": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+    "path": "D:/NexaUI/out/nexaui-files-observation139-20261110.tar.gz",
+    "size": 3244100,
+    "sha256": "d70ba14808b885996efaa45ea6c02d42548c748461ee145760f87a9e9ac5599c",
+    "regular_members": 38,
+    "all_members_verified": true,
+    "ci_logs": 7,
+    "scope": "Checkpoint bundle: both immutable raw native archives, frozen source inputs, local verification, standalone preservation checker, controller receipts and all seven decoded CI logs. Prior unchanged SDK/application evidence remains separately archived. Borrowed fonts and runtime/dependency libraries excluded; no whole-goal acceptance."
+  }
+}

@@ -1,0 +1,832 @@
+{
+  "source_revision": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+  "sdk_revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+  "sdk_version": "0.1.33",
+  "application_source_revision": "e7138808ede25a08bcc568a093a2d7de425e56d4",
+  "application_bindings": [
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_files_candidate",
+      "sha256": "0d7fc14bf39c243d19f0fa2bf55e39f9e5e9378bf2ab349ca221cd138aff0ca3"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+      "sha256": "d6393b08677a581f3f5336f99e38fff0e1fb34c66a7023de9846713382f67657"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_files_fault_candidate",
+      "sha256": "befadde49f228263ce6979d019b2869fb20cc67987609436b3f7b88016c03cac"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+      "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+      "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_files_candidate",
+      "sha256": "3a6beb744ac1693fbca244aef5f8ff7e356472da6c68304e1f896ff400e01ab7"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_files_ime_candidate",
+      "sha256": "f1d8986f72b697b733ce099b4a23bffa6d330ba20dd35001f232c8e8458d57ac"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_files_fault_candidate",
+      "sha256": "f14482a72f3c5e214ed4a20e055a72c9805eff3fc20c7372239371478c7c73b7"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+      "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+      "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_files_candidate",
+      "sha256": "3bad6e40d187e1ac306dbafea6021321172f131394328e5f8e4bae799ed88777"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_files_ime_candidate",
+      "sha256": "b8e0fa94188594c043b4ca2d84549c94c2c0db578e16f2dd1346cfe33e8d3b6b"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_files_fault_candidate",
+      "sha256": "a9238a92a941158436059cc268da63a265ae35f71e2a01d20ac3e1dca89e8dc6"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_terminal_candidate",
+      "sha256": "89e164d882c92164f3865bb5f334734ecbda91af109a1c672f10690944d11c4f"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_editor_candidate",
+      "sha256": "43c6d182902cbaedeb4363156a0b94b2ca4c0f7fe281514f5674a7ac2ffad6b2"
+    }
+  ],
+  "native": [
+    {
+      "case": "normal",
+      "profile": "shared",
+      "result": "passed",
+      "result_path": "observation129-normal-shared/files-view-native-26ulv30n/result.json",
+      "result_sha256": "fa6cef0618545ba07b233fc9b33130307307e5b1596558097ebc6b6e8a86c771",
+      "images": 66,
+      "checkpoints": 0,
+      "observations": [
+        {
+          "case": "body press is not adopted as caption and Close is not triggered",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-shared/files-view-native-26ulv30n/capture-peer",
+            "120425",
+            "focus",
+            "Grid"
+          ],
+          "exit": 0,
+          "stdout": "Native Files independent focus check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "inline grid folder",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-shared/files-view-native-26ulv30n/capture-peer",
+            "120425",
+            "Name",
+            "work",
+            "3"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "native mouse query selection",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-shared/files-view-native-26ulv30n/capture-peer",
+            "120425",
+            "Search this folder",
+            "seed",
+            "4",
+            "0",
+            "4"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "minimum German 200 inline naming",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-shared/files-view-native-26ulv30n/capture-peer",
+            "120425",
+            "Name",
+            "draft",
+            "5"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        }
+      ],
+      "actors": {
+        "120500": {
+          "binary": "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+          "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e",
+          "parent": 120425
+        },
+        "120501": {
+          "binary": "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+          "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4",
+          "parent": 120500
+        }
+      },
+      "idle_cpu_ticks": 0,
+      "scope": "opt-in opaque NexaUI Files on private compositor; no default/physical/production admission"
+    },
+    {
+      "case": "normal",
+      "profile": "release",
+      "result": "passed",
+      "result_path": "observation129-normal-release/files-view-native-vz4zn7f8/result.json",
+      "result_sha256": "2c3a548fc8821fee10967814493a010d9df008d5f00cdb7823b5663377af1781",
+      "images": 66,
+      "checkpoints": 0,
+      "observations": [
+        {
+          "case": "body press is not adopted as caption and Close is not triggered",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-release/files-view-native-vz4zn7f8/capture-peer",
+            "120533",
+            "focus",
+            "Grid"
+          ],
+          "exit": 0,
+          "stdout": "Native Files independent focus check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "inline grid folder",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-release/files-view-native-vz4zn7f8/capture-peer",
+            "120533",
+            "Name",
+            "work",
+            "3"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "native mouse query selection",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-release/files-view-native-vz4zn7f8/capture-peer",
+            "120533",
+            "Search this folder",
+            "seed",
+            "4",
+            "0",
+            "4"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "minimum German 200 inline naming",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-release/files-view-native-vz4zn7f8/capture-peer",
+            "120533",
+            "Name",
+            "draft",
+            "5"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        }
+      ],
+      "actors": {
+        "120545": {
+          "binary": "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+          "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e",
+          "parent": 120533
+        },
+        "120546": {
+          "binary": "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+          "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4",
+          "parent": 120545
+        }
+      },
+      "idle_cpu_ticks": 0,
+      "scope": "opt-in opaque NexaUI Files on private compositor; no default/physical/production admission"
+    },
+    {
+      "case": "normal",
+      "profile": "asan",
+      "result": "passed",
+      "result_path": "observation129-normal-asan/files-view-native-no75pouj/result.json",
+      "result_sha256": "6936164155a69d6a7990a574c8152b3b111e9b287040fa8ad0d383acaff17d92",
+      "images": 66,
+      "checkpoints": 0,
+      "observations": [
+        {
+          "case": "body press is not adopted as caption and Close is not triggered",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-asan/files-view-native-no75pouj/capture-peer",
+            "120611",
+            "focus",
+            "Grid"
+          ],
+          "exit": 0,
+          "stdout": "Native Files independent focus check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "inline grid folder",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-asan/files-view-native-no75pouj/capture-peer",
+            "120611",
+            "Name",
+            "work",
+            "3"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "native mouse query selection",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-asan/files-view-native-no75pouj/capture-peer",
+            "120611",
+            "Search this folder",
+            "seed",
+            "4",
+            "0",
+            "4"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "minimum German 200 inline naming",
+          "command": [
+            "/var/tmp/nxf101/observation129-normal-asan/files-view-native-no75pouj/capture-peer",
+            "120611",
+            "Name",
+            "draft",
+            "5"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        }
+      ],
+      "actors": {
+        "120654": {
+          "binary": "/var/tmp/nxf101/files110-asan/aetheri_terminal_candidate",
+          "sha256": "89e164d882c92164f3865bb5f334734ecbda91af109a1c672f10690944d11c4f",
+          "parent": 120611
+        },
+        "120655": {
+          "binary": "/var/tmp/nxf101/files110-asan/aetheri_editor_candidate",
+          "sha256": "43c6d182902cbaedeb4363156a0b94b2ca4c0f7fe281514f5674a7ac2ffad6b2",
+          "parent": 120654
+        }
+      },
+      "idle_cpu_ticks": 0,
+      "scope": "opt-in opaque NexaUI Files on private compositor; no default/physical/production admission"
+    },
+    {
+      "case": "ime",
+      "profile": "shared",
+      "result": "passed",
+      "result_path": "observation129-ime-shared/result.json",
+      "result_sha256": "ad86f7018bf8b7a2ef98726814edb1391b25c25d05c3dc6aa2f8f8238ca607a1",
+      "images": 66,
+      "checkpoints": 350,
+      "observations": null,
+      "actors": null,
+      "idle_cpu_ticks": null,
+      "scope": "Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change"
+    },
+    {
+      "case": "ime",
+      "profile": "release",
+      "result": "passed",
+      "result_path": "observation129-ime-release/result.json",
+      "result_sha256": "2aff490a87f377685f9c57f603354be465580ad9eb45f89c520a698726a9cd5e",
+      "images": 66,
+      "checkpoints": 350,
+      "observations": null,
+      "actors": null,
+      "idle_cpu_ticks": null,
+      "scope": "Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change"
+    },
+    {
+      "case": "ime",
+      "profile": "asan",
+      "result": "passed",
+      "result_path": "observation129-ime-asan/result.json",
+      "result_sha256": "1dee7b5b6b7b2ac9ebfaf4f17dcc409eb0148ab242f4e2d295778efaac72f13b",
+      "images": 66,
+      "checkpoints": 350,
+      "observations": null,
+      "actors": null,
+      "idle_cpu_ticks": null,
+      "scope": "Separate IME integration variant with real original controller; private native producer/AT-SPI; no active Aetheri change"
+    }
+  ],
+  "commands": [
+    {
+      "case": "normal",
+      "profile": "shared",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer128/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-shared.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "shared",
+        "--app",
+        "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-shared",
+        "--output",
+        "/var/tmp/nxf101/observation129-normal-shared",
+        "--observe-captures"
+      ],
+      "exit": 0,
+      "seconds": 30.138324299994565,
+      "log": "observation129-normal-shared.log",
+      "sha256": "2e48fc6944fe1d1520a131246588b01fe8627311ff064e579111592dc09bb9dd"
+    },
+    {
+      "case": "normal",
+      "profile": "release",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer128/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-release.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "static",
+        "--app",
+        "/var/tmp/nxf101/files110-release/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-release",
+        "--output",
+        "/var/tmp/nxf101/observation129-normal-release",
+        "--observe-captures"
+      ],
+      "exit": 0,
+      "seconds": 25.722788999999466,
+      "log": "observation129-normal-release.log",
+      "sha256": "0f4a765eb547e320acb55db149807ce7903a6635807004a36b098f0629a7ae49"
+    },
+    {
+      "case": "normal",
+      "profile": "asan",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer128/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-asan.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-debug-13dad161969d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-asan/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-asan/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "static",
+        "--app",
+        "/var/tmp/nxf101/files110-asan/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-asan",
+        "--output",
+        "/var/tmp/nxf101/observation129-normal-asan",
+        "--observe-captures"
+      ],
+      "exit": 0,
+      "seconds": 38.59342889999971,
+      "log": "observation129-normal-asan.log",
+      "sha256": "30d837499dd847d858c40d7f7987ba539e779225601de1dd6e4a04af143f5e6a"
+    },
+    {
+      "case": "ime",
+      "profile": "shared",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer128/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/var/tmp/nxf101/files110-shared",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--atspi-fixture",
+        "/var/tmp/nxf101/fixture106-shared",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-shared.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--linkage",
+        "shared",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/var/tmp/nxf101/observation129-ime-shared",
+        "--transactions",
+        "--pressure",
+        "--clipboard-tools",
+        "/var/tmp/nxf101/foreign/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/var/tmp/nxf101/input/fallback/NotoSansSymbols2-Regular.ttf",
+        "--font-errors",
+        "--paste-timeout-guard",
+        "--clipboard-stream-gate",
+        "/var/tmp/nxf101/foreign/libeditor_foreign_stream_gate.so"
+      ],
+      "exit": 0,
+      "seconds": 29.811558200002764,
+      "log": "observation129-ime-shared.log",
+      "sha256": "13bd42858a7f4d9f7be2b1f4744eb50ef0ba3f9f5e1ebe88a17770a45953c8be"
+    },
+    {
+      "case": "ime",
+      "profile": "release",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer128/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/var/tmp/nxf101/files110-release",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--atspi-fixture",
+        "/var/tmp/nxf101/fixture106-release",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-release.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--linkage",
+        "static",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/var/tmp/nxf101/observation129-ime-release",
+        "--transactions",
+        "--pressure",
+        "--clipboard-tools",
+        "/var/tmp/nxf101/foreign/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/var/tmp/nxf101/input/fallback/NotoSansSymbols2-Regular.ttf",
+        "--font-errors",
+        "--paste-timeout-guard",
+        "--clipboard-stream-gate",
+        "/var/tmp/nxf101/foreign/libeditor_foreign_stream_gate.so"
+      ],
+      "exit": 0,
+      "seconds": 28.60858300000109,
+      "log": "observation129-ime-release.log",
+      "sha256": "9ccdd9e8febc334d08161b3e82369ea801a4f89c270e3ccb3b963d9003b58841"
+    },
+    {
+      "case": "ime",
+      "profile": "asan",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/consumer128/examples/35_aetheri_files_consumer/run_ime.py",
+        "--binaries",
+        "/var/tmp/nxf101/files110-asan",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--atspi-fixture",
+        "/var/tmp/nxf101/fixture106-asan",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-asan.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--linkage",
+        "static",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-debug-13dad161969d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--work-dir",
+        "/var/tmp/nxf101/observation129-ime-asan",
+        "--transactions",
+        "--pressure",
+        "--clipboard-tools",
+        "/var/tmp/nxf101/foreign/clipboard-tools",
+        "--clipboard-budget",
+        "--fallback-font",
+        "/var/tmp/nxf101/input/fallback/NotoSansSymbols2-Regular.ttf",
+        "--font-errors",
+        "--paste-timeout-guard",
+        "--clipboard-stream-gate",
+        "/var/tmp/nxf101/foreign/libeditor_foreign_stream_gate.so"
+      ],
+      "exit": 0,
+      "seconds": 49.17737529999431,
+      "log": "observation129-ime-asan.log",
+      "sha256": "4e17641e78b0556859eda289800f3f8621cfcbb9e00007256bb1e73482b5ebf6"
+    }
+  ],
+  "negative_cases": [
+    {
+      "case": "wrong-focus",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/negative131-source-wrong-focus/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-shared.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "shared",
+        "--app",
+        "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-shared",
+        "--output",
+        "/var/tmp/nxf101/negative131-wrong-focus",
+        "--observe-captures"
+      ],
+      "exit": 1,
+      "seconds": 12.169973900003242,
+      "expected_error": "Native Files focused-control expectation failed",
+      "observations": [
+        {
+          "case": "body press is not adopted as caption and Close is not triggered",
+          "command": [
+            "/var/tmp/nxf101/negative131-wrong-focus/files-view-native-2gi1cd8_/capture-peer",
+            "121596",
+            "focus",
+            "List"
+          ],
+          "exit": 1,
+          "stdout": "",
+          "stderr": "Native Files focused-control expectation failed\n"
+        }
+      ],
+      "helper": {
+        "path": "/var/tmp/nxf101/negative131-source-wrong-focus/examples/35_aetheri_files_consumer/capture_observation.py",
+        "sha256": "3e1a2637015c237f778f53007cd90e5e53bea9f34621f2419be26a5ecb14cd68",
+        "before": "('focus','Grid')",
+        "after": "('focus','List')"
+      },
+      "log": {
+        "path": "/var/tmp/nxf101/negative131-wrong-focus.log",
+        "sha256": "40375865773bbed3c5bed848610b6ae373a838b31f77bd98f56d384eb7571e23"
+      }
+    },
+    {
+      "case": "wrong-text",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/negative131-source-wrong-text/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-shared.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "shared",
+        "--app",
+        "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-shared",
+        "--output",
+        "/var/tmp/nxf101/negative131-wrong-text",
+        "--observe-captures"
+      ],
+      "exit": 1,
+      "seconds": 16.483644200001436,
+      "expected_error": "Native IME committed-text/caret expectation failed",
+      "observations": [
+        {
+          "case": "body press is not adopted as caption and Close is not triggered",
+          "command": [
+            "/var/tmp/nxf101/negative131-wrong-text/files-view-native-pf6azhah/capture-peer",
+            "121616",
+            "focus",
+            "Grid"
+          ],
+          "exit": 0,
+          "stdout": "Native Files independent focus check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "inline grid folder",
+          "command": [
+            "/var/tmp/nxf101/negative131-wrong-text/files-view-native-pf6azhah/capture-peer",
+            "121616",
+            "Name",
+            "wok",
+            "2"
+          ],
+          "exit": 1,
+          "stdout": "",
+          "stderr": "Native IME committed-text/caret expectation failed\n"
+        }
+      ],
+      "helper": {
+        "path": "/var/tmp/nxf101/negative131-source-wrong-text/examples/35_aetheri_files_consumer/capture_observation.py",
+        "sha256": "b3129b3b10547880ed514924a8feaf6e25d259d1f4136809c334848bb62c489d",
+        "before": "('Name','work','3')",
+        "after": "('Name','wok','2')"
+      },
+      "log": {
+        "path": "/var/tmp/nxf101/negative131-wrong-text.log",
+        "sha256": "967733a7f3b5cdd059db4a3b9a196845d36b559db1e6d70d4c23ce54adc0f56a"
+      }
+    },
+    {
+      "case": "wrong-selection",
+      "command": [
+        "/usr/bin/python3",
+        "/var/tmp/nxf101/negative131-source-wrong-selection/examples/35_aetheri_files_consumer/run_native.py",
+        "--original",
+        "/var/tmp/nxf101/input/original",
+        "--sdk-input",
+        "/var/tmp/nxf101/sdk-input110-shared.json",
+        "--expected-sdk-revision",
+        "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+        "--server",
+        "/var/tmp/nxf101/producer103/files_ime_producer",
+        "--font",
+        "/home/aetheri/deps/ui-desktop-release-30b1336b3d2d/prefix/share/aetheri-fonts/LiberationSans-Regular.ttf",
+        "--terminal",
+        "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+        "--editor",
+        "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+        "--mono",
+        "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
+        "--linkage",
+        "shared",
+        "--app",
+        "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+        "--atspi",
+        "/var/tmp/nxf101/fixture106-shared",
+        "--output",
+        "/var/tmp/nxf101/negative131-wrong-selection",
+        "--observe-captures"
+      ],
+      "exit": 1,
+      "seconds": 20.211750800001028,
+      "expected_error": "Native IME committed-text/caret expectation failed",
+      "observations": [
+        {
+          "case": "body press is not adopted as caption and Close is not triggered",
+          "command": [
+            "/var/tmp/nxf101/negative131-wrong-selection/files-view-native-q_1l6lvv/capture-peer",
+            "121645",
+            "focus",
+            "Grid"
+          ],
+          "exit": 0,
+          "stdout": "Native Files independent focus check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "inline grid folder",
+          "command": [
+            "/var/tmp/nxf101/negative131-wrong-selection/files-view-native-q_1l6lvv/capture-peer",
+            "121645",
+            "Name",
+            "work",
+            "3"
+          ],
+          "exit": 0,
+          "stdout": "Native IME independent text/caret check passed\n",
+          "stderr": ""
+        },
+        {
+          "case": "native mouse query selection",
+          "command": [
+            "/var/tmp/nxf101/negative131-wrong-selection/files-view-native-q_1l6lvv/capture-peer",
+            "121645",
+            "Search this folder",
+            "seed",
+            "4"
+          ],
+          "exit": 1,
+          "stdout": "",
+          "stderr": "Native IME committed-text/caret expectation failed\n"
+        }
+      ],
+      "helper": {
+        "path": "/var/tmp/nxf101/negative131-source-wrong-selection/examples/35_aetheri_files_consumer/capture_observation.py",
+        "sha256": "2f90072e40eddd80afda611f068fb858d9bcac90fb4f23d959aa98fc4bf7df5e",
+        "before": "('Search this folder','seed','4','0','4')",
+        "after": "('Search this folder','seed','4')"
+      },
+      "log": {
+        "path": "/var/tmp/nxf101/negative131-wrong-selection.log",
+        "sha256": "db62b935bd554f96b70b106d8b20c5fe58a07110c6e35ee6e5f324e557334574"
+      }
+    }
+  ],
+  "owned_processes": [],
+  "preservation": {
+    "command": [
+      "python3",
+      "/mnt/c/Users/angel/.codex/worktrees/aetheri-wayland/NexaUI/examples/35_aetheri_files_consumer/check_capture_observation.py",
+      "/mnt/d/NexaUI/out/files-current83-source/original"
+    ],
+    "exit": 0,
+    "stdout": "CHECKED exact original recovery and six missing/duplicate boundary refusals\n",
+    "stderr": "",
+    "script_sha256": "c5af04dac13ab9b297f76082f2ed615edc1d5b7da52662bd84a63ae5da773cb3",
+    "original_driver_sha256": "3e063f018dca91180e667114341223584662e420e9adfabb17393c53d66eba8c"
+  },
+  "scope": "Six native regressions using unchanged e713880 app binaries and SDK0.1.33. Twelve independent read-only focus/text/caret/selection expectations added to original normal workflows; no original action, capture delay or deadline changed."
+}

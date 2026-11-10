@@ -73,6 +73,35 @@ See [native evidence](../../docs/quality/files-native-report.md) for the actual
 observed missing emoji fallback. Host-bound IME, foreign clipboard, localization,
 font fallback, normal adoption and physical/human/performance remain open.
 
+### Read-only capture observations
+
+Add `run_native.py --observe-captures` to the normal driver with `--atspi`.
+It compiles a separate `ime_atspi.c` reader using the original peer's checked
+headers/libraries and bounded discovery/text helpers. The reader links libatspi,
+not NexaUI or the Files model. It only reads four expected fixture states:
+
+| Original capture | Native expectation |
+| --- | --- |
+| Body press/caption exclusion | Grid button focused |
+| Inline grid folder | Name `work`, scalar caret 3, no selection |
+| Mouse query selection | Search `seed`, caret 4, selection 0–4 |
+| Minimum German naming | Name `draft`, caret 5, no selection |
+
+No keyboard action, focus change, text mutation, original assertion, deadline or
+fixed 80 ms capture delay is replaced. Results retain each independent command and
+reply, plus the compiled reader/source hashes. The added focus mode uses the
+original native state helper; text/caret/selection checks reuse the existing
+read-only IME peer path. Missing/duplicate original adaptation boundaries fail.
+With the checked original export, verify byte-for-byte recovery separately:
+
+```sh
+python3 examples/35_aetheri_files_consumer/check_capture_observation.py /path/to/export
+```
+
+These expectations are specific to the original workflow. They are not a
+general display acknowledgement or performance budget; full captured pixels
+remain separate evidence. See the [observation follow-up](../../docs/quality/files-observation-report.md).
+
 ## Native IME integration variant
 
 Add `-DFILES_BUILD_IME_HOST=ON` for the separately reviewed generated

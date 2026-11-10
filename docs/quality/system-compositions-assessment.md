@@ -1,5 +1,13 @@
 # Packet 6 system compositions: implemented sources and external seams
 
+Files capture observation: source`87d8336` retains installed0.1.33/`1e00a6f`
+and all earlier app binaries. Six complete native tasks and twelve independent
+read-only expectations pass; all264 full-image pairs match. Only the four known
+sanitizer snapshots change among396 old/new pairs. Three wrong-state expectations
+are rejected, and all actual adaptations reverse to the original driver.
+No SDK/pin/default or103 status change; see the
+[observation report](files-observation-report.md).
+
 Original Editor observation checkpoint: source `2dc70e9` reuses installed
 SDK0.1.33/`1e00a6f` and original7bbe704 ownership. All four native profiles now
 complete336 captures/104 forced pre-EOF frames, with56 actual ordinary paste
@@ -319,7 +327,7 @@ Files glibc full follow-up: `e7138808ede25a08bcc568a093a2d7de425e56d4`,
 Installed SDK0.1.33/source1e00a6f supplies three full profiles,81 original/component
 CTests and nine native document/AT-SPI, lost-result and IME tasks, without a launch
 tripwire. Five false provenance declarations are rejected. Full capture comparison
-matches272/276 pairs; four sanitizer input/focus observations remain open. SDK
+matches272/276 pairs; four sanitizer input/focus observations remained open at that checkpoint. SDK
 production, Aetheri pin/default and all103 statuses remain unchanged.
 
 Files current-SDK pressure/lifetime follow-up: `5f14a9ca74ce3f389c5475cc41016589548307c4`,
@@ -399,7 +407,7 @@ exercised older header exactly; this is not current-runtime acceptance.
 
 | Required composition | Existing source/evidence | Next consumer work | External owner obligation |
 | --- | --- | --- | --- |
-| Files application | Original7483286 owner; historical SDK0.1.23 native documents and SDK0.1.26 component/native-IME; [SDK0.1.33 full glibc follow-up](files-full-report.md) adds real document children on three profiles and optional-IME startup fallback alongside scoped pressure/lifetime evidence | Four unfenced sanitizer input/focus captures, remaining interruption/provider/error paths, broader font/locale/IME coverage and normal application adoption; preserve actual original validation/explicit rejection barrier and service boundaries | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
+| Files application | Original7483286 owner; [SDK0.1.33 full glibc follow-up](files-full-report.md) has real document children, optional-IME fallback and pressure/lifetime evidence; [read-only capture observations](files-observation-report.md) close four known snapshots with264 equal full-image pairs | Remaining interruption/provider/error paths, observations for other workflows, broader font/locale/IME coverage and normal application adoption; preserve actual original validation/explicit rejection barrier and service boundaries | Original app admission, selected ordinary directories/child programs and real file grant/volume/recovery policy stay external; no pin or live checkout mutation |
 | Settings and devices | Original Settings model contains transient display observations and appearance/language/text settings; [example21](../../examples/21_aetheri_model/README.md) and ordinary Settings evidence already exist | Reuse controls/status/wakeup for additional actual device models, with unavailable/pending/error/reconnect states | Real audio, network, Bluetooth/input, power/account observations and authorized control; compositor output observation alone changes no display/device configuration |
 | Software/apps | Original `ae_catalogue_resolve_app` returns an exact recipient-scoped active-app observation; [example34](../../examples/34_aetheri_software/README.md) has a bounded worker, native list/filter/full details, keyboard/controlled IME/OS AT-SPI, held-query wake/close, foreign clipboard, measured action rows and compact Escape/draft/focus evidence | Output/scale/workarea migration, open AT-SPI stability finding and broader fonts/locales/design/clipboard/IME; actual full inventory/management data | Actual eligible target discovery, full inventory protocol, authenticated source/recipient admission and operation APIs |
 | Components/dependencies | Original manifest decoder and shared owned document reader expose declared component/version/publisher/files/actions/dependency IDs; example34 binds exact observed artifact/component/publisher and shows all declared dependencies plus complete file/action inspection | Compose actual dependency/ownership/process graph data; retain missing/unverified state and expand native lifetime/resource checks | Installed dependency/ownership state, trusted expected artifact provenance and complete inventory; declarations are no installed-files or current-process inventory |

@@ -1,0 +1,198 @@
+{
+  "source_revision": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+  "run_id": 42757503563,
+  "run_attempt": 1,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563",
+  "head_branch": "main",
+  "result": "passed",
+  "jobs": [
+    {
+      "id": 129635185722,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563/job/129635185722",
+      "head_sha": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+      "test_summaries": [
+        272,
+        272
+      ],
+      "required_steps": [
+        "Test",
+        "Require executed Wayland results",
+        "Test reverse driver discovery order",
+        "Require executed reverse-order Wayland results",
+        "Compare two fixed Vulkan driver discovery orders",
+        "Require paired Mesa unload cleanup evidence"
+      ],
+      "log": {
+        "path": "files-observation135-ci-129635185722.log",
+        "size": 340278,
+        "sha256": "ce77a3e5e8d8bb87836bd14d7ace925126e4e509ebdc38406793e60470c0420c"
+      }
+    },
+    {
+      "id": 129635185874,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563/job/129635185874",
+      "head_sha": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+      "test_summaries": [
+        148
+      ],
+      "required_steps": [
+        "Install",
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "files-observation135-ci-129635185874.log",
+        "size": 103372,
+        "sha256": "ee68ddb393182caf0ef2f747940b148dff7de782ccd993cc3390504e85415186"
+      }
+    },
+    {
+      "id": 129635185931,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563/job/129635185931",
+      "head_sha": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+      "test_summaries": [
+        272,
+        1
+      ],
+      "required_steps": [
+        "Install",
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "files-observation135-ci-129635185931.log",
+        "size": 314243,
+        "sha256": "71ab4bd1ebbe6b02517cd9e59e8a5571e3014a468247110ef58d7743e3f1cb8b"
+      }
+    },
+    {
+      "id": 129635185949,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563/job/129635185949",
+      "head_sha": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+      "test_summaries": [
+        147
+      ],
+      "required_steps": [
+        "Install",
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "files-observation135-ci-129635185949.log",
+        "size": 103313,
+        "sha256": "9011d5c3f504e36e9e221722d37dfb100ab20a45167de7422af37a6cb5652683"
+      }
+    },
+    {
+      "id": 129635185967,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563/job/129635185967",
+      "head_sha": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+      "test_summaries": [
+        124
+      ],
+      "required_steps": [
+        "Install",
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "files-observation135-ci-129635185967.log",
+        "size": 116954,
+        "sha256": "d65d4f20611ad2b7803f01b259301137f88ef5083d60b663d87a2316c67c3334"
+      }
+    },
+    {
+      "id": 129635186003,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563/job/129635186003",
+      "head_sha": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+      "test_summaries": [
+        123
+      ],
+      "required_steps": [
+        "Install",
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "files-observation135-ci-129635186003.log",
+        "size": 111410,
+        "sha256": "5a89d4e27f5bb29e7afcc55d7a047205e436700078787862ab6379e890f7b57b"
+      }
+    },
+    {
+      "id": 129635186048,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "html_url": "https://github.com/Lulus792/NexaUI/actions/runs/42757503563/job/129635186048",
+      "head_sha": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+      "test_summaries": [
+        270
+      ],
+      "required_steps": [
+        "Install",
+        "Configure installed consumer",
+        "Build installed consumer",
+        "Configure close-request consumer",
+        "Build close-request consumer",
+        "Configure add_subdirectory consumer",
+        "Build add_subdirectory consumer"
+      ],
+      "log": {
+        "path": "files-observation135-ci-129635186048.log",
+        "size": 307900,
+        "sha256": "3dff4e6381750fc4eb3b5158d24423cc98d27a10b97fc901e064030c9363bc2e"
+      }
+    }
+  ],
+  "optional_skipped": [
+    {
+      "id": 129635187011,
+      "name": "fuzz-campaigns"
+    },
+    {
+      "id": 129635187229,
+      "name": "windows-asan"
+    }
+  ],
+  "ctest_skips": 0,
+  "scope": "All seven exact-source SDK/native/package jobs pass on first attempt. Two optional jobs skipped; no CTest skips. The six complete private native tasks, twelve read-only expectations, three actual wrong-state refusals and exact original-driver recovery have separate local source-bound evidence; CI does not run those private exports."
+}

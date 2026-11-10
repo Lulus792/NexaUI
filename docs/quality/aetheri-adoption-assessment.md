@@ -1,12 +1,21 @@
 # Aetheri adoption: initial source assessment
 
+Files capture observation: source`87d8336` keeps SDK0.1.33/`1e00a6f` and all
+e713880 app binaries unchanged. Six full native tasks pass; twelve read-only
+native expectations precede four captures/profile, and all264 whole-image pairs
+match. Only the four earlier sanitizer snapshots change among396 old/new pairs.
+Three wrong expected states are rejected; three actual adaptations reverse to
+the exact original driver. No action, deadline or capture delay is replaced.
+All103 statuses and packets6–8 persist. See the
+[observation report](files-observation-report.md).
+
 Files glibc full follow-up: source`e713880` uses installed0.1.33/`1e00a6f`
 and original7483286 ownership. All81 original/component CTests and nine native
 document/AT-SPI, lost-result and IME tasks pass on three full profiles without a
 launch tripwire. Optional native IME absence no longer aborts startup; ordinary
 keyboard/clipboard remain bound. Five false SDK/archive/app declarations fail
 before launch. Full capture comparison matches272/276 pairs; four sanitizer
-input/focus observations remain open. No SDK production, active Aetheri pin/default
+input/focus observations remained open at that checkpoint. No SDK production, active Aetheri pin/default
 or103 status changes. See the [full follow-up](files-full-report.md).
 
 Files pressure/lifetime follow-up: `5f14a9c` reuses installed0.1.33 and original

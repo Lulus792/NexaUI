@@ -12,7 +12,9 @@ The original document workflows now pass on three fresh glibc builds using the
 actual Files launch implementation and real original Terminal/editor children.
 This closes the unavailable-libc launch gap of the previous scoped musl check.
 It does **not** establish complete visual/frame parity: four sanitizer captures
-show intermediate input/focus states and remain an observation follow-up.
+show intermediate input/focus states at this checkpoint. The later
+[read-only observation follow-up](files-observation-report.md) closes those four
+known gaps with unchanged app/SDK binaries; the historical results below remain intact.
 
 ## Actual bug and bounded change
 
@@ -99,8 +101,8 @@ The original capture helper waits a fixed80ms, without an application input/
 paint fence at these points. The original native assertions still pass; this
 does not prove that each capture observes the completed interaction. Do not
 mask pixels, increase that delay or claim a resolved application/observer cause.
-Next add explicit processed-input/frame observations while retaining the original
-tests and deadlines, following the existing Editor observation approach.
+The later [observation follow-up](files-observation-report.md) adds independent
+read-only native state expectations while retaining the original tests and deadlines.
 
 Eight complete selected captures and both images of all four differing pairs
 were visually inspected. Initial list, invalid-name caret, complete German
@@ -149,8 +151,8 @@ recorded. This correction leaves old immutable raw archives intact. The present
 glibc result independently exercises the original document workflow on0.1.33.
 
 Affected evidence includes B01/B03/B04, T04, I01/I05, A02/A04, P04/P05 and
-Q02/Q03/Q06/Q08. All103 catalogue statuses remain unchanged. Four capture
-observations, wider interruption/provider/locale/IME coverage, actual current
+Q02/Q03/Q06/Q08. All103 catalogue statuses remain unchanged. The four capture
+observations have a later scoped follow-up; wider interruption/provider/locale/IME coverage, actual current
 Aetheri compositor and owner adoption, trusted/device/software compositions,
 packets7–8 and physical/human/design/performance acceptance remain open.
 Aetheri can independently review/adopt this bounded Files host correction;

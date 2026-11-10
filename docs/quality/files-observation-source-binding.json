@@ -1,0 +1,267 @@
+{
+  "source_revision": "87d8336a0e7b823e982ab5eb14da7c89d9c53950",
+  "consumer": [
+    {
+      "path": "examples/35_aetheri_files_consumer/CMakeLists.txt",
+      "sha256": "eb0e71286af4402509c555aa90067d337506527749e178d4483edb8feb82e58f",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/README.md",
+      "sha256": "43468777bcceb2377921a00cee5d5fca918a6f0cf2e4d3cb49cbef9df2285917",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/appearance-font-inputs.json",
+      "sha256": "d4dd644d502307dbd6d004e4a3159a685961dea636a9abc8ce36a1685024f259",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/appearance.inc",
+      "sha256": "bdc71a561705b730b0a916c2006b3018f6f3c03f16880c2fa10d4c2da4b7b44c",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/appearance_test.c",
+      "sha256": "487efaa2897049fa63cd8f6784701a116a569e9910eefe9d426ded72f43b4413",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/capture_observation.py",
+      "sha256": "ce1ede3b2609034955a5b3809708925d326f436f15c7056934d93c103ef521b5",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/check_source.py",
+      "sha256": "7a7a81a94cb8e7a1c102f995e92ee26a205fe326cb469e9c018e0f8f9aeb3402",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/clipboard_task.py",
+      "sha256": "e87fb2cc8279c3f4e53b1c52fe9c5e19f67cc3ce504448d8fcb638d1a911e3da",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime-producer-inputs.json",
+      "sha256": "48e9eb3daee312bc1211a5d36d30f8c021a25a90f7da7b6e130d75348a7c7075",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_atspi.c",
+      "sha256": "8fbac570334b53d194cfa72bb3ccd6ccc3ab27b882875ba50feb97d9817c8714",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_consumer.cmake",
+      "sha256": "2448596351f5d763057e7cd23e81910b5b2fe64a53d21a2830720700513b2730",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_producer/CMakeLists.txt",
+      "sha256": "bd3432e6871fdc8d698af5cec379022aca25cf728584ede09b432866a9d57a9a",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_producer/prepare.py",
+      "sha256": "edac3031bb8ca0c91218fa98d6fae40b399a031cd836ffde47ac607574d6f64c",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_transaction_test.c",
+      "sha256": "b94169c6efa09b281e6cabeba0f34a00727141ec1c8d4fd9ffb40d607b50f1c9",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/ime_transactions.inc",
+      "sha256": "a907ae9618e8e551d71d81ef11aa7f446b2384a7e505fbfb235a60beabad94ee",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native-inputs.json",
+      "sha256": "d4e9bbc8ca3471b35a1456fc1c68001947f834e88bde61f20f675a9ba77fb5cb",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/native_children.cmake",
+      "sha256": "91b65bc2ba89dd85ebaa4ad2af86d3ba828772451827fe8c814bf8c40e240c93",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/paste_admission.inc",
+      "sha256": "8c3aea6b0d07bffbfc7d06777ea1157e3cc2bcb4c5a109ab0f5dda932dbbca0f",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/paste_admission_test.c",
+      "sha256": "777aae8719d56bb6c65b4b4cbcafe6fe2c1e696fd8b8d70a57bfa74dd47e983e",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/prepare_ime_host.py",
+      "sha256": "19c86b2063c1f54000a4ca06f70b7eb8088a4d3c0ae521662500e65f8aacf8c1",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/prepare_toolchain.py",
+      "sha256": "db5680e4d1e2fd6d8613cb3f5e7e58085aabee5723dd832e114dfd356ca0447a",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_ime.py",
+      "sha256": "018352a303afea336c0df190ba324ac1254aed1647ffebfdfd6f625a7df39a81",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/run_native.py",
+      "sha256": "60f25abbf114dfbd28b11acb4beca8bcda0da2f5b2b178ea58ba56296d43f089",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/source-inputs.json",
+      "sha256": "020bfedc234cdb66d6a397101c9b94accb29c8ee6c09b44fdeb5265b20e26899",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/36_aetheri_editor_consumer/foreign_stream_task.py",
+      "sha256": "dfdc47b3250f8007c5d5a3dae63c4dc1d64d61b85fe6aaf7a74db738733780b8",
+      "commit_equal": true
+    },
+    {
+      "path": "examples/35_aetheri_files_consumer/check_capture_observation.py",
+      "sha256": "c5af04dac13ab9b297f76082f2ed615edc1d5b7da52662bd84a63ae5da773cb3",
+      "commit_equal": true,
+      "scope": "Additional standalone original-byte/boundary check, executed locally on the same checked original export."
+    }
+  ],
+  "native_peers": [
+    {
+      "profile": "shared",
+      "path": "observation129-normal-shared/files-view-native-26ulv30n/capture-peer",
+      "sha256": "1185f707117f494dd9bad3037c0926f1369db8197f6872c980a68bbb659c94b5",
+      "source": "consumer128/examples/35_aetheri_files_consumer/ime_atspi.c",
+      "source_sha256": "8fbac570334b53d194cfa72bb3ccd6ccc3ab27b882875ba50feb97d9817c8714"
+    },
+    {
+      "profile": "release",
+      "path": "observation129-normal-release/files-view-native-vz4zn7f8/capture-peer",
+      "sha256": "9261e84063edbc133b3beb1d35fa9cbf80b697613c267cdd0b3d92a4f34d9462",
+      "source": "consumer128/examples/35_aetheri_files_consumer/ime_atspi.c",
+      "source_sha256": "8fbac570334b53d194cfa72bb3ccd6ccc3ab27b882875ba50feb97d9817c8714"
+    },
+    {
+      "profile": "asan",
+      "path": "observation129-normal-asan/files-view-native-no75pouj/capture-peer",
+      "sha256": "d68d2bf07c9db6e1f3099aa119fd74753ac94373263f47c04083149aca9df1b9",
+      "source": "consumer128/examples/35_aetheri_files_consumer/ime_atspi.c",
+      "source_sha256": "8fbac570334b53d194cfa72bb3ccd6ccc3ab27b882875ba50feb97d9817c8714"
+    }
+  ],
+  "original_driver_recoveries": [
+    {
+      "profile": "shared",
+      "adaptation_path": "observation129-normal-shared/driver-adaptation.json",
+      "adaptation_sha256": "da659b8d38a44efe2a372ef59ede31c151b6e233b95ca51f0d9f439a83bb40da",
+      "original_sha256": "3e063f018dca91180e667114341223584662e420e9adfabb17393c53d66eba8c",
+      "adapted_sha256": "fa903bb838dd9437b4fd9a1eda4e5d97b74ae59abad017946148b41cf44c6f19",
+      "recorded_changes": 6,
+      "exact_original_recovered": true
+    },
+    {
+      "profile": "release",
+      "adaptation_path": "observation129-normal-release/driver-adaptation.json",
+      "adaptation_sha256": "02d9dcbd5cf6323fec673fe27a3562aa677bc11e81c7a5843663df5d39705499",
+      "original_sha256": "3e063f018dca91180e667114341223584662e420e9adfabb17393c53d66eba8c",
+      "adapted_sha256": "b834bc607710bf3807405f71ddd09282811eae65aa46af9271e4faa50a15acde",
+      "recorded_changes": 8,
+      "exact_original_recovered": true
+    },
+    {
+      "profile": "asan",
+      "adaptation_path": "observation129-normal-asan/driver-adaptation.json",
+      "adaptation_sha256": "1fbcdccb3114ac7baf6efe842bdb8acb9538804d823889946908b355a23ff5ce",
+      "original_sha256": "3e063f018dca91180e667114341223584662e420e9adfabb17393c53d66eba8c",
+      "adapted_sha256": "b834bc607710bf3807405f71ddd09282811eae65aa46af9271e4faa50a15acde",
+      "recorded_changes": 8,
+      "exact_original_recovered": true
+    }
+  ],
+  "application_bindings": [
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_files_candidate",
+      "sha256": "0d7fc14bf39c243d19f0fa2bf55e39f9e5e9378bf2ab349ca221cd138aff0ca3"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_files_ime_candidate",
+      "sha256": "d6393b08677a581f3f5336f99e38fff0e1fb34c66a7023de9846713382f67657"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_files_fault_candidate",
+      "sha256": "befadde49f228263ce6979d019b2869fb20cc67987609436b3f7b88016c03cac"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_terminal_candidate",
+      "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e"
+    },
+    {
+      "profile": "shared",
+      "path": "/var/tmp/nxf101/files110-shared/aetheri_editor_candidate",
+      "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_files_candidate",
+      "sha256": "3a6beb744ac1693fbca244aef5f8ff7e356472da6c68304e1f896ff400e01ab7"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_files_ime_candidate",
+      "sha256": "f1d8986f72b697b733ce099b4a23bffa6d330ba20dd35001f232c8e8458d57ac"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_files_fault_candidate",
+      "sha256": "f14482a72f3c5e214ed4a20e055a72c9805eff3fc20c7372239371478c7c73b7"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_terminal_candidate",
+      "sha256": "9e3722499fde24f34d577032009e677c1471fcd6b07d783c030a5d12d0d4002e"
+    },
+    {
+      "profile": "release",
+      "path": "/var/tmp/nxf101/files110-release/aetheri_editor_candidate",
+      "sha256": "12041dd2c29bce50f80f4abb97f064b818b207c05283a203bca06f00bf9f52d4"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_files_candidate",
+      "sha256": "3bad6e40d187e1ac306dbafea6021321172f131394328e5f8e4bae799ed88777"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_files_ime_candidate",
+      "sha256": "b8e0fa94188594c043b4ca2d84549c94c2c0db578e16f2dd1346cfe33e8d3b6b"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_files_fault_candidate",
+      "sha256": "a9238a92a941158436059cc268da63a265ae35f71e2a01d20ac3e1dca89e8dc6"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_terminal_candidate",
+      "sha256": "89e164d882c92164f3865bb5f334734ecbda91af109a1c672f10690944d11c4f"
+    },
+    {
+      "profile": "asan",
+      "path": "/var/tmp/nxf101/files110-asan/aetheri_editor_candidate",
+      "sha256": "43c6d182902cbaedeb4363156a0b94b2ca4c0f7fe281514f5674a7ac2ffad6b2"
+    }
+  ],
+  "sdk_revision": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+  "scope": "All frozen consumer/helper/reader bytes match the commit. Actual three recorded normal-driver adaptations reverse to the exact original driver. App binaries are independently rehashed and unchanged from e713880; native checks reuse the installed SDK/application artifacts and add no core API/dependency."
+}
