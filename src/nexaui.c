@@ -10287,7 +10287,7 @@ struct nx_viewport_surface {
     nx_allocator allocator;
     nx_viewport_source source;
     uint32_t pixel_width, pixel_height;
-    int in_flight;
+    enum { NX_VIEWPORT_IDLE, NX_VIEWPORT_BUSY, NX_VIEWPORT_LEASED } state;
 };
 
 nx_result nx_viewport_surface_create(const nx_viewport_source *source,
@@ -10314,7 +10314,7 @@ nx_result nx_viewport_surface_create(const nx_viewport_source *source,
 
 nx_result nx_viewport_surface_destroy(nx_viewport_surface *surface) {
     if (!surface) return NX_ERROR_ARGUMENT;
-    if (surface->in_flight) return NX_ERROR_STATE;
+    if (surface->state != NX_VIEWPORT_IDLE) return NX_ERROR_STATE;
     nx_allocator a = surface->allocator;
     a.deallocate(a.user, surface, sizeof(*surface));
     return NX_OK;
@@ -10322,9 +10322,10 @@ nx_result nx_viewport_surface_destroy(nx_viewport_surface *surface) {
 
 nx_result nx_viewport_surface_complete(nx_viewport_surface *surface) {
     if (!surface) return NX_ERROR_ARGUMENT;
-    if (!surface->in_flight) return NX_ERROR_STATE;
+    if (surface->state != NX_VIEWPORT_LEASED) return NX_ERROR_STATE;
+    surface->state = NX_VIEWPORT_BUSY;
     surface->source.release(surface->source.user);
-    surface->in_flight = 0;
+    surface->state = NX_VIEWPORT_IDLE;
     return NX_OK;
 }
 
@@ -10337,7 +10338,8 @@ nx_result nx_viewport(nx_context *ctx, nx_viewport_surface *surface,
         !nx_valid_span(desc->name) || !nx_valid_rect(desc->bounds) ||
         !isfinite(desc->scale) || desc->scale <= 0.0)
         return NX_ERROR_ARGUMENT;
-    if (ctx->state != 1u || surface->in_flight) return NX_ERROR_STATE;
+    if (ctx->state != 1u || surface->state != NX_VIEWPORT_IDLE)
+        return NX_ERROR_STATE;
     uint32_t width = 0, height = 0;
     if (desc->bounds.width > 0.0f && desc->bounds.height > 0.0f) {
         double w = ceil((double)desc->bounds.width * desc->scale);
@@ -10350,7 +10352,9 @@ nx_result nx_viewport(nx_context *ctx, nx_viewport_surface *surface,
     }
     if (!width || !height) {
         if (surface->pixel_width || surface->pixel_height) {
+            surface->state = NX_VIEWPORT_BUSY;
             nx_result result = surface->source.resize(surface->source.user, 0, 0);
+            surface->state = NX_VIEWPORT_IDLE;
             if (result != NX_OK) return result;
             surface->pixel_width = surface->pixel_height = 0;
         }
@@ -10369,8 +10373,12 @@ nx_result nx_viewport(nx_context *ctx, nx_viewport_surface *surface,
     widget.semantic.actions = NX_ACTION_FOCUS | NX_ACTION_PRESS;
     widget.flags = NX_WIDGET_INTERACTIVE | NX_WIDGET_FOCUSABLE;
     nx_interaction_state interaction;
+    surface->state = NX_VIEWPORT_BUSY;
     nx_result result = nx_widget_register(ctx, &widget, &interaction);
-    if (result != NX_OK) return result;
+    if (result != NX_OK) {
+        surface->state = NX_VIEWPORT_IDLE;
+        return result;
+    }
     int acquired = 0;
     if (surface->pixel_width != width || surface->pixel_height != height) {
         result = surface->source.resize(surface->source.user, width, height);
@@ -10405,7 +10413,7 @@ nx_result nx_viewport(nx_context *ctx, nx_viewport_surface *surface,
         result = nx_stroke_rect(ctx, desc->bounds, 2.0f, focus);
         if (result != NX_OK) goto viewport_rollback;
     }
-    surface->in_flight = 1;
+    surface->state = NX_VIEWPORT_LEASED;
     *out_state = interaction;
     return NX_OK;
 viewport_rollback:
@@ -10414,5 +10422,6 @@ viewport_rollback:
     if (acquired) surface->source.release(surface->source.user);
     nx_region_rollback_last(ctx, desc->id);
     nx_semantics_rollback_last(ctx, desc->id, old_text);
+    surface->state = NX_VIEWPORT_IDLE;
     return result;
 }

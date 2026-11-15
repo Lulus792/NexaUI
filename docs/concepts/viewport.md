@@ -33,6 +33,13 @@ semantic node, hit region, clip and commands. Callbacks are invoked on the
 thread that calls each API; the application must serialize source access and
 choose a thread appropriate for its renderer.
 
+During resize, acquire or release, drawing, completing or destroying that same
+surface returns `NX_ERROR_STATE`. This includes resize to zero and release on
+drawing failure. Keep the active context, frame and callback data intact during
+the call. Defer a close requested from a callback until the call returns and
+any successful frame lease is complete. A separate surface and context can
+still run on the same owner thread.
+
 `nx_viewport_surface_destroy` frees the NexaUI wrapper but does not destroy
 the application-owned source or pixels. The application may release those
 resources after all leases are complete. The

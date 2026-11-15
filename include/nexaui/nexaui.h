@@ -1898,7 +1898,10 @@ NX_API nx_result nx_plot_multi(nx_context *context,
    requested dimensions. Every successful acquire is matched by release,
    either on drawing failure or after nx_viewport_surface_complete. Pixels must
    remain readable and unchanged until completion. Callbacks run on the caller
-   thread; complete only after every renderer has consumed the frame commands. */
+   thread. Drawing, completion and destruction of the same surface return
+   NX_ERROR_STATE during its callbacks. Keep the active context and callback
+   data alive and leave the active frame untouched until the call returns.
+   Complete only after every renderer has consumed the frame commands. */
 typedef struct nx_viewport_source {
     void *user;
     nx_result (*resize)(void *user, uint32_t pixel_width,
@@ -1920,7 +1923,7 @@ typedef struct nx_viewport_desc {
 NX_API nx_result nx_viewport_surface_create(const nx_viewport_source *source,
                                             const nx_allocator *allocator,
                                             nx_viewport_surface **out_surface);
-/* Fails with NX_ERROR_STATE while an acquired bitmap is still in flight. */
+/* Fails with NX_ERROR_STATE during a surface callback or outstanding lease. */
 NX_API nx_result nx_viewport_surface_destroy(nx_viewport_surface *surface);
 /* Release one successful viewport draw after rendering its command stream.
    Must be called before reusing or destroying the surface. */
