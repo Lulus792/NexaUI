@@ -45,6 +45,27 @@ The semantic label retains the complete message. Changing prompt resets the
 scroll position.
 
 The headless tests cover a maximum-size message at the minimum view size,
-including a rendered final glyph and Tab navigation. Native compositor
-placement, IME, independent screen reader interaction, credential byte lifetime
+including a rendered final glyph and Tab navigation.
+
+The optional native fixture uses an ordinary Wayland window, the software
+presenter and a separate libatspi client. Build it with
+`-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON` and the Linux AT-SPI development files.
+Run the pair in the repository's private Weston and AT-SPI environment with
+a font that covers the sample strings. Both executables require the private
+environment provided by these runners.
+
+```sh
+NEXAUI_PLATFORM=wayland NEXAUI_LOGIN_TEST_FONT=/path/to/font.ttf \
+NEXAUI_LOGIN_TEST_XDOTOOL=/usr/bin/xdotool \
+xvfb-run -a python3 tests/run_weston_native.py --timeout 60 -- \
+  python3 tests/run_atspi_native.py /path/to/at-spi2-registryd \
+    /tmp/aetheri-login-view/aetheri_login_atspi_peer \
+    /tmp/aetheri-login-view/aetheri_login_native_host
+```
+
+The peer observes password role and interface suppression, traverses Answer
+and Cancel with Tab and Shift+Tab, types fixture answers with the private seat,
+observes retired objects, and closes with Escape. The fixture consumes two
+exact synthetic responses and requires a clean exit. Trusted compositor
+placement, native IME, human screen-reader interaction, credential byte lifetime
 across native event queues, backend admission and real session readiness remain open.
