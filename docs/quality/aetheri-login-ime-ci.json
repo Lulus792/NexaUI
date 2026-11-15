@@ -1,0 +1,127 @@
+{
+  "source": "208d453f722baa4c114563cc854eb8b6e1f548dd",
+  "run": 43756393470,
+  "attempt": 1,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/43756393470",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 132941318948,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        273,
+        273
+      ],
+      "executed_passes": 546,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/login-ime182-ci-132941318948.log",
+        "bytes": 340745,
+        "sha256": "8d2c29cefa328f39c53859e7eac454186d83dfb90058e42f145112c48b5d0792"
+      }
+    },
+    {
+      "id": 132941319036,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        271
+      ],
+      "executed_passes": 271,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/login-ime182-ci-132941319036.log",
+        "bytes": 307742,
+        "sha256": "117fb6261ae9fb98fac41216bd3945dcaaed1ad4a6c0ceec7d95b680909588bb"
+      }
+    },
+    {
+      "id": 132941319067,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        273,
+        1
+      ],
+      "executed_passes": 274,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/login-ime182-ci-132941319067.log",
+        "bytes": 314076,
+        "sha256": "f0e12f83308ba2d14142300b8cef51fcd02fc6a0ec31d07287aafc9118e3e4b8"
+      }
+    },
+    {
+      "id": 132941319160,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        125
+      ],
+      "executed_passes": 125,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/login-ime182-ci-132941319160.log",
+        "bytes": 112200,
+        "sha256": "5026e61bc42a54af2d92cd6586adca5292fdafb39beeeb880dc36c7b06e51fe1"
+      }
+    },
+    {
+      "id": 132941319171,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        148
+      ],
+      "executed_passes": 148,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/login-ime182-ci-132941319171.log",
+        "bytes": 103704,
+        "sha256": "fb43722c9d5a15f278fd9df809ad6a4d339124a81e9ff3c8f9931f7cfd02926d"
+      }
+    },
+    {
+      "id": 132941319182,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        149
+      ],
+      "executed_passes": 149,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/login-ime182-ci-132941319182.log",
+        "bytes": 103833,
+        "sha256": "db69f532a35505df7ddfa96da445645ed1601a89d651a15d059240ef9e2e4451"
+      }
+    },
+    {
+      "id": 132941319311,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        124
+      ],
+      "executed_passes": 124,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/login-ime182-ci-132941319311.log",
+        "bytes": 111891,
+        "sha256": "f29862fdf3f8a38d8e0fa7d95d4e2678d36d99d9b8335b6117170e40e4116927"
+      }
+    }
+  ],
+  "optional_skipped": [
+    "windows-asan",
+    "fuzz-campaigns"
+  ],
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-login-ime182-ci.tar.gz",
+    "bytes": 246461,
+    "sha256": "65b4a5dd47bed588f0990a89bb79b5d2d8fb0f7d8ddce193a0d10c696e076cb7",
+    "verified_members": 10
+  },
+  "scope": "SDK and package CI; the standalone original Login fixture is covered by the separate local receipt, not by these CTest counts."
+}

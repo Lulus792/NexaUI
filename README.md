@@ -76,6 +76,11 @@ The [unreadable-observation follow-up](docs/quality/settings-audio-observation-r
 checks retained pending state, disabled native controls, recovery without replay
 and close while original audio observations remain unavailable.
 
+The optional [original Login consumer](examples/37_aetheri_login/README.md)
+composes visible and protected prompts with explicit answers, cancellation and
+unknown state. Its [native keyboard and IME evidence](docs/quality/aetheri-login-ime-report.md)
+records the independent client checks and remaining host acceptance gates.
+
 The Editor's [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
 actual consumed clipboard bytes, held writers and original-model invalidation
 without changing the SDK or the active Aetheri application.
