@@ -1,0 +1,62 @@
+[
+  {
+    "command": [
+      "/tmp/nexaui-login-view167/release/aetheri_login_native_host"
+    ],
+    "exit": 2,
+    "expected": 2,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/tmp/nexaui-login-view167/release/aetheri_login_atspi_peer",
+      "/tmp/nexaui-login-view167/release/aetheri_login_native_host"
+    ],
+    "exit": 2,
+    "expected": 2,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "cmake",
+      "-S",
+      "/tmp/nexaui-login-view167/consumer/examples/37_aetheri_login",
+      "-B",
+      "/tmp/nexaui-login-view167/default170",
+      "-G",
+      "Ninja",
+      "-DCMAKE_PREFIX_PATH=/tmp/nexaui-viewport153/release-prefix",
+      "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view167/original"
+    ],
+    "exit": 0,
+    "expected": 0,
+    "stdout": "-- The C compiler identification is GNU 15.2.0\n-- Detecting C compiler ABI info\n-- Detecting C compiler ABI info - done\n-- Check for working C compiler: /usr/bin/cc - skipped\n-- Detecting C compile features\n-- Detecting C compile features - done\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD\n-- Performing Test CMAKE_HAVE_LIBC_PTHREAD - Success\n-- Found Threads: TRUE\n-- Found PkgConfig: /usr/bin/pkg-config (found version \"2.5.1\")\n-- Checking for module 'wayland-client'\n--   Found wayland-client, version 1.25.0\n-- Checking for module 'xkbcommon'\n--   Found xkbcommon, version 1.13.1\n-- Configuring done (3.7s)\n-- Generating done (0.0s)\n-- Build files have been written to: /tmp/nexaui-login-view167/default170\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "cmake",
+      "--build",
+      "/tmp/nexaui-login-view167/default170"
+    ],
+    "exit": 0,
+    "expected": 0,
+    "stdout": "[1/6] Building C object CMakeFiles/aetheri_login_view_test.dir/test_view.c.o\n[2/6] Building C object CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view167/original/src/text/grapheme.c.o\n[3/6] Building C object CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view167/original/src/login/protocol.c.o\n[4/6] Building C object CMakeFiles/aetheri_login_view.dir/view.c.o\n[5/6] Linking C static library libaetheri_login_view.a\n[6/6] Linking C executable aetheri_login_view_test\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "ctest",
+      "--test-dir",
+      "/tmp/nexaui-login-view167/default170",
+      "--output-on-failure",
+      "--no-tests=error"
+    ],
+    "exit": 0,
+    "expected": 0,
+    "stdout": "Test project /tmp/nexaui-login-view167/default170\n    Start 1: aetheri_login_view\n1/1 Test #1: aetheri_login_view ...............   Passed    0.17 sec\n\n100% tests passed, 0 tests failed out of 1\n\nTotal Test time (real) =   0.17 sec\n",
+    "stderr": ""
+  }
+]

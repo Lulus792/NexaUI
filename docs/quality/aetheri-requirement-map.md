@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Native Wayland login for D06/T06/I01/A01/A02/A06/P05/Q08. Consumer `e8abe04`
+uses the installed software window and an independent AT-SPI peer. Three native
+profiles verify protected password semantics, keyboard focus, exact synthetic
+response ordering, retired fields and clean close. The peer rejects an
+unprotected field in a separate build. Trusted placement, admitted service and
+native IME remain open. [Evidence](aetheri-login-native-report.md)
+
 Login prompt reading for D06/I01/A01/A06/L09. Consumer `558f575` uses the
 existing scroll area to read the original maximum-size prompt with the keyboard.
 Three installed profiles verify the final glyph, complete semantic label and
