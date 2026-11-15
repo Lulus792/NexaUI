@@ -744,6 +744,20 @@ if(NEXAUI_BUILD_TESTS)
                     COMMAND nexaui_wayland_ime_storage_tests ${ime_storage_case})
                 set_tests_properties(nexaui_wayland_ime_storage_${ime_storage_case} PROPERTIES TIMEOUT 15)
             endforeach()
+            add_executable(nexaui_wayland_ime_key_handoff_tests tests/test_wayland_ime_key_handoff.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR}/text-input-unstable-v3-protocol.c)
+            add_dependencies(nexaui_wayland_ime_key_handoff_tests nexaui_wayland_test_protocols)
+            target_include_directories(nexaui_wayland_ime_key_handoff_tests PRIVATE
+                ${NEXAUI_WAYLAND_PROTOCOL_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/platform/linux)
+            target_link_libraries(nexaui_wayland_ime_key_handoff_tests PRIVATE
+                NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
+            set_target_properties(nexaui_wayland_ime_key_handoff_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
+            foreach(ime_handoff_case activation deactivation forwarded normal)
+                add_test(NAME nexaui_wayland_ime_key_handoff_${ime_handoff_case}
+                    COMMAND nexaui_wayland_ime_key_handoff_tests ${ime_handoff_case})
+                set_tests_properties(nexaui_wayland_ime_key_handoff_${ime_handoff_case} PROPERTIES TIMEOUT 15)
+            endforeach()
             add_executable(nexaui_wayland_async_clipboard_tests
                 tests/test_wayland_async_clipboard.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c

@@ -22,6 +22,10 @@ REQUIRED = (
     'nexaui_wayland_ime_storage_empty',
     'nexaui_wayland_ime_storage_invalid',
     'nexaui_wayland_ime_storage_lifecycle',
+    'nexaui_wayland_ime_key_handoff_activation',
+    'nexaui_wayland_ime_key_handoff_deactivation',
+    'nexaui_wayland_ime_key_handoff_forwarded',
+    'nexaui_wayland_ime_key_handoff_normal',
 )
 
 

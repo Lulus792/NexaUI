@@ -202,6 +202,8 @@ struct nx_wayland_window {
     float axis_x, axis_y;
     int axis_steps_x, axis_steps_y;
     int keyboard_focused;
+    /* 1: held; 2: held across an input-method transition, awaiting a real
+       release or a fresh press that reconciles a provider-consumed release. */
     unsigned char keys_down[256];
     nx_wayland_repeat repeat;
     nx_result error;
@@ -253,6 +255,7 @@ static void nx_wayland_drop_flushed(nx_wayland_window *window) {
 static void nx_wayland_async_read_progress(nx_wayland_window *window);
 static void nx_wayland_async_read_clear(nx_wayland_window *window);
 static void nx_wayland_ime_activate(nx_wayland_window *window);
+static void nx_wayland_ime_key_handoff(nx_wayland_window *window);
 static void nx_wayland_ime_deactivate(nx_wayland_window *window);
 static void nx_wayland_seat_capabilities(void *data, struct wl_seat *seat,
                                          uint32_t capabilities);
@@ -1523,6 +1526,7 @@ static void nx_wayland_ime_v3_leave(void *data,
     (void)input;
     if (surface != window->surface) return;
     window->ime_v3_focused = 0;
+    if (window->ime_activated) nx_wayland_ime_key_handoff(window);
     window->ime_activated = 0;
     window->ime_entered = 0;
     nx_wayland_ime_clear_pending(window);
@@ -1752,7 +1756,14 @@ static const struct zwp_text_input_v3_listener nx_wayland_ime_v3_listener = {
 #endif
 };
 
+static void nx_wayland_ime_key_handoff(nx_wayland_window *window) {
+    for (size_t i = 0; i < sizeof(window->keys_down); ++i)
+        if (window->keys_down[i]) window->keys_down[i] = 2;
+    nx_wayland_repeat_cancel(&window->repeat);
+}
+
 static void nx_wayland_ime_v3_enable(nx_wayland_window *window) {
+    nx_wayland_ime_key_handoff(window);
     nx_wayland_ime_clear_pending(window);
     nx_wayland_ime_clear_preedit(window, 1);
     window->ime_activated = 1;
@@ -1793,6 +1804,7 @@ static void nx_wayland_ime_activate(nx_wayland_window *window) {
     }
     if (!window->text_input || !window->seat || !window->surface ||
         !window->keyboard_focused) return;
+    nx_wayland_ime_key_handoff(window);
     window->ime_activated = 1;
     window->ime_entered = 0;
     window->ime_activation_serial = ++window->ime_serial;
@@ -1832,6 +1844,7 @@ static void nx_wayland_ime_deactivate(nx_wayland_window *window) {
         nx_wayland_ime_v1_clear_delete(window);
         return;
     }
+    nx_wayland_ime_key_handoff(window);
     if (window->text_input_v3) {
         window->ime_activated = 0;
         window->ime_entered = 0;
@@ -1990,8 +2003,16 @@ static void nx_wayland_keyboard_key(void *data, struct wl_keyboard *keyboard,
         window->selection_serial = serial;
         window->selection_serial_from_pointer = 0;
     }
-    int repeat = down && key < sizeof(window->keys_down) &&
-                 window->keys_down[key];
+    int held = key < sizeof(window->keys_down) ? window->keys_down[key] : 0;
+    /* Some IME providers consume the release of the key that focused their
+       editor. A later wl_keyboard press is fresh input, not our local repeat
+       timer. Reconcile only keys that crossed that transition, on that press;
+       ordinary forwarded releases and unbroken held keys keep their behavior. */
+    if (down && held == 2) {
+        nx_wayland_emit_key(window, key, 0, 0);
+        held = 0;
+    }
+    int repeat = down && held;
     if (key < sizeof(window->keys_down)) window->keys_down[key] = down;
     nx_wayland_emit_key(window, key, down, repeat);
     if (down && !repeat && window->keymap &&

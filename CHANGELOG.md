@@ -2,6 +2,7 @@
 
 ## 0.1.33 — Development snapshot
 
+- Reconcile a fresh Wayland key press after an IME transition consumed its prior release. Tab focus navigation resumes after cancelling composition; forwarded releases and ordinary local repeat retain their existing behavior.
 - Overwrite a retired Wayland password preedit when a v3 reply replaces or clears it before `done`, including invalid replacement input. Existing composition visibility, cancellation and public ABI remain unchanged.
 - Overwrite retired keyboard and text-system records in native input queues and UI contexts. Borrowed frame events keep their documented lifetime through the next successful `nx_begin_frame` or context destruction.
 - Guard viewport surfaces during producer callbacks. Same-surface draw, completion and destruction return `NX_ERROR_STATE` during resize, acquire and release. A completed render still releases its pixels once.

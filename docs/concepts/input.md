@@ -40,6 +40,15 @@ transfer a pending preedit to the current composition; that live copy remains
 readable until replacement or cancellation. This does not overwrite copies
 inside the input method, compositor, protocol transport or application.
 
+An input-method activation or deactivation pauses local key repeat and marks
+keys held across the transition. It does not synthesize presses from that held
+state or release them merely because text input was enabled. If a provider
+consumed a release and the compositor later delivers a fresh press of the same
+key, the adapter queues a release of the stale key followed by that fresh
+press. A forwarded release clears the mark normally. This keeps Tab focus
+navigation usable after cancelling composition; unrelated native presses and
+local repeats retain their existing behavior.
+
 The context privately retains the pointer capture owner and focus owner at each
 event's dispatch. General and numeric text fields consume their events in that
 order, so a press, drag, release and second-field edit within one queued frame
