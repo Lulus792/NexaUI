@@ -1,0 +1,3354 @@
+{
+  "candidate": "fbd5a00b934e0a43a12ced8ccafe627170077d4b",
+  "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+  "sdk_version": "0.1.33",
+  "original_revision": "7d5fa4723c13460e9d61dc7db33b6a521409053f",
+  "uid": 65534,
+  "consumer_inputs": [
+    {
+      "path": "examples/37_aetheri_login/CMakeLists.txt",
+      "sha256": "61bb224c529f5a4b5eafecac522cb81f8f1e8ee2efd0553c06f86222454f0bf7"
+    },
+    {
+      "path": "examples/37_aetheri_login/view.c",
+      "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+    },
+    {
+      "path": "examples/37_aetheri_login/view.h",
+      "sha256": "8dc27539b02f599f38099e76fa0137fe7f9210ea35204eaca88add3e6d2af00f"
+    },
+    {
+      "path": "examples/37_aetheri_login/test_view.c",
+      "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+    },
+    {
+      "path": "examples/37_aetheri_login/test_connection_view.c",
+      "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+    },
+    {
+      "path": "examples/37_aetheri_login/fixture_conversation.h",
+      "sha256": "de1024d17b3bfb7a6afd618db782854e770695b9562db9eee79c7691cb7a2ed1"
+    },
+    {
+      "path": "examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "sha256": "9e6990154b8ffa297ab542863f90d5e1710c7704b82c1666bf16848e23e09f59"
+    },
+    {
+      "path": "examples/37_aetheri_login/native_host.c",
+      "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+    },
+    {
+      "path": "examples/37_aetheri_login/atspi_peer.c",
+      "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+    },
+    {
+      "path": "examples/37_aetheri_login/run_native.py",
+      "sha256": "0a11383e84a00cf378a9b71f9ac315b95223757d58c7a3bd3aeeaacbb86dfee1"
+    },
+    {
+      "path": "tests/fixture_font.h",
+      "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+    },
+    {
+      "path": "tests/run_weston_native.py",
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "path": "tests/run_atspi_native.py",
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    }
+  ],
+  "original_inputs": [
+    {
+      "path": "LICENSE",
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "path": "src/login/protocol.c",
+      "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+    },
+    {
+      "path": "src/login/protocol.h",
+      "sha256": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160"
+    },
+    {
+      "path": "src/login/connection.c",
+      "sha256": "d94cdf0193f0d8c2bc5774c820cfce765e3d39361a17c7504b16c01b8768123a"
+    },
+    {
+      "path": "src/login/connection.h",
+      "sha256": "999dbc2c3a068a4d03890a70e3aba2a5804d6de661950f7b0474d22040d4f187"
+    },
+    {
+      "path": "src/text/grapheme.c",
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "src/text/grapheme.h",
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "src/text/grapheme_data.h",
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    }
+  ],
+  "build": {
+    "candidate": "fbd5a00b934e0a43a12ced8ccafe627170077d4b",
+    "original_revision": "7d5fa4723c13460e9d61dc7db33b6a521409053f",
+    "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+    "original_inputs": [
+      {
+        "path": "LICENSE",
+        "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+      },
+      {
+        "path": "src/login/protocol.c",
+        "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+      },
+      {
+        "path": "src/login/protocol.h",
+        "sha256": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160"
+      },
+      {
+        "path": "src/login/connection.c",
+        "sha256": "d94cdf0193f0d8c2bc5774c820cfce765e3d39361a17c7504b16c01b8768123a"
+      },
+      {
+        "path": "src/login/connection.h",
+        "sha256": "999dbc2c3a068a4d03890a70e3aba2a5804d6de661950f7b0474d22040d4f187"
+      },
+      {
+        "path": "src/text/grapheme.c",
+        "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+      },
+      {
+        "path": "src/text/grapheme.h",
+        "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+      },
+      {
+        "path": "src/text/grapheme_data.h",
+        "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+      }
+    ],
+    "consumer_inputs": [
+      {
+        "path": "examples/37_aetheri_login/CMakeLists.txt",
+        "sha256": "61bb224c529f5a4b5eafecac522cb81f8f1e8ee2efd0553c06f86222454f0bf7"
+      },
+      {
+        "path": "examples/37_aetheri_login/view.c",
+        "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+      },
+      {
+        "path": "examples/37_aetheri_login/view.h",
+        "sha256": "8dc27539b02f599f38099e76fa0137fe7f9210ea35204eaca88add3e6d2af00f"
+      },
+      {
+        "path": "examples/37_aetheri_login/test_view.c",
+        "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+      },
+      {
+        "path": "examples/37_aetheri_login/test_connection_view.c",
+        "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+      },
+      {
+        "path": "examples/37_aetheri_login/fixture_conversation.h",
+        "sha256": "de1024d17b3bfb7a6afd618db782854e770695b9562db9eee79c7691cb7a2ed1"
+      },
+      {
+        "path": "examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+        "sha256": "9e6990154b8ffa297ab542863f90d5e1710c7704b82c1666bf16848e23e09f59"
+      },
+      {
+        "path": "examples/37_aetheri_login/native_host.c",
+        "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+      },
+      {
+        "path": "examples/37_aetheri_login/atspi_peer.c",
+        "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+      },
+      {
+        "path": "examples/37_aetheri_login/run_native.py",
+        "sha256": "0a11383e84a00cf378a9b71f9ac315b95223757d58c7a3bd3aeeaacbb86dfee1"
+      },
+      {
+        "path": "tests/fixture_font.h",
+        "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+      },
+      {
+        "path": "tests/run_weston_native.py",
+        "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+      },
+      {
+        "path": "tests/run_atspi_native.py",
+        "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+      }
+    ],
+    "profiles": [
+      {
+        "profile": "release",
+        "commands": [
+          {
+            "phase": "configure",
+            "command": [
+              "cmake",
+              "-S",
+              "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login",
+              "-B",
+              "/tmp/nexaui-login-connection212/release",
+              "-G",
+              "Ninja",
+              "-DCMAKE_C_COMPILER=clang",
+              "-DCMAKE_BUILD_TYPE=Release",
+              "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+              "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+              "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+              "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-connection212/original",
+              "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON",
+              "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+              "-DNEXAUI_LOGIN_WITH_CONNECTION_MODEL=ON"
+            ],
+            "exit": 0,
+            "seconds": 4.484517913999994,
+            "log": "login-connection212-release-configure.log",
+            "sha256": "c7901cbc2d7f03334f85329ba28a414211eff760d53231e0514dcf11df5a2e97"
+          },
+          {
+            "phase": "build",
+            "command": [
+              "cmake",
+              "--build",
+              "/tmp/nexaui-login-connection212/release",
+              "--parallel",
+              "2"
+            ],
+            "exit": 0,
+            "seconds": 2.2765074699999985,
+            "log": "login-connection212-release-build.log",
+            "sha256": "8a7074527146028c8d60cb2a928976529987ad9613b587a965ce410fa52213c6"
+          },
+          {
+            "phase": "test",
+            "command": [
+              "ctest",
+              "--test-dir",
+              "/tmp/nexaui-login-connection212/release",
+              "--verbose",
+              "--no-tests=error",
+              "--output-junit",
+              "/tmp/nexaui-login-connection212/release/tests.xml"
+            ],
+            "exit": 0,
+            "seconds": 0.381552782,
+            "log": "login-connection212-release-test.log",
+            "sha256": "fa15c4fac5d9e1fba4845abac952b06d0cdc935243a842f9f2789eeca510c7b6"
+          }
+        ]
+      },
+      {
+        "profile": "shared",
+        "commands": [
+          {
+            "phase": "configure",
+            "command": [
+              "cmake",
+              "-S",
+              "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login",
+              "-B",
+              "/tmp/nexaui-login-connection212/shared",
+              "-G",
+              "Ninja",
+              "-DCMAKE_C_COMPILER=clang",
+              "-DCMAKE_BUILD_TYPE=Release",
+              "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+              "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+              "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/shared-prefix",
+              "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-connection212/original",
+              "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON",
+              "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+              "-DNEXAUI_LOGIN_WITH_CONNECTION_MODEL=ON"
+            ],
+            "exit": 0,
+            "seconds": 4.484061761999996,
+            "log": "login-connection212-shared-configure.log",
+            "sha256": "4d1fa377b53352af4b49b12e5017a5778d66e4586bfc877e25bbd8c35537790e"
+          },
+          {
+            "phase": "build",
+            "command": [
+              "cmake",
+              "--build",
+              "/tmp/nexaui-login-connection212/shared",
+              "--parallel",
+              "2"
+            ],
+            "exit": 0,
+            "seconds": 2.226632109999997,
+            "log": "login-connection212-shared-build.log",
+            "sha256": "8a7074527146028c8d60cb2a928976529987ad9613b587a965ce410fa52213c6"
+          },
+          {
+            "phase": "test",
+            "command": [
+              "ctest",
+              "--test-dir",
+              "/tmp/nexaui-login-connection212/shared",
+              "--verbose",
+              "--no-tests=error",
+              "--output-junit",
+              "/tmp/nexaui-login-connection212/shared/tests.xml"
+            ],
+            "exit": 0,
+            "seconds": 0.42049376800000005,
+            "log": "login-connection212-shared-test.log",
+            "sha256": "3f1a93a1e67be8bd6d85ba21fb4170d714b46e1b1b1115a35ce33fc1e3fd9813"
+          }
+        ]
+      },
+      {
+        "profile": "asan",
+        "commands": [
+          {
+            "phase": "configure",
+            "command": [
+              "cmake",
+              "-S",
+              "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login",
+              "-B",
+              "/tmp/nexaui-login-connection212/asan",
+              "-G",
+              "Ninja",
+              "-DCMAKE_C_COMPILER=clang",
+              "-DCMAKE_BUILD_TYPE=Debug",
+              "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+              "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+              "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/asan-prefix",
+              "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-connection212/original",
+              "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON",
+              "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+              "-DNEXAUI_LOGIN_WITH_CONNECTION_MODEL=ON"
+            ],
+            "exit": 0,
+            "seconds": 5.887675474000005,
+            "log": "login-connection212-asan-configure.log",
+            "sha256": "620cb233722d06aa0a4ec7932a0bcdcfd4b0a16262af685994037a63f882577c"
+          },
+          {
+            "phase": "build",
+            "command": [
+              "cmake",
+              "--build",
+              "/tmp/nexaui-login-connection212/asan",
+              "--parallel",
+              "2"
+            ],
+            "exit": 0,
+            "seconds": 3.7798927890000016,
+            "log": "login-connection212-asan-build.log",
+            "sha256": "8a7074527146028c8d60cb2a928976529987ad9613b587a965ce410fa52213c6"
+          },
+          {
+            "phase": "test",
+            "command": [
+              "ctest",
+              "--test-dir",
+              "/tmp/nexaui-login-connection212/asan",
+              "--verbose",
+              "--no-tests=error",
+              "--output-junit",
+              "/tmp/nexaui-login-connection212/asan/tests.xml"
+            ],
+            "exit": 0,
+            "seconds": 1.522782955000011,
+            "log": "login-connection212-asan-test.log",
+            "sha256": "03d6cff4a7dae8c838af9b4667ecbe1d3ac16067b1ac78f3e1737c72b067a94f"
+          }
+        ]
+      },
+      {
+        "profile": "default",
+        "commands": [
+          {
+            "phase": "configure",
+            "command": [
+              "cmake",
+              "-S",
+              "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login",
+              "-B",
+              "/tmp/nexaui-login-connection212/default",
+              "-G",
+              "Ninja",
+              "-DCMAKE_C_COMPILER=clang",
+              "-DCMAKE_BUILD_TYPE=Release",
+              "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+              "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+              "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+              "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view178/original",
+              "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON",
+              "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+            ],
+            "exit": 0,
+            "seconds": 6.587048607,
+            "log": "login-connection212-default-configure.log",
+            "sha256": "13aa2362e88838674c51d19ecac5a0c5c6316fd5436ea5f5db6f529ae315c939"
+          },
+          {
+            "phase": "build",
+            "command": [
+              "cmake",
+              "--build",
+              "/tmp/nexaui-login-connection212/default",
+              "--parallel",
+              "2"
+            ],
+            "exit": 0,
+            "seconds": 1.2222787289999957,
+            "log": "login-connection212-default-build.log",
+            "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+          },
+          {
+            "phase": "test",
+            "command": [
+              "ctest",
+              "--test-dir",
+              "/tmp/nexaui-login-connection212/default",
+              "--verbose",
+              "--no-tests=error",
+              "--output-junit",
+              "/tmp/nexaui-login-connection212/default/tests.xml"
+            ],
+            "exit": 0,
+            "seconds": 0.1683985760000013,
+            "log": "login-connection212-default-test.log",
+            "sha256": "47245162e7bddc4e9d5dfb260dc182027f5f89bdd79682cb34152b8adcca28de"
+          }
+        ]
+      }
+    ],
+    "ctests": 16
+  },
+  "native_commands": [
+    {
+      "profile": "release",
+      "source": "legacy",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/release",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-release-legacy-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd"
+      ],
+      "exit": 0,
+      "seconds": 2.3764779650000003,
+      "log": "login-connection213-release-legacy-keyboard.log",
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "profile": "release",
+      "source": "legacy",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/release",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-release-legacy-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.1703846319999993,
+      "log": "login-connection213-release-legacy-compose.log",
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "profile": "release",
+      "source": "legacy",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/release",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-release-legacy-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.2695277489999999,
+      "log": "login-connection213-release-legacy-cancel.log",
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "profile": "release",
+      "source": "connection",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/release",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-release-connection-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection"
+      ],
+      "exit": 0,
+      "seconds": 1.4710014329999996,
+      "log": "login-connection213-release-connection-keyboard.log",
+      "sha256": "357ec0d488dae4a3661af999709bdc0034f69e39ebff7a1a0f14456c56d4aa62"
+    },
+    {
+      "profile": "release",
+      "source": "connection",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/release",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-release-connection-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.2196499799999998,
+      "log": "login-connection213-release-connection-compose.log",
+      "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+    },
+    {
+      "profile": "release",
+      "source": "connection",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/release",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-release-connection-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.1710373490000006,
+      "log": "login-connection213-release-connection-cancel.log",
+      "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+    },
+    {
+      "profile": "shared",
+      "source": "legacy",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/shared",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-shared-legacy-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd"
+      ],
+      "exit": 0,
+      "seconds": 1.3709234440000007,
+      "log": "login-connection213-shared-legacy-keyboard.log",
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "profile": "shared",
+      "source": "legacy",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/shared",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-shared-legacy-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.120910265000001,
+      "log": "login-connection213-shared-legacy-compose.log",
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "profile": "shared",
+      "source": "legacy",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/shared",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-shared-legacy-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.4714425999999996,
+      "log": "login-connection213-shared-legacy-cancel.log",
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "profile": "shared",
+      "source": "connection",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/shared",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-shared-connection-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection"
+      ],
+      "exit": 0,
+      "seconds": 1.4211063070000023,
+      "log": "login-connection213-shared-connection-keyboard.log",
+      "sha256": "1a0233e1cee5230522d5ba9267fbf10207d3902fffa2b5804d899364f56f5598"
+    },
+    {
+      "profile": "shared",
+      "source": "connection",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/shared",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-shared-connection-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.1209116690000016,
+      "log": "login-connection213-shared-connection-compose.log",
+      "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+    },
+    {
+      "profile": "shared",
+      "source": "connection",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/shared",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-shared-connection-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.1203894699999992,
+      "log": "login-connection213-shared-connection-cancel.log",
+      "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+    },
+    {
+      "profile": "asan",
+      "source": "legacy",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/asan",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-asan-legacy-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd"
+      ],
+      "exit": 0,
+      "seconds": 1.6716037250000007,
+      "log": "login-connection213-asan-legacy-keyboard.log",
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "profile": "asan",
+      "source": "legacy",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/asan",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-asan-legacy-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.3224314780000022,
+      "log": "login-connection213-asan-legacy-compose.log",
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "profile": "asan",
+      "source": "legacy",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/asan",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-asan-legacy-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.6735417219999995,
+      "log": "login-connection213-asan-legacy-cancel.log",
+      "sha256": "260f7ce18418567b37c250a926fa092f228b1c01b9231a2cfdff960f8dd68c11"
+    },
+    {
+      "profile": "asan",
+      "source": "connection",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/asan",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-asan-connection-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection"
+      ],
+      "exit": 0,
+      "seconds": 1.7238919929999987,
+      "log": "login-connection213-asan-connection-keyboard.log",
+      "sha256": "1a0233e1cee5230522d5ba9267fbf10207d3902fffa2b5804d899364f56f5598"
+    },
+    {
+      "profile": "asan",
+      "source": "connection",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/asan",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-asan-connection-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.4213113600000007,
+      "log": "login-connection213-asan-connection-compose.log",
+      "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+    },
+    {
+      "profile": "asan",
+      "source": "connection",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-login-connection212/asan",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-login-connection212/native213-asan-connection-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--connection",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.4222111109999993,
+      "log": "login-connection213-asan-connection-cancel.log",
+      "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+    }
+  ],
+  "negative": {
+    "candidate": "fbd5a00b934e0a43a12ced8ccafe627170077d4b",
+    "before_sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9",
+    "mutant_sha256": "113d006eb2d0ed783e20997c07b5c12cf2dd589ef4796a1dd3e18174487a902e",
+    "commands": [
+      {
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-login-connection214/consumer/examples/37_aetheri_login",
+          "-B",
+          "/tmp/nexaui-login-connection214/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-connection212/original",
+          "-DNEXAUI_LOGIN_WITH_CONNECTION_MODEL=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 6.588630743,
+        "log": "login-connection214-configure.log",
+        "sha256": "83bf2b419824fe07dcf829879b53c1f67906a0c41e443e20c775c0c44889a7b5"
+      },
+      {
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-login-connection214/build",
+          "--parallel",
+          "2",
+          "--target",
+          "aetheri_login_connection_view_test"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 1.1204443299999998,
+        "log": "login-connection214-build.log",
+        "sha256": "bc49478727edb51943dde2c997c83d9562331432c58dcdbb84aef053a53e5d71"
+      },
+      {
+        "phase": "admission",
+        "command": [
+          "/tmp/nexaui-login-connection214/build/aetheri_login_connection_view_test",
+          "admission"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.01054755899999904,
+        "log": "login-connection214-admission.log",
+        "sha256": "e1a97396e872f96ef0c67ab0f1e4b42a8d3a30145b185a5826f79f6e3b3c35f7"
+      }
+    ],
+    "default_guard": {
+      "command": [
+        "/tmp/nexaui-login-connection212/default/aetheri_login_native_host"
+      ],
+      "exit": 2,
+      "log": "login-connection214-default-guard.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  },
+  "profiles": [
+    {
+      "profile": "release",
+      "cases": [
+        "aetheri_login_view",
+        "aetheri_login_connection_flow",
+        "aetheri_login_connection_loss",
+        "aetheri_login_connection_admission",
+        "aetheri_login_connection_lifetime"
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+        "bytes": 1185356,
+        "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+      },
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-login-connection212/release/libaetheri_login_view.a",
+          "bytes": 64906,
+          "sha256": "a2ccec963b8e0d73a24ecd861091fd96c1c9ec7f530a7040d1e748bee8cd64d9"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/release/aetheri_login_view_test",
+          "bytes": 904728,
+          "sha256": "da9a62b22b704596d005f074990abc84c34137e418fa48439ca84f4231ab3ad2"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/release/aetheri_login_native_host",
+          "bytes": 880320,
+          "sha256": "72639b55323cde0c7a5314bfcc31a1400c7a3a94f489b7070158af91109c1a61"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/release/aetheri_login_atspi_peer",
+          "bytes": 37344,
+          "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/release/compile_commands.json",
+          "bytes": 6008,
+          "sha256": "a280b32613013c93847f6b71079f4f71c64e39208c42d6ae9a9fe056225acdf3"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/release/CMakeCache.txt",
+          "bytes": 23541,
+          "sha256": "012d737eabef1fe10740930e1bd09609923e5560a03eeb6773347699231e2880"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/release/tests.xml",
+          "bytes": 1590,
+          "sha256": "41dbced2470b7077607217b3506c60e2dfb31b547eed52e6e0e338162af4faf2"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/release/aetheri_login_connection_view_test",
+          "bytes": 888296,
+          "sha256": "e2b518c91422e2b4e93bbfde3a74e2a099ebc0ded67e443715937dd6690c657a"
+        }
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c",
+            "bytes": 14885,
+            "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/view.c.o",
+            "bytes": 14520,
+            "sha256": "c97e8f9b77dc5405b092b334c6047f292def56febe9b0743048bc5d0c96a095e"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/login/protocol.c",
+            "bytes": 10782,
+            "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o",
+            "bytes": 16208,
+            "sha256": "86320c7ddd65f170ce8e626444ac9e3e5ce7bb4232c2d231860f69701cb9b07e"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o -c /tmp/nexaui-login-connection212/original/src/login/protocol.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/text/grapheme.c",
+            "bytes": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o",
+            "bytes": 22928,
+            "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o -c /tmp/nexaui-login-connection212/original/src/text/grapheme.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/login/connection.c",
+            "bytes": 9240,
+            "sha256": "d94cdf0193f0d8c2bc5774c820cfce765e3d39361a17c7504b16c01b8768123a"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o",
+            "bytes": 10208,
+            "sha256": "c5ac17119e20704e641e43534bec14a8ea574323d4f0bdce1d0186dc2e7e4acf"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -Wno-sign-compare -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o -c /tmp/nexaui-login-connection212/original/src/login/connection.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c",
+            "bytes": 16097,
+            "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+            "bytes": 56664,
+            "sha256": "2a0b91d7aa500c5277ebb13a0ff7e8da8506efcc9c58aca9ba77d43068ffe1a8"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/../../tests -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view_test.dir/test_view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_connection_view.c",
+            "bytes": 11231,
+            "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o",
+            "bytes": 31600,
+            "sha256": "99301e9d72853090c757072585a10c87a045dce2877a75cf6a720ee98e347c39"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/../../tests -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_connection_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c",
+            "bytes": 7124,
+            "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+            "bytes": 13136,
+            "sha256": "f8484af5e0a98a89e62a332bbe7e809880f17048ac3c2690a1658134d59e7718"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_native_host.dir/native_host.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c",
+            "bytes": 12091,
+            "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+            "bytes": 25344,
+            "sha256": "408e3316c00d2e400df3bd3a20360a4d84e0470bb7698fdcee8289c094521eaf"
+          },
+          "command": "/usr/bin/clang -isystem /usr/include/at-spi-2.0 -isystem /usr/include/dbus-1.0 -isystem /usr/lib/dbus-1.0/include -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -pthread -o CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c"
+        }
+      ],
+      "native": [
+        {
+          "source": "legacy",
+          "mode": "keyboard",
+          "frames": 53,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-release-legacy-keyboard.log",
+            "bytes": 207,
+            "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+          }
+        },
+        {
+          "source": "legacy",
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-release-legacy-compose.log",
+            "bytes": 381,
+            "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+          }
+        },
+        {
+          "source": "legacy",
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-release-legacy-cancel.log",
+            "bytes": 373,
+            "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "keyboard",
+          "frames": 52,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-release-connection-keyboard.log",
+            "bytes": 243,
+            "sha256": "357ec0d488dae4a3661af999709bdc0034f69e39ebff7a1a0f14456c56d4aa62"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-release-connection-compose.log",
+            "bytes": 417,
+            "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-release-connection-cancel.log",
+            "bytes": 409,
+            "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+          }
+        }
+      ],
+      "host_dynamic": "\nDynamic section at offset 0xc79f0 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x89ecf\n 0x0000000000000019 (INIT_ARRAY)         0xc6510\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xc6518\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xf30\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1705 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc7c00\n 0x0000000000000002 (PLTRELSZ)           2520 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4fe0\n 0x0000000000000007 (RELA)               0x16f8\n 0x0000000000000008 (RELASZ)             14568 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x16d8\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x15da\n 0x000000006ffffff9 (RELACOUNT)          573\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x6c00 contains 27 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x4040\n 0x0000000000000019 (INIT_ARRAY)         0x6bf0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6bf8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x940\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1134 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6df0\n 0x0000000000000002 (PLTRELSZ)           1344 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xea0\n 0x0000000000000007 (RELA)               0xdb0\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "shared",
+      "cases": [
+        "aetheri_login_view",
+        "aetheri_login_connection_flow",
+        "aetheri_login_connection_loss",
+        "aetheri_login_connection_admission",
+        "aetheri_login_connection_lifetime"
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/shared-prefix/lib/libnexaui.so.0.1.33",
+        "bytes": 934464,
+        "sha256": "fa3d43cb8d50f171ee3e008e8dd723081149208557b8ecd5cf243b7a56d9ab31"
+      },
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/libaetheri_login_view.a",
+          "bytes": 64906,
+          "sha256": "a2ccec963b8e0d73a24ecd861091fd96c1c9ec7f530a7040d1e748bee8cd64d9"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_view_test",
+          "bytes": 96736,
+          "sha256": "d0022ea92e66f5e14b8c24224e881dd76cc398fc374ab9f45a52939d42cd56b1"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_native_host",
+          "bytes": 72648,
+          "sha256": "0f59c3d29b5d99a735476d6c993153e5fb54ca1e4a2ad559016bb6fc595b6d3f"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_atspi_peer",
+          "bytes": 37344,
+          "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/compile_commands.json",
+          "bytes": 6097,
+          "sha256": "8e645e7396492ccb6c801403be39170d3d807396949435a21ae3d86aac2ac343"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/CMakeCache.txt",
+          "bytes": 23535,
+          "sha256": "de61a04694561a0466df62f20fee23894f282eadb835d93cce17da5a95a958fa"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/tests.xml",
+          "bytes": 1591,
+          "sha256": "36a05c8edcb0dc04bf9ad4787230c07b06629c2686534d991e3925ad38b21cd3"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_connection_view_test",
+          "bytes": 84400,
+          "sha256": "9e1f69da83940984d48b96f28d5d5d2e4a7d2c3afbb0b695fa76731a4e18e6db"
+        }
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c",
+            "bytes": 14885,
+            "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/view.c.o",
+            "bytes": 14520,
+            "sha256": "c97e8f9b77dc5405b092b334c6047f292def56febe9b0743048bc5d0c96a095e"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -DNEXAUI_SHARED -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/login/protocol.c",
+            "bytes": 10782,
+            "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o",
+            "bytes": 16208,
+            "sha256": "86320c7ddd65f170ce8e626444ac9e3e5ce7bb4232c2d231860f69701cb9b07e"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -DNEXAUI_SHARED -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o -c /tmp/nexaui-login-connection212/original/src/login/protocol.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/text/grapheme.c",
+            "bytes": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o",
+            "bytes": 22928,
+            "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -DNEXAUI_SHARED -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o -c /tmp/nexaui-login-connection212/original/src/text/grapheme.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/login/connection.c",
+            "bytes": 9240,
+            "sha256": "d94cdf0193f0d8c2bc5774c820cfce765e3d39361a17c7504b16c01b8768123a"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o",
+            "bytes": 10208,
+            "sha256": "c5ac17119e20704e641e43534bec14a8ea574323d4f0bdce1d0186dc2e7e4acf"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -DNEXAUI_SHARED -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -Wno-sign-compare -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o -c /tmp/nexaui-login-connection212/original/src/login/connection.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c",
+            "bytes": 16097,
+            "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+            "bytes": 56664,
+            "sha256": "2a0b91d7aa500c5277ebb13a0ff7e8da8506efcc9c58aca9ba77d43068ffe1a8"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -DNEXAUI_SHARED -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/../../tests -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view_test.dir/test_view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_connection_view.c",
+            "bytes": 11231,
+            "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o",
+            "bytes": 31600,
+            "sha256": "99301e9d72853090c757072585a10c87a045dce2877a75cf6a720ee98e347c39"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -DNEXAUI_SHARED -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/../../tests -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_connection_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c",
+            "bytes": 7124,
+            "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+            "bytes": 13136,
+            "sha256": "f8484af5e0a98a89e62a332bbe7e809880f17048ac3c2690a1658134d59e7718"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -DNEXAUI_SHARED -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_native_host.dir/native_host.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c",
+            "bytes": 12091,
+            "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+            "bytes": 25344,
+            "sha256": "408e3316c00d2e400df3bd3a20360a4d84e0470bb7698fdcee8289c094521eaf"
+          },
+          "command": "/usr/bin/clang -isystem /usr/include/at-spi-2.0 -isystem /usr/include/dbus-1.0 -isystem /usr/lib/dbus-1.0/include -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -pthread -o CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c"
+        }
+      ],
+      "native": [
+        {
+          "source": "legacy",
+          "mode": "keyboard",
+          "frames": 53,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-shared-legacy-keyboard.log",
+            "bytes": 207,
+            "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+          }
+        },
+        {
+          "source": "legacy",
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-shared-legacy-compose.log",
+            "bytes": 381,
+            "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+          }
+        },
+        {
+          "source": "legacy",
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-shared-legacy-cancel.log",
+            "bytes": 373,
+            "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "keyboard",
+          "frames": 53,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-shared-connection-keyboard.log",
+            "bytes": 243,
+            "sha256": "1a0233e1cee5230522d5ba9267fbf10207d3902fffa2b5804d899364f56f5598"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-shared-connection-compose.log",
+            "bytes": 417,
+            "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-shared-connection-cancel.log",
+            "bytes": 409,
+            "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+          }
+        }
+      ],
+      "host_dynamic": "\nDynamic section at offset 0xeb70 contains 26 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000001d (RUNPATH)            Library runpath: [/tmp/nexaui-ime-handoff202/shared-prefix/lib]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x7f73\n 0x0000000000000019 (INIT_ARRAY)         0xfb30\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xfb38\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0xb20\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1234 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xfd50\n 0x0000000000000002 (PLTRELSZ)           1848 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x10e8\n 0x0000000000000007 (RELA)               0xff8\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          4\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x6c00 contains 27 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x4040\n 0x0000000000000019 (INIT_ARRAY)         0x6bf0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6bf8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x940\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1134 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6df0\n 0x0000000000000002 (PLTRELSZ)           1344 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xea0\n 0x0000000000000007 (RELA)               0xdb0\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "asan",
+      "cases": [
+        "aetheri_login_view",
+        "aetheri_login_connection_flow",
+        "aetheri_login_connection_loss",
+        "aetheri_login_connection_admission",
+        "aetheri_login_connection_lifetime"
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/asan-prefix/lib/libnexaui.a",
+        "bytes": 11569530,
+        "sha256": "cefbf73fb7b7a8ce644d193f3280be5dc98f4bbf0e4ac608b097f663b9539d67"
+      },
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/libaetheri_login_view.a",
+          "bytes": 387430,
+          "sha256": "50442cee0753cefa063d40cd0dd375499a01e0da2a1657f350160d6002151331"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_view_test",
+          "bytes": 10665984,
+          "sha256": "04c85924e92ef4dd3c747f992d0db2c18c4ecd1093c5ef926c05ba8c68ef8b6c"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_native_host",
+          "bytes": 10580656,
+          "sha256": "e8f2e56aa2e7dbaa1a7ec873d5089186d69a2ecca9f3f4f53f1ed4e8aa91a318"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_atspi_peer",
+          "bytes": 2907056,
+          "sha256": "60e4f102d6c6fdc5ece4a73a0af529a370bdd2bea9997284d076cd5fa473c308"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/compile_commands.json",
+          "bytes": 6315,
+          "sha256": "e8bdb74f1884828f9ce446902c1a8de699a08f002f83580a8a7857fd3a213c85"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/CMakeCache.txt",
+          "bytes": 23574,
+          "sha256": "7a464246a22a3eb4d24031a4403bf8aa7104a03e8e9a1030b1097b3c95fc9373"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/tests.xml",
+          "bytes": 1586,
+          "sha256": "469a9bed79df042e6bdff70ce641bea2bfe41816d1e8124c60252ee7651dbd8d"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_connection_view_test",
+          "bytes": 10643360,
+          "sha256": "44f284637f8ea03b77c2f24126bd8b14acb3ec60a8256a3402437797b3060867"
+        }
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c",
+            "bytes": 14885,
+            "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/view.c.o",
+            "bytes": 103344,
+            "sha256": "5dd41e388211509e502ea75a4cc1b58eb55d10e1af07434f63d6e843710de1ec"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/aetheri_login_view.dir/view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/login/protocol.c",
+            "bytes": 10782,
+            "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o",
+            "bytes": 130696,
+            "sha256": "ad66082c0d64f9056f165a7cc656380aaa0d9a205cf70871ad354d35db6825b4"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o -c /tmp/nexaui-login-connection212/original/src/login/protocol.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/text/grapheme.c",
+            "bytes": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o",
+            "bytes": 46064,
+            "sha256": "7ee9a79397372b21dbbb90da3780f4621e3bc7df38ef70da2a27315472a29c62"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o -c /tmp/nexaui-login-connection212/original/src/text/grapheme.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/original/src/login/connection.c",
+            "bytes": 9240,
+            "sha256": "d94cdf0193f0d8c2bc5774c820cfce765e3d39361a17c7504b16c01b8768123a"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o",
+            "bytes": 106160,
+            "sha256": "1c9889cf23c4c6ba13068dc4dcb21abec3dc080895f2e7e32ed1c86b533355e4"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -Wno-sign-compare -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o -c /tmp/nexaui-login-connection212/original/src/login/connection.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c",
+            "bytes": 16097,
+            "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+            "bytes": 238680,
+            "sha256": "4b0f5f9bb1f8be067cd1f5f3770211a1e3a371b8c413db47e2e4096c816a56d1"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/../../tests -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/aetheri_login_view_test.dir/test_view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_connection_view.c",
+            "bytes": 11231,
+            "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o",
+            "bytes": 180336,
+            "sha256": "7432a16f125a994ac1e7aa17e78e13b2776eecf38cbaddb2d44093505ca92e80"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/../../tests -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_connection_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c",
+            "bytes": 7124,
+            "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+            "bytes": 78624,
+            "sha256": "e4f7343dda904ab49ce556d99695faacdf9a98f7cd814daacf55c53721681381"
+          },
+          "command": "/usr/bin/clang -DAETHERI_LOGIN_CONNECTION_VIEW=1 -I/tmp/nexaui-login-connection212/original/src -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/aetheri_login_native_host.dir/native_host.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c",
+            "bytes": 12091,
+            "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+            "bytes": 131272,
+            "sha256": "2b20eec8a3ff17c69284367c3fbe25c97a80e702dd92ee2cff9bdf9af0852901"
+          },
+          "command": "/usr/bin/clang -isystem /usr/include/at-spi-2.0 -isystem /usr/include/dbus-1.0 -isystem /usr/lib/dbus-1.0/include -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -pthread -o CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c"
+        }
+      ],
+      "native": [
+        {
+          "source": "legacy",
+          "mode": "keyboard",
+          "frames": 53,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-asan-legacy-keyboard.log",
+            "bytes": 207,
+            "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+          }
+        },
+        {
+          "source": "legacy",
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-asan-legacy-compose.log",
+            "bytes": 381,
+            "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+          }
+        },
+        {
+          "source": "legacy",
+          "mode": "cancel",
+          "frames": 29,
+          "requests": 2,
+          "original_admission_calls": null,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-asan-legacy-cancel.log",
+            "bytes": 373,
+            "sha256": "260f7ce18418567b37c250a926fa092f228b1c01b9231a2cfdff960f8dd68c11"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "keyboard",
+          "frames": 53,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-asan-connection-keyboard.log",
+            "bytes": 243,
+            "sha256": "1a0233e1cee5230522d5ba9267fbf10207d3902fffa2b5804d899364f56f5598"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-asan-connection-compose.log",
+            "bytes": 417,
+            "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+          }
+        },
+        {
+          "source": "connection",
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "original_admission_calls": 438,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/login-connection213-asan-connection-cancel.log",
+            "bytes": 409,
+            "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+          }
+        }
+      ],
+      "host_dynamic": "\nDynamic section at offset 0x5899e0 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x17e000\n 0x000000000000000d (FINI)               0x4edfab\n 0x0000000000000019 (INIT_ARRAY)         0x5871b8\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x5871d0\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x14ae0\n 0x0000000000000006 (SYMTAB)             0x52d0\n 0x000000000000000a (STRSZ)              59740 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x589c00\n 0x0000000000000002 (PLTRELSZ)           1392 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x17d890\n 0x0000000000000007 (RELA)               0x24938\n 0x0000000000000008 (RELASZ)             1412952 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x248e8\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x2343c\n 0x000000006ffffff9 (RELACOUNT)          58796\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x133ac0 contains 31 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x28000\n 0x000000000000000d (FINI)               0xfacd0\n 0x0000000000000019 (INIT_ARRAY)         0x133378\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x133390\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x147e8\n 0x0000000000000006 (SYMTAB)             0x52c0\n 0x000000000000000a (STRSZ)              59470 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x133cf0\n 0x0000000000000002 (PLTRELSZ)           936 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x27778\n 0x0000000000000007 (RELA)               0x244d8\n 0x0000000000000008 (RELASZ)             12960 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x244a8\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x23036\n 0x000000006ffffff9 (RELACOUNT)          490\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "default",
+      "cases": [
+        "aetheri_login_view"
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+        "bytes": 1185356,
+        "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+      },
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-login-connection212/default/libaetheri_login_view.a",
+          "bytes": 52730,
+          "sha256": "c9124a473c1fa2c94accd81ea1335cf5163c9aff8b55cdf8203324b3b09e5953"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/default/aetheri_login_view_test",
+          "bytes": 899592,
+          "sha256": "409c901e9f3b0c32afa1bd4addc0e27a2bc8806c1b6c12377632b34016fb937d"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/default/aetheri_login_native_host",
+          "bytes": 870776,
+          "sha256": "bd8e5534d5bdacf19f11ab348db4672f1e2c266e66faa547da0975161f36af2d"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/default/aetheri_login_atspi_peer",
+          "bytes": 37344,
+          "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/default/compile_commands.json",
+          "bytes": 3909,
+          "sha256": "4e181d1e5b06db0834b7c0cdbddea7ee749d7af3021456be8d51fc48d117acc5"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/default/CMakeCache.txt",
+          "bytes": 23463,
+          "sha256": "1c88ffa6e05e5dc66aeeece4515a97d14c5157c13df57e1310add20230b8f4e7"
+        },
+        {
+          "path": "/tmp/nexaui-login-connection212/default/tests.xml",
+          "bytes": 519,
+          "sha256": "f0f15e6663babfcb9f5b79376f08d5809d860a5f971271c1a395dbc4630f4c8b"
+        }
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c",
+            "bytes": 14885,
+            "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view.dir/view.c.o",
+            "bytes": 12960,
+            "sha256": "cfa7cd53f649946896261d14d795d335aea2a31606dbc0c08d1e596910ebb1d1"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-login-view178/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-view178/original/src/login/protocol.c",
+            "bytes": 10782,
+            "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view178/original/src/login/protocol.c.o",
+            "bytes": 16208,
+            "sha256": "86320c7ddd65f170ce8e626444ac9e3e5ce7bb4232c2d231860f69701cb9b07e"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-login-view178/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view178/original/src/login/protocol.c.o -c /tmp/nexaui-login-view178/original/src/login/protocol.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-view178/original/src/text/grapheme.c",
+            "bytes": 3857,
+            "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view178/original/src/text/grapheme.c.o",
+            "bytes": 22928,
+            "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-login-view178/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view178/original/src/text/grapheme.c.o -c /tmp/nexaui-login-view178/original/src/text/grapheme.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c",
+            "bytes": 16097,
+            "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+            "bytes": 56664,
+            "sha256": "2a0b91d7aa500c5277ebb13a0ff7e8da8506efcc9c58aca9ba77d43068ffe1a8"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/../../tests -I/tmp/nexaui-login-view178/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_view_test.dir/test_view.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c",
+            "bytes": 7124,
+            "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+            "bytes": 10192,
+            "sha256": "8b8f364f75cc557d5979e07a62e3ec9e68fb5ab1d0861fd699122b983c3ad12a"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-login-view178/original/src -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/aetheri_login_native_host.dir/native_host.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c",
+            "bytes": 12091,
+            "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+          },
+          "object": {
+            "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+            "bytes": 25344,
+            "sha256": "408e3316c00d2e400df3bd3a20360a4d84e0470bb7698fdcee8289c094521eaf"
+          },
+          "command": "/usr/bin/clang -isystem /usr/include/at-spi-2.0 -isystem /usr/include/dbus-1.0 -isystem /usr/lib/dbus-1.0/include -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -pthread -o CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o -c /tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c"
+        }
+      ],
+      "native": [],
+      "host_dynamic": "\nDynamic section at offset 0xc5a60 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x8864f\n 0x0000000000000019 (INIT_ARRAY)         0xc5580\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xc5588\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xde0\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1597 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc6c70\n 0x0000000000000002 (PLTRELSZ)           2184 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4e08\n 0x0000000000000007 (RELA)               0x1520\n 0x0000000000000008 (RELASZ)             14568 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x1500\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x141e\n 0x000000006ffffff9 (RELACOUNT)          573\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x6c00 contains 27 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x4040\n 0x0000000000000019 (INIT_ARRAY)         0x6bf0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6bf8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x940\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1134 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6df0\n 0x0000000000000002 (PLTRELSZ)           1344 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xea0\n 0x0000000000000007 (RELA)               0xdb0\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n"
+    }
+  ],
+  "environment": {
+    "kernel_release": "6.18.33.2-microsoft-standard-WSL2",
+    "compiler": "Alpine clang version 22.1.3\nTarget: x86_64-alpine-linux-musl\nThread model: posix\nInstalledDir: /usr/lib/llvm22/bin\nConfiguration file: /etc/clang22/x86_64-alpine-linux-musl.cfg\n",
+    "headers": [
+      {
+        "path": "/usr/include/linux/pidfd.h",
+        "bytes": 4595,
+        "sha256": "f1ab18cf335f4699c8f4647511361319f38a135a8fd7469aa0283b1f23c70928"
+      },
+      {
+        "path": "/usr/include/linux/magic.h",
+        "bytes": 4043,
+        "sha256": "fc7cf0a4a624ce9908431e8ea9fe97db341c499fa8007594a54d8ed622e3f16c"
+      },
+      {
+        "path": "/usr/include/asm-generic/socket.h",
+        "bytes": 4084,
+        "sha256": "e833d32d3d8d03732021da6968665431d693ab4effdd4d39965ff05115a4ed21"
+      },
+      {
+        "path": "/usr/include/sys/socket.h",
+        "bytes": 11299,
+        "sha256": "1e6f196e7ae112b3295078b45e705b7f69ae2a1ade7f3b72522f66fb695eda65"
+      },
+      {
+        "path": "/usr/include/sys/ioctl.h",
+        "bytes": 3083,
+        "sha256": "18cc2b9eee923943e198f03f77cae411bd8f34d9a3fc2202851a1e95dc73532e"
+      },
+      {
+        "path": "/usr/include/fcntl.h",
+        "bytes": 4661,
+        "sha256": "22fb6921bcfbfd1ca74cdbea97ad811c9ce3df9ec410f6c9dedacd1da3d9680c"
+      }
+    ],
+    "borrowed_font": {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+      "bytes": 1045720,
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+    },
+    "private_tools": [
+      {
+        "path": "/usr/bin/xkbcomp",
+        "bytes": 175720,
+        "sha256": "2e094a75ba0c5c46cea71c2b03ff649dee54ddd40bbda7b305342f4b4b82ac56"
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+        "bytes": 251,
+        "sha256": "d82169d8b60a003faffd205aab38d39fdf47d87404a12bbb9eea122785b12ab7"
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/private-weston-14/root/usr/libexec/weston-simple-im",
+        "bytes": 22696,
+        "sha256": "aa10f60e3c1d590ecfaf24ed4e187767044eaf71aed17020f7160f4f2df960bf"
+      }
+    ]
+  },
+  "ctests": 16,
+  "native_tasks": 18,
+  "native_connection_tasks": 9,
+  "native_legacy_tasks": 9,
+  "unchanged_native_peer_since": "208d453f722baa4c114563cc854eb8b6e1f548dd",
+  "sdk_source_unchanged": true,
+  "sdk_ci_url": "https://github.com/Lulus792/NexaUI/actions/runs/43760877115",
+  "sdk_receipt": {
+    "path": "/mnt/d/NexaUI/out/ime-handoff206-final.json",
+    "bytes": 117581,
+    "sha256": "755444049b7934cee07cfab87e31b8d18847670f129311b36d49535397cf5ec2"
+  },
+  "sdk_archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-ime-handoff204.tar.gz",
+    "bytes": 59559060,
+    "sha256": "2eeb186ca93353325cbaa4535f48f18c6fdccaa0cc5eacc014e60c2fcfa63388",
+    "verified_members": 174
+  },
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-login-connection215.tar.gz",
+    "bytes": 15342504,
+    "sha256": "c76a21b73ff5f919e53e7c550bd6b0665d7a973e6c57a67f40598901f36ea51b",
+    "verified_members": 251
+  },
+  "manifest": [
+    {
+      "member": "consumer/examples/37_aetheri_login/CMakeLists.txt",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/CMakeLists.txt",
+      "bytes": 4294,
+      "sha256": "61bb224c529f5a4b5eafecac522cb81f8f1e8ee2efd0553c06f86222454f0bf7"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/view.c",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.c",
+      "bytes": 14885,
+      "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/view.h",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/view.h",
+      "bytes": 1688,
+      "sha256": "8dc27539b02f599f38099e76fa0137fe7f9210ea35204eaca88add3e6d2af00f"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/test_view.c",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_view.c",
+      "bytes": 16097,
+      "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/test_connection_view.c",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/test_connection_view.c",
+      "bytes": 11231,
+      "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/fixture_conversation.h",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/fixture_conversation.h",
+      "bytes": 5354,
+      "sha256": "de1024d17b3bfb7a6afd618db782854e770695b9562db9eee79c7691cb7a2ed1"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "bytes": 1318,
+      "sha256": "9e6990154b8ffa297ab542863f90d5e1710c7704b82c1666bf16848e23e09f59"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/native_host.c",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/native_host.c",
+      "bytes": 7124,
+      "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/atspi_peer.c",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/atspi_peer.c",
+      "bytes": 12091,
+      "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+    },
+    {
+      "member": "consumer/examples/37_aetheri_login/run_native.py",
+      "path": "/tmp/nexaui-login-connection212/consumer/examples/37_aetheri_login/run_native.py",
+      "bytes": 4015,
+      "sha256": "0a11383e84a00cf378a9b71f9ac315b95223757d58c7a3bd3aeeaacbb86dfee1"
+    },
+    {
+      "member": "consumer/tests/fixture_font.h",
+      "path": "/tmp/nexaui-login-connection212/consumer/tests/fixture_font.h",
+      "bytes": 3343,
+      "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+    },
+    {
+      "member": "consumer/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-login-connection212/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "consumer/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-login-connection212/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "original/LICENSE",
+      "path": "/tmp/nexaui-login-connection212/original/LICENSE",
+      "bytes": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "member": "original/src/login/protocol.c",
+      "path": "/tmp/nexaui-login-connection212/original/src/login/protocol.c",
+      "bytes": 10782,
+      "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+    },
+    {
+      "member": "original/src/login/protocol.h",
+      "path": "/tmp/nexaui-login-connection212/original/src/login/protocol.h",
+      "bytes": 3271,
+      "sha256": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160"
+    },
+    {
+      "member": "original/src/login/connection.c",
+      "path": "/tmp/nexaui-login-connection212/original/src/login/connection.c",
+      "bytes": 9240,
+      "sha256": "d94cdf0193f0d8c2bc5774c820cfce765e3d39361a17c7504b16c01b8768123a"
+    },
+    {
+      "member": "original/src/login/connection.h",
+      "path": "/tmp/nexaui-login-connection212/original/src/login/connection.h",
+      "bytes": 3384,
+      "sha256": "999dbc2c3a068a4d03890a70e3aba2a5804d6de661950f7b0474d22040d4f187"
+    },
+    {
+      "member": "original/src/text/grapheme.c",
+      "path": "/tmp/nexaui-login-connection212/original/src/text/grapheme.c",
+      "bytes": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "member": "original/src/text/grapheme.h",
+      "path": "/tmp/nexaui-login-connection212/original/src/text/grapheme.h",
+      "bytes": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "member": "original/src/text/grapheme_data.h",
+      "path": "/tmp/nexaui-login-connection212/original/src/text/grapheme_data.h",
+      "bytes": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "member": "logs/login-connection212-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-release-configure.log",
+      "bytes": 904,
+      "sha256": "c7901cbc2d7f03334f85329ba28a414211eff760d53231e0514dcf11df5a2e97"
+    },
+    {
+      "member": "logs/login-connection212-release-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-release-build.log",
+      "bytes": 1057,
+      "sha256": "8a7074527146028c8d60cb2a928976529987ad9613b587a965ce410fa52213c6"
+    },
+    {
+      "member": "logs/login-connection212-release-test.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-release-test.log",
+      "bytes": 2629,
+      "sha256": "fa15c4fac5d9e1fba4845abac952b06d0cdc935243a842f9f2789eeca510c7b6"
+    },
+    {
+      "member": "release/objects/view.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/view.c.o",
+      "bytes": 14520,
+      "sha256": "c97e8f9b77dc5405b092b334c6047f292def56febe9b0743048bc5d0c96a095e"
+    },
+    {
+      "member": "release/objects/protocol.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o",
+      "bytes": 16208,
+      "sha256": "86320c7ddd65f170ce8e626444ac9e3e5ce7bb4232c2d231860f69701cb9b07e"
+    },
+    {
+      "member": "release/objects/grapheme.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o",
+      "bytes": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "member": "release/objects/connection.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o",
+      "bytes": 10208,
+      "sha256": "c5ac17119e20704e641e43534bec14a8ea574323d4f0bdce1d0186dc2e7e4acf"
+    },
+    {
+      "member": "release/objects/test_view.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+      "bytes": 56664,
+      "sha256": "2a0b91d7aa500c5277ebb13a0ff7e8da8506efcc9c58aca9ba77d43068ffe1a8"
+    },
+    {
+      "member": "release/objects/test_connection_view.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o",
+      "bytes": 31600,
+      "sha256": "99301e9d72853090c757072585a10c87a045dce2877a75cf6a720ee98e347c39"
+    },
+    {
+      "member": "release/objects/native_host.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+      "bytes": 13136,
+      "sha256": "f8484af5e0a98a89e62a332bbe7e809880f17048ac3c2690a1658134d59e7718"
+    },
+    {
+      "member": "release/objects/atspi_peer.c.o",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+      "bytes": 25344,
+      "sha256": "408e3316c00d2e400df3bd3a20360a4d84e0470bb7698fdcee8289c094521eaf"
+    },
+    {
+      "member": "release/libaetheri_login_view.a",
+      "path": "/tmp/nexaui-login-connection212/release/libaetheri_login_view.a",
+      "bytes": 64906,
+      "sha256": "a2ccec963b8e0d73a24ecd861091fd96c1c9ec7f530a7040d1e748bee8cd64d9"
+    },
+    {
+      "member": "release/aetheri_login_view_test",
+      "path": "/tmp/nexaui-login-connection212/release/aetheri_login_view_test",
+      "bytes": 904728,
+      "sha256": "da9a62b22b704596d005f074990abc84c34137e418fa48439ca84f4231ab3ad2"
+    },
+    {
+      "member": "release/aetheri_login_native_host",
+      "path": "/tmp/nexaui-login-connection212/release/aetheri_login_native_host",
+      "bytes": 880320,
+      "sha256": "72639b55323cde0c7a5314bfcc31a1400c7a3a94f489b7070158af91109c1a61"
+    },
+    {
+      "member": "release/aetheri_login_atspi_peer",
+      "path": "/tmp/nexaui-login-connection212/release/aetheri_login_atspi_peer",
+      "bytes": 37344,
+      "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+    },
+    {
+      "member": "release/compile_commands.json",
+      "path": "/tmp/nexaui-login-connection212/release/compile_commands.json",
+      "bytes": 6008,
+      "sha256": "a280b32613013c93847f6b71079f4f71c64e39208c42d6ae9a9fe056225acdf3"
+    },
+    {
+      "member": "release/CMakeCache.txt",
+      "path": "/tmp/nexaui-login-connection212/release/CMakeCache.txt",
+      "bytes": 23541,
+      "sha256": "012d737eabef1fe10740930e1bd09609923e5560a03eeb6773347699231e2880"
+    },
+    {
+      "member": "release/tests.xml",
+      "path": "/tmp/nexaui-login-connection212/release/tests.xml",
+      "bytes": 1590,
+      "sha256": "41dbced2470b7077607217b3506c60e2dfb31b547eed52e6e0e338162af4faf2"
+    },
+    {
+      "member": "release/aetheri_login_connection_view_test",
+      "path": "/tmp/nexaui-login-connection212/release/aetheri_login_connection_view_test",
+      "bytes": 888296,
+      "sha256": "e2b518c91422e2b4e93bbfde3a74e2a099ebc0ded67e443715937dd6690c657a"
+    },
+    {
+      "member": "logs/login-connection213-release-legacy-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-release-legacy-keyboard.log",
+      "bytes": 207,
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "member": "release/weston-legacy-keyboard/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-keyboard/result.json",
+      "bytes": 1032,
+      "sha256": "a459f942cd776ed46cbc40a21071c8a7348bd0695afc6d193297abba9ef1d728"
+    },
+    {
+      "member": "release/weston-legacy-keyboard/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "release/weston-legacy-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-keyboard/weston.stderr",
+      "bytes": 2869,
+      "sha256": "a77fb88c8f8aae6630507bfa815eb6f4b1992fa2fd23c66eb27324f55de2024e"
+    },
+    {
+      "member": "release/weston-legacy-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-release-legacy-compose.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-release-legacy-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "release/weston-legacy-compose/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-compose/result.json",
+      "bytes": 1038,
+      "sha256": "1d40f1953dc40e5d54d891c1f8a233acbe60a419f441fa382b2f615a0eed7854"
+    },
+    {
+      "member": "release/weston-legacy-compose/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "release/weston-legacy-compose/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-compose/weston.stderr",
+      "bytes": 3049,
+      "sha256": "77b1f894031c7e7c10175a4f0680332652ed95fd21434d8294493f068d2aa373"
+    },
+    {
+      "member": "release/weston-legacy-compose/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-release-legacy-cancel.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-release-legacy-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "release/weston-legacy-cancel/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-cancel/result.json",
+      "bytes": 1040,
+      "sha256": "7c364e8abb6cdb40a1cc170e0ebf262fcded00049e2f9a4131799d88ac60754f"
+    },
+    {
+      "member": "release/weston-legacy-cancel/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "release/weston-legacy-cancel/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-cancel/weston.stderr",
+      "bytes": 3096,
+      "sha256": "d443e1ded1a18dc42e09bb44dcdc67e21fb4d773bbb38d1428c1d59f6257fcc1"
+    },
+    {
+      "member": "release/weston-legacy-cancel/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-release-legacy-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-release-connection-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-release-connection-keyboard.log",
+      "bytes": 243,
+      "sha256": "357ec0d488dae4a3661af999709bdc0034f69e39ebff7a1a0f14456c56d4aa62"
+    },
+    {
+      "member": "release/weston-connection-keyboard/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-keyboard/result.json",
+      "bytes": 1046,
+      "sha256": "cb0ed449d2a49e993d8d014b63d42b7fbc3954567b5c98bc62ccc9a741ab6d70"
+    },
+    {
+      "member": "release/weston-connection-keyboard/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "release/weston-connection-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-keyboard/weston.stderr",
+      "bytes": 2877,
+      "sha256": "def6385b2276120fe8955a1125f7d69b7e9805440214be9c9f085173b6768462"
+    },
+    {
+      "member": "release/weston-connection-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-release-connection-compose.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-release-connection-compose.log",
+      "bytes": 417,
+      "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+    },
+    {
+      "member": "release/weston-connection-compose/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-compose/result.json",
+      "bytes": 1045,
+      "sha256": "05ad5974ff6e2deb97d0230d37f0bdad9323eb25a0b72d92aa16f3e8b5cb2a83"
+    },
+    {
+      "member": "release/weston-connection-compose/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "release/weston-connection-compose/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-compose/weston.stderr",
+      "bytes": 3079,
+      "sha256": "a5185c1356eb230bf057e097eb6a001b4926754eac4771beaf98ad4f27b69097"
+    },
+    {
+      "member": "release/weston-connection-compose/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-release-connection-cancel.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-release-connection-cancel.log",
+      "bytes": 409,
+      "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+    },
+    {
+      "member": "release/weston-connection-cancel/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-cancel/result.json",
+      "bytes": 1044,
+      "sha256": "bee56f7e8d9840355f9d7ee0bc2f0e0451e6d058899e1bf5365735aa38bbb8f1"
+    },
+    {
+      "member": "release/weston-connection-cancel/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "release/weston-connection-cancel/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-cancel/weston.stderr",
+      "bytes": 3104,
+      "sha256": "f19989f88af4be9b15c36e64c7ad1e0354e4d898ded728e21df9ea61e08dd5ab"
+    },
+    {
+      "member": "release/weston-connection-cancel/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-release-connection-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection212-shared-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-shared-configure.log",
+      "bytes": 903,
+      "sha256": "4d1fa377b53352af4b49b12e5017a5778d66e4586bfc877e25bbd8c35537790e"
+    },
+    {
+      "member": "logs/login-connection212-shared-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-shared-build.log",
+      "bytes": 1057,
+      "sha256": "8a7074527146028c8d60cb2a928976529987ad9613b587a965ce410fa52213c6"
+    },
+    {
+      "member": "logs/login-connection212-shared-test.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-shared-test.log",
+      "bytes": 2616,
+      "sha256": "3f1a93a1e67be8bd6d85ba21fb4170d714b46e1b1b1115a35ce33fc1e3fd9813"
+    },
+    {
+      "member": "shared/objects/view.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/view.c.o",
+      "bytes": 14520,
+      "sha256": "c97e8f9b77dc5405b092b334c6047f292def56febe9b0743048bc5d0c96a095e"
+    },
+    {
+      "member": "shared/objects/protocol.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o",
+      "bytes": 16208,
+      "sha256": "86320c7ddd65f170ce8e626444ac9e3e5ce7bb4232c2d231860f69701cb9b07e"
+    },
+    {
+      "member": "shared/objects/grapheme.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o",
+      "bytes": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "member": "shared/objects/connection.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o",
+      "bytes": 10208,
+      "sha256": "c5ac17119e20704e641e43534bec14a8ea574323d4f0bdce1d0186dc2e7e4acf"
+    },
+    {
+      "member": "shared/objects/test_view.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+      "bytes": 56664,
+      "sha256": "2a0b91d7aa500c5277ebb13a0ff7e8da8506efcc9c58aca9ba77d43068ffe1a8"
+    },
+    {
+      "member": "shared/objects/test_connection_view.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o",
+      "bytes": 31600,
+      "sha256": "99301e9d72853090c757072585a10c87a045dce2877a75cf6a720ee98e347c39"
+    },
+    {
+      "member": "shared/objects/native_host.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+      "bytes": 13136,
+      "sha256": "f8484af5e0a98a89e62a332bbe7e809880f17048ac3c2690a1658134d59e7718"
+    },
+    {
+      "member": "shared/objects/atspi_peer.c.o",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+      "bytes": 25344,
+      "sha256": "408e3316c00d2e400df3bd3a20360a4d84e0470bb7698fdcee8289c094521eaf"
+    },
+    {
+      "member": "shared/libaetheri_login_view.a",
+      "path": "/tmp/nexaui-login-connection212/shared/libaetheri_login_view.a",
+      "bytes": 64906,
+      "sha256": "a2ccec963b8e0d73a24ecd861091fd96c1c9ec7f530a7040d1e748bee8cd64d9"
+    },
+    {
+      "member": "shared/aetheri_login_view_test",
+      "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_view_test",
+      "bytes": 96736,
+      "sha256": "d0022ea92e66f5e14b8c24224e881dd76cc398fc374ab9f45a52939d42cd56b1"
+    },
+    {
+      "member": "shared/aetheri_login_native_host",
+      "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_native_host",
+      "bytes": 72648,
+      "sha256": "0f59c3d29b5d99a735476d6c993153e5fb54ca1e4a2ad559016bb6fc595b6d3f"
+    },
+    {
+      "member": "shared/aetheri_login_atspi_peer",
+      "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_atspi_peer",
+      "bytes": 37344,
+      "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+    },
+    {
+      "member": "shared/compile_commands.json",
+      "path": "/tmp/nexaui-login-connection212/shared/compile_commands.json",
+      "bytes": 6097,
+      "sha256": "8e645e7396492ccb6c801403be39170d3d807396949435a21ae3d86aac2ac343"
+    },
+    {
+      "member": "shared/CMakeCache.txt",
+      "path": "/tmp/nexaui-login-connection212/shared/CMakeCache.txt",
+      "bytes": 23535,
+      "sha256": "de61a04694561a0466df62f20fee23894f282eadb835d93cce17da5a95a958fa"
+    },
+    {
+      "member": "shared/tests.xml",
+      "path": "/tmp/nexaui-login-connection212/shared/tests.xml",
+      "bytes": 1591,
+      "sha256": "36a05c8edcb0dc04bf9ad4787230c07b06629c2686534d991e3925ad38b21cd3"
+    },
+    {
+      "member": "shared/aetheri_login_connection_view_test",
+      "path": "/tmp/nexaui-login-connection212/shared/aetheri_login_connection_view_test",
+      "bytes": 84400,
+      "sha256": "9e1f69da83940984d48b96f28d5d5d2e4a7d2c3afbb0b695fa76731a4e18e6db"
+    },
+    {
+      "member": "logs/login-connection213-shared-legacy-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-shared-legacy-keyboard.log",
+      "bytes": 207,
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "member": "shared/weston-legacy-keyboard/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-keyboard/result.json",
+      "bytes": 1039,
+      "sha256": "e7381722adbf9d67fe60268535d5e589dad52bcb3fcb938f827f7813f07eac46"
+    },
+    {
+      "member": "shared/weston-legacy-keyboard/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "shared/weston-legacy-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-keyboard/weston.stderr",
+      "bytes": 2867,
+      "sha256": "a715063eb68e30d88dd02fbe6387f26f55096c237cd293ad7904cf7b9b6f63cb"
+    },
+    {
+      "member": "shared/weston-legacy-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-shared-legacy-compose.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-shared-legacy-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "shared/weston-legacy-compose/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-compose/result.json",
+      "bytes": 1038,
+      "sha256": "ec2725cff85fccc2a9e8253494cf596bf8400e572d2488a88964dbe5a129d49c"
+    },
+    {
+      "member": "shared/weston-legacy-compose/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "shared/weston-legacy-compose/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-compose/weston.stderr",
+      "bytes": 3047,
+      "sha256": "d1d7382c007b88cfb1501b49b51d7a04e6a20f8ca9984623d6ef640355ab9d6f"
+    },
+    {
+      "member": "shared/weston-legacy-compose/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-shared-legacy-cancel.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-shared-legacy-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "shared/weston-legacy-cancel/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-cancel/result.json",
+      "bytes": 1037,
+      "sha256": "a2ced58a942d3188c906637132db177b9a77f15f998ca03b9ec98e1f88f64372"
+    },
+    {
+      "member": "shared/weston-legacy-cancel/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "shared/weston-legacy-cancel/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-cancel/weston.stderr",
+      "bytes": 3094,
+      "sha256": "db5d53383064e07a9a14bd133cf21301f32448a6728ad1edf51d3c1018f842fe"
+    },
+    {
+      "member": "shared/weston-legacy-cancel/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-legacy-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-shared-connection-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-shared-connection-keyboard.log",
+      "bytes": 243,
+      "sha256": "1a0233e1cee5230522d5ba9267fbf10207d3902fffa2b5804d899364f56f5598"
+    },
+    {
+      "member": "shared/weston-connection-keyboard/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-keyboard/result.json",
+      "bytes": 1043,
+      "sha256": "6ace9f328b1d3c22ce4cb667a9067df0d222acc78b75daff56da557e48ec63ea"
+    },
+    {
+      "member": "shared/weston-connection-keyboard/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "shared/weston-connection-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-keyboard/weston.stderr",
+      "bytes": 2875,
+      "sha256": "1c233ee7e6366d823d29bad7310629690c676d0020e40f7532b4116d7ca4c9a5"
+    },
+    {
+      "member": "shared/weston-connection-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-shared-connection-compose.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-shared-connection-compose.log",
+      "bytes": 417,
+      "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+    },
+    {
+      "member": "shared/weston-connection-compose/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-compose/result.json",
+      "bytes": 1041,
+      "sha256": "3ea19df508f4884db498600b4701a30bdeff99486df2f5267c42bb870ee9bd69"
+    },
+    {
+      "member": "shared/weston-connection-compose/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "shared/weston-connection-compose/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-compose/weston.stderr",
+      "bytes": 3055,
+      "sha256": "0e67cb8b0147908f6f5adfe55eb5de33f017e58aed8a447d0d74daf716b8807e"
+    },
+    {
+      "member": "shared/weston-connection-compose/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-shared-connection-cancel.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-shared-connection-cancel.log",
+      "bytes": 409,
+      "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+    },
+    {
+      "member": "shared/weston-connection-cancel/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-cancel/result.json",
+      "bytes": 1041,
+      "sha256": "b4cbfddb2280cb43afaa71aeec28f9f64d4c1b1267a3725f5c9c32bc50e68c61"
+    },
+    {
+      "member": "shared/weston-connection-cancel/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "shared/weston-connection-cancel/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-cancel/weston.stderr",
+      "bytes": 3102,
+      "sha256": "5a3ded66690312cc6d389b8e5bc1897dd4381f3088d8b370678a44893b23da9d"
+    },
+    {
+      "member": "shared/weston-connection-cancel/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-shared-connection-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection212-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-asan-configure.log",
+      "bytes": 901,
+      "sha256": "620cb233722d06aa0a4ec7932a0bcdcfd4b0a16262af685994037a63f882577c"
+    },
+    {
+      "member": "logs/login-connection212-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-asan-build.log",
+      "bytes": 1057,
+      "sha256": "8a7074527146028c8d60cb2a928976529987ad9613b587a965ce410fa52213c6"
+    },
+    {
+      "member": "logs/login-connection212-asan-test.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-asan-test.log",
+      "bytes": 2590,
+      "sha256": "03d6cff4a7dae8c838af9b4667ecbe1d3ac16067b1ac78f3e1737c72b067a94f"
+    },
+    {
+      "member": "asan/objects/view.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/view.c.o",
+      "bytes": 103344,
+      "sha256": "5dd41e388211509e502ea75a4cc1b58eb55d10e1af07434f63d6e843710de1ec"
+    },
+    {
+      "member": "asan/objects/protocol.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/protocol.c.o",
+      "bytes": 130696,
+      "sha256": "ad66082c0d64f9056f165a7cc656380aaa0d9a205cf70871ad354d35db6825b4"
+    },
+    {
+      "member": "asan/objects/grapheme.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/text/grapheme.c.o",
+      "bytes": 46064,
+      "sha256": "7ee9a79397372b21dbbb90da3780f4621e3bc7df38ef70da2a27315472a29c62"
+    },
+    {
+      "member": "asan/objects/connection.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-connection212/original/src/login/connection.c.o",
+      "bytes": 106160,
+      "sha256": "1c9889cf23c4c6ba13068dc4dcb21abec3dc080895f2e7e32ed1c86b533355e4"
+    },
+    {
+      "member": "asan/objects/test_view.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+      "bytes": 238680,
+      "sha256": "4b0f5f9bb1f8be067cd1f5f3770211a1e3a371b8c413db47e2e4096c816a56d1"
+    },
+    {
+      "member": "asan/objects/test_connection_view.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_connection_view_test.dir/test_connection_view.c.o",
+      "bytes": 180336,
+      "sha256": "7432a16f125a994ac1e7aa17e78e13b2776eecf38cbaddb2d44093505ca92e80"
+    },
+    {
+      "member": "asan/objects/native_host.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+      "bytes": 78624,
+      "sha256": "e4f7343dda904ab49ce556d99695faacdf9a98f7cd814daacf55c53721681381"
+    },
+    {
+      "member": "asan/objects/atspi_peer.c.o",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+      "bytes": 131272,
+      "sha256": "2b20eec8a3ff17c69284367c3fbe25c97a80e702dd92ee2cff9bdf9af0852901"
+    },
+    {
+      "member": "asan/libaetheri_login_view.a",
+      "path": "/tmp/nexaui-login-connection212/asan/libaetheri_login_view.a",
+      "bytes": 387430,
+      "sha256": "50442cee0753cefa063d40cd0dd375499a01e0da2a1657f350160d6002151331"
+    },
+    {
+      "member": "asan/aetheri_login_view_test",
+      "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_view_test",
+      "bytes": 10665984,
+      "sha256": "04c85924e92ef4dd3c747f992d0db2c18c4ecd1093c5ef926c05ba8c68ef8b6c"
+    },
+    {
+      "member": "asan/aetheri_login_native_host",
+      "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_native_host",
+      "bytes": 10580656,
+      "sha256": "e8f2e56aa2e7dbaa1a7ec873d5089186d69a2ecca9f3f4f53f1ed4e8aa91a318"
+    },
+    {
+      "member": "asan/aetheri_login_atspi_peer",
+      "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_atspi_peer",
+      "bytes": 2907056,
+      "sha256": "60e4f102d6c6fdc5ece4a73a0af529a370bdd2bea9997284d076cd5fa473c308"
+    },
+    {
+      "member": "asan/compile_commands.json",
+      "path": "/tmp/nexaui-login-connection212/asan/compile_commands.json",
+      "bytes": 6315,
+      "sha256": "e8bdb74f1884828f9ce446902c1a8de699a08f002f83580a8a7857fd3a213c85"
+    },
+    {
+      "member": "asan/CMakeCache.txt",
+      "path": "/tmp/nexaui-login-connection212/asan/CMakeCache.txt",
+      "bytes": 23574,
+      "sha256": "7a464246a22a3eb4d24031a4403bf8aa7104a03e8e9a1030b1097b3c95fc9373"
+    },
+    {
+      "member": "asan/tests.xml",
+      "path": "/tmp/nexaui-login-connection212/asan/tests.xml",
+      "bytes": 1586,
+      "sha256": "469a9bed79df042e6bdff70ce641bea2bfe41816d1e8124c60252ee7651dbd8d"
+    },
+    {
+      "member": "asan/aetheri_login_connection_view_test",
+      "path": "/tmp/nexaui-login-connection212/asan/aetheri_login_connection_view_test",
+      "bytes": 10643360,
+      "sha256": "44f284637f8ea03b77c2f24126bd8b14acb3ec60a8256a3402437797b3060867"
+    },
+    {
+      "member": "logs/login-connection213-asan-legacy-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-asan-legacy-keyboard.log",
+      "bytes": 207,
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "member": "asan/weston-legacy-keyboard/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-keyboard/result.json",
+      "bytes": 1033,
+      "sha256": "cbb4c1f300731c1b9b5479403b6797936cfc423f4ecc9163ecd035c50c30f10b"
+    },
+    {
+      "member": "asan/weston-legacy-keyboard/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "asan/weston-legacy-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-keyboard/weston.stderr",
+      "bytes": 2863,
+      "sha256": "e918152ed3b95a3925e598779618850f8e67e2b67c3ac4005ca167732a646f9e"
+    },
+    {
+      "member": "asan/weston-legacy-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-asan-legacy-compose.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-asan-legacy-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "asan/weston-legacy-compose/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-compose/result.json",
+      "bytes": 1032,
+      "sha256": "fe1316a344ef7a2704d92eaf5e95140e07ed755aa3d309a9875ca54606733dce"
+    },
+    {
+      "member": "asan/weston-legacy-compose/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "asan/weston-legacy-compose/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-compose/weston.stderr",
+      "bytes": 3043,
+      "sha256": "f3cd3bdcd75402f8c6137c24ae7fb78a921671d57e56e5e94ab5ea3885dc10e6"
+    },
+    {
+      "member": "asan/weston-legacy-compose/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-asan-legacy-cancel.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-asan-legacy-cancel.log",
+      "bytes": 373,
+      "sha256": "260f7ce18418567b37c250a926fa092f228b1c01b9231a2cfdff960f8dd68c11"
+    },
+    {
+      "member": "asan/weston-legacy-cancel/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-cancel/result.json",
+      "bytes": 1031,
+      "sha256": "181dbb3caa1f5b38f200955b80721e032ba3bd3a041d43948d780b009b41f1e9"
+    },
+    {
+      "member": "asan/weston-legacy-cancel/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "asan/weston-legacy-cancel/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-cancel/weston.stderr",
+      "bytes": 3112,
+      "sha256": "a71d9de3f85e579f209a61a8b33fd79fc45d31965a953f8835007a09a7b95bec"
+    },
+    {
+      "member": "asan/weston-legacy-cancel/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-legacy-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-asan-connection-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-asan-connection-keyboard.log",
+      "bytes": 243,
+      "sha256": "1a0233e1cee5230522d5ba9267fbf10207d3902fffa2b5804d899364f56f5598"
+    },
+    {
+      "member": "asan/weston-connection-keyboard/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-keyboard/result.json",
+      "bytes": 1036,
+      "sha256": "59a0bc712b9b8df96c4d5f0bc43e2fc4944184b50679640fedcd2f8271c20ad9"
+    },
+    {
+      "member": "asan/weston-connection-keyboard/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "asan/weston-connection-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-keyboard/weston.stderr",
+      "bytes": 2871,
+      "sha256": "a4fe5cfb5c4abc4e54b93960d8eae64dac46833fb1cd219ba75c53ce4f09953e"
+    },
+    {
+      "member": "asan/weston-connection-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-asan-connection-compose.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-asan-connection-compose.log",
+      "bytes": 417,
+      "sha256": "9b4aaad52037fba5fc303bc13141ca072d35ae698bddfda19b0ca1cd2ecde305"
+    },
+    {
+      "member": "asan/weston-connection-compose/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-compose/result.json",
+      "bytes": 1029,
+      "sha256": "e4bec6d581924e46fddb60bef918790674a5eeb92afca196a78162a4d4f9e556"
+    },
+    {
+      "member": "asan/weston-connection-compose/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "asan/weston-connection-compose/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-compose/weston.stderr",
+      "bytes": 3051,
+      "sha256": "ad54488485dabd5c8dfa98d47556752f48ae24463f939ec3c65157ec658fbf15"
+    },
+    {
+      "member": "asan/weston-connection-compose/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection213-asan-connection-cancel.log",
+      "path": "/mnt/d/NexaUI/out/login-connection213-asan-connection-cancel.log",
+      "bytes": 409,
+      "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+    },
+    {
+      "member": "asan/weston-connection-cancel/result.json",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-cancel/result.json",
+      "bytes": 1034,
+      "sha256": "42c97409c8bfdbb613cabc57884a46f1466e23df561e7de4a6d2bbe0ec849773"
+    },
+    {
+      "member": "asan/weston-connection-cancel/weston.ini",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "asan/weston-connection-cancel/weston.stderr",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-cancel/weston.stderr",
+      "bytes": 3098,
+      "sha256": "bc6c987ca730f34d77ba920faea4c13e3a263277510cd31f79852c235a393134"
+    },
+    {
+      "member": "asan/weston-connection-cancel/weston.stdout",
+      "path": "/tmp/nexaui-login-connection212/native213-asan-connection-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/login-connection212-default-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-default-configure.log",
+      "bytes": 838,
+      "sha256": "13aa2362e88838674c51d19ecac5a0c5c6316fd5436ea5f5db6f529ae315c939"
+    },
+    {
+      "member": "logs/login-connection212-default-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-default-build.log",
+      "bytes": 755,
+      "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+    },
+    {
+      "member": "logs/login-connection212-default-test.log",
+      "path": "/mnt/d/NexaUI/out/login-connection212-default-test.log",
+      "bytes": 974,
+      "sha256": "47245162e7bddc4e9d5dfb260dc182027f5f89bdd79682cb34152b8adcca28de"
+    },
+    {
+      "member": "default/objects/view.c.o",
+      "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view.dir/view.c.o",
+      "bytes": 12960,
+      "sha256": "cfa7cd53f649946896261d14d795d335aea2a31606dbc0c08d1e596910ebb1d1"
+    },
+    {
+      "member": "default/objects/protocol.c.o",
+      "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view178/original/src/login/protocol.c.o",
+      "bytes": 16208,
+      "sha256": "86320c7ddd65f170ce8e626444ac9e3e5ce7bb4232c2d231860f69701cb9b07e"
+    },
+    {
+      "member": "default/objects/grapheme.c.o",
+      "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view.dir/tmp/nexaui-login-view178/original/src/text/grapheme.c.o",
+      "bytes": 22928,
+      "sha256": "fda753cd2ead571e006d984a3cc8bc56a127d5991a671fdb5ec0e91a260607c1"
+    },
+    {
+      "member": "default/objects/test_view.c.o",
+      "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_view_test.dir/test_view.c.o",
+      "bytes": 56664,
+      "sha256": "2a0b91d7aa500c5277ebb13a0ff7e8da8506efcc9c58aca9ba77d43068ffe1a8"
+    },
+    {
+      "member": "default/objects/native_host.c.o",
+      "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_native_host.dir/native_host.c.o",
+      "bytes": 10192,
+      "sha256": "8b8f364f75cc557d5979e07a62e3ec9e68fb5ab1d0861fd699122b983c3ad12a"
+    },
+    {
+      "member": "default/objects/atspi_peer.c.o",
+      "path": "/tmp/nexaui-login-connection212/default/CMakeFiles/aetheri_login_atspi_peer.dir/atspi_peer.c.o",
+      "bytes": 25344,
+      "sha256": "408e3316c00d2e400df3bd3a20360a4d84e0470bb7698fdcee8289c094521eaf"
+    },
+    {
+      "member": "default/libaetheri_login_view.a",
+      "path": "/tmp/nexaui-login-connection212/default/libaetheri_login_view.a",
+      "bytes": 52730,
+      "sha256": "c9124a473c1fa2c94accd81ea1335cf5163c9aff8b55cdf8203324b3b09e5953"
+    },
+    {
+      "member": "default/aetheri_login_view_test",
+      "path": "/tmp/nexaui-login-connection212/default/aetheri_login_view_test",
+      "bytes": 899592,
+      "sha256": "409c901e9f3b0c32afa1bd4addc0e27a2bc8806c1b6c12377632b34016fb937d"
+    },
+    {
+      "member": "default/aetheri_login_native_host",
+      "path": "/tmp/nexaui-login-connection212/default/aetheri_login_native_host",
+      "bytes": 870776,
+      "sha256": "bd8e5534d5bdacf19f11ab348db4672f1e2c266e66faa547da0975161f36af2d"
+    },
+    {
+      "member": "default/aetheri_login_atspi_peer",
+      "path": "/tmp/nexaui-login-connection212/default/aetheri_login_atspi_peer",
+      "bytes": 37344,
+      "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+    },
+    {
+      "member": "default/compile_commands.json",
+      "path": "/tmp/nexaui-login-connection212/default/compile_commands.json",
+      "bytes": 3909,
+      "sha256": "4e181d1e5b06db0834b7c0cdbddea7ee749d7af3021456be8d51fc48d117acc5"
+    },
+    {
+      "member": "default/CMakeCache.txt",
+      "path": "/tmp/nexaui-login-connection212/default/CMakeCache.txt",
+      "bytes": 23463,
+      "sha256": "1c88ffa6e05e5dc66aeeece4515a97d14c5157c13df57e1310add20230b8f4e7"
+    },
+    {
+      "member": "default/tests.xml",
+      "path": "/tmp/nexaui-login-connection212/default/tests.xml",
+      "bytes": 519,
+      "sha256": "f0f15e6663babfcb9f5b79376f08d5809d860a5f971271c1a395dbc4630f4c8b"
+    },
+    {
+      "member": "logs/login-connection214-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection214-configure.log",
+      "bytes": 782,
+      "sha256": "83bf2b419824fe07dcf829879b53c1f67906a0c41e443e20c775c0c44889a7b5"
+    },
+    {
+      "member": "logs/login-connection214-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection214-build.log",
+      "bytes": 647,
+      "sha256": "bc49478727edb51943dde2c997c83d9562331432c58dcdbb84aef053a53e5d71"
+    },
+    {
+      "member": "logs/login-connection214-admission.log",
+      "path": "/mnt/d/NexaUI/out/login-connection214-admission.log",
+      "bytes": 91,
+      "sha256": "e1a97396e872f96ef0c67ab0f1e4b42a8d3a30145b185a5826f79f6e3b3c35f7"
+    },
+    {
+      "member": "logs/login-connection214-default-guard.log",
+      "path": "/mnt/d/NexaUI/out/login-connection214-default-guard.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "negative/view.c",
+      "path": "/tmp/nexaui-login-connection214/consumer/examples/37_aetheri_login/view.c",
+      "bytes": 14953,
+      "sha256": "113d006eb2d0ed783e20997c07b5c12cf2dd589ef4796a1dd3e18174487a902e"
+    },
+    {
+      "member": "negative/aetheri_login_connection_view_test",
+      "path": "/tmp/nexaui-login-connection214/build/aetheri_login_connection_view_test",
+      "bytes": 888296,
+      "sha256": "ac8f5c3530437e64bba4d47fb30e11458aa24de8a76a35bc62fc6ce1187b262b"
+    },
+    {
+      "member": "preparation/login-connection207-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection207-configure.log",
+      "bytes": 904,
+      "sha256": "f35aae96568cef475e301f7f42bf609374aa8f8cbbc505ee51669199d137af7c"
+    },
+    {
+      "member": "preparation/login-connection207-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection207-build.log",
+      "bytes": 5032,
+      "sha256": "ae68c7823403b3df61dcbbcaf6db979b5fdb063cb293ee9e29fc69c3ac43a94c"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/CMakeLists.txt",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/CMakeLists.txt",
+      "bytes": 3916,
+      "sha256": "30ed0ed976f7183bdc20973f94d8d10752fa7c3729f0c445d6624284e8304439"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/view.c",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/view.c",
+      "bytes": 14885,
+      "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/view.h",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/view.h",
+      "bytes": 1688,
+      "sha256": "8dc27539b02f599f38099e76fa0137fe7f9210ea35204eaca88add3e6d2af00f"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/test_view.c",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/test_view.c",
+      "bytes": 16097,
+      "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/test_connection_view.c",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/test_connection_view.c",
+      "bytes": 11231,
+      "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "bytes": 352,
+      "sha256": "464d795239b9712e975d9058f7ec10d0ffe0f1a4384e2e5a646310e4c79f4859"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/native_host.c",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/native_host.c",
+      "bytes": 7641,
+      "sha256": "8ceb613d523aad551a7460805f6df062f09964f7daad4573f3c845d6128b4200"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/atspi_peer.c",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/atspi_peer.c",
+      "bytes": 12091,
+      "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+    },
+    {
+      "member": "preimage207/examples/37_aetheri_login/run_native.py",
+      "path": "/tmp/nexaui-login-connection207/consumer/examples/37_aetheri_login/run_native.py",
+      "bytes": 3832,
+      "sha256": "defc90bdf0083f0f118849a43a56b6db5afd41616cb29d2e187d0e6617168357"
+    },
+    {
+      "member": "preimage207/tests/fixture_font.h",
+      "path": "/tmp/nexaui-login-connection207/consumer/tests/fixture_font.h",
+      "bytes": 3343,
+      "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+    },
+    {
+      "member": "preimage207/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-login-connection207/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "preimage207/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-login-connection207/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "preparation/login-connection209-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection209-configure.log",
+      "bytes": 905,
+      "sha256": "f913bea147541b8db000c3affea252819a9fb2d6d23bc4992c7b513d2486d7db"
+    },
+    {
+      "member": "preparation/login-connection209-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection209-build.log",
+      "bytes": 1057,
+      "sha256": "9fe8b42359aeb3f7cea64f4525c7dc981928bbb78754f7180df0e23b5e9dd15d"
+    },
+    {
+      "member": "preparation/login-connection209-test.log",
+      "path": "/mnt/d/NexaUI/out/login-connection209-test.log",
+      "bytes": 2629,
+      "sha256": "fe52657dca3d753ecabf74ace581aac8e4a311ec8a99c104def45a57d54bbdd4"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/CMakeLists.txt",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/CMakeLists.txt",
+      "bytes": 4294,
+      "sha256": "61bb224c529f5a4b5eafecac522cb81f8f1e8ee2efd0553c06f86222454f0bf7"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/view.c",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/view.c",
+      "bytes": 14885,
+      "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/view.h",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/view.h",
+      "bytes": 1688,
+      "sha256": "8dc27539b02f599f38099e76fa0137fe7f9210ea35204eaca88add3e6d2af00f"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/test_view.c",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/test_view.c",
+      "bytes": 16097,
+      "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/test_connection_view.c",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/test_connection_view.c",
+      "bytes": 11231,
+      "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "bytes": 1318,
+      "sha256": "9e6990154b8ffa297ab542863f90d5e1710c7704b82c1666bf16848e23e09f59"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/native_host.c",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/native_host.c",
+      "bytes": 7641,
+      "sha256": "8ceb613d523aad551a7460805f6df062f09964f7daad4573f3c845d6128b4200"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/atspi_peer.c",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/atspi_peer.c",
+      "bytes": 12091,
+      "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+    },
+    {
+      "member": "preimage209/examples/37_aetheri_login/run_native.py",
+      "path": "/tmp/nexaui-login-connection209/consumer/examples/37_aetheri_login/run_native.py",
+      "bytes": 3832,
+      "sha256": "defc90bdf0083f0f118849a43a56b6db5afd41616cb29d2e187d0e6617168357"
+    },
+    {
+      "member": "preimage209/tests/fixture_font.h",
+      "path": "/tmp/nexaui-login-connection209/consumer/tests/fixture_font.h",
+      "bytes": 3343,
+      "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+    },
+    {
+      "member": "preimage209/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-login-connection209/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "preimage209/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-login-connection209/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "preparation/login-connection210-configure.log",
+      "path": "/mnt/d/NexaUI/out/login-connection210-configure.log",
+      "bytes": 904,
+      "sha256": "392b9aec8493cb20c0aa2e06609fb787547b0e94171001dbdda3b5716a940940"
+    },
+    {
+      "member": "preparation/login-connection210-build.log",
+      "path": "/mnt/d/NexaUI/out/login-connection210-build.log",
+      "bytes": 1057,
+      "sha256": "419310846d28366380016ddf42752c43d30f34ab8b4ea64c6ef852c3f2acc914"
+    },
+    {
+      "member": "preparation/login-connection210-test.log",
+      "path": "/mnt/d/NexaUI/out/login-connection210-test.log",
+      "bytes": 2629,
+      "sha256": "d506b559b784da04672602be7691ab5a945a77f741c2ac98107216479ffbe5b3"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/CMakeLists.txt",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/CMakeLists.txt",
+      "bytes": 4294,
+      "sha256": "61bb224c529f5a4b5eafecac522cb81f8f1e8ee2efd0553c06f86222454f0bf7"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/view.c",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/view.c",
+      "bytes": 14885,
+      "sha256": "e67acd166be31c2d13a4c12f5be9e3aa17201d1c456c6963efadc0e3322b24f9"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/view.h",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/view.h",
+      "bytes": 1688,
+      "sha256": "8dc27539b02f599f38099e76fa0137fe7f9210ea35204eaca88add3e6d2af00f"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/test_view.c",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/test_view.c",
+      "bytes": 16097,
+      "sha256": "de5757cb5d0fe83d0e43a3e3541b20b1477adee9291972c2db4175a680489be0"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/test_connection_view.c",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/test_connection_view.c",
+      "bytes": 11231,
+      "sha256": "f3d7c361cd5629c8d713b2cd9ad2a83732dce5b3336c51e9d3ba000699a1574f"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/fixture_conversation.h",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/fixture_conversation.h",
+      "bytes": 5354,
+      "sha256": "de1024d17b3bfb7a6afd618db782854e770695b9562db9eee79c7691cb7a2ed1"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/linux-compat/sys/pidfd.h",
+      "bytes": 1318,
+      "sha256": "9e6990154b8ffa297ab542863f90d5e1710c7704b82c1666bf16848e23e09f59"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/native_host.c",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/native_host.c",
+      "bytes": 7124,
+      "sha256": "7576774e1b5b1cebd2266e8e949046ff622a2096bc4ba7a3b28bb287424ff318"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/atspi_peer.c",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/atspi_peer.c",
+      "bytes": 12091,
+      "sha256": "df8d6e23e2121148b5715c76916d0b83e2548fb4ae7068d8177c1c698d6a4989"
+    },
+    {
+      "member": "preimage210/examples/37_aetheri_login/run_native.py",
+      "path": "/tmp/nexaui-login-connection210/consumer/examples/37_aetheri_login/run_native.py",
+      "bytes": 4015,
+      "sha256": "0a11383e84a00cf378a9b71f9ac315b95223757d58c7a3bd3aeeaacbb86dfee1"
+    },
+    {
+      "member": "preimage210/tests/fixture_font.h",
+      "path": "/tmp/nexaui-login-connection210/consumer/tests/fixture_font.h",
+      "bytes": 3343,
+      "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+    },
+    {
+      "member": "preimage210/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-login-connection210/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "preimage210/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-login-connection210/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "helpers/check_login_connection207.py",
+      "path": "/mnt/d/NexaUI/out/check_login_connection207.py",
+      "bytes": 3065,
+      "sha256": "f1c7467fa7f6134f1de6b44ef32fa2a04527f68517ae30b51715568c651ff5a1"
+    },
+    {
+      "member": "helpers/check_login_connection209.py",
+      "path": "/mnt/d/NexaUI/out/check_login_connection209.py",
+      "bytes": 3067,
+      "sha256": "31a53c68a973a0a2ab4233c86c6711d35a2845f5482f429e6aee51e76a83bc68"
+    },
+    {
+      "member": "helpers/check_login_connection210.py",
+      "path": "/mnt/d/NexaUI/out/check_login_connection210.py",
+      "bytes": 3118,
+      "sha256": "a22019c3890341567ed9dbadad68935f14155d1dc8bf0bf12f5dc88c12e478dc"
+    },
+    {
+      "member": "helpers/pilot_login_connection211_native.py",
+      "path": "/mnt/d/NexaUI/out/pilot_login_connection211_native.py",
+      "bytes": 1333,
+      "sha256": "7d7683118afaca84225fd388ae7cf748595e3833781e801e017b73bf59a47aa6"
+    },
+    {
+      "member": "helpers/build_login_connection212.py",
+      "path": "/mnt/d/NexaUI/out/build_login_connection212.py",
+      "bytes": 4070,
+      "sha256": "94b2c6c3fe03de54279dfd9272556bd92f72edab459b00b54c9bb66e392be543"
+    },
+    {
+      "member": "helpers/run_login_connection213_native.py",
+      "path": "/mnt/d/NexaUI/out/run_login_connection213_native.py",
+      "bytes": 1733,
+      "sha256": "3c395b9444ed80fe61145a7f8c1bee2dda50a0cb1a5f07d78860f665a7ce1253"
+    },
+    {
+      "member": "helpers/negative_login_connection214.py",
+      "path": "/mnt/d/NexaUI/out/negative_login_connection214.py",
+      "bytes": 3277,
+      "sha256": "b61f7f2f507ed006f7a34506aaa11e8dde553df857d82b08aa1fc164e4c5bf33"
+    },
+    {
+      "member": "helpers/verify_login_connection215.py",
+      "path": "/mnt/d/NexaUI/out/verify_login_connection215.py",
+      "bytes": 9869,
+      "sha256": "7a2fe9c9f8a59558aa1c8696454bb2bb7290213d28344d4dd8da39265fe541f6"
+    },
+    {
+      "member": "helpers/login-connection207-local.json",
+      "path": "/mnt/d/NexaUI/out/login-connection207-local.json",
+      "bytes": 4343,
+      "sha256": "23cab994d94be24d410c9e12fb9d14b2708643ec32c5fa4213fe8f7fa34bfc3d"
+    },
+    {
+      "member": "helpers/login-connection209-local.json",
+      "path": "/mnt/d/NexaUI/out/login-connection209-local.json",
+      "bytes": 4813,
+      "sha256": "9ed3fa96f3348800df622c4ad98d65271ecf98f2915bc4b0afe2200bc62460d3"
+    },
+    {
+      "member": "helpers/login-connection210-local.json",
+      "path": "/mnt/d/NexaUI/out/login-connection210-local.json",
+      "bytes": 4968,
+      "sha256": "ca5c021abdd620c94cea25d7f507480ad535dac731016def5031fd4cde0ebe2c"
+    },
+    {
+      "member": "helpers/login-connection211-native.json",
+      "path": "/mnt/d/NexaUI/out/login-connection211-native.json",
+      "bytes": 636,
+      "sha256": "f13c5127fe6a8666296b48399e8e6a111f28f67a21ee147daf082571551bef43"
+    },
+    {
+      "member": "helpers/login-connection211-native.log",
+      "path": "/mnt/d/NexaUI/out/login-connection211-native.log",
+      "bytes": 409,
+      "sha256": "c20a29b8597d5606ab2fa7c7726d8a9ce36639c969bf8e1a5c3ee0614524aa52"
+    },
+    {
+      "member": "helpers/login-connection212-local.json",
+      "path": "/mnt/d/NexaUI/out/login-connection212-local.json",
+      "bytes": 11642,
+      "sha256": "a029421738ada1a374368f78c26597773bbab51e116cdf79d70ee2e159d861f1"
+    },
+    {
+      "member": "helpers/login-connection213-native.json",
+      "path": "/mnt/d/NexaUI/out/login-connection213-native.json",
+      "bytes": 13328,
+      "sha256": "09153e392fab582263ada5d6119da5346b4a332c40b9859b8c4ae471eff7c075"
+    },
+    {
+      "member": "helpers/login-connection214-negative.json",
+      "path": "/mnt/d/NexaUI/out/login-connection214-negative.json",
+      "bytes": 2204,
+      "sha256": "9820d2f7540350f74a3582d4a94eafb8759f020d172c3b6be7129f619c2b019a"
+    }
+  ],
+  "remaining": [
+    "Production service/loaded-config/greeter/policy admission and trusted placement",
+    "Real-service host watch/pump/deadline and native loss integration",
+    "Other IME providers/candidate geometry and physical/human/performance acceptance",
+    "Remaining full 103-ID catalogue and delivery packets"
+  ]
+}

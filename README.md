@@ -83,6 +83,8 @@ records the independent client checks and remaining host acceptance gates.
 Follow-ups cover [retired password composition storage](docs/quality/wayland-password-storage-report.md)
 and [fresh keys after an IME handoff](docs/quality/wayland-ime-key-handoff-report.md),
 including physical Shift+Tab after cancellation and repeat during context refresh.
+The optional [original-connection view](docs/quality/aetheri-login-connection-report.md)
+borrows the host's existing connection and preserves its command checks and lifetime.
 
 The Editor's [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
 actual consumed clipboard bytes, held writers and original-model invalidation
