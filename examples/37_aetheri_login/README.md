@@ -37,8 +37,14 @@ release. The host owns native event copies and must manage their retention,
 the transport and the lifetime of the original conversation. The model's start
 acknowledgement is shown as acceptance of a session request.
 
-This headless checkpoint exercises keyboard input and semantic actions. Full
-long prompt reading, native compositor placement, IME, independent screen reader
-interaction, credential byte lifetime across native event queues, backend
-admission and real session readiness remain open. The sample's fixed size
-regions clip messages that exceed the visible space.
+Long messages use a separate scroll area above the response and action controls.
+If a message overflows, the scrollbar gets initial focus. Use arrows, Page Up,
+Page Down, Home or End to read it and Tab to reach the controls. If the message
+fits after a resize, focus returns to the response or first available action.
+The semantic label retains the complete message. Changing prompt resets the
+scroll position.
+
+The headless tests cover a maximum-size message at the minimum view size,
+including a rendered final glyph and Tab navigation. Native compositor
+placement, IME, independent screen reader interaction, credential byte lifetime
+across native event queues, backend admission and real session readiness remain open.

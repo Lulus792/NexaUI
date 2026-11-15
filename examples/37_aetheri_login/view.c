@@ -14,6 +14,7 @@ struct aetheri_login_view {
     nx_text_field *field;
     struct ae_login_status previous;
     uint64_t generation;
+    float message_scroll;
     int rejected;
 };
 
@@ -104,6 +105,58 @@ static nx_result label(aetheri_login_view *view, uint64_t id,
     return result;
 }
 
+static nx_result prompt_message(aetheri_login_view *view, uint64_t base,
+    nx_rect bounds, nx_utf8_span text, uint64_t *first_focus) {
+    const float inset = 6;
+    nx_text_layout *layout = NULL;
+    float text_width = bounds.width - 3 * inset;
+    nx_result result = nx_text_layout_create(view->fonts, text.data, text.length,
+        NX_BIDI_AUTO, 16, text_width, &layout);
+    if (result != NX_OK) return result;
+    float height = (float)nx_text_layout_height(layout) + 2 * inset;
+    nx_color color;
+    result = nx_theme_color(view->context, NX_COLOR_TEXT, &color);
+    if (result == NX_OK && height <= bounds.height) {
+        view->message_scroll = 0;
+        if (nx_focus_id(view->context) == base + 7)
+            (void)nx_focus_set(view->context, 0);
+        result = nx_push_clip(view->context, bounds);
+        if (result == NX_OK) {
+            result = nx_label(view->context, base + 1, 0, bounds, layout,
+                (nx_point){bounds.x + inset, bounds.y + inset}, color, LOGIN_CACHE_BYTES);
+            nx_result popped = nx_pop_clip(view->context);
+            if (result == NX_OK) result = popped;
+        }
+    } else if (result == NX_OK) {
+        nx_scroll_area_desc area = {0};
+        area.id = base + 6;
+        area.thumb_y_id = base + 7;
+        area.viewport = bounds;
+        area.name = span("Login message");
+        area.content_size = (nx_size){bounds.width, height};
+        area.axes = NX_SCROLL_Y;
+        float x = 0;
+        nx_scroll_info scroll;
+        result = nx_scroll_area_begin(view->context, &area, &x, &view->message_scroll, &scroll);
+        if (result == NX_OK) {
+            result = nx_label(view->context, base + 1, area.id, bounds, layout,
+                (nx_point){bounds.x + inset, bounds.y + inset - scroll.offset_y},
+                color, LOGIN_CACHE_BYTES);
+            nx_result ended = nx_scroll_area_end(view->context);
+            if (result == NX_OK) result = ended;
+        }
+        if (result == NX_OK) {
+            *first_focus = area.thumb_y_id;
+            if (nx_focus_id(view->context) == area.thumb_y_id) {
+                result = nx_theme_color(view->context, NX_COLOR_FOCUS, &color);
+                if (result == NX_OK) result = nx_stroke_rect(view->context, bounds, 2, color);
+            }
+        }
+    }
+    nx_text_layout_destroy(layout);
+    return result;
+}
+
 static nx_result button(aetheri_login_view *view, uint64_t id, nx_rect bounds,
     const char *name, int *clicked) {
     nx_text_layout *layout = NULL;
@@ -154,6 +207,7 @@ nx_result aetheri_login_view_frame(aetheri_login_view *view, float width,
         view->previous = (struct ae_login_status){.phase = status.phase,
             .prompt = status.prompt, .operation = status.operation};
         view->rejected = 0;
+        view->message_scroll = 0;
         (void)nx_focus_set(view->context, 0);
     }
 
@@ -169,17 +223,12 @@ nx_result aetheri_login_view_frame(aetheri_login_view *view, float width,
     uint64_t base = view->generation * 8u;
     float inner_width = width - 32;
     float controls_y = height - 60;
-    nx_rect message_bounds = {16, 16, inner_width, controls_y - 78};
-    result = nx_push_clip(view->context, message_bounds);
-    if (result == NX_OK) {
-        result = label(view, base + 1, message_bounds,
-                       message(&status, view->conversation != NULL));
-        nx_result popped = nx_pop_clip(view->context);
-        if (result == NX_OK) result = popped;
-    }
-
     int submitted = 0, valid = 1, proceed = 0, cancel = 0;
     uint64_t first_focus = 0;
+    float message_height = controls_y - (view->field ? 78 : 26);
+    nx_rect message_bounds = {16, 16, inner_width, message_height};
+    result = prompt_message(view, base, message_bounds,
+                            message(&status, view->conversation != NULL), &first_focus);
     if (result == NX_OK && view->field) {
         nx_text_field_desc desc = {0};
         size_t limit = status.phase == AE_LOGIN_IDLE ? 256u : AE_LOGIN_RESPONSE_MAX;
@@ -197,7 +246,7 @@ nx_result aetheri_login_view_frame(aetheri_login_view *view, float width,
         nx_interaction_state state;
         result = nx_text_field_widget(view->context, &desc, view->field,
                                       &state, &valid, &submitted);
-        first_focus = desc.id;
+        if (!first_focus) first_focus = desc.id;
     }
     const char *primary = NULL;
     if (status.phase == AE_LOGIN_IDLE) primary = "Continue";
