@@ -122,7 +122,10 @@ static int consume_request(fixture_conversation *fixture, const char *expected) 
     if (fixture->connection) {
         uint8_t wire[AE_LOGIN_WIRE_MAX + 4u];
         uint32_t length = 0;
-        if (ae_login_connection_pump(fixture->connection)) return 0;
+        struct ae_login_status status;
+        if (ae_login_connection_status(fixture->connection, &status) ||
+            (status.phase != AE_LOGIN_SENDING && status.phase != AE_LOGIN_WAITING)) return 0;
+        if (status.phase == AE_LOGIN_SENDING && ae_login_connection_pump(fixture->connection)) return 0;
         ssize_t count = recv(fixture->peer, wire, sizeof(wire), MSG_DONTWAIT);
         int matches = 0;
         if (count >= 4) {

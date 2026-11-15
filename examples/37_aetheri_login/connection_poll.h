@@ -12,7 +12,8 @@ typedef struct aetheri_login_poll_outcome {
 /* Linux reference host glue using public NexaUI polling and the original
    connection watch/pump. Borrow connection and optional readable wake fd (-1
    means none); both outlive this object. Close releases only its epoll fd.
-   Use the connection/window owner thread. Admission stays with the original
+   Use one active poller per connection on its window/connection owner thread.
+   Drive transport through this poller while active. Admission stays with the original
    connection and its host. This glue creates no thread or new connection. */
 nx_result aetheri_login_poll_open(struct ae_login_connection *connection,
     int wake_fd, aetheri_login_poll **out);
