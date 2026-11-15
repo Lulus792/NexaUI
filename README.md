@@ -80,6 +80,9 @@ The optional [original Login consumer](examples/37_aetheri_login/README.md)
 composes visible and protected prompts with explicit answers, cancellation and
 unknown state. Its [native keyboard and IME evidence](docs/quality/aetheri-login-ime-report.md)
 records the independent client checks and remaining host acceptance gates.
+Follow-ups cover [retired password composition storage](docs/quality/wayland-password-storage-report.md)
+and [fresh keys after an IME handoff](docs/quality/wayland-ime-key-handoff-report.md),
+including physical Shift+Tab after cancellation and repeat during context refresh.
 
 The Editor's [partial-byte/EOF follow-up](docs/quality/editor-stream-report.md) joins
 actual consumed clipboard bytes, held writers and original-model invalidation

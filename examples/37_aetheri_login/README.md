@@ -92,5 +92,12 @@ use AT-SPI focus and activation for the first field exit and submissions.
 Weston's simple provider was observed sending Tab as a text commit containing
 `"\t"`. The retained failed attempt and protocol trace document this limitation.
 Keyboard navigation and submission through another installed input-method
-provider, candidate placement, native IME storage lifetime and broader language
+provider, candidate placement, other native IME storage and broader language
 coverage still require acceptance.
+
+The [password-storage check](../../docs/quality/wayland-password-storage-report.md)
+overwrites retired owned Wayland password preedit copies. The later
+[key-handoff check](../../docs/quality/wayland-ime-key-handoff-report.md) fixes a
+consumed Tab release across composition, preserving this peer's physical
+Shift+Tab return after cancellation. These checks do not close the broader
+provider, other native-storage or host/service gates above.

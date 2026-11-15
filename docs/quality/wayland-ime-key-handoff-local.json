@@ -1,0 +1,2698 @@
+{
+  "source": "368cd38292498bd538964ba514ff02e0e9924358",
+  "implementation": "f99fa1c30686349def4cfb6fdaa8bc23a1580aae",
+  "sdk_version": "0.1.33",
+  "uid": 65534,
+  "original_revision": "6eda6feb98b37048ca84d73b65e24f919297987c",
+  "original_inputs": [
+    {
+      "path": "LICENSE",
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "path": "src/login/protocol.c",
+      "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+    },
+    {
+      "path": "src/login/protocol.h",
+      "sha256": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160"
+    },
+    {
+      "path": "src/text/grapheme.c",
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "src/text/grapheme.h",
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "src/text/grapheme_data.h",
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    }
+  ],
+  "build": {
+    "revision": "368cd38292498bd538964ba514ff02e0e9924358",
+    "source_archive": "ime-handoff202-source.tar.gz",
+    "archive_sha256": "4239b7d53fe6d0aba65f3d7d89556bea504133bb9786e154e551ff3b0042a0a8",
+    "uid": 65534,
+    "tests": [
+      "core",
+      "platform_event_queue",
+      "input",
+      "interaction",
+      "text_field",
+      "text_value",
+      "ime_field_atomic",
+      "numeric_field",
+      "wayland_text_input_v1",
+      "wayland_text_input_v1_transactions",
+      "wayland_text_input_v3",
+      "wayland_text_input_v3_commit_controls",
+      "wayland_text_input_v3_selection_revert",
+      "wayland_text_input_v3_field_replace",
+      "wayland_ime_transactions",
+      "wayland_ime_transactions_legacy",
+      "wayland_ime_atomic",
+      "wayland_ime_storage_replace",
+      "wayland_ime_storage_empty",
+      "wayland_ime_storage_invalid",
+      "wayland_ime_storage_lifecycle",
+      "wayland_ime_key_handoff_activation",
+      "wayland_ime_key_handoff_deactivation",
+      "wayland_ime_key_handoff_forwarded",
+      "wayland_ime_key_handoff_normal",
+      "wayland_ime_key_handoff_refresh"
+    ],
+    "profiles": [
+      [
+        {
+          "step": "sdk-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-ime-handoff202/source",
+            "-B",
+            "/tmp/nexaui-ime-handoff202/release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-ime-handoff202/release-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DNEXAUI_SOURCE_REVISION=368cd38292498bd538964ba514ff02e0e9924358"
+          ],
+          "exit": 0,
+          "seconds": 6.294041206999964,
+          "log": "ime-handoff202-release-sdk-configure.log",
+          "sha256": "aaed9ce6c3d4e60342f103f9936a8dfa2544bb3ef7b5a0611800fb50f3f5a832"
+        },
+        {
+          "step": "sdk-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-ime-handoff202/release",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_tests",
+            "nexaui_platform_event_queue_tests",
+            "nexaui_input_tests",
+            "nexaui_interaction_tests",
+            "nexaui_text_field_tests",
+            "nexaui_text_value_tests",
+            "nexaui_ime_field_atomic_tests",
+            "nexaui_numeric_field_tests",
+            "nexaui_wayland_text_input_v1_tests",
+            "nexaui_wayland_text_input_v3_tests",
+            "nexaui_wayland_ime_transactions_tests",
+            "nexaui_wayland_ime_atomic_tests",
+            "nexaui_wayland_ime_storage_tests",
+            "nexaui_wayland_ime_key_handoff_tests"
+          ],
+          "exit": 0,
+          "seconds": 31.922805658000016,
+          "log": "ime-handoff202-release-sdk-build.log",
+          "sha256": "c6697752582befb2feb36f6a26ffaff6771cd9fad6ed1031feaf74b4c72a1272"
+        },
+        {
+          "step": "sdk-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-ime-handoff202/release",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-ime-handoff202/release/tests.xml",
+            "-R",
+            "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic|wayland_ime_storage_replace|wayland_ime_storage_empty|wayland_ime_storage_invalid|wayland_ime_storage_lifecycle|wayland_ime_key_handoff_activation|wayland_ime_key_handoff_deactivation|wayland_ime_key_handoff_forwarded|wayland_ime_key_handoff_normal|wayland_ime_key_handoff_refresh)$"
+          ],
+          "exit": 0,
+          "seconds": 0.5725718450000841,
+          "log": "ime-handoff202-release-sdk-test.log",
+          "sha256": "9eac3fdea470973ffe0590c1798e294dcea01f0f6e6f109c74c214441133fb61"
+        },
+        {
+          "step": "sdk-install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-ime-handoff202/release"
+          ],
+          "exit": 0,
+          "seconds": 0.06768050599998787,
+          "log": "ime-handoff202-release-sdk-install.log",
+          "sha256": "08af0126097ce17cf15df3fd27ee435d3f33ccd83726ed7572f820ad1cae4615"
+        },
+        {
+          "step": "login-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login",
+            "-B",
+            "/tmp/nexaui-ime-handoff202/release-login",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view178/original",
+            "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON"
+          ],
+          "exit": 0,
+          "seconds": 4.785908439000195,
+          "log": "ime-handoff202-release-login-configure.log",
+          "sha256": "7672472dfc5143904519cc151d901ea302cd184f59f54c2879984d953df8978f"
+        },
+        {
+          "step": "login-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-ime-handoff202/release-login",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 2.2296671500000684,
+          "log": "ime-handoff202-release-login-build.log",
+          "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+        },
+        {
+          "step": "login-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-ime-handoff202/release-login",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-ime-handoff202/release-login/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.2224363610000637,
+          "log": "ime-handoff202-release-login-test.log",
+          "sha256": "e10c615f53fa64e3b1124d842f3ccf4cf06e8e7d7bdace565fb08596f02b2ae4"
+        }
+      ],
+      [
+        {
+          "step": "sdk-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-ime-handoff202/source",
+            "-B",
+            "/tmp/nexaui-ime-handoff202/shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-ime-handoff202/shared-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=ON",
+            "-DNEXAUI_SOURCE_REVISION=368cd38292498bd538964ba514ff02e0e9924358"
+          ],
+          "exit": 0,
+          "seconds": 6.0898878709999735,
+          "log": "ime-handoff202-shared-sdk-configure.log",
+          "sha256": "14f06ceaafadb9817de7f5aacb382601f3bd26354229d76c6cd344f5731bde4a"
+        },
+        {
+          "step": "sdk-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-ime-handoff202/shared",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_tests",
+            "nexaui_platform_event_queue_tests",
+            "nexaui_input_tests",
+            "nexaui_interaction_tests",
+            "nexaui_text_field_tests",
+            "nexaui_text_value_tests",
+            "nexaui_ime_field_atomic_tests",
+            "nexaui_numeric_field_tests",
+            "nexaui_wayland_text_input_v1_tests",
+            "nexaui_wayland_text_input_v3_tests",
+            "nexaui_wayland_ime_transactions_tests",
+            "nexaui_wayland_ime_atomic_tests",
+            "nexaui_wayland_ime_storage_tests",
+            "nexaui_wayland_ime_key_handoff_tests"
+          ],
+          "exit": 0,
+          "seconds": 31.93795745700004,
+          "log": "ime-handoff202-shared-sdk-build.log",
+          "sha256": "2e0afc5bc65033e68beb6ce672bd8974425e5c58ca0465faf849e23fa2e54efe"
+        },
+        {
+          "step": "sdk-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-ime-handoff202/shared",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-ime-handoff202/shared/tests.xml",
+            "-R",
+            "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic|wayland_ime_storage_replace|wayland_ime_storage_empty|wayland_ime_storage_invalid|wayland_ime_storage_lifecycle|wayland_ime_key_handoff_activation|wayland_ime_key_handoff_deactivation|wayland_ime_key_handoff_forwarded|wayland_ime_key_handoff_normal|wayland_ime_key_handoff_refresh)$"
+          ],
+          "exit": 0,
+          "seconds": 0.6197781359999226,
+          "log": "ime-handoff202-shared-sdk-test.log",
+          "sha256": "b64f9c5348ef3774d9a21f4f51f5a31909f9f18c5430467dc26f8d45aaa7653a"
+        },
+        {
+          "step": "sdk-install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-ime-handoff202/shared"
+          ],
+          "exit": 0,
+          "seconds": 0.06816005199993924,
+          "log": "ime-handoff202-shared-sdk-install.log",
+          "sha256": "e8af9a6bd91786bc437f33a7d1fd155e26d44bebf9777e4e4c5526e4b0cd97dd"
+        },
+        {
+          "step": "login-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login",
+            "-B",
+            "/tmp/nexaui-ime-handoff202/shared-login",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/shared-prefix",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view178/original",
+            "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON"
+          ],
+          "exit": 0,
+          "seconds": 4.685207998999886,
+          "log": "ime-handoff202-shared-login-configure.log",
+          "sha256": "82641210ce18562a397dace6c5e0ec1f7b747b49c56cf6e2d259820e66d5dcac"
+        },
+        {
+          "step": "login-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-ime-handoff202/shared-login",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 2.339553113999955,
+          "log": "ime-handoff202-shared-login-build.log",
+          "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+        },
+        {
+          "step": "login-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-ime-handoff202/shared-login",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-ime-handoff202/shared-login/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.26834434500005955,
+          "log": "ime-handoff202-shared-login-test.log",
+          "sha256": "693d27fcae2fc4b30c7753c3c01443c04bd6f7fa30040054ff52e857cde8a3d8"
+        }
+      ],
+      [
+        {
+          "step": "sdk-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-ime-handoff202/source",
+            "-B",
+            "/tmp/nexaui-ime-handoff202/asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-ime-handoff202/asan-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DNEXAUI_SOURCE_REVISION=368cd38292498bd538964ba514ff02e0e9924358"
+          ],
+          "exit": 0,
+          "seconds": 7.241679345999955,
+          "log": "ime-handoff202-asan-sdk-configure.log",
+          "sha256": "93e2387e3600e0a234c5268291f7736fa2bf483d30fe8587bd2235c843e70847"
+        },
+        {
+          "step": "sdk-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-ime-handoff202/asan",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_tests",
+            "nexaui_platform_event_queue_tests",
+            "nexaui_input_tests",
+            "nexaui_interaction_tests",
+            "nexaui_text_field_tests",
+            "nexaui_text_value_tests",
+            "nexaui_ime_field_atomic_tests",
+            "nexaui_numeric_field_tests",
+            "nexaui_wayland_text_input_v1_tests",
+            "nexaui_wayland_text_input_v3_tests",
+            "nexaui_wayland_ime_transactions_tests",
+            "nexaui_wayland_ime_atomic_tests",
+            "nexaui_wayland_ime_storage_tests",
+            "nexaui_wayland_ime_key_handoff_tests"
+          ],
+          "exit": 0,
+          "seconds": 77.68416421200004,
+          "log": "ime-handoff202-asan-sdk-build.log",
+          "sha256": "c6697752582befb2feb36f6a26ffaff6771cd9fad6ed1031feaf74b4c72a1272"
+        },
+        {
+          "step": "sdk-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-ime-handoff202/asan",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-ime-handoff202/asan/tests.xml",
+            "-R",
+            "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic|wayland_ime_storage_replace|wayland_ime_storage_empty|wayland_ime_storage_invalid|wayland_ime_storage_lifecycle|wayland_ime_key_handoff_activation|wayland_ime_key_handoff_deactivation|wayland_ime_key_handoff_forwarded|wayland_ime_key_handoff_normal|wayland_ime_key_handoff_refresh)$"
+          ],
+          "exit": 0,
+          "seconds": 3.327799131999882,
+          "log": "ime-handoff202-asan-sdk-test.log",
+          "sha256": "f6f396c3bd4f7ed773364156b3febf213a0bc391b6f31a6d5e6b50c1051c7860"
+        },
+        {
+          "step": "sdk-install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-ime-handoff202/asan"
+          ],
+          "exit": 0,
+          "seconds": 0.07053374999986772,
+          "log": "ime-handoff202-asan-sdk-install.log",
+          "sha256": "e8c61de027b98f6b2ebeefca76f3530995070605641d17fe48fc90ac479675fc"
+        },
+        {
+          "step": "login-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login",
+            "-B",
+            "/tmp/nexaui-ime-handoff202/asan-login",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/asan-prefix",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view178/original",
+            "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON"
+          ],
+          "exit": 0,
+          "seconds": 6.487540729000102,
+          "log": "ime-handoff202-asan-login-configure.log",
+          "sha256": "3762fa33c3a4bfce73f7c294a3fbe735d287357dbf3eb380ba6ad9201c8aa6b6"
+        },
+        {
+          "step": "login-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-ime-handoff202/asan-login",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 3.027844092999885,
+          "log": "ime-handoff202-asan-login-build.log",
+          "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+        },
+        {
+          "step": "login-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-ime-handoff202/asan-login",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-ime-handoff202/asan-login/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.971020413000133,
+          "log": "ime-handoff202-asan-login-test.log",
+          "sha256": "97c59147f31c909d52b1b76890e2d982ab0e46f63236b550dd1e0b4f413762c6"
+        }
+      ]
+    ],
+    "aetheri_revision": "6eda6feb98b37048ca84d73b65e24f919297987c",
+    "aetheri_inputs": [
+      {
+        "path": "LICENSE",
+        "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+      },
+      {
+        "path": "src/login/protocol.c",
+        "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+      },
+      {
+        "path": "src/login/protocol.h",
+        "sha256": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160"
+      },
+      {
+        "path": "src/text/grapheme.c",
+        "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+      },
+      {
+        "path": "src/text/grapheme.h",
+        "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+      },
+      {
+        "path": "src/text/grapheme_data.h",
+        "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+      }
+    ]
+  },
+  "native_commands": [
+    {
+      "profile": "release",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/release-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-release-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd"
+      ],
+      "exit": 0,
+      "seconds": 2.532604239000193,
+      "log": "ime-handoff203-release-keyboard.log",
+      "sha256": "ee9c1ae0b7d81a8f830608b5b98eee4fbf9b953b4ec9aa939c1ab05123068eb9"
+    },
+    {
+      "profile": "release",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/release-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-release-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.2733437560000311,
+      "log": "ime-handoff203-release-compose.log",
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "profile": "release",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/release-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-release-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.5277489380000588,
+      "log": "ime-handoff203-release-cancel.log",
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "profile": "shared",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/shared-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-shared-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd"
+      ],
+      "exit": 0,
+      "seconds": 1.5218905429999268,
+      "log": "ime-handoff203-shared-keyboard.log",
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "profile": "shared",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/shared-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-shared-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.4220241759999226,
+      "log": "ime-handoff203-shared-compose.log",
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "profile": "shared",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/shared-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-shared-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.8257966020000822,
+      "log": "ime-handoff203-shared-cancel.log",
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "profile": "asan",
+      "mode": "keyboard",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/asan-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-asan-keyboard",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd"
+      ],
+      "exit": 0,
+      "seconds": 2.0271314880001228,
+      "log": "ime-handoff203-asan-keyboard.log",
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "profile": "asan",
+      "mode": "compose",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/asan-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-asan-compose",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime"
+      ],
+      "exit": 0,
+      "seconds": 1.824614492000137,
+      "log": "ime-handoff203-asan-compose.log",
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "profile": "asan",
+      "mode": "cancel",
+      "command": [
+        "python3",
+        "/tmp/nexaui-ime-handoff202/source/examples/37_aetheri_login/run_native.py",
+        "--build-dir",
+        "/tmp/nexaui-ime-handoff202/asan-login",
+        "--font",
+        "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+        "--work-dir",
+        "/tmp/nexaui-ime-handoff202/native203-asan-cancel",
+        "--registry",
+        "/usr/libexec/at-spi2-registryd",
+        "--ime",
+        "--cancel-preedit"
+      ],
+      "exit": 0,
+      "seconds": 1.8764256080000905,
+      "log": "ime-handoff203-asan-cancel.log",
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "release",
+      "sdk_cases": [
+        "nexaui_platform_event_queue",
+        "nexaui_wayland_text_input_v1",
+        "nexaui_wayland_text_input_v1_transactions",
+        "nexaui_wayland_text_input_v3",
+        "nexaui_wayland_text_input_v3_commit_controls",
+        "nexaui_wayland_text_input_v3_selection_revert",
+        "nexaui_wayland_text_input_v3_field_replace",
+        "nexaui_wayland_ime_transactions",
+        "nexaui_wayland_ime_transactions_legacy",
+        "nexaui_wayland_ime_atomic",
+        "nexaui_wayland_ime_storage_replace",
+        "nexaui_wayland_ime_storage_empty",
+        "nexaui_wayland_ime_storage_invalid",
+        "nexaui_wayland_ime_storage_lifecycle",
+        "nexaui_wayland_ime_key_handoff_activation",
+        "nexaui_wayland_ime_key_handoff_deactivation",
+        "nexaui_wayland_ime_key_handoff_forwarded",
+        "nexaui_wayland_ime_key_handoff_normal",
+        "nexaui_wayland_ime_key_handoff_refresh",
+        "nexaui_core",
+        "nexaui_numeric_field",
+        "nexaui_text_field",
+        "nexaui_ime_field_atomic",
+        "nexaui_text_value",
+        "nexaui_input",
+        "nexaui_interaction"
+      ],
+      "consumer_cases": [
+        "aetheri_login_view"
+      ],
+      "artifacts": [
+        {
+          "kind": "library",
+          "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+          "bytes": 1185356,
+          "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+        },
+        {
+          "kind": "sdk-tests",
+          "path": "/tmp/nexaui-ime-handoff202/release/tests.xml",
+          "bytes": 7266,
+          "sha256": "621b493e8482e3fdfa7c425b0a6f6f19022b2539bc9d5d6faddcacef0290d73d"
+        },
+        {
+          "kind": "sdk-commands",
+          "path": "/tmp/nexaui-ime-handoff202/release/compile_commands.json",
+          "bytes": 177851,
+          "sha256": "861006e593f33c2589574311bed160510fee09b0954189f33f49d01f27fd153b"
+        },
+        {
+          "kind": "storage-test",
+          "path": "/tmp/nexaui-ime-handoff202/release/nexaui_wayland_ime_storage_tests",
+          "bytes": 856664,
+          "sha256": "7f71306404e89dd7ffcab7f6b6e9cdf35ca6449ea90d86a779374e45e537125a"
+        },
+        {
+          "kind": "handoff-test",
+          "path": "/tmp/nexaui-ime-handoff202/release/nexaui_wayland_ime_key_handoff_tests",
+          "bytes": 856712,
+          "sha256": "73a97c227cbc8d55a5c180e9cd878913f6229602bf5a58c21f76e9cf28f45730"
+        },
+        {
+          "kind": "consumer-tests",
+          "path": "/tmp/nexaui-ime-handoff202/release-login/tests.xml",
+          "bytes": 519,
+          "sha256": "348fc0d657a8a4366ff4c48b6a66641df6a0847b2a5cbda3a57b8787eb356366"
+        },
+        {
+          "kind": "consumer-commands",
+          "path": "/tmp/nexaui-ime-handoff202/release-login/compile_commands.json",
+          "bytes": 3858,
+          "sha256": "c3a40ef940c10b33d5e69d50a0d3fe8aba208a4a00c5835ddb76c344f6248b07"
+        },
+        {
+          "kind": "host",
+          "path": "/tmp/nexaui-ime-handoff202/release-login/aetheri_login_native_host",
+          "bytes": 870736,
+          "sha256": "584de235bc6e777be618f3cb8145e36eae235781f27333da566006831b4ea2c1"
+        },
+        {
+          "kind": "peer",
+          "path": "/tmp/nexaui-ime-handoff202/release-login/aetheri_login_atspi_peer",
+          "bytes": 37344,
+          "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+        },
+        {
+          "kind": "view-test",
+          "path": "/tmp/nexaui-ime-handoff202/release-login/aetheri_login_view_test",
+          "bytes": 899592,
+          "sha256": "183d1ad7a60f43d3ddd1f62fd83a4fae7a25d61390fd161f6fa00b35cef6d7bb"
+        }
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/platform/linux/wayland/window.c",
+            "bytes": 180836,
+            "sha256": "06e97e0815f9cb17ff58ede711e95778b2d3677971bba40918e758f193490559"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/release/CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o",
+            "bytes": 129608,
+            "sha256": "3a1b84b8443a69cac746b51fdda66a5b9508617f0efbb00e9ede3041877826e2"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_BUILD_LINUX=1 -DNEXAUI_HAVE_DBUS_SDK=1 -DNEXAUI_LINUX_WAYLAND_ONLY -DNEXAUI_WAYLAND_FRACTIONAL_SCALE=1 -DNEXAUI_WAYLAND_TEST_HOOKS -DNEXAUI_X11_TEST_HOOKS -I/tmp/nexaui-ime-handoff202/source/platform/common -I/tmp/nexaui-ime-handoff202/source/src -I/tmp/nexaui-ime-handoff202/release/generated -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include -I/tmp/nexaui-ime-handoff202/release/generated/wayland -I/tmp/nexaui-ime-handoff202/source/include -Werror -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -o CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o -c /tmp/nexaui-ime-handoff202/source/platform/linux/wayland/window.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_storage.c",
+            "bytes": 9244,
+            "sha256": "4b3b708ef9c718097292434a4ba23bb5542232bfd6f7f7821b3d610f60f6eb86"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/release/CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o",
+            "bytes": 52928,
+            "sha256": "80001d0d1b35f0040c414db5633dcea679b77229de4bf044de7e8557192398e9"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-ime-handoff202/release/generated/wayland -I/tmp/nexaui-ime-handoff202/source/platform/linux -I/tmp/nexaui-ime-handoff202/source/include -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o -c /tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_storage.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_key_handoff.c",
+            "bytes": 7381,
+            "sha256": "8c689d841abef659b5f9e1706239defd5476b4e90fb348b10ca2c6bc25a7bd1d"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/release/CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o",
+            "bytes": 50568,
+            "sha256": "4525f2a62d354feefaeb935f7eb56bdf4a7abf58f9a933dc9ca53150055200b6"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-ime-handoff202/release/generated/wayland -I/tmp/nexaui-ime-handoff202/source/platform/linux -I/tmp/nexaui-ime-handoff202/source/include -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o -c /tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_key_handoff.c"
+        }
+      ],
+      "native": [
+        {
+          "mode": "keyboard",
+          "frames": 52,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-release-keyboard.log",
+            "bytes": 207,
+            "sha256": "ee9c1ae0b7d81a8f830608b5b98eee4fbf9b953b4ec9aa939c1ab05123068eb9"
+          }
+        },
+        {
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-release-compose.log",
+            "bytes": 381,
+            "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+          }
+        },
+        {
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-release-cancel.log",
+            "bytes": 373,
+            "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+          }
+        }
+      ],
+      "host_dynamic": "\nDynamic section at offset 0xc5a60 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x885ff\n 0x0000000000000019 (INIT_ARRAY)         0xc5580\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xc5588\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xde0\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1597 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc6c70\n 0x0000000000000002 (PLTRELSZ)           2184 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4e08\n 0x0000000000000007 (RELA)               0x1520\n 0x0000000000000008 (RELASZ)             14568 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x1500\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x141e\n 0x000000006ffffff9 (RELACOUNT)          573\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x6c00 contains 27 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x4040\n 0x0000000000000019 (INIT_ARRAY)         0x6bf0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6bf8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x940\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1134 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6df0\n 0x0000000000000002 (PLTRELSZ)           1344 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xea0\n 0x0000000000000007 (RELA)               0xdb0\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "shared",
+      "sdk_cases": [
+        "nexaui_platform_event_queue",
+        "nexaui_wayland_text_input_v1",
+        "nexaui_wayland_text_input_v1_transactions",
+        "nexaui_wayland_text_input_v3",
+        "nexaui_wayland_text_input_v3_commit_controls",
+        "nexaui_wayland_text_input_v3_selection_revert",
+        "nexaui_wayland_text_input_v3_field_replace",
+        "nexaui_wayland_ime_transactions",
+        "nexaui_wayland_ime_transactions_legacy",
+        "nexaui_wayland_ime_atomic",
+        "nexaui_wayland_ime_storage_replace",
+        "nexaui_wayland_ime_storage_empty",
+        "nexaui_wayland_ime_storage_invalid",
+        "nexaui_wayland_ime_storage_lifecycle",
+        "nexaui_wayland_ime_key_handoff_activation",
+        "nexaui_wayland_ime_key_handoff_deactivation",
+        "nexaui_wayland_ime_key_handoff_forwarded",
+        "nexaui_wayland_ime_key_handoff_normal",
+        "nexaui_wayland_ime_key_handoff_refresh",
+        "nexaui_core",
+        "nexaui_numeric_field",
+        "nexaui_text_field",
+        "nexaui_ime_field_atomic",
+        "nexaui_text_value",
+        "nexaui_input",
+        "nexaui_interaction"
+      ],
+      "consumer_cases": [
+        "aetheri_login_view"
+      ],
+      "artifacts": [
+        {
+          "kind": "library",
+          "path": "/tmp/nexaui-ime-handoff202/shared-prefix/lib/libnexaui.so.0.1.33",
+          "bytes": 934464,
+          "sha256": "fa3d43cb8d50f171ee3e008e8dd723081149208557b8ecd5cf243b7a56d9ab31"
+        },
+        {
+          "kind": "sdk-tests",
+          "path": "/tmp/nexaui-ime-handoff202/shared/tests.xml",
+          "bytes": 7268,
+          "sha256": "26d81d5bdea84e2e85fe66313a5ed431301b3981227941af561b691273025ffe"
+        },
+        {
+          "kind": "sdk-commands",
+          "path": "/tmp/nexaui-ime-handoff202/shared/compile_commands.json",
+          "bytes": 182954,
+          "sha256": "7d0d3277fc9418908cf82ae0dac7632c137452a0a2dece503620b2eb6b615bb3"
+        },
+        {
+          "kind": "storage-test",
+          "path": "/tmp/nexaui-ime-handoff202/shared/nexaui_wayland_ime_storage_tests",
+          "bytes": 58056,
+          "sha256": "cb207e8c34957ee8c0337fb4f7b6398dcded56850e78007ffe0a5d80659d384e"
+        },
+        {
+          "kind": "handoff-test",
+          "path": "/tmp/nexaui-ime-handoff202/shared/nexaui_wayland_ime_key_handoff_tests",
+          "bytes": 58344,
+          "sha256": "845fb8924b9fc77cdbe44b75ca5271fdd178a84344a172754606621ee291165d"
+        },
+        {
+          "kind": "consumer-tests",
+          "path": "/tmp/nexaui-ime-handoff202/shared-login/tests.xml",
+          "bytes": 519,
+          "sha256": "305bbd678b7dbadc0b7a72d48e90e031f9f0cae19dea28c661059daed78c442f"
+        },
+        {
+          "kind": "consumer-commands",
+          "path": "/tmp/nexaui-ime-handoff202/shared-login/compile_commands.json",
+          "bytes": 3921,
+          "sha256": "6da9eb14927a002e8a8b4685b6d1a34c3a8b52717e28593355b903b5e892312f"
+        },
+        {
+          "kind": "host",
+          "path": "/tmp/nexaui-ime-handoff202/shared-login/aetheri_login_native_host",
+          "bytes": 67040,
+          "sha256": "ca0ece632c207ce19a8c2b00d403e6c2818c8863aafa1c68d1c38bbf118a39c5"
+        },
+        {
+          "kind": "peer",
+          "path": "/tmp/nexaui-ime-handoff202/shared-login/aetheri_login_atspi_peer",
+          "bytes": 37344,
+          "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+        },
+        {
+          "kind": "view-test",
+          "path": "/tmp/nexaui-ime-handoff202/shared-login/aetheri_login_view_test",
+          "bytes": 91472,
+          "sha256": "9a05861261cc272cacc9ae2cfb81600a927569375ff505dfc6253f86a12ef817"
+        }
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/platform/linux/wayland/window.c",
+            "bytes": 180836,
+            "sha256": "06e97e0815f9cb17ff58ede711e95778b2d3677971bba40918e758f193490559"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/shared/CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o",
+            "bytes": 130080,
+            "sha256": "9b549af5cb39ab9f85ba661999ec7b00ee9b4ea86dd54db6479ffc449a13bc36"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_BUILDING_SHARED -DNEXAUI_BUILD_LINUX=1 -DNEXAUI_HAVE_DBUS_SDK=1 -DNEXAUI_LINUX_WAYLAND_ONLY -DNEXAUI_SHARED -DNEXAUI_WAYLAND_FRACTIONAL_SCALE=1 -DNEXAUI_WAYLAND_TEST_HOOKS -DNEXAUI_X11_TEST_HOOKS -Dnexaui_EXPORTS -I/tmp/nexaui-ime-handoff202/source/platform/common -I/tmp/nexaui-ime-handoff202/source/src -I/tmp/nexaui-ime-handoff202/shared/generated -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include -I/tmp/nexaui-ime-handoff202/shared/generated/wayland -I/tmp/nexaui-ime-handoff202/source/include -Werror -O3 -DNDEBUG -std=c17 -fPIC -Wall -Wextra -Wpedantic -o CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o -c /tmp/nexaui-ime-handoff202/source/platform/linux/wayland/window.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_storage.c",
+            "bytes": 9244,
+            "sha256": "4b3b708ef9c718097292434a4ba23bb5542232bfd6f7f7821b3d610f60f6eb86"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/shared/CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o",
+            "bytes": 52928,
+            "sha256": "80001d0d1b35f0040c414db5633dcea679b77229de4bf044de7e8557192398e9"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-ime-handoff202/shared/generated/wayland -I/tmp/nexaui-ime-handoff202/source/platform/linux -I/tmp/nexaui-ime-handoff202/source/include -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o -c /tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_storage.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_key_handoff.c",
+            "bytes": 7381,
+            "sha256": "8c689d841abef659b5f9e1706239defd5476b4e90fb348b10ca2c6bc25a7bd1d"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/shared/CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o",
+            "bytes": 50568,
+            "sha256": "4525f2a62d354feefaeb935f7eb56bdf4a7abf58f9a933dc9ca53150055200b6"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-ime-handoff202/shared/generated/wayland -I/tmp/nexaui-ime-handoff202/source/platform/linux -I/tmp/nexaui-ime-handoff202/source/include -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o -c /tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_key_handoff.c"
+        }
+      ],
+      "native": [
+        {
+          "mode": "keyboard",
+          "frames": 53,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-shared-keyboard.log",
+            "bytes": 207,
+            "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+          }
+        },
+        {
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-shared-compose.log",
+            "bytes": 381,
+            "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+          }
+        },
+        {
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-shared-cancel.log",
+            "bytes": 373,
+            "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+          }
+        }
+      ],
+      "host_dynamic": "\nDynamic section at offset 0xdc00 contains 26 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000001d (RUNPATH)            Library runpath: [/tmp/nexaui-ime-handoff202/shared-prefix/lib]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x6669\n 0x0000000000000019 (INIT_ARRAY)         0xdbc0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xdbc8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x970\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1103 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xdde0\n 0x0000000000000002 (PLTRELSZ)           1416 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xeb0\n 0x0000000000000007 (RELA)               0xdc0\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          4\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x6c00 contains 27 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x4040\n 0x0000000000000019 (INIT_ARRAY)         0x6bf0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6bf8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x940\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1134 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6df0\n 0x0000000000000002 (PLTRELSZ)           1344 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xea0\n 0x0000000000000007 (RELA)               0xdb0\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "asan",
+      "sdk_cases": [
+        "nexaui_platform_event_queue",
+        "nexaui_wayland_text_input_v1",
+        "nexaui_wayland_text_input_v1_transactions",
+        "nexaui_wayland_text_input_v3",
+        "nexaui_wayland_text_input_v3_commit_controls",
+        "nexaui_wayland_text_input_v3_selection_revert",
+        "nexaui_wayland_text_input_v3_field_replace",
+        "nexaui_wayland_ime_transactions",
+        "nexaui_wayland_ime_transactions_legacy",
+        "nexaui_wayland_ime_atomic",
+        "nexaui_wayland_ime_storage_replace",
+        "nexaui_wayland_ime_storage_empty",
+        "nexaui_wayland_ime_storage_invalid",
+        "nexaui_wayland_ime_storage_lifecycle",
+        "nexaui_wayland_ime_key_handoff_activation",
+        "nexaui_wayland_ime_key_handoff_deactivation",
+        "nexaui_wayland_ime_key_handoff_forwarded",
+        "nexaui_wayland_ime_key_handoff_normal",
+        "nexaui_wayland_ime_key_handoff_refresh",
+        "nexaui_core",
+        "nexaui_numeric_field",
+        "nexaui_text_field",
+        "nexaui_ime_field_atomic",
+        "nexaui_text_value",
+        "nexaui_input",
+        "nexaui_interaction"
+      ],
+      "consumer_cases": [
+        "aetheri_login_view"
+      ],
+      "artifacts": [
+        {
+          "kind": "library",
+          "path": "/tmp/nexaui-ime-handoff202/asan-prefix/lib/libnexaui.a",
+          "bytes": 11569530,
+          "sha256": "cefbf73fb7b7a8ce644d193f3280be5dc98f4bbf0e4ac608b097f663b9539d67"
+        },
+        {
+          "kind": "sdk-tests",
+          "path": "/tmp/nexaui-ime-handoff202/asan/tests.xml",
+          "bytes": 7232,
+          "sha256": "d3c1e2c67ede5d0704f4873c0308ac7c10dbc6c0d32a36a840bf473a4dc26e35"
+        },
+        {
+          "kind": "sdk-commands",
+          "path": "/tmp/nexaui-ime-handoff202/asan/compile_commands.json",
+          "bytes": 188504,
+          "sha256": "10acf9519f1fef81a5995806f42bbe1324278b90d625d3623cb05acb20da52ac"
+        },
+        {
+          "kind": "storage-test",
+          "path": "/tmp/nexaui-ime-handoff202/asan/nexaui_wayland_ime_storage_tests",
+          "bytes": 10464264,
+          "sha256": "3ad95ce9e87d89c50c6bbf777348bf6c54ad3ff52591af426102a43f52242e91"
+        },
+        {
+          "kind": "handoff-test",
+          "path": "/tmp/nexaui-ime-handoff202/asan/nexaui_wayland_ime_key_handoff_tests",
+          "bytes": 10462672,
+          "sha256": "33b45e80633e99766452885c79b32ec76a6d029993e85f15a0bd8a975662466d"
+        },
+        {
+          "kind": "consumer-tests",
+          "path": "/tmp/nexaui-ime-handoff202/asan-login/tests.xml",
+          "bytes": 519,
+          "sha256": "8f336cc06de43d2333dc9cad9276a14f5e6719b5fe48f8dd7e511def743b400b"
+        },
+        {
+          "kind": "consumer-commands",
+          "path": "/tmp/nexaui-ime-handoff202/asan-login/compile_commands.json",
+          "bytes": 4089,
+          "sha256": "5ae5484acd20783e7f63963bb210e234d40ac4e56221f037522eba3c40041f74"
+        },
+        {
+          "kind": "host",
+          "path": "/tmp/nexaui-ime-handoff202/asan-login/aetheri_login_native_host",
+          "bytes": 10489968,
+          "sha256": "6e54fcf72cf90fbce1efb491e78b542613c130a9780859b8c7f23f1e476e3de8"
+        },
+        {
+          "kind": "peer",
+          "path": "/tmp/nexaui-ime-handoff202/asan-login/aetheri_login_atspi_peer",
+          "bytes": 2907040,
+          "sha256": "034d07e48ce6f2abc45bc18046f541f7dacf68e5df24d1f81078ff021b5da126"
+        },
+        {
+          "kind": "view-test",
+          "path": "/tmp/nexaui-ime-handoff202/asan-login/aetheri_login_view_test",
+          "bytes": 10590968,
+          "sha256": "7a9cf6be5bf3a1b320d75204045616579092a6d864b5295f5916d8e3d99b3b2e"
+        }
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/platform/linux/wayland/window.c",
+            "bytes": 180836,
+            "sha256": "06e97e0815f9cb17ff58ede711e95778b2d3677971bba40918e758f193490559"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/asan/CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o",
+            "bytes": 1335200,
+            "sha256": "c88deb5ba0531a5228ade3ded2b437c74e69fe9d142b6b977c64fb2dd5d4c70a"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_BUILD_LINUX=1 -DNEXAUI_HAVE_DBUS_SDK=1 -DNEXAUI_LINUX_WAYLAND_ONLY -DNEXAUI_WAYLAND_FRACTIONAL_SCALE=1 -DNEXAUI_WAYLAND_TEST_HOOKS -DNEXAUI_X11_TEST_HOOKS -I/tmp/nexaui-ime-handoff202/source/platform/common -I/tmp/nexaui-ime-handoff202/source/src -I/tmp/nexaui-ime-handoff202/asan/generated -I/usr/include/dbus-1.0 -I/usr/lib/dbus-1.0/include -I/tmp/nexaui-ime-handoff202/asan/generated/wayland -I/tmp/nexaui-ime-handoff202/source/include -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -Wall -Wextra -Wpedantic -o CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o -c /tmp/nexaui-ime-handoff202/source/platform/linux/wayland/window.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_storage.c",
+            "bytes": 9244,
+            "sha256": "4b3b708ef9c718097292434a4ba23bb5542232bfd6f7f7821b3d610f60f6eb86"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/asan/CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o",
+            "bytes": 323328,
+            "sha256": "fcd53e92eab159986e20d4244284d54ee12b98615f8715fcbdaabf2a8a6d6aa9"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-ime-handoff202/asan/generated/wayland -I/tmp/nexaui-ime-handoff202/source/platform/linux -I/tmp/nexaui-ime-handoff202/source/include -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o -c /tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_storage.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_key_handoff.c",
+            "bytes": 7381,
+            "sha256": "8c689d841abef659b5f9e1706239defd5476b4e90fb348b10ca2c6bc25a7bd1d"
+          },
+          "object": {
+            "path": "/tmp/nexaui-ime-handoff202/asan/CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o",
+            "bytes": 313040,
+            "sha256": "a90476fd19174c847b7062cfad56149f60f0f010e8861a4f0c0010d0db58dae2"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-ime-handoff202/asan/generated/wayland -I/tmp/nexaui-ime-handoff202/source/platform/linux -I/tmp/nexaui-ime-handoff202/source/include -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o -c /tmp/nexaui-ime-handoff202/source/tests/test_wayland_ime_key_handoff.c"
+        }
+      ],
+      "native": [
+        {
+          "mode": "keyboard",
+          "frames": 53,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-asan-keyboard.log",
+            "bytes": 207,
+            "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+          }
+        },
+        {
+          "mode": "compose",
+          "frames": 25,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-asan-compose.log",
+            "bytes": 381,
+            "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+          }
+        },
+        {
+          "mode": "cancel",
+          "frames": 30,
+          "requests": 2,
+          "log": {
+            "path": "/mnt/d/NexaUI/out/ime-handoff203-asan-cancel.log",
+            "bytes": 373,
+            "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+          }
+        }
+      ],
+      "host_dynamic": "\nDynamic section at offset 0x57da00 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x17a000\n 0x000000000000000d (FINI)               0x4e2bcb\n 0x0000000000000019 (INIT_ARRAY)         0x57b1d8\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x57b1f0\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x14a50\n 0x0000000000000006 (SYMTAB)             0x52d0\n 0x000000000000000a (STRSZ)              59740 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x57dc20\n 0x0000000000000002 (PLTRELSZ)           1248 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x1795f8\n 0x0000000000000007 (RELA)               0x248a0\n 0x0000000000000008 (RELASZ)             1396056 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x24850\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x233ac\n 0x000000006ffffff9 (RELACOUNT)          58092\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x133ac0 contains 31 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x28000\n 0x000000000000000d (FINI)               0xfacd0\n 0x0000000000000019 (INIT_ARRAY)         0x133378\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x133390\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x147e8\n 0x0000000000000006 (SYMTAB)             0x52c0\n 0x000000000000000a (STRSZ)              59470 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x133cf0\n 0x0000000000000002 (PLTRELSZ)           936 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x27778\n 0x0000000000000007 (RELA)               0x244d8\n 0x0000000000000008 (RELASZ)             12960 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x244a8\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x23036\n 0x000000006ffffff9 (RELACOUNT)          490\n 0x0000000000000000 (NULL)               0x0\n"
+    }
+  ],
+  "negative_handoff": {
+    "sdk_revision": "f4590ef0402b0ca431509600d5f4f05f6aa9b837",
+    "inputs": [
+      {
+        "path": "tests/test_wayland_ime_key_handoff.c",
+        "sha256": "8c689d841abef659b5f9e1706239defd5476b4e90fb348b10ca2c6bc25a7bd1d"
+      },
+      {
+        "path": "tests/wayland_v3_fixture.h",
+        "sha256": "3a1345492cc23b366453217c3fa01e5deacf5d1a4802ebc37e6ce776afca1a7f"
+      },
+      {
+        "path": "tests/fixture_font.h",
+        "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+      }
+    ],
+    "commands": [
+      {
+        "profile": "release",
+        "step": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-ime-handoff201/source",
+          "-B",
+          "/tmp/nexaui-ime-handoff201/release",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+          "-DCMAKE_C_FLAGS=-Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-storage188/release-prefix"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 6.140905848999864,
+        "log": "ime-handoff201-old-release-configure.log",
+        "sha256": "573d1244d05339dfa51c829bd9f0ff16823b89a2bb1686c8d6b6dff3272140dd"
+      },
+      {
+        "profile": "release",
+        "step": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-ime-handoff201/release",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.8886485499999708,
+        "log": "ime-handoff201-old-release-build.log",
+        "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+      },
+      {
+        "profile": "release",
+        "step": "activation",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/release/handoff",
+          "activation"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.036389689000088765,
+        "log": "ime-handoff201-old-release-activation.log",
+        "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+      },
+      {
+        "profile": "release",
+        "step": "deactivation",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/release/handoff",
+          "deactivation"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.035955107000063435,
+        "log": "ime-handoff201-old-release-deactivation.log",
+        "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+      },
+      {
+        "profile": "release",
+        "step": "forwarded",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/release/handoff",
+          "forwarded"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.036602203000029476,
+        "log": "ime-handoff201-old-release-forwarded.log",
+        "sha256": "072504e07246f5c86e32c7da20ac3d100de0e1e59b0c456f6ec81f15ae0eee3f"
+      },
+      {
+        "profile": "release",
+        "step": "normal",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/release/handoff",
+          "normal"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.019797945000163963,
+        "log": "ime-handoff201-old-release-normal.log",
+        "sha256": "e4a3985d49dc708263999b6cf8690156a8365d181a40a57f43c376f9f60b263b"
+      },
+      {
+        "profile": "release",
+        "step": "refresh",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/release/handoff",
+          "refresh"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.03647108799987109,
+        "log": "ime-handoff201-old-release-refresh.log",
+        "sha256": "bfa24f680ed83ceddc191abe7830244cbe7291cddd6422620ff599244fff5fc0"
+      },
+      {
+        "profile": "asan",
+        "step": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-ime-handoff201/source",
+          "-B",
+          "/tmp/nexaui-ime-handoff201/asan",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Debug",
+          "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+          "-DCMAKE_C_FLAGS=-Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-storage188/asan-prefix"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 6.23959381099985,
+        "log": "ime-handoff201-old-asan-configure.log",
+        "sha256": "383306a6c0017baa20b129c8bcd0956f0b7966179d77f3e28bbd837cfc54594d"
+      },
+      {
+        "profile": "asan",
+        "step": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-ime-handoff201/asan",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 2.187495972000079,
+        "log": "ime-handoff201-old-asan-build.log",
+        "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+      },
+      {
+        "profile": "asan",
+        "step": "activation",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/asan/handoff",
+          "activation"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.2195326030000615,
+        "log": "ime-handoff201-old-asan-activation.log",
+        "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+      },
+      {
+        "profile": "asan",
+        "step": "deactivation",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/asan/handoff",
+          "deactivation"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.1677545499999269,
+        "log": "ime-handoff201-old-asan-deactivation.log",
+        "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+      },
+      {
+        "profile": "asan",
+        "step": "forwarded",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/asan/handoff",
+          "forwarded"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.167502334999881,
+        "log": "ime-handoff201-old-asan-forwarded.log",
+        "sha256": "072504e07246f5c86e32c7da20ac3d100de0e1e59b0c456f6ec81f15ae0eee3f"
+      },
+      {
+        "profile": "asan",
+        "step": "normal",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/asan/handoff",
+          "normal"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.16802697399998578,
+        "log": "ime-handoff201-old-asan-normal.log",
+        "sha256": "e4a3985d49dc708263999b6cf8690156a8365d181a40a57f43c376f9f60b263b"
+      },
+      {
+        "profile": "asan",
+        "step": "refresh",
+        "command": [
+          "/tmp/nexaui-ime-handoff201/asan/handoff",
+          "refresh"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.16810820399996373,
+        "log": "ime-handoff201-old-asan-refresh.log",
+        "sha256": "bfa24f680ed83ceddc191abe7830244cbe7291cddd6422620ff599244fff5fc0"
+      }
+    ]
+  },
+  "refresh_review": [
+    {
+      "label": "baseline",
+      "step": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-ime-refresh200/source",
+        "-B",
+        "/tmp/nexaui-ime-refresh200/baseline",
+        "-G",
+        "Ninja",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_FLAGS=-Werror",
+        "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-storage188/release-prefix"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "seconds": 4.98394478299997,
+      "log": "ime-refresh200-baseline-configure.log",
+      "sha256": "f027b92670758f2cf4f37f76f1c15019d7daaf9c4878512d557d1601d3c3079d"
+    },
+    {
+      "label": "baseline",
+      "step": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-ime-refresh200/baseline",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "seconds": 0.6203828039999735,
+      "log": "ime-refresh200-baseline-build.log",
+      "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+    },
+    {
+      "label": "baseline",
+      "step": "refresh",
+      "command": [
+        "/tmp/nexaui-ime-refresh200/baseline/handoff",
+        "refresh"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "seconds": 0.019644114000129775,
+      "log": "ime-refresh200-baseline-refresh.log",
+      "sha256": "bfa24f680ed83ceddc191abe7830244cbe7291cddd6422620ff599244fff5fc0"
+    },
+    {
+      "label": "transition",
+      "step": "configure",
+      "command": [
+        "cmake",
+        "-S",
+        "/tmp/nexaui-ime-refresh200/source",
+        "-B",
+        "/tmp/nexaui-ime-refresh200/transition",
+        "-G",
+        "Ninja",
+        "-DCMAKE_C_COMPILER=clang",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_C_FLAGS=-Werror",
+        "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff198/release-prefix"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "seconds": 5.38400792099992,
+      "log": "ime-refresh200-transition-configure.log",
+      "sha256": "2e03b60a8e4a3ca5f859089f7353826e765c44fdf2d716177e82887458fcfeed"
+    },
+    {
+      "label": "transition",
+      "step": "build",
+      "command": [
+        "cmake",
+        "--build",
+        "/tmp/nexaui-ime-refresh200/transition",
+        "--parallel",
+        "2"
+      ],
+      "exit": 0,
+      "expected_exit": 0,
+      "seconds": 0.6705084980001175,
+      "log": "ime-refresh200-transition-build.log",
+      "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+    },
+    {
+      "label": "transition",
+      "step": "refresh",
+      "command": [
+        "/tmp/nexaui-ime-refresh200/transition/handoff",
+        "refresh"
+      ],
+      "exit": 1,
+      "expected_exit": 1,
+      "seconds": 2.0804032790001656,
+      "log": "ime-refresh200-transition-refresh.log",
+      "sha256": "328d2c4377c841ba523aff0448fea06d3b401213f3a5ad022b61352c07f5cc7f"
+    }
+  ],
+  "password_checkpoint": {
+    "path": "/mnt/d/NexaUI/out/ime-storage190-verified.json",
+    "bytes": 113918,
+    "sha256": "d6a51d6d13d478546947a34a829d6f67a6541de3d39a5db40169f2c0d2107056"
+  },
+  "password_archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-ime-storage190.tar.gz",
+    "bytes": 58654944,
+    "sha256": "05dbb4c914b139f7c34b1cf32a69db051602f79838f5424c76eb756f47877106"
+  },
+  "sdk_ctests": 78,
+  "installed_ctests": 3,
+  "native_tasks": 9,
+  "ime_tasks": 6,
+  "exports_unchanged": true,
+  "shared_exports": 546,
+  "public_headers_unchanged": true,
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-ime-handoff204.tar.gz",
+    "bytes": 59559060,
+    "sha256": "2eeb186ca93353325cbaa4535f48f18c6fdccaa0cc5eacc014e60c2fcfa63388",
+    "verified_members": 174
+  },
+  "manifest": [
+    {
+      "member": "source/ime-handoff202-source.tar.gz",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-source.tar.gz",
+      "bytes": 16533290,
+      "sha256": "4239b7d53fe6d0aba65f3d7d89556bea504133bb9786e154e551ff3b0042a0a8"
+    },
+    {
+      "member": "parents/ime-storage190-verified.json",
+      "path": "/mnt/d/NexaUI/out/ime-storage190-verified.json",
+      "bytes": 113918,
+      "sha256": "d6a51d6d13d478546947a34a829d6f67a6541de3d39a5db40169f2c0d2107056"
+    },
+    {
+      "member": "logs/ime-handoff201-old-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-release-configure.log",
+      "bytes": 795,
+      "sha256": "573d1244d05339dfa51c829bd9f0ff16823b89a2bb1686c8d6b6dff3272140dd"
+    },
+    {
+      "member": "logs/ime-handoff201-old-release-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-release-build.log",
+      "bytes": 372,
+      "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+    },
+    {
+      "member": "logs/ime-handoff201-old-release-activation.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-release-activation.log",
+      "bytes": 148,
+      "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+    },
+    {
+      "member": "logs/ime-handoff201-old-release-deactivation.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-release-deactivation.log",
+      "bytes": 148,
+      "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+    },
+    {
+      "member": "logs/ime-handoff201-old-release-forwarded.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-release-forwarded.log",
+      "bytes": 80,
+      "sha256": "072504e07246f5c86e32c7da20ac3d100de0e1e59b0c456f6ec81f15ae0eee3f"
+    },
+    {
+      "member": "logs/ime-handoff201-old-release-normal.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-release-normal.log",
+      "bytes": 77,
+      "sha256": "e4a3985d49dc708263999b6cf8690156a8365d181a40a57f43c376f9f60b263b"
+    },
+    {
+      "member": "logs/ime-handoff201-old-release-refresh.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-release-refresh.log",
+      "bytes": 78,
+      "sha256": "bfa24f680ed83ceddc191abe7830244cbe7291cddd6422620ff599244fff5fc0"
+    },
+    {
+      "member": "logs/ime-handoff201-old-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-asan-configure.log",
+      "bytes": 792,
+      "sha256": "383306a6c0017baa20b129c8bcd0956f0b7966179d77f3e28bbd837cfc54594d"
+    },
+    {
+      "member": "logs/ime-handoff201-old-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-asan-build.log",
+      "bytes": 372,
+      "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+    },
+    {
+      "member": "logs/ime-handoff201-old-asan-activation.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-asan-activation.log",
+      "bytes": 148,
+      "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+    },
+    {
+      "member": "logs/ime-handoff201-old-asan-deactivation.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-asan-deactivation.log",
+      "bytes": 148,
+      "sha256": "2cb4dde3ac950ba2b526dd2d4e17907bf797f8a559795b0283b0f24470ee41e2"
+    },
+    {
+      "member": "logs/ime-handoff201-old-asan-forwarded.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-asan-forwarded.log",
+      "bytes": 80,
+      "sha256": "072504e07246f5c86e32c7da20ac3d100de0e1e59b0c456f6ec81f15ae0eee3f"
+    },
+    {
+      "member": "logs/ime-handoff201-old-asan-normal.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-asan-normal.log",
+      "bytes": 77,
+      "sha256": "e4a3985d49dc708263999b6cf8690156a8365d181a40a57f43c376f9f60b263b"
+    },
+    {
+      "member": "logs/ime-handoff201-old-asan-refresh.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old-asan-refresh.log",
+      "bytes": 78,
+      "sha256": "bfa24f680ed83ceddc191abe7830244cbe7291cddd6422620ff599244fff5fc0"
+    },
+    {
+      "member": "logs/ime-refresh200-baseline-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-refresh200-baseline-configure.log",
+      "bytes": 796,
+      "sha256": "f027b92670758f2cf4f37f76f1c15019d7daaf9c4878512d557d1601d3c3079d"
+    },
+    {
+      "member": "logs/ime-refresh200-baseline-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-refresh200-baseline-build.log",
+      "bytes": 372,
+      "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+    },
+    {
+      "member": "logs/ime-refresh200-baseline-refresh.log",
+      "path": "/mnt/d/NexaUI/out/ime-refresh200-baseline-refresh.log",
+      "bytes": 78,
+      "sha256": "bfa24f680ed83ceddc191abe7830244cbe7291cddd6422620ff599244fff5fc0"
+    },
+    {
+      "member": "logs/ime-refresh200-transition-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-refresh200-transition-configure.log",
+      "bytes": 798,
+      "sha256": "2e03b60a8e4a3ca5f859089f7353826e765c44fdf2d716177e82887458fcfeed"
+    },
+    {
+      "member": "logs/ime-refresh200-transition-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-refresh200-transition-build.log",
+      "bytes": 372,
+      "sha256": "79c5cfa190fd83246b575ff0957c3ace239e0299b3f88b784205cd476a066f65"
+    },
+    {
+      "member": "logs/ime-refresh200-transition-refresh.log",
+      "path": "/mnt/d/NexaUI/out/ime-refresh200-transition-refresh.log",
+      "bytes": 144,
+      "sha256": "328d2c4377c841ba523aff0448fea06d3b401213f3a5ad022b61352c07f5cc7f"
+    },
+    {
+      "member": "negative/release/handoff",
+      "path": "/tmp/nexaui-ime-handoff201/release/handoff",
+      "bytes": 852616,
+      "sha256": "f04c46a4115cc829e8c296e54f6947b3acf72a561e9044d5be2dc5fe842abe91"
+    },
+    {
+      "member": "negative/release/CMakeCache.txt",
+      "path": "/tmp/nexaui-ime-handoff201/release/CMakeCache.txt",
+      "bytes": 19781,
+      "sha256": "410e8bb95ef6bc6fd3c42392a2d9586cc32255277b1cf208846007736aa1fcd0"
+    },
+    {
+      "member": "negative/asan/handoff",
+      "path": "/tmp/nexaui-ime-handoff201/asan/handoff",
+      "bytes": 10461960,
+      "sha256": "e45cbd3a65a11088b5edcd90406e88c565afbddb0e182f7f1699a34d0130c825"
+    },
+    {
+      "member": "negative/asan/CMakeCache.txt",
+      "path": "/tmp/nexaui-ime-handoff201/asan/CMakeCache.txt",
+      "bytes": 19814,
+      "sha256": "fe3cb9e485f46ba414e7ebdd8689f3a50b428115f5d914ffdfc97e704c7b308d"
+    },
+    {
+      "member": "negative/source/test_wayland_ime_key_handoff.c",
+      "path": "/tmp/nexaui-ime-handoff201/source/test_wayland_ime_key_handoff.c",
+      "bytes": 7381,
+      "sha256": "8c689d841abef659b5f9e1706239defd5476b4e90fb348b10ca2c6bc25a7bd1d"
+    },
+    {
+      "member": "negative/source/wayland_v3_fixture.h",
+      "path": "/tmp/nexaui-ime-handoff201/source/wayland_v3_fixture.h",
+      "bytes": 27440,
+      "sha256": "3a1345492cc23b366453217c3fa01e5deacf5d1a4802ebc37e6ce776afca1a7f"
+    },
+    {
+      "member": "negative/source/fixture_font.h",
+      "path": "/tmp/nexaui-ime-handoff201/source/fixture_font.h",
+      "bytes": 3343,
+      "sha256": "f91172966f6ba5c35be0bd569742093d2519ef6d9e822ac5a833b983011df06f"
+    },
+    {
+      "member": "negative/source/CMakeLists.txt",
+      "path": "/tmp/nexaui-ime-handoff201/source/CMakeLists.txt",
+      "bytes": 941,
+      "sha256": "31699695fc896168da1b9280bb4bf71110a82ed6a3485b23af893572d935549d"
+    },
+    {
+      "member": "review/baseline/handoff",
+      "path": "/tmp/nexaui-ime-refresh200/baseline/handoff",
+      "bytes": 852616,
+      "sha256": "ce11921514d830881a08fe5ff4452868629b208a2e43b0a714d48e28b17e93a9"
+    },
+    {
+      "member": "review/baseline/CMakeCache.txt",
+      "path": "/tmp/nexaui-ime-refresh200/baseline/CMakeCache.txt",
+      "bytes": 19781,
+      "sha256": "2f145a0376fd750b412c12448d12354e2e47a7c3540b30c295095e667bb4195a"
+    },
+    {
+      "member": "review/transition/handoff",
+      "path": "/tmp/nexaui-ime-refresh200/transition/handoff",
+      "bytes": 856712,
+      "sha256": "06d40b0a641457d187cff211a2594a2969215449b35beff8bd21cd5ed9ee8ffe"
+    },
+    {
+      "member": "review/transition/CMakeCache.txt",
+      "path": "/tmp/nexaui-ime-refresh200/transition/CMakeCache.txt",
+      "bytes": 19789,
+      "sha256": "6eefffdecd112de58961e2783997556b7a66aeacf9cb02ba54dd931a160f61cb"
+    },
+    {
+      "member": "review/source/test_wayland_ime_key_handoff.c",
+      "path": "/tmp/nexaui-ime-refresh200/source/test_wayland_ime_key_handoff.c",
+      "bytes": 7381,
+      "sha256": "8c689d841abef659b5f9e1706239defd5476b4e90fb348b10ca2c6bc25a7bd1d"
+    },
+    {
+      "member": "review/source/CMakeLists.txt",
+      "path": "/tmp/nexaui-ime-refresh200/source/CMakeLists.txt",
+      "bytes": 941,
+      "sha256": "31699695fc896168da1b9280bb4bf71110a82ed6a3485b23af893572d935549d"
+    },
+    {
+      "member": "review/ime-handoff198-source.tar.gz",
+      "path": "/mnt/d/NexaUI/out/ime-handoff198-source.tar.gz",
+      "bytes": 16532683,
+      "sha256": "a5e09cb3e36f8a9126551514cc58a4c609bef619204ca06a1615da7198a4df69"
+    },
+    {
+      "member": "review/preimage198/libnexaui.a",
+      "path": "/tmp/nexaui-ime-handoff198/release-prefix/lib/libnexaui.a",
+      "bytes": 1185340,
+      "sha256": "1fe441a14c04382c50e659e5f5a1168c4f0024d83d1cf60b2ccfd34f66e72791"
+    },
+    {
+      "member": "review/preimage198/compile_commands.json",
+      "path": "/tmp/nexaui-ime-handoff198/release/compile_commands.json",
+      "bytes": 177851,
+      "sha256": "4d2b5dd1ccca0627b87bb2d8b98933ec5343f84f42fa626f39e8fb3b51c70320"
+    },
+    {
+      "member": "logs/ime-handoff202-release-sdk-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-release-sdk-configure.log",
+      "bytes": 799,
+      "sha256": "aaed9ce6c3d4e60342f103f9936a8dfa2544bb3ef7b5a0611800fb50f3f5a832"
+    },
+    {
+      "member": "logs/ime-handoff202-release-sdk-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-release-sdk-build.log",
+      "bytes": 9028,
+      "sha256": "c6697752582befb2feb36f6a26ffaff6771cd9fad6ed1031feaf74b4c72a1272"
+    },
+    {
+      "member": "logs/ime-handoff202-release-sdk-test.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-release-sdk-test.log",
+      "bytes": 12549,
+      "sha256": "9eac3fdea470973ffe0590c1798e294dcea01f0f6e6f109c74c214441133fb61"
+    },
+    {
+      "member": "logs/ime-handoff202-release-sdk-install.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-release-sdk-install.log",
+      "bytes": 1361,
+      "sha256": "08af0126097ce17cf15df3fd27ee435d3f33ccd83726ed7572f820ad1cae4615"
+    },
+    {
+      "member": "logs/ime-handoff202-release-login-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-release-login-configure.log",
+      "bytes": 839,
+      "sha256": "7672472dfc5143904519cc151d901ea302cd184f59f54c2879984d953df8978f"
+    },
+    {
+      "member": "logs/ime-handoff202-release-login-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-release-login-build.log",
+      "bytes": 755,
+      "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+    },
+    {
+      "member": "logs/ime-handoff202-release-login-test.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-release-login-test.log",
+      "bytes": 979,
+      "sha256": "e10c615f53fa64e3b1124d842f3ccf4cf06e8e7d7bdace565fb08596f02b2ae4"
+    },
+    {
+      "member": "release/objects/window.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/release/CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o",
+      "bytes": 129608,
+      "sha256": "3a1b84b8443a69cac746b51fdda66a5b9508617f0efbb00e9ede3041877826e2"
+    },
+    {
+      "member": "release/objects/test_wayland_ime_storage.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/release/CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o",
+      "bytes": 52928,
+      "sha256": "80001d0d1b35f0040c414db5633dcea679b77229de4bf044de7e8557192398e9"
+    },
+    {
+      "member": "release/objects/test_wayland_ime_key_handoff.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/release/CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o",
+      "bytes": 50568,
+      "sha256": "4525f2a62d354feefaeb935f7eb56bdf4a7abf58f9a933dc9ca53150055200b6"
+    },
+    {
+      "member": "release/library/libnexaui.a",
+      "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+      "bytes": 1185356,
+      "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+    },
+    {
+      "member": "release/sdk-tests/tests.xml",
+      "path": "/tmp/nexaui-ime-handoff202/release/tests.xml",
+      "bytes": 7266,
+      "sha256": "621b493e8482e3fdfa7c425b0a6f6f19022b2539bc9d5d6faddcacef0290d73d"
+    },
+    {
+      "member": "release/sdk-commands/compile_commands.json",
+      "path": "/tmp/nexaui-ime-handoff202/release/compile_commands.json",
+      "bytes": 177851,
+      "sha256": "861006e593f33c2589574311bed160510fee09b0954189f33f49d01f27fd153b"
+    },
+    {
+      "member": "release/storage-test/nexaui_wayland_ime_storage_tests",
+      "path": "/tmp/nexaui-ime-handoff202/release/nexaui_wayland_ime_storage_tests",
+      "bytes": 856664,
+      "sha256": "7f71306404e89dd7ffcab7f6b6e9cdf35ca6449ea90d86a779374e45e537125a"
+    },
+    {
+      "member": "release/handoff-test/nexaui_wayland_ime_key_handoff_tests",
+      "path": "/tmp/nexaui-ime-handoff202/release/nexaui_wayland_ime_key_handoff_tests",
+      "bytes": 856712,
+      "sha256": "73a97c227cbc8d55a5c180e9cd878913f6229602bf5a58c21f76e9cf28f45730"
+    },
+    {
+      "member": "release/consumer-tests/tests.xml",
+      "path": "/tmp/nexaui-ime-handoff202/release-login/tests.xml",
+      "bytes": 519,
+      "sha256": "348fc0d657a8a4366ff4c48b6a66641df6a0847b2a5cbda3a57b8787eb356366"
+    },
+    {
+      "member": "release/consumer-commands/compile_commands.json",
+      "path": "/tmp/nexaui-ime-handoff202/release-login/compile_commands.json",
+      "bytes": 3858,
+      "sha256": "c3a40ef940c10b33d5e69d50a0d3fe8aba208a4a00c5835ddb76c344f6248b07"
+    },
+    {
+      "member": "release/host/aetheri_login_native_host",
+      "path": "/tmp/nexaui-ime-handoff202/release-login/aetheri_login_native_host",
+      "bytes": 870736,
+      "sha256": "584de235bc6e777be618f3cb8145e36eae235781f27333da566006831b4ea2c1"
+    },
+    {
+      "member": "release/peer/aetheri_login_atspi_peer",
+      "path": "/tmp/nexaui-ime-handoff202/release-login/aetheri_login_atspi_peer",
+      "bytes": 37344,
+      "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+    },
+    {
+      "member": "release/view-test/aetheri_login_view_test",
+      "path": "/tmp/nexaui-ime-handoff202/release-login/aetheri_login_view_test",
+      "bytes": 899592,
+      "sha256": "183d1ad7a60f43d3ddd1f62fd83a4fae7a25d61390fd161f6fa00b35cef6d7bb"
+    },
+    {
+      "member": "logs/ime-handoff203-release-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-release-keyboard.log",
+      "bytes": 207,
+      "sha256": "ee9c1ae0b7d81a8f830608b5b98eee4fbf9b953b4ec9aa939c1ab05123068eb9"
+    },
+    {
+      "member": "release/weston-keyboard/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-keyboard/result.json",
+      "bytes": 1023,
+      "sha256": "5a73f7773e6ece8184800ad67b6e2358b15392ebe0840094c40985fc2e9e314e"
+    },
+    {
+      "member": "release/weston-keyboard/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "release/weston-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-keyboard/weston.stderr",
+      "bytes": 2845,
+      "sha256": "a4f280bf535713413be615da45b9cbe2206aec00069e2ca93882d1cbafbaada1"
+    },
+    {
+      "member": "release/weston-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff203-release-compose.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-release-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "release/weston-compose/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-compose/result.json",
+      "bytes": 1022,
+      "sha256": "57e5778e685235769b85621c6ccc835ece06e5ca3f460d1bc6f750f5ef04ced7"
+    },
+    {
+      "member": "release/weston-compose/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "release/weston-compose/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-compose/weston.stderr",
+      "bytes": 3047,
+      "sha256": "32ecd120c76c38ab5d9a86391e653b6187717ef1d9db9cd87f70a7bfbfdee71d"
+    },
+    {
+      "member": "release/weston-compose/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff203-release-cancel.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-release-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "release/weston-cancel/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-cancel/result.json",
+      "bytes": 1023,
+      "sha256": "770935d0eb06f27a02ba7738721a74d7de328a8ec9d9ebe2670e2a54db14c666"
+    },
+    {
+      "member": "release/weston-cancel/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "release/weston-cancel/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-cancel/weston.stderr",
+      "bytes": 3072,
+      "sha256": "eabaa86b9362a80bf8c0dbc6683e335a03ce7ba5ea86e0a7fe6bacd2a6989003"
+    },
+    {
+      "member": "release/weston-cancel/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-release-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff202-shared-sdk-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-shared-sdk-configure.log",
+      "bytes": 798,
+      "sha256": "14f06ceaafadb9817de7f5aacb382601f3bd26354229d76c6cd344f5731bde4a"
+    },
+    {
+      "member": "logs/ime-handoff202-shared-sdk-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-shared-sdk-build.log",
+      "bytes": 9099,
+      "sha256": "2e0afc5bc65033e68beb6ce672bd8974425e5c58ca0465faf849e23fa2e54efe"
+    },
+    {
+      "member": "logs/ime-handoff202-shared-sdk-test.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-shared-sdk-test.log",
+      "bytes": 12495,
+      "sha256": "b64f9c5348ef3774d9a21f4f51f5a31909f9f18c5430467dc26f8d45aaa7653a"
+    },
+    {
+      "member": "logs/ime-handoff202-shared-sdk-install.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-shared-sdk-install.log",
+      "bytes": 1502,
+      "sha256": "e8af9a6bd91786bc437f33a7d1fd155e26d44bebf9777e4e4c5526e4b0cd97dd"
+    },
+    {
+      "member": "logs/ime-handoff202-shared-login-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-shared-login-configure.log",
+      "bytes": 838,
+      "sha256": "82641210ce18562a397dace6c5e0ec1f7b747b49c56cf6e2d259820e66d5dcac"
+    },
+    {
+      "member": "logs/ime-handoff202-shared-login-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-shared-login-build.log",
+      "bytes": 755,
+      "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+    },
+    {
+      "member": "logs/ime-handoff202-shared-login-test.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-shared-login-test.log",
+      "bytes": 974,
+      "sha256": "693d27fcae2fc4b30c7753c3c01443c04bd6f7fa30040054ff52e857cde8a3d8"
+    },
+    {
+      "member": "shared/objects/window.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/shared/CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o",
+      "bytes": 130080,
+      "sha256": "9b549af5cb39ab9f85ba661999ec7b00ee9b4ea86dd54db6479ffc449a13bc36"
+    },
+    {
+      "member": "shared/objects/test_wayland_ime_storage.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/shared/CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o",
+      "bytes": 52928,
+      "sha256": "80001d0d1b35f0040c414db5633dcea679b77229de4bf044de7e8557192398e9"
+    },
+    {
+      "member": "shared/objects/test_wayland_ime_key_handoff.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/shared/CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o",
+      "bytes": 50568,
+      "sha256": "4525f2a62d354feefaeb935f7eb56bdf4a7abf58f9a933dc9ca53150055200b6"
+    },
+    {
+      "member": "shared/library/libnexaui.so.0.1.33",
+      "path": "/tmp/nexaui-ime-handoff202/shared-prefix/lib/libnexaui.so.0.1.33",
+      "bytes": 934464,
+      "sha256": "fa3d43cb8d50f171ee3e008e8dd723081149208557b8ecd5cf243b7a56d9ab31"
+    },
+    {
+      "member": "shared/sdk-tests/tests.xml",
+      "path": "/tmp/nexaui-ime-handoff202/shared/tests.xml",
+      "bytes": 7268,
+      "sha256": "26d81d5bdea84e2e85fe66313a5ed431301b3981227941af561b691273025ffe"
+    },
+    {
+      "member": "shared/sdk-commands/compile_commands.json",
+      "path": "/tmp/nexaui-ime-handoff202/shared/compile_commands.json",
+      "bytes": 182954,
+      "sha256": "7d0d3277fc9418908cf82ae0dac7632c137452a0a2dece503620b2eb6b615bb3"
+    },
+    {
+      "member": "shared/storage-test/nexaui_wayland_ime_storage_tests",
+      "path": "/tmp/nexaui-ime-handoff202/shared/nexaui_wayland_ime_storage_tests",
+      "bytes": 58056,
+      "sha256": "cb207e8c34957ee8c0337fb4f7b6398dcded56850e78007ffe0a5d80659d384e"
+    },
+    {
+      "member": "shared/handoff-test/nexaui_wayland_ime_key_handoff_tests",
+      "path": "/tmp/nexaui-ime-handoff202/shared/nexaui_wayland_ime_key_handoff_tests",
+      "bytes": 58344,
+      "sha256": "845fb8924b9fc77cdbe44b75ca5271fdd178a84344a172754606621ee291165d"
+    },
+    {
+      "member": "shared/consumer-tests/tests.xml",
+      "path": "/tmp/nexaui-ime-handoff202/shared-login/tests.xml",
+      "bytes": 519,
+      "sha256": "305bbd678b7dbadc0b7a72d48e90e031f9f0cae19dea28c661059daed78c442f"
+    },
+    {
+      "member": "shared/consumer-commands/compile_commands.json",
+      "path": "/tmp/nexaui-ime-handoff202/shared-login/compile_commands.json",
+      "bytes": 3921,
+      "sha256": "6da9eb14927a002e8a8b4685b6d1a34c3a8b52717e28593355b903b5e892312f"
+    },
+    {
+      "member": "shared/host/aetheri_login_native_host",
+      "path": "/tmp/nexaui-ime-handoff202/shared-login/aetheri_login_native_host",
+      "bytes": 67040,
+      "sha256": "ca0ece632c207ce19a8c2b00d403e6c2818c8863aafa1c68d1c38bbf118a39c5"
+    },
+    {
+      "member": "shared/peer/aetheri_login_atspi_peer",
+      "path": "/tmp/nexaui-ime-handoff202/shared-login/aetheri_login_atspi_peer",
+      "bytes": 37344,
+      "sha256": "b7bdc49fa50813af0627c1e487e3e7f867c2e81a79c1897a2747f4a19cc6aa1f"
+    },
+    {
+      "member": "shared/view-test/aetheri_login_view_test",
+      "path": "/tmp/nexaui-ime-handoff202/shared-login/aetheri_login_view_test",
+      "bytes": 91472,
+      "sha256": "9a05861261cc272cacc9ae2cfb81600a927569375ff505dfc6253f86a12ef817"
+    },
+    {
+      "member": "logs/ime-handoff203-shared-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-shared-keyboard.log",
+      "bytes": 207,
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "member": "shared/weston-keyboard/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-keyboard/result.json",
+      "bytes": 1022,
+      "sha256": "d0a6f417cc3944abfcd35094a385dbc1ac195054b144d8f1c994643b286420b4"
+    },
+    {
+      "member": "shared/weston-keyboard/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "shared/weston-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-keyboard/weston.stderr",
+      "bytes": 2843,
+      "sha256": "a46926889eae419b05e4f069a087b25fd16e7316055bf78c9d819e51aa848b2f"
+    },
+    {
+      "member": "shared/weston-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff203-shared-compose.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-shared-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "shared/weston-compose/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-compose/result.json",
+      "bytes": 1020,
+      "sha256": "491286ad4ce16e70f7756442fa0a35badf1a600e34f6610ecd93f0435bd4a8c2"
+    },
+    {
+      "member": "shared/weston-compose/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "shared/weston-compose/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-compose/weston.stderr",
+      "bytes": 3001,
+      "sha256": "4d78720743e949aa07ae1fcf07c5811995554eb1117fca6e5351f1f748ae4202"
+    },
+    {
+      "member": "shared/weston-compose/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff203-shared-cancel.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-shared-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "shared/weston-cancel/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-cancel/result.json",
+      "bytes": 1020,
+      "sha256": "3a664df5f75e121f3c293d86d59e98983d69a6619f2d8ada9d65d47f03efc7b4"
+    },
+    {
+      "member": "shared/weston-cancel/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "shared/weston-cancel/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-cancel/weston.stderr",
+      "bytes": 3070,
+      "sha256": "bb51d0db0c3f7d5fe255c9eba4c5b2303858a3c1819a0d7c3e8b6c616c6f226d"
+    },
+    {
+      "member": "shared/weston-cancel/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-shared-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff202-asan-sdk-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-asan-sdk-configure.log",
+      "bytes": 796,
+      "sha256": "93e2387e3600e0a234c5268291f7736fa2bf483d30fe8587bd2235c843e70847"
+    },
+    {
+      "member": "logs/ime-handoff202-asan-sdk-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-asan-sdk-build.log",
+      "bytes": 9028,
+      "sha256": "c6697752582befb2feb36f6a26ffaff6771cd9fad6ed1031feaf74b4c72a1272"
+    },
+    {
+      "member": "logs/ime-handoff202-asan-sdk-test.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-asan-sdk-test.log",
+      "bytes": 12387,
+      "sha256": "f6f396c3bd4f7ed773364156b3febf213a0bc391b6f31a6d5e6b50c1051c7860"
+    },
+    {
+      "member": "logs/ime-handoff202-asan-sdk-install.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-asan-sdk-install.log",
+      "bytes": 1312,
+      "sha256": "e8c61de027b98f6b2ebeefca76f3530995070605641d17fe48fc90ac479675fc"
+    },
+    {
+      "member": "logs/ime-handoff202-asan-login-configure.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-asan-login-configure.log",
+      "bytes": 836,
+      "sha256": "3762fa33c3a4bfce73f7c294a3fbe735d287357dbf3eb380ba6ad9201c8aa6b6"
+    },
+    {
+      "member": "logs/ime-handoff202-asan-login-build.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-asan-login-build.log",
+      "bytes": 755,
+      "sha256": "5d4ba474bde754afdc476f0e6fb8370d39852beccbbbfb5e885b2410428adef0"
+    },
+    {
+      "member": "logs/ime-handoff202-asan-login-test.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-asan-login-test.log",
+      "bytes": 964,
+      "sha256": "97c59147f31c909d52b1b76890e2d982ab0e46f63236b550dd1e0b4f413762c6"
+    },
+    {
+      "member": "asan/objects/window.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/asan/CMakeFiles/nexaui.dir/platform/linux/wayland/window.c.o",
+      "bytes": 1335200,
+      "sha256": "c88deb5ba0531a5228ade3ded2b437c74e69fe9d142b6b977c64fb2dd5d4c70a"
+    },
+    {
+      "member": "asan/objects/test_wayland_ime_storage.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/asan/CMakeFiles/nexaui_wayland_ime_storage_tests.dir/tests/test_wayland_ime_storage.c.o",
+      "bytes": 323328,
+      "sha256": "fcd53e92eab159986e20d4244284d54ee12b98615f8715fcbdaabf2a8a6d6aa9"
+    },
+    {
+      "member": "asan/objects/test_wayland_ime_key_handoff.c.o",
+      "path": "/tmp/nexaui-ime-handoff202/asan/CMakeFiles/nexaui_wayland_ime_key_handoff_tests.dir/tests/test_wayland_ime_key_handoff.c.o",
+      "bytes": 313040,
+      "sha256": "a90476fd19174c847b7062cfad56149f60f0f010e8861a4f0c0010d0db58dae2"
+    },
+    {
+      "member": "asan/library/libnexaui.a",
+      "path": "/tmp/nexaui-ime-handoff202/asan-prefix/lib/libnexaui.a",
+      "bytes": 11569530,
+      "sha256": "cefbf73fb7b7a8ce644d193f3280be5dc98f4bbf0e4ac608b097f663b9539d67"
+    },
+    {
+      "member": "asan/sdk-tests/tests.xml",
+      "path": "/tmp/nexaui-ime-handoff202/asan/tests.xml",
+      "bytes": 7232,
+      "sha256": "d3c1e2c67ede5d0704f4873c0308ac7c10dbc6c0d32a36a840bf473a4dc26e35"
+    },
+    {
+      "member": "asan/sdk-commands/compile_commands.json",
+      "path": "/tmp/nexaui-ime-handoff202/asan/compile_commands.json",
+      "bytes": 188504,
+      "sha256": "10acf9519f1fef81a5995806f42bbe1324278b90d625d3623cb05acb20da52ac"
+    },
+    {
+      "member": "asan/storage-test/nexaui_wayland_ime_storage_tests",
+      "path": "/tmp/nexaui-ime-handoff202/asan/nexaui_wayland_ime_storage_tests",
+      "bytes": 10464264,
+      "sha256": "3ad95ce9e87d89c50c6bbf777348bf6c54ad3ff52591af426102a43f52242e91"
+    },
+    {
+      "member": "asan/handoff-test/nexaui_wayland_ime_key_handoff_tests",
+      "path": "/tmp/nexaui-ime-handoff202/asan/nexaui_wayland_ime_key_handoff_tests",
+      "bytes": 10462672,
+      "sha256": "33b45e80633e99766452885c79b32ec76a6d029993e85f15a0bd8a975662466d"
+    },
+    {
+      "member": "asan/consumer-tests/tests.xml",
+      "path": "/tmp/nexaui-ime-handoff202/asan-login/tests.xml",
+      "bytes": 519,
+      "sha256": "8f336cc06de43d2333dc9cad9276a14f5e6719b5fe48f8dd7e511def743b400b"
+    },
+    {
+      "member": "asan/consumer-commands/compile_commands.json",
+      "path": "/tmp/nexaui-ime-handoff202/asan-login/compile_commands.json",
+      "bytes": 4089,
+      "sha256": "5ae5484acd20783e7f63963bb210e234d40ac4e56221f037522eba3c40041f74"
+    },
+    {
+      "member": "asan/host/aetheri_login_native_host",
+      "path": "/tmp/nexaui-ime-handoff202/asan-login/aetheri_login_native_host",
+      "bytes": 10489968,
+      "sha256": "6e54fcf72cf90fbce1efb491e78b542613c130a9780859b8c7f23f1e476e3de8"
+    },
+    {
+      "member": "asan/peer/aetheri_login_atspi_peer",
+      "path": "/tmp/nexaui-ime-handoff202/asan-login/aetheri_login_atspi_peer",
+      "bytes": 2907040,
+      "sha256": "034d07e48ce6f2abc45bc18046f541f7dacf68e5df24d1f81078ff021b5da126"
+    },
+    {
+      "member": "asan/view-test/aetheri_login_view_test",
+      "path": "/tmp/nexaui-ime-handoff202/asan-login/aetheri_login_view_test",
+      "bytes": 10590968,
+      "sha256": "7a9cf6be5bf3a1b320d75204045616579092a6d864b5295f5916d8e3d99b3b2e"
+    },
+    {
+      "member": "logs/ime-handoff203-asan-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-asan-keyboard.log",
+      "bytes": 207,
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "member": "asan/weston-keyboard/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-keyboard/result.json",
+      "bytes": 1016,
+      "sha256": "91605afaef08fa61d5b57aa38b1320bb408529a6100b217c37d8cc03d8103c21"
+    },
+    {
+      "member": "asan/weston-keyboard/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-keyboard/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "asan/weston-keyboard/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-keyboard/weston.stderr",
+      "bytes": 2839,
+      "sha256": "0c22b5a5add8454929469db8675099b4800ab6abace0c815c2caf43d4dbe2fd8"
+    },
+    {
+      "member": "asan/weston-keyboard/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-keyboard/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff203-asan-compose.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-asan-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "asan/weston-compose/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-compose/result.json",
+      "bytes": 1013,
+      "sha256": "e1f8812bd2ecf41714b19c09eb228cd05ee9560f554dba509c590b95dca8ef4f"
+    },
+    {
+      "member": "asan/weston-compose/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-compose/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "asan/weston-compose/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-compose/weston.stderr",
+      "bytes": 3019,
+      "sha256": "320c24b0d6e8c3315e51a3a2f573333d089191f5128b2ecaca66a1a21e31f15c"
+    },
+    {
+      "member": "asan/weston-compose/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-compose/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/ime-handoff203-asan-cancel.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-asan-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "asan/weston-cancel/result.json",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-cancel/result.json",
+      "bytes": 1014,
+      "sha256": "56fccb7042ab28881e8f18fb95c18f86961065a6440e32be471e6e37f76da521"
+    },
+    {
+      "member": "asan/weston-cancel/weston.ini",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-cancel/weston.ini",
+      "bytes": 213,
+      "sha256": "69c05b5e34d775fd263e954150355a30fd3534c312eb82f3d3b5e79c549c6e44"
+    },
+    {
+      "member": "asan/weston-cancel/weston.stderr",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-cancel/weston.stderr",
+      "bytes": 3088,
+      "sha256": "7a96017512f8938202f2aae80d517ce3065a6640e2c26a679a33bdad07e2ca84"
+    },
+    {
+      "member": "asan/weston-cancel/weston.stdout",
+      "path": "/tmp/nexaui-ime-handoff202/native203-asan-cancel/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "original/LICENSE",
+      "path": "/tmp/nexaui-login-view178/original/LICENSE",
+      "bytes": 1077,
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "member": "original/src/login/protocol.c",
+      "path": "/tmp/nexaui-login-view178/original/src/login/protocol.c",
+      "bytes": 10782,
+      "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+    },
+    {
+      "member": "original/src/login/protocol.h",
+      "path": "/tmp/nexaui-login-view178/original/src/login/protocol.h",
+      "bytes": 3271,
+      "sha256": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160"
+    },
+    {
+      "member": "original/src/text/grapheme.c",
+      "path": "/tmp/nexaui-login-view178/original/src/text/grapheme.c",
+      "bytes": 3857,
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "member": "original/src/text/grapheme.h",
+      "path": "/tmp/nexaui-login-view178/original/src/text/grapheme.h",
+      "bytes": 874,
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "member": "original/src/text/grapheme_data.h",
+      "path": "/tmp/nexaui-login-view178/original/src/text/grapheme_data.h",
+      "bytes": 39894,
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    },
+    {
+      "member": "helpers/negative_ime_handoff196.py",
+      "path": "/mnt/d/NexaUI/out/negative_ime_handoff196.py",
+      "bytes": 3151,
+      "sha256": "4438003570e9a24ca00a4cf1ea22f62aa77e25f186c53e8a8ba34cb12e81b1a7"
+    },
+    {
+      "member": "helpers/negative_ime_handoff201.py",
+      "path": "/mnt/d/NexaUI/out/negative_ime_handoff201.py",
+      "bytes": 3163,
+      "sha256": "9dc159394ae009d4f6e688e0255ad71eee7351a5f2f608952256155f5bec3c17"
+    },
+    {
+      "member": "helpers/build_ime_handoff198.py",
+      "path": "/mnt/d/NexaUI/out/build_ime_handoff198.py",
+      "bytes": 4809,
+      "sha256": "559fbe528174f9b747eca48dc4d29eaefde7c34ea3abbc631ee44b663320fae6"
+    },
+    {
+      "member": "helpers/build_ime_handoff202.py",
+      "path": "/mnt/d/NexaUI/out/build_ime_handoff202.py",
+      "bytes": 4821,
+      "sha256": "134afd5a444237de71d935be0a260fcb842112e7219629668af6a15c02016254"
+    },
+    {
+      "member": "helpers/run_ime_handoff199_native.py",
+      "path": "/mnt/d/NexaUI/out/run_ime_handoff199_native.py",
+      "bytes": 1575,
+      "sha256": "7baa7b785a1abb0f5e01d55b9aa9b1214512574a6ba30838081fc5e13acbefe8"
+    },
+    {
+      "member": "helpers/run_ime_handoff203_native.py",
+      "path": "/mnt/d/NexaUI/out/run_ime_handoff203_native.py",
+      "bytes": 1577,
+      "sha256": "be6797872fcff06d064f830e112d9205c510c6f7a6df15392ad6f9c386f97fda"
+    },
+    {
+      "member": "helpers/review_ime_refresh200.py",
+      "path": "/mnt/d/NexaUI/out/review_ime_refresh200.py",
+      "bytes": 1738,
+      "sha256": "a89ab00ca43d36978162ef39ff8528a5f0ea04daaaea3eef353f26c9230007db"
+    },
+    {
+      "member": "helpers/verify_ime_handoff204.py",
+      "path": "/mnt/d/NexaUI/out/verify_ime_handoff204.py",
+      "bytes": 9841,
+      "sha256": "c9fa2836da357bfeff94e81e29856693df063e1dfc00d252091eef5ce0903c2b"
+    },
+    {
+      "member": "helpers/ime-handoff196-old.json",
+      "path": "/mnt/d/NexaUI/out/ime-handoff196-old.json",
+      "bytes": 5908,
+      "sha256": "4059674a6b3f4090a3e9574d81b81f366d8d3cdd986bbff9dbc431ea7911151b"
+    },
+    {
+      "member": "helpers/ime-handoff201-old.json",
+      "path": "/mnt/d/NexaUI/out/ime-handoff201-old.json",
+      "bytes": 6668,
+      "sha256": "146fdda5dd9fa4151dd80ac435c464f22312f149539eb3954f4d6366541d92ed"
+    },
+    {
+      "member": "helpers/ime-handoff198-local.json",
+      "path": "/mnt/d/NexaUI/out/ime-handoff198-local.json",
+      "bytes": 18735,
+      "sha256": "f30313ec21aa7f0dff4fc38dcc0e987dd31d71caa34a6e99579b327099901c8e"
+    },
+    {
+      "member": "helpers/ime-handoff202-local.json",
+      "path": "/mnt/d/NexaUI/out/ime-handoff202-local.json",
+      "bytes": 18870,
+      "sha256": "bcea8557c1bcb085378a4563772de42d080c0d9c0176c7e0a71f1a6e350eb57e"
+    },
+    {
+      "member": "helpers/ime-handoff199-native.json",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-native.json",
+      "bytes": 6022,
+      "sha256": "0995f1a90312a0a136cb8e054e291a36deb86e5571e1cc72ff84ab4da07b3ec9"
+    },
+    {
+      "member": "helpers/ime-handoff203-native.json",
+      "path": "/mnt/d/NexaUI/out/ime-handoff203-native.json",
+      "bytes": 6025,
+      "sha256": "be3fad8940c804c6846a10e94a20ea10ba4de722be08903a99200869775c8f49"
+    },
+    {
+      "member": "helpers/ime-refresh200-review.json",
+      "path": "/mnt/d/NexaUI/out/ime-refresh200-review.json",
+      "bytes": 2741,
+      "sha256": "a5fc906b1b339c2d7a21696864bc6c6cc43184ac2a72182ace48183e259948e3"
+    },
+    {
+      "member": "preimage198/ime-handoff199-asan-cancel.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-asan-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "preimage198/ime-handoff199-asan-compose.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-asan-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "preimage198/ime-handoff199-asan-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-asan-keyboard.log",
+      "bytes": 207,
+      "sha256": "ee9c1ae0b7d81a8f830608b5b98eee4fbf9b953b4ec9aa939c1ab05123068eb9"
+    },
+    {
+      "member": "preimage198/ime-handoff199-release-cancel.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-release-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "preimage198/ime-handoff199-release-compose.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-release-compose.log",
+      "bytes": 381,
+      "sha256": "4f707ce1de854f7f63f80613c1dcf37f2c143dbb49f68739a5a811184a251ffc"
+    },
+    {
+      "member": "preimage198/ime-handoff199-release-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-release-keyboard.log",
+      "bytes": 207,
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    },
+    {
+      "member": "preimage198/ime-handoff199-shared-cancel.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-shared-cancel.log",
+      "bytes": 373,
+      "sha256": "bf3237099edd1ec37859a59db44f4c68aafa04ecba8448c64e3c7adb79540ff8"
+    },
+    {
+      "member": "preimage198/ime-handoff199-shared-compose.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-shared-compose.log",
+      "bytes": 381,
+      "sha256": "121c83a376f3751bfcf28cb38e23770f8f8cd57273acb22448695ba2ae835682"
+    },
+    {
+      "member": "preimage198/ime-handoff199-shared-keyboard.log",
+      "path": "/mnt/d/NexaUI/out/ime-handoff199-shared-keyboard.log",
+      "bytes": 207,
+      "sha256": "4a4d79928695465af1ea8989b5376ba0435ea750d68730ed933bbe1073df5e09"
+    }
+  ],
+  "remaining": [
+    "Full Tab/Enter forwarding through another IME provider",
+    "Candidate geometry and broader language/provider tasks",
+    "Other native platform and application/protocol/OS storage copies",
+    "Trusted host and actual service admission",
+    "Full catalogue, physical/human/performance acceptance"
+  ],
+  "environment": {
+    "borrowed_font": {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+      "bytes": 1045720,
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+    },
+    "private_tools": [
+      {
+        "path": "/usr/bin/xkbcomp",
+        "bytes": 175720,
+        "sha256": "2e094a75ba0c5c46cea71c2b03ff649dee54ddd40bbda7b305342f4b4b82ac56"
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+        "bytes": 251,
+        "sha256": "d82169d8b60a003faffd205aab38d39fdf47d87404a12bbb9eea122785b12ab7"
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/private-weston-14/root/usr/libexec/weston-simple-im",
+        "bytes": 22696,
+        "sha256": "aa10f60e3c1d590ecfaf24ed4e187767044eaf71aed17020f7160f4f2df960bf"
+      }
+    ],
+    "prior_environment_receipt": "docs/quality/aetheri-login-ime-local.json"
+  },
+  "base_receipt": {
+    "path": "/mnt/d/NexaUI/out/ime-handoff204-verified.json",
+    "bytes": 115969,
+    "sha256": "3553c5481e39436deb0d9703865c52eed3bf7fd64c40930f6706b1a02c7ea21f"
+  },
+  "delivery_check": {
+    "verifier": {
+      "path": "/mnt/d/NexaUI/out/verify_ime_delivery206.py",
+      "bytes": 3625,
+      "sha256": "01a0c8a33c8d80fd472bb0443c28335e0f8b0499350165fc4c0fd3a7b7b1bb51"
+    },
+    "stable_requirement_ids": 103,
+    "changed_requirement_rows": [
+      "I01",
+      "P05",
+      "P08",
+      "Q02",
+      "T04",
+      "T06"
+    ],
+    "native_peer_and_host_unchanged_since": "208d453f722baa4c114563cc854eb8b6e1f548dd",
+    "owned_fixture_processes_remaining": 0
+  }
+}
