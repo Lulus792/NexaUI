@@ -1,0 +1,47 @@
+{
+  "candidate": "eddad298db1058e9a53b39944e892889537a5d66",
+  "receipt_sha256": "c5cb3fbbbd415034d477552c21fdbf5add887ec4effee26d8f42e2da9e34eea5",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-login-process251.tar.gz",
+    "bytes": 16026749,
+    "sha256": "f5880b0336e83063f5508eea209e35edda9f9c2a4f8191fdb5c8b184247aa721",
+    "verified_members": 411
+  },
+  "verified_members": 411,
+  "default_feature_guards": [
+    {
+      "flag": "CONNECTION",
+      "value": "1",
+      "exit": 2
+    },
+    {
+      "flag": "CONNECTION_LOOP",
+      "value": "1",
+      "exit": 2
+    },
+    {
+      "flag": "CONNECTION_LOSS",
+      "value": "eof",
+      "exit": 2
+    },
+    {
+      "flag": "REPLACE_VIEW",
+      "value": "1",
+      "exit": 2
+    },
+    {
+      "flag": "CONNECTION_LOSS",
+      "value": "peer-exit",
+      "exit": 2
+    }
+  ],
+  "observed_live_fixture_executables": [],
+  "scanned_fixture_executables": [
+    "/tmp/nexaui-login-loop237/release/aetheri_login_native_host",
+    "/tmp/nexaui-login-loop248/asan/aetheri_login_native_host",
+    "/tmp/nexaui-login-loop248/release/aetheri_login_native_host",
+    "/tmp/nexaui-login-loop248/shared/aetheri_login_native_host",
+    "/tmp/nexaui-login-process250/build/aetheri_login_native_host"
+  ],
+  "scope": "Owned credential-peer process exit; borrowed original client is polled only; no production Aetheri daemon admission"
+}

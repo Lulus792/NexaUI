@@ -1,5 +1,15 @@
 # Aetheri adoption: initial source assessment
 
+Native credential-peer exit for B03/W10/T06/A01/A06/D06/P05/Q02/Q08.
+Consumer `eddad29` keeps SDK `368cd38` and original Aetheri `7d5fa47`.
+Sixteen CTests and 48 native tasks pass, including three separate-process exit
+cases with readable pidfd, no socket EOF, retired secret preedit and clean close.
+Skipping current peer verification in a private original-source copy fails the
+same native assertion. Production daemon/service admission, trusted placement,
+broader replacement phases and physical/human/performance gates remain open.
+All 103 IDs/statuses and remaining packets persist.
+[Evidence](aetheri-login-process-report.md)
+
 Native login view replacement for B03/W10/T04/T06/A01/A06/D06/P05/Q02/Q08.
 Consumer `2c7e4ce` retains SDK `368cd38` and original Aetheri `7d5fa47`.
 Sixteen consumer CTests and 45 native workflows pass, including nine queued-answer

@@ -88,6 +88,10 @@ the new fixture behavior; the SDK CI run does not build this consumer.
 
 ## Remaining acceptance
 
+This section records `2c7e4ce`. The
+[peer-process follow-up](aetheri-login-process-report.md) adds separate local
+credential-peer exit evidence at `eddad29`; production daemon admission remains open.
+
 This adds native replacement evidence for two queued answer operations in one
 ordinary window. Actual daemon pidfd death, real service/configuration/greeter/
 effective-policy admission and trusted placement remain external integration

@@ -138,6 +138,9 @@ with Escape. Logs require a readable pidfd, no socket EOF, child exit0 and
 original error `-ESRCH`. The fixture closes its descriptors and reaps its child;
 a parent-death signal also bounds the owned child if a failed probe kills the
 host. This is a local process-lifetime test, not actual Aetheri daemon admission.
+The [peer-process report](../../docs/quality/aetheri-login-process-report.md)
+records all three profiles, the no-EOF witness and the rejected current-check
+bypass alongside the full native regression matrix.
 
 Add `--replace-view` with `--connection-loop` to replace the native view while
 each answer is queued but still unsent. The host builds and publishes a new
