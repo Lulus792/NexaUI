@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include "view.h"
 #include "login/connection.h"
+#include "connection_poll.h"
 #include "fixture_font.h"
 
 #include <errno.h>
@@ -116,6 +117,7 @@ int main(int argc, char **argv) {
     int pair[2] = {-1, -1}, pin = -1;
     struct ae_login_connection *connection = NULL;
     aetheri_login_view *view = NULL;
+    aetheri_login_poll *poller = NULL;
     nx_font *font = NULL;
     nx_font_collection *fonts = NULL;
     struct admission admission = {0};
@@ -207,10 +209,35 @@ int main(int argc, char **argv) {
         CHECK(press(ctx, "Cancel") && frame(view, 1) && request(connection, pair[1], "{\"type\":\"cancel_session\"}"));
         CHECK(reply(connection, pair[1], "{\"type\":\"success\"}") && frame(view, 0));
         CHECK(phase(connection, AE_LOGIN_IDLE) && node(ctx, "Account name").id && no_bytes(pair[1]));
+        CHECK(type(ctx, "fixture") && frame(view, 0) && press(ctx, "Continue") && frame(view, 1));
+        CHECK(phase(connection, AE_LOGIN_SENDING) && no_bytes(pair[1]));
+        CHECK(aetheri_login_poll_open(connection, -1, &poller) == NX_OK);
+        aetheri_login_poll_close(&poller);
+        CHECK(!poller && phase(connection, AE_LOGIN_SENDING) && no_bytes(pair[1]));
+        aetheri_login_view_destroy(view);
+        view = NULL;
+        CHECK(aetheri_login_view_create_connection(connection, fonts, NULL, &view) == NX_OK && focus(view));
+        ctx = aetheri_login_view_context(view);
+        CHECK(node(ctx, "Sending request.").id && !node(ctx, "Continue").id);
+        CHECK(request(connection, pair[1], "{\"type\":\"create_session\",\"username\":\"fixture\"}"));
+        CHECK(frame(view, 0) && node(ctx, "Waiting for the login service.").id);
+        CHECK(reply(connection, pair[1], "{\"type\":\"auth_message\",\"auth_message_type\":\"secret\",\"auth_message\":\"Synthetic retained prompt\"}") && frame(view, 0));
+        CHECK(nx_context_queue_event(ctx, &letter) == NX_OK && frame(view, 0));
+        CHECK(press(ctx, "Answer") && frame(view, 1) && phase(connection, AE_LOGIN_SENDING));
+        CHECK(no_bytes(pair[1]));
+        aetheri_login_view_destroy(view);
+        view = NULL;
+        CHECK(aetheri_login_view_create_connection(connection, fonts, NULL, &view) == NX_OK && focus(view));
+        ctx = aetheri_login_view_context(view);
+        CHECK(node(ctx, "Sending request.").id && !node(ctx, "Secret response").id && !node(ctx, "Answer").id);
+        CHECK(request(connection, pair[1], "{\"type\":\"post_auth_message_response\",\"response\":\"\xc3\xa1\"}"));
+        CHECK(reply(connection, pair[1], "{\"type\":\"success\"}") && frame(view, 0));
+        CHECK(phase(connection, AE_LOGIN_AUTHENTICATED) && no_bytes(pair[1]));
     }
     result = 0;
 done:
     aetheri_login_view_destroy(view);
+    aetheri_login_poll_close(&poller);
     if (ae_login_connection_close(&connection)) result = 1;
     for (unsigned i = 0; i < 2; ++i) if (pair[i] >= 0 && close(pair[i])) result = 1;
     if (pin >= 0 && close(pin)) result = 1;

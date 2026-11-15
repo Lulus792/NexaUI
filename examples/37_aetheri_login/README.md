@@ -71,6 +71,24 @@ remains byte-identical; only its musl `CMSG_NXTHDR` mixed-sign diagnostic is
 excluded from `-Wsign-compare`. The view and tests retain their strict warnings.
 The runtime still requires actual peer pidfds, pidfs and `PIDFD_GET_INFO`.
 
+`connection_poll.h` supplies optional Linux reference host glue. Open it with
+the borrowed original connection and an optional borrowed readable wake fd.
+`aetheri_login_poll_step` combines the original socket/pidfd watches with public
+`nx_window_poll_with_fd_events`, then makes at most one bounded original pump
+call. Request writable readiness only while the original model has output.
+Use `changed` to rebuild from the original status; `connection_error` records
+its terminal result. After a fence, service watchers retire while window and
+assistive input remain usable. The caller drains `application_events` on its
+wake fd. Closing the poller releases its own epoll descriptor and preserves
+the borrowed connection, wake fd and pending work.
+
+The host supplies an absolute `CLOCK_MONOTONIC` deadline, or zero. Set a new
+deadline only for a newly queued request; preserve it across partial transport
+progress, UI frames and accessibility traffic. Expiry invokes the original
+connection interrupt and leaves its uncertain outcome visible. Render/publish
+the resulting view before continuing the loop. Detach native semantics before
+destroying an attached view, and close the poller before its borrowed resources.
+
 The optional native fixture uses an ordinary Wayland window, the software
 presenter and a separate libatspi client. Build it with
 `-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON` and the Linux AT-SPI development files.
@@ -99,6 +117,15 @@ to exercise the borrowed-connection view through real local socket I/O and
 kernel-observed self-process pins. The synthetic fixture's callback admits only
 its own test setup; this is no claim of production service, greeter or policy
 admission. The independent native peer keeps its original assertions and limits.
+
+Add `--connection-loop` to exercise actual read/write/pidfd readiness through
+the reference loop. Add `--ime --connection-loss eof`, `admission` or `timeout`
+to observe an uncommitted secret composition retired after socket EOF, a
+declined original check or an absolute request deadline. A private parent/child
+pipe controls only the synthetic peer; the normal deadline case withholds a
+fixture reply. The independent client waits for unknown state without further
+typing, checks retired objects and closes with Escape. These modes use the
+same client/Weston/frame limits and establish no production admission.
 
 The native runner can also configure Compose on its owned Xvfb seat and start
 Weston's `weston-simple-im`. It uses `setxkbmap` or an existing `xkbcomp` to

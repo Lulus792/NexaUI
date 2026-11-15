@@ -7,6 +7,7 @@
 #include <string.h>
 #ifdef AETHERI_LOGIN_CONNECTION_VIEW
 #include "login/connection.h"
+#include <errno.h>
 #include <limits.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
@@ -21,13 +22,32 @@ typedef struct fixture_conversation {
     struct ae_login_connection *connection;
     int peer;
     unsigned checks;
+    int admission_error;
 #endif
 } fixture_conversation;
 
 #ifdef AETHERI_LOGIN_CONNECTION_VIEW
 static int fixture_admitted(void *user) {
-    ++((fixture_conversation *)user)->checks;
-    return 0;
+    fixture_conversation *fixture = user;
+    ++fixture->checks;
+    return fixture->admission_error;
+}
+
+static int fixture_send_reply(fixture_conversation *fixture, const char *json) {
+    uint8_t wire[512];
+    size_t size = strlen(json);
+    if (size > sizeof(wire) - 4u) return 0;
+    uint32_t length = (uint32_t)size;
+    memcpy(wire, &length, 4);
+    memcpy(wire + 4, json, size);
+    return send(fixture->peer, wire, size + 4u, MSG_DONTWAIT | MSG_NOSIGNAL) == (ssize_t)(size + 4u);
+}
+
+static int fixture_peer_empty(fixture_conversation *fixture) {
+    if (fixture->peer < 0) return 1;
+    char byte;
+    return recv(fixture->peer, &byte, 1, MSG_DONTWAIT) == -1 &&
+        (errno == EAGAIN || errno == EWOULDBLOCK);
 }
 #endif
 

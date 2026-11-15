@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include <atspi/atspi.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -74,6 +75,15 @@ static int observe_focus(AtspiAccessible *app, const char *name) {
     if (!node) return 0;
     g_object_unref(node);
     return 1;
+}
+
+static int observe_present(AtspiAccessible *app, const char *name) {
+    for (unsigned i = 0; i < 200; ++i) {
+        AtspiAccessible *node = find(app, name, 0);
+        if (node) { g_object_unref(node); return 1; }
+        pump();
+    }
+    return 0;
 }
 
 static int focus_control(AtspiAccessible *app, const char *name) {
@@ -215,17 +225,37 @@ int main(int argc, char **argv) {
     int ime = getenv("NEXAUI_LOGIN_TEST_SIMPLE_IME") != NULL;
     int cancel = getenv("NEXAUI_LOGIN_TEST_IME_CANCEL") != NULL;
     FILE *host_log = NULL;
+    int controls[2] = {-1, -1};
+    const char *loss = getenv("NEXAUI_LOGIN_TEST_CONNECTION_LOSS");
     char id[32];
     CHECK(x11_output(id));
     CHECK((host_log = tmpfile()));
+    if (loss) {
+        CHECK(ime && !cancel && getenv("NEXAUI_LOGIN_TEST_CONNECTION_LOOP"));
+        CHECK(!strcmp(loss, "eof") || !strcmp(loss, "admission") || !strcmp(loss, "timeout"));
+        CHECK(pipe(controls) == 0);
+        for (unsigned i = 0; i < 2; ++i) {
+            CHECK(fcntl(controls[i], F_SETFD, FD_CLOEXEC) == 0);
+            int flags = fcntl(controls[i], F_GETFL);
+            CHECK(flags >= 0 && fcntl(controls[i], F_SETFL, flags | O_NONBLOCK) == 0);
+        }
+    }
     child = fork();
     CHECK(child >= 0);
     if (!child) {
+        if (loss) {
+            char descriptor[32];
+            close(controls[1]);
+            if (snprintf(descriptor, sizeof(descriptor), "%d", controls[0]) < 1 ||
+                fcntl(controls[0], F_SETFD, 0) ||
+                setenv("NEXAUI_LOGIN_TEST_CONTROL_FD", descriptor, 1)) _exit(126);
+        }
         if (dup2(fileno(host_log), STDOUT_FILENO) < 0 ||
             dup2(fileno(host_log), STDERR_FILENO) < 0) _exit(126);
         execl(argv[1], argv[1], (char *)NULL);
         _exit(127);
     }
+    if (controls[0] >= 0) { close(controls[0]); controls[0] = -1; }
     CHECK(atspi_init() == 0);
     initialized = 1;
     atspi_set_timeout(1000, 1000);
@@ -243,6 +273,25 @@ int main(int argc, char **argv) {
         CHECK(xdotool("key", "108") && xdotool("key", "apostrophe"));
         CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT secret requests=0"));
         CHECK(protected_field(secret));
+        if (loss) {
+            if (!strcmp(loss, "timeout")) {
+                CHECK(xdotool("key", "a"));
+                CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT_CLEARED secret requests=0"));
+                CHECK(press_control(app, "Answer"));
+            } else {
+                const char command = !strcmp(loss, "eof") ? 'E' : 'A';
+                CHECK(write(controls[1], &command, 1) == 1);
+            }
+            CHECK(observe_present(app, "Login state unknown. Close this view to leave the conversation."));
+            CHECK(host_marker(host_log, "LOGIN_FIXTURE_CONNECTION_UNKNOWN"));
+            CHECK(state(secret, ATSPI_STATE_DEFUNCT));
+            AtspiAccessible *answer = find(app, "Answer", 0);
+            int missing = answer == NULL;
+            if (answer) g_object_unref(answer);
+            CHECK(missing);
+            CHECK(xdotool("key", "Escape"));
+            goto window_closed;
+        }
         if (cancel) {
             CHECK(focus_control(app, "Answer"));
             CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT_CLEARED secret requests=0"));
@@ -270,6 +319,7 @@ int main(int argc, char **argv) {
     CHECK((confirmed = focused(app, "Start session")));
     CHECK(state(visible, ATSPI_STATE_DEFUNCT));
     CHECK(xdotool("key", "Escape"));
+window_closed: ;
     int status = 0;
     pid_t ended = 0;
     for (unsigned i = 0; i < 300 && !ended; ++i) {
@@ -279,7 +329,8 @@ int main(int argc, char **argv) {
     CHECK(ended == child);
     child = -1;
     CHECK(WIFEXITED(status) && !WEXITSTATUS(status));
-    if (ime) puts(cancel ? "Native login IME: focus cancellation and later Unicode commit passed" :
+    if (loss) printf("Native login connection loop: %s retires protected preedit and closes in unknown state\n", loss);
+    else if (ime) puts(cancel ? "Native login IME: focus cancellation and later Unicode commit passed" :
                           "Native login IME: separate secret/visible preedit and Unicode commits passed");
     else puts("Native login: protected password, real keyboard, retired fields and close passed");
     result = 0;
@@ -291,6 +342,7 @@ done:
     if (app) g_object_unref(app);
     if (desktop) g_object_unref(desktop);
     if (initialized) atspi_exit();
+    for (unsigned i = 0; i < 2; ++i) if (controls[i] >= 0) close(controls[i]);
     if (host_log) {
         char *transcript = malloc(128u * 1024u);
         if (!transcript) result = 1;
