@@ -753,7 +753,7 @@ if(NEXAUI_BUILD_TESTS)
             target_link_libraries(nexaui_wayland_ime_key_handoff_tests PRIVATE
                 NexaUI::NexaUI Threads::Threads PkgConfig::WAYLAND_SERVER PkgConfig::WAYLAND_CLIENT PkgConfig::XKBCOMMON)
             set_target_properties(nexaui_wayland_ime_key_handoff_tests PROPERTIES C_STANDARD 17 C_STANDARD_REQUIRED YES C_EXTENSIONS NO)
-            foreach(ime_handoff_case activation deactivation forwarded normal)
+            foreach(ime_handoff_case activation deactivation forwarded normal refresh)
                 add_test(NAME nexaui_wayland_ime_key_handoff_${ime_handoff_case}
                     COMMAND nexaui_wayland_ime_key_handoff_tests ${ime_handoff_case})
                 set_tests_properties(nexaui_wayland_ime_key_handoff_${ime_handoff_case} PROPERTIES TIMEOUT 15)

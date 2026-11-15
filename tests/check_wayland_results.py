@@ -26,6 +26,7 @@ REQUIRED = (
     'nexaui_wayland_ime_key_handoff_deactivation',
     'nexaui_wayland_ime_key_handoff_forwarded',
     'nexaui_wayland_ime_key_handoff_normal',
+    'nexaui_wayland_ime_key_handoff_refresh',
 )
 
 

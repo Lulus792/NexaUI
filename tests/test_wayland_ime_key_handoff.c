@@ -39,6 +39,8 @@ static void produce(test_server *server, struct wl_client *client) {
         wl_keyboard_send_modifiers(server->keyboard, 2, 0, 0, 0, 0);
         wl_keyboard_send_repeat_info(server->keyboard, 0, 0);
         wl_array_release(&keys);
+    } else if (command == 4) {
+        wl_keyboard_send_repeat_info(server->keyboard, 100, 1);
     } else {
         CHECK(command == 2 || command == 3);
         wl_keyboard_send_key(server->keyboard, 3, 0, KEY_TAB,
@@ -71,7 +73,8 @@ int main(int argc, char **argv) {
     int deactivation = !strcmp(argv[1], "deactivation");
     int forwarded = !strcmp(argv[1], "forwarded");
     int normal = !strcmp(argv[1], "normal");
-    CHECK(activation || deactivation || forwarded || normal);
+    int refresh = !strcmp(argv[1], "refresh");
+    CHECK(activation || deactivation || forwarded || normal || refresh);
     test_server server = {0};
     server.keyboard_enabled = 1;
     server.keyboard_bound = keymap;
@@ -109,14 +112,34 @@ int main(int argc, char **argv) {
     int available = 0;
     CHECK(nx_window_next_event(window, &event, &available) == NX_OK && available && event.type == NX_EVENT_FOCUS);
     empty(window);
-    if (deactivation) {
+    if (deactivation || refresh) {
         CHECK(nx_window_set_ime_enabled(window, 1) == NX_OK);
         CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    }
+    if (refresh) {
+        CHECK(nx_window_set_ime_surrounding_text(window, 81, 7, "", 0, 0, 0) == NX_OK);
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+        send(&server, window, 4);
     }
     send(&server, window, 2);
     take(window, NX_EVENT_KEY_DOWN, 0);
     empty(window);
-    if (!normal) {
+    if (refresh) {
+        CHECK(nx_window_set_ime_surrounding_text(window, 81, 8, "a", 1, 1, 1) == NX_OK);
+        CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+        int repeated = 0;
+        for (unsigned i = 0; i < 80 && !repeated; ++i) {
+            CHECK(nx_window_poll(window, 25) == NX_OK);
+            do {
+                CHECK(nx_window_next_event(window, &event, &available) == NX_OK);
+                if (available) {
+                    CHECK(event.type == NX_EVENT_KEY_DOWN && event.key == NX_KEY_TAB && event.repeat);
+                    repeated = 1;
+                }
+            } while (available);
+        }
+        CHECK(repeated && "same-editor surrounding refresh must preserve repeat");
+    } else if (!normal) {
         CHECK(nx_window_set_ime_enabled(window, !deactivation) == NX_OK);
         CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
         empty(window); /* A mode transition alone does not release a held key. */
@@ -128,10 +151,12 @@ int main(int argc, char **argv) {
     }
     /* The nonconforming missing release reproduces the observed provider
        handoff. Only the following real press reconciles that stale state. */
-    send(&server, window, 2);
-    if (activation || deactivation) take(window, NX_EVENT_KEY_UP, 0);
-    take(window, NX_EVENT_KEY_DOWN, normal);
-    empty(window);
+    if (!refresh) {
+        send(&server, window, 2);
+        if (activation || deactivation) take(window, NX_EVENT_KEY_UP, 0);
+        take(window, NX_EVENT_KEY_DOWN, normal);
+        empty(window);
+    }
     send(&server, window, 3);
     take(window, NX_EVENT_KEY_UP, 0);
     empty(window);

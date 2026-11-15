@@ -1763,7 +1763,7 @@ static void nx_wayland_ime_key_handoff(nx_wayland_window *window) {
 }
 
 static void nx_wayland_ime_v3_enable(nx_wayland_window *window) {
-    nx_wayland_ime_key_handoff(window);
+    if (!window->ime_activated) nx_wayland_ime_key_handoff(window);
     nx_wayland_ime_clear_pending(window);
     nx_wayland_ime_clear_preedit(window, 1);
     window->ime_activated = 1;

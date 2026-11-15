@@ -47,7 +47,8 @@ consumed a release and the compositor later delivers a fresh press of the same
 key, the adapter queues a release of the stale key followed by that fresh
 press. A forwarded release clears the mark normally. This keeps Tab focus
 navigation usable after cancelling composition; unrelated native presses and
-local repeats retain their existing behavior.
+local repeats retain their existing behavior. Refreshing the surrounding text
+of an already active v3 editor preserves its running repeat timer.
 
 The context privately retains the pointer capture owner and focus owner at each
 event's dispatch. General and numeric text fields consume their events in that
