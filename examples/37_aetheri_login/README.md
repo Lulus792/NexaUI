@@ -67,5 +67,30 @@ The peer observes password role and interface suppression, traverses Answer
 and Cancel with Tab and Shift+Tab, types fixture answers with the private seat,
 observes retired objects, and closes with Escape. The fixture consumes two
 exact synthetic responses and requires a clean exit. Trusted compositor
-placement, native IME, human screen-reader interaction, credential byte lifetime
-across native event queues, backend admission and real session readiness remain open.
+placement, human screen-reader interaction, backend admission and real session
+readiness remain open.
+
+The native runner can also configure Compose on its owned Xvfb seat and start
+Weston's `weston-simple-im`. It uses `setxkbmap` or an existing `xkbcomp` to
+configure that private keyboard. Set `NEXAUI_WESTON_LIBEXEC` to the directory
+containing the Weston helpers.
+
+```sh
+python3 examples/37_aetheri_login/run_native.py \
+  --build-dir /tmp/aetheri-login-view --font /path/to/font.ttf \
+  --registry /path/to/at-spi2-registryd --work-dir /tmp/login-ime-run --ime
+```
+
+Add `--cancel-preedit` with a fresh work directory to cancel secret preedit
+through an AT-SPI focus change and then type an unaccented response. Both IME
+tasks also compose a visible response. They require observed native preedit,
+its removal, an empty committed visible field during preedit, exact original
+model responses, protected secret interfaces and retired field objects.
+
+The keyboard task uses Tab and Return to navigate and submit. The IME tasks
+use AT-SPI focus and activation for the first field exit and submissions.
+Weston's simple provider was observed sending Tab as a text commit containing
+`"\t"`. The retained failed attempt and protocol trace document this limitation.
+Keyboard navigation and submission through another installed input-method
+provider, candidate placement, native IME storage lifetime and broader language
+coverage still require acceptance.

@@ -56,6 +56,16 @@ int main(void) {
     size_t bytes = 0;
     uint8_t *data = font_bytes(path, &bytes);
     unsigned requests = 0, frames = 0;
+    int ime = getenv("NEXAUI_LOGIN_TEST_SIMPLE_IME") != NULL;
+    int cancel = getenv("NEXAUI_LOGIN_TEST_IME_CANCEL") != NULL;
+    int secret_preedit = 0, secret_cleared = 0, visible_preedit = 0, visible_cleared = 0;
+    const char *secret_request = !ime ?
+        "{\"type\":\"post_auth_message_response\",\"response\":\"test\"}" : cancel ?
+        "{\"type\":\"post_auth_message_response\",\"response\":\"a\"}" :
+        "{\"type\":\"post_auth_message_response\",\"response\":\"\xc3\xa1\"}";
+    const char *visible_request = ime ?
+        "{\"type\":\"post_auth_message_response\",\"response\":\"\xc3\xa1\"}" :
+        "{\"type\":\"post_auth_message_response\",\"response\":\"visible\"}";
     int result = 1;
     const nx_window_desc desc = {.title_utf8 = "NexaUI login fixture", .width = 420, .height = 260};
     if (!data || nx_font_open(data, bytes, NULL, &font) != NX_OK ||
@@ -74,7 +84,10 @@ int main(void) {
         if (nx_window_poll(window, first ? 0 : 200) != NX_OK ||
             nx_window_get_info(window, &info) != NX_OK ||
             nx_window_route_events(window, ctx, &routed) != NX_OK) break;
-        if (info.should_close) { result = requests == 2 ? 0 : 1; break; }
+        if (info.should_close) {
+            result = requests == 2 ? 0 : 1;
+            break;
+        }
         if (first || routed) {
             first = 0;
             unsigned changes;
@@ -86,18 +99,42 @@ int main(void) {
                     goto done;
                 }
                 if (changes & AETHERI_LOGIN_REQUEST_QUEUED) {
-                    if (requests == 0 && consume_request(model,
-                        "{\"type\":\"post_auth_message_response\",\"response\":\"test\"}") &&
+                    if (requests == 0 && consume_request(model, secret_request) &&
                         receive_reply(model, "{\"type\":\"auth_message\",\"auth_message_type\":\"visible\",\"auth_message\":\"Fixture visible prompt\"}")) {
                         ++requests;
-                    } else if (requests == 1 && consume_request(model,
-                        "{\"type\":\"post_auth_message_response\",\"response\":\"visible\"}") &&
+                    } else if (requests == 1 && consume_request(model, visible_request) &&
                         receive_reply(model, "{\"type\":\"success\"}")) {
                         ++requests;
                     } else goto done;
                 }
             } while (changes & AETHERI_LOGIN_REPAINT);
             if (nx_window_publish_semantics(window, ctx) != NX_OK) break;
+            if (ime) {
+                size_t preedit_bytes = 0;
+                int32_t begin = 0, end = 0;
+                struct ae_login_status status;
+                if (nx_window_get_ime_preedit(window, NULL, 0, &preedit_bytes, &begin, &end) != NX_OK ||
+                    ae_login_status(model, &status)) break;
+                if (status.phase == AE_LOGIN_PROMPT && status.prompt == AE_LOGIN_SECRET && requests == 0) {
+                    if (preedit_bytes && !secret_preedit) {
+                        secret_preedit = 1;
+                        puts("LOGIN_FIXTURE_PREEDIT secret requests=0");
+                    } else if (!preedit_bytes && secret_preedit && !secret_cleared) {
+                        secret_cleared = 1;
+                        puts("LOGIN_FIXTURE_PREEDIT_CLEARED secret requests=0");
+                    }
+                }
+                if (status.phase == AE_LOGIN_PROMPT && status.prompt == AE_LOGIN_VISIBLE && requests == 1) {
+                    if (preedit_bytes && !visible_preedit) {
+                        visible_preedit = 1;
+                        puts("LOGIN_FIXTURE_PREEDIT visible requests=1");
+                    } else if (!preedit_bytes && visible_preedit && !visible_cleared) {
+                        visible_cleared = 1;
+                        puts("LOGIN_FIXTURE_PREEDIT_CLEARED visible requests=1");
+                    }
+                }
+                fflush(stdout);
+            }
             pending_render = 1;
         }
         if (pending_render) {
@@ -111,6 +148,8 @@ int main(void) {
         }
     }
 done:
+    if (ime && (!secret_preedit || !secret_cleared || !visible_preedit || !visible_cleared))
+        result = 1;
     if (window && nx_window_publish_semantics(window, NULL) != NX_OK) result = 1;
     if (software && nx_software_view_close(&software) != NX_OK) result = 1;
     aetheri_login_view_destroy(view);

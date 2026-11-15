@@ -76,6 +76,38 @@ static int observe_focus(AtspiAccessible *app, const char *name) {
     return 1;
 }
 
+static int focus_control(AtspiAccessible *app, const char *name) {
+    AtspiAccessible *node = find(app, name, 0);
+    AtspiComponent *component = node ? atspi_accessible_get_component_iface(node) : NULL;
+    GError *error = NULL;
+    int accepted = component && atspi_component_grab_focus(component, &error) && !error;
+    if (error) g_error_free(error);
+    if (component) g_object_unref(component);
+    if (node) g_object_unref(node);
+    return accepted && observe_focus(app, name);
+}
+
+static int press_control(AtspiAccessible *app, const char *name) {
+    AtspiAccessible *node = find(app, name, 0);
+    AtspiAction *action = node ? atspi_accessible_get_action_iface(node) : NULL;
+    GError *error = NULL;
+    int accepted = 0;
+    int count = action ? atspi_action_get_n_actions(action, &error) : 0;
+    for (int i = 0; !error && i < count && i < 16; ++i) {
+        char *current = atspi_action_get_action_name(action, i, &error);
+        int match = current && !strcmp(current, "click");
+        g_free(current);
+        if (match && !error) {
+            accepted = atspi_action_do_action(action, i, &error) && !error;
+            break;
+        }
+    }
+    if (error) g_error_free(error);
+    if (action) g_object_unref(action);
+    if (node) g_object_unref(node);
+    return accepted;
+}
+
 static int protected_field(AtspiAccessible *node) {
     GError *error = NULL;
     if (atspi_accessible_get_role(node, &error) != ATSPI_ROLE_PASSWORD_TEXT || error) {
@@ -102,6 +134,30 @@ static int observe_value(AtspiAccessible *node, const char *expected) {
         int good = value && !strcmp(value, expected);
         if (attributes) g_hash_table_unref(attributes);
         if (good) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int empty_text(AtspiAccessible *node) {
+    AtspiText *text = atspi_accessible_get_text_iface(node);
+    if (!text) return 0;
+    GError *error = NULL;
+    char *bytes = atspi_text_get_text(text, 0, -1, &error);
+    int empty = bytes && !*bytes && !error;
+    g_free(bytes);
+    if (error) g_error_free(error);
+    g_object_unref(text);
+    return empty;
+}
+
+static int host_marker(FILE *log, const char *marker) {
+    char text[16384];
+    for (unsigned i = 0; i < 200; ++i) {
+        ssize_t size = pread(fileno(log), text, sizeof(text) - 1, 0);
+        if (size < 0 || (size_t)size == sizeof(text) - 1) return 0;
+        text[size] = 0;
+        if (strstr(text, marker)) return 1;
         pump();
     }
     return 0;
@@ -156,11 +212,17 @@ int main(int argc, char **argv) {
     AtspiAccessible *desktop = NULL, *app = NULL, *secret = NULL, *visible = NULL, *confirmed = NULL;
     pid_t child = -1;
     int result = 1, initialized = 0;
+    int ime = getenv("NEXAUI_LOGIN_TEST_SIMPLE_IME") != NULL;
+    int cancel = getenv("NEXAUI_LOGIN_TEST_IME_CANCEL") != NULL;
+    FILE *host_log = NULL;
     char id[32];
     CHECK(x11_output(id));
+    CHECK((host_log = tmpfile()));
     child = fork();
     CHECK(child >= 0);
     if (!child) {
+        if (dup2(fileno(host_log), STDOUT_FILENO) < 0 ||
+            dup2(fileno(host_log), STDERR_FILENO) < 0) _exit(126);
         execl(argv[1], argv[1], (char *)NULL);
         _exit(127);
     }
@@ -172,17 +234,40 @@ int main(int argc, char **argv) {
     CHECK(xdotool("windowfocus", id));
     CHECK((secret = focused(app, "Secret response")));
     CHECK(protected_field(secret));
-    CHECK(xdotool("key", "Tab") && observe_focus(app, "Answer"));
+    if (ime) CHECK(focus_control(app, "Answer"));
+    else CHECK(xdotool("key", "Tab") && observe_focus(app, "Answer"));
     CHECK(xdotool("key", "Tab") && observe_focus(app, "Cancel"));
     CHECK(xdotool("key", "shift+Tab") && observe_focus(app, "Answer"));
     CHECK(xdotool("key", "shift+Tab") && observe_focus(app, "Secret response"));
-    CHECK(xdotool("type", "test") && xdotool("key", "Tab") && observe_focus(app, "Answer"));
-    CHECK(xdotool("key", "shift+Tab") && observe_focus(app, "Secret response") && protected_field(secret));
-    CHECK(xdotool("key", "Return") && (visible = focused(app, "Response")));
+    if (ime) {
+        CHECK(xdotool("key", "108") && xdotool("key", "apostrophe"));
+        CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT secret requests=0"));
+        CHECK(protected_field(secret));
+        if (cancel) {
+            CHECK(focus_control(app, "Answer"));
+            CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT_CLEARED secret requests=0"));
+            CHECK(xdotool("key", "shift+Tab") && observe_focus(app, "Secret response"));
+        }
+        CHECK(xdotool("key", "a"));
+        CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT_CLEARED secret requests=0"));
+        CHECK(protected_field(secret));
+    } else {
+        CHECK(xdotool("type", "test") && xdotool("key", "Tab") && observe_focus(app, "Answer"));
+        CHECK(xdotool("key", "shift+Tab") && observe_focus(app, "Secret response") && protected_field(secret));
+    }
+    CHECK(ime ? press_control(app, "Answer") : xdotool("key", "Return"));
+    CHECK((visible = focused(app, "Response")));
     CHECK(state(secret, ATSPI_STATE_DEFUNCT));
     CHECK(atspi_accessible_get_role(visible, NULL) == ATSPI_ROLE_ENTRY);
-    CHECK(xdotool("type", "visible") && observe_value(visible, "visible"));
-    CHECK(xdotool("key", "Return") && (confirmed = focused(app, "Start session")));
+    if (ime) {
+        CHECK(xdotool("key", "108") && xdotool("key", "apostrophe"));
+        CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT visible requests=1"));
+        CHECK(empty_text(visible));
+        CHECK(xdotool("key", "a") && observe_value(visible, "\xc3\xa1"));
+        CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT_CLEARED visible requests=1"));
+    } else CHECK(xdotool("type", "visible") && observe_value(visible, "visible"));
+    CHECK(ime ? press_control(app, "Answer") : xdotool("key", "Return"));
+    CHECK((confirmed = focused(app, "Start session")));
     CHECK(state(visible, ATSPI_STATE_DEFUNCT));
     CHECK(xdotool("key", "Escape"));
     int status = 0;
@@ -194,7 +279,9 @@ int main(int argc, char **argv) {
     CHECK(ended == child);
     child = -1;
     CHECK(WIFEXITED(status) && !WEXITSTATUS(status));
-    puts("Native login: protected password, real keyboard, retired fields and close passed");
+    if (ime) puts(cancel ? "Native login IME: focus cancellation and later Unicode commit passed" :
+                          "Native login IME: separate secret/visible preedit and Unicode commits passed");
+    else puts("Native login: protected password, real keyboard, retired fields and close passed");
     result = 0;
 done:
     if (child > 0) { kill(child, SIGKILL); waitpid(child, NULL, 0); }
@@ -204,5 +291,16 @@ done:
     if (app) g_object_unref(app);
     if (desktop) g_object_unref(desktop);
     if (initialized) atspi_exit();
+    if (host_log) {
+        char *transcript = malloc(128u * 1024u);
+        if (!transcript) result = 1;
+        else {
+            ssize_t count = pread(fileno(host_log), transcript, 128u * 1024u, 0);
+            if (count < 0 || count == 128 * 1024) result = 1;
+            else if (fwrite(transcript, 1, (size_t)count, stdout) != (size_t)count) result = 1;
+            free(transcript);
+        }
+        fclose(host_log);
+    }
     return result;
 }
