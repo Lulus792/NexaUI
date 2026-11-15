@@ -1,5 +1,14 @@
 # Aetheri adoption: initial source assessment
 
+Original connection readiness and native loss for B03/W10/I07/D06/T04/T06/A01/A06/P05/Q02/Q08.
+Consumer `2615f6f` keeps installed SDK `368cd38` and original Aetheri `7d5fa47`.
+Sixteen CTests and 36 native tasks pass, including nine native EOF/admission/
+deadline workflows and queued-send view replacement in rendered consumer tests.
+Both missing-pump and missing-deadline counterexamples fail. Real daemon exit,
+native attached-view replacement, production admission/trusted placement and
+physical/human/performance gates remain open. All 103 IDs/statuses and the
+remaining delivery packets persist. [Evidence](aetheri-login-loop-report.md)
+
 Files capture observation: source`87d8336` keeps SDK0.1.33/`1e00a6f` and all
 e713880 app binaries unchanged. Six full native tasks pass; twelve read-only
 native expectations precede four captures/profile, and all264 whole-image pairs

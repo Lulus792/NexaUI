@@ -127,6 +127,11 @@ fixture reply. The independent client waits for unknown state without further
 typing, checks retired objects and closes with Escape. These modes use the
 same client/Weston/frame limits and establish no production admission.
 
+The [source-bound readiness-loop report](../../docs/quality/aetheri-login-loop-report.md)
+records the executed profile matrix, queued-send lifetime checks, native loss
+cases and rejected missing-pump/missing-deadline variants. Production admission,
+native attached-view replacement and actual daemon-exit acceptance remain open.
+
 The native runner can also configure Compose on its owned Xvfb seat and start
 Weston's `weston-simple-im`. It uses `setxkbmap` or an existing `xkbcomp` to
 configure that private keyboard. Set `NEXAUI_WESTON_LIBEXEC` to the directory

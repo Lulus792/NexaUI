@@ -1,0 +1,33 @@
+{
+  "candidate": "2615f6f72d8b96615397d92ac61bc9f9601e99ce",
+  "receipt_sha256": "40f99733ac6296b70e2b9ee1eb825b9047aa471d6d20ced4c0cda2e958d43962",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-login-loop222.tar.gz",
+    "bytes": 16269339,
+    "sha256": "b6bd97087d30bf303251529b8fcf42c4cd5bcc21181feb6f1a0670b385e4c365",
+    "verified_members": 329
+  },
+  "archive_members_rechecked": 329,
+  "kernel": "6.18.33.2-microsoft-standard-WSL2",
+  "compiler": "Alpine clang version 22.1.3\nTarget: x86_64-alpine-linux-musl\nThread model: posix\nInstalledDir: /usr/lib/llvm22/bin\nConfiguration file: /etc/clang22/x86_64-alpine-linux-musl.cfg\n",
+  "default_feature_guards": [
+    {
+      "flag": "CONNECTION",
+      "exit": 2,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "flag": "CONNECTION_LOOP",
+      "exit": 2,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "flag": "CONNECTION_LOSS",
+      "exit": 2,
+      "stdout": "",
+      "stderr": ""
+    }
+  ]
+}

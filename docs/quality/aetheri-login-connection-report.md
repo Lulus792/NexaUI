@@ -77,6 +77,10 @@ The optional consumer has the standalone checks above.
 
 ## Remaining acceptance
 
+This section records the `fbd5a00` checkpoint. The
+[readiness-loop follow-up](aetheri-login-loop-report.md) adds queued-send view
+replacement and scoped native EOF/admission/deadline evidence at `2615f6f`.
+
 Actual service/loaded-configuration/greeter/effective-policy admission, trusted
 compositor placement and real-service watch/pump/deadline behavior remain host
 integration gates. Queued-send view replacement and native loss presentation
