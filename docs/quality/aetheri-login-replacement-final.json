@@ -1,0 +1,35 @@
+{
+  "candidate": "2c7e4ce60981d08393eec343163e2904e4c1a92e",
+  "receipt_sha256": "6f0541eea9efcf26aaf991788a061d5f72bf5acb34c47d7942794e064f59c11a",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-login-replace234.tar.gz",
+    "bytes": 21037217,
+    "sha256": "ec80cac9373e6a6519d7f3c3040f59761f0e8cc135a5744c953896bfdc0135c9",
+    "verified_members": 404
+  },
+  "verified_members": 404,
+  "default_feature_guards": [
+    {
+      "flag": "CONNECTION",
+      "exit": 2
+    },
+    {
+      "flag": "CONNECTION_LOOP",
+      "exit": 2
+    },
+    {
+      "flag": "CONNECTION_LOSS",
+      "exit": 2
+    },
+    {
+      "flag": "REPLACE_VIEW",
+      "exit": 2
+    }
+  ],
+  "counterexample_validation": {
+    "lost_original_model": "native replacement checkpoint rejects unavailable replacement",
+    "retained_view_ime": "native visible-preedit observation fails",
+    "retained_view_keyboard": "native child-exit assertion and LeakSanitizer reject 579268 bytes in 98 allocations",
+    "offline_symbols": "GNU addr2line emits DWARF line-table warnings; leading view/context allocation frames resolve in retained output"
+  }
+}

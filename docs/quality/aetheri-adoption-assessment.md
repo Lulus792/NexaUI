@@ -1,5 +1,15 @@
 # Aetheri adoption: initial source assessment
 
+Native login view replacement for B03/W10/T04/T06/A01/A06/D06/P05/Q02/Q08.
+Consumer `2c7e4ce` retains SDK `368cd38` and original Aetheri `7d5fa47`.
+Sixteen consumer CTests and 45 native workflows pass, including nine queued-answer
+replacement cases with old-action rejection and exact once-only transport.
+Missing-model and retained-view variants fail; earlier selector/helper failures
+remain retained. Actual daemon exit, broader replacement phases, production
+admission/trusted placement and physical/human/performance gates remain open.
+All 103 IDs/statuses and remaining packets persist.
+[Evidence](aetheri-login-replacement-report.md)
+
 Original connection readiness and native loss for B03/W10/I07/D06/T04/T06/A01/A06/P05/Q02/Q08.
 Consumer `2615f6f` keeps installed SDK `368cd38` and original Aetheri `7d5fa47`.
 Sixteen CTests and 36 native tasks pass, including nine native EOF/admission/

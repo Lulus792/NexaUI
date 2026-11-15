@@ -87,6 +87,10 @@ The standalone consumer is covered by the checks above, not that SDK CI run.
 
 ## Remaining acceptance
 
+This section records `2615f6f`. The
+[native replacement follow-up](aetheri-login-replacement-report.md) adds scoped
+attached-view replacement evidence at `2c7e4ce`.
+
 Production service/loaded-configuration/greeter/effective-policy admission and
 trusted compositor placement remain host gates. Actual daemon pidfd exit and
 native attached-view replacement require separate integration evidence. Other

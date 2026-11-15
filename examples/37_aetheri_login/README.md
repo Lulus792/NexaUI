@@ -140,7 +140,10 @@ with Escape. The fixture accepts no combined loss/replacement mode.
 The [source-bound readiness-loop report](../../docs/quality/aetheri-login-loop-report.md)
 records the executed profile matrix, queued-send lifetime checks, native loss
 cases and rejected missing-pump/missing-deadline variants. Production admission,
-native attached-view replacement and actual daemon-exit acceptance remain open.
+broader native replacement phases and actual daemon-exit acceptance remain open.
+The [native replacement follow-up](../../docs/quality/aetheri-login-replacement-report.md)
+records queued-answer context replacement, old-action rejection and the retained
+failed selector/negative-check attempts alongside the final profile matrix.
 
 The native runner can also configure Compose on its owned Xvfb seat and start
 Weston's `weston-simple-im`. It uses `setxkbmap` or an existing `xkbcomp` to
