@@ -169,7 +169,8 @@ int main(int argc, char **argv) {
         if (invalid) {
             nx_event event;
             int available = 1;
-            CHECK(nx_window_next_event(window, &event, &available) == NX_ERROR_PLATFORM);
+            CHECK(nx_window_poll(window, 0) == NX_ERROR_PLATFORM);
+            CHECK(nx_window_next_event(window, &event, &available) == NX_OK);
             CHECK(!available);
         }
     } else {
