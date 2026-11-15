@@ -2,6 +2,7 @@
 
 ## 0.1.33 — Development snapshot
 
+- Overwrite retired keyboard and text-system records in native input queues and UI contexts. Borrowed frame events keep their documented lifetime through the next successful `nx_begin_frame` or context destruction.
 - Guard viewport surfaces during producer callbacks. Same-surface draw, completion and destruction return `NX_ERROR_STATE` during resize, acquire and release. A completed render still releases its pixels once.
 - The optional original Editor native runner accepts checked 0.1.32/0.1.33 SDK receipts while retaining artifact hashes and feature floors. Its frame observer reads one coherent state and locates the latest frame without repeatedly scanning earlier frame records; the original native deadlines and assertions remain unchanged.
 - Added copied numeric snapshots and bounded absolute value requests for built-in sliders/drag values, preserving existing public layouts. Absolute writes share ordered action admission and require the same completed-frame model/range, control identity and enabled scope at submission; painting failures retain requests for a same-frame retry. Linux AT-SPI publishes standard Value properties, editable state and numeric change notifications, with deferred success/error replies and bounded lifetime guards. Other numeric kinds, UIA/AX range-value bindings, real audio-device effects and full human/performance acceptance remain separate work.

@@ -2,6 +2,7 @@
 #include "nexaui/cell_grid.h"
 #include "edit_shortcuts.h"
 #include "secure_zero.h"
+#include "input_event_storage.h"
 #include "context_identity.h"
 #include "text_command.h"
 #include "text_value.h"
@@ -621,12 +622,18 @@ void nx_context_destroy(nx_context *ctx) {
         (void)nx_window_set_ime_enabled(ctx->ime_active_window, 0);
     nx_allocator a = ctx->allocator;
     nx_free_owned_bitmaps(ctx, NULL);
-    if (ctx->pending_events.data)
+    if (ctx->pending_events.data) {
+        for (size_t i = 0; i < ctx->pending_events.count; ++i)
+            nx_private_scrub_input_event(&ctx->pending_events.data[i]);
         a.deallocate(a.user, ctx->pending_events.data,
                      ctx->pending_events.capacity * NX_EVENT_SLOT_BYTES);
-    if (ctx->frame_events.data)
+    }
+    if (ctx->frame_events.data) {
+        for (size_t i = 0; i < ctx->frame_events.count; ++i)
+            nx_private_scrub_input_event(&ctx->frame_events.data[i]);
         a.deallocate(a.user, ctx->frame_events.data,
                      ctx->frame_events.capacity * NX_EVENT_SLOT_BYTES);
+    }
     nx_region_buffer *buffers[2] = {&ctx->previous_regions, &ctx->current_regions};
     for (unsigned i = 0; i < 2; ++i) {
         nx_region_buffer *buffer = buffers[i];
@@ -850,6 +857,8 @@ nx_result nx_begin_frame(nx_context *ctx, float width, float height, double delt
     memset(ctx->action_keys_pressed,0,sizeof(ctx->action_keys_pressed));
     memset(ctx->keys_released, 0, sizeof(ctx->keys_released));
     nx_event_buffer previous = ctx->frame_events;
+    for (size_t i = 0; i < previous.count; ++i)
+        nx_private_scrub_input_event(&previous.data[i]);
     ctx->frame_events = ctx->pending_events;
     ctx->pending_events = previous;
     ctx->pending_events.count = 0;
@@ -1087,9 +1096,12 @@ nx_result nx_context_queue_event(nx_context *ctx, const nx_event *event) {
             ctx->allocator.user, next * NX_EVENT_SLOT_BYTES);
         if (!data) return NX_ERROR_MEMORY;
         if (buffer->count) memcpy(data, buffer->data, buffer->count * sizeof(nx_event));
-        if (buffer->data)
+        if (buffer->data) {
+            for (size_t i = 0; i < buffer->count; ++i)
+                nx_private_scrub_input_event(&buffer->data[i]);
             ctx->allocator.deallocate(ctx->allocator.user, buffer->data,
                                       buffer->capacity * NX_EVENT_SLOT_BYTES);
+        }
         buffer->data = data;
         buffer->routes = (nx_event_route *)(data + next);
         buffer->capacity = next;

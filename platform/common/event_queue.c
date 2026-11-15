@@ -1,4 +1,5 @@
 #include "event_queue.h"
+#include "../../src/input_event_storage.h"
 
 #include <stdint.h>
 
@@ -20,9 +21,12 @@ nx_result nx_platform_event_queue_init(nx_platform_event_queue *queue,
 
 void nx_platform_event_queue_destroy(nx_platform_event_queue *queue) {
     if (!queue) return;
-    if (queue->events)
+    if (queue->events) {
+        for (size_t i = 0; i < queue->count; ++i)
+            nx_private_scrub_input_event(&queue->events[(queue->head + i) % queue->capacity]);
         queue->allocator.deallocate(queue->allocator.user, queue->events,
                                      queue->capacity * sizeof(nx_event));
+    }
     *queue = (nx_platform_event_queue){0};
 }
 
@@ -49,8 +53,11 @@ void nx_platform_event_queue_push(nx_platform_event_queue *queue,
             queue->error = NX_ERROR_MEMORY;
             return;
         }
-        for (size_t i = 0; i < queue->count; ++i)
-            events[i] = queue->events[(queue->head + i) % queue->capacity];
+        for (size_t i = 0; i < queue->count; ++i) {
+            nx_event *old = &queue->events[(queue->head + i) % queue->capacity];
+            events[i] = *old;
+            nx_private_scrub_input_event(old);
+        }
         queue->allocator.deallocate(queue->allocator.user, queue->events,
                                      queue->capacity * sizeof(nx_event));
         queue->events = events;
@@ -70,6 +77,7 @@ nx_result nx_platform_event_queue_next(nx_platform_event_queue *queue,
     if (!queue || !queue->events) return NX_ERROR_ARGUMENT;
     if (!queue->count) return NX_OK;
     *out_event = queue->events[queue->head];
+    nx_private_scrub_input_event(&queue->events[queue->head]);
     queue->head = (queue->head + 1u) % queue->capacity;
     --queue->count;
     *available = 1;
@@ -86,6 +94,7 @@ nx_result nx_platform_event_queue_route(nx_platform_event_queue *queue,
         nx_result result = nx_context_queue_event(context,
                                                    &queue->events[queue->head]);
         if (result != NX_OK) return result;
+        nx_private_scrub_input_event(&queue->events[queue->head]);
         queue->head = (queue->head + 1u) % queue->capacity;
         --queue->count;
         ++*out_count;
