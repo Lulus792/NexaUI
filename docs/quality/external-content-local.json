@@ -1,0 +1,1126 @@
+{
+  "candidate": "5fa854d9b0f68c7951ef418801fb846accd248bb",
+  "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+  "sdk_version": "0.1.33",
+  "consumer_inputs": [
+    {
+      "path": "examples/38_external_content/CMakeLists.txt",
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "path": "examples/38_external_content/README.md",
+      "sha256": "a8a657ef6b03d7dbc033b612001e1e3d0e72af0cfd3f2a30c6223f580443b1ed"
+    },
+    {
+      "path": "examples/38_external_content/surface.h",
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "path": "examples/38_external_content/surface.c",
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "path": "examples/38_external_content/test_surface.c",
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "release",
+      "cases": [
+        "content_surface_flow",
+        "content_surface_malformed",
+        "content_surface_lifetime",
+        "content_surface_worker"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/surface.c",
+            "bytes": 6373,
+            "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content262/release/CMakeFiles/content_surface.dir/surface.c.o",
+            "bytes": 4240,
+            "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content262/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface.dir/surface.c.o -c /tmp/nexaui-content262/consumer/examples/38_external_content/surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/test_surface.c",
+            "bytes": 15397,
+            "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content262/release/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+            "bytes": 27704,
+            "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content262/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface_test.dir/test_surface.c.o -c /tmp/nexaui-content262/consumer/examples/38_external_content/test_surface.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-content262/release/libcontent_surface.a",
+          "bytes": 4512,
+          "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+        },
+        {
+          "path": "/tmp/nexaui-content262/release/content_surface_test",
+          "bytes": 850328,
+          "sha256": "84e1767cdeac0404a3e5bde2f7a6f6354626924a1b4bd81aaf4b4d5e59b09949"
+        },
+        {
+          "path": "/tmp/nexaui-content262/release/compile_commands.json",
+          "bytes": 1189,
+          "sha256": "a5ec8122f8e2a32984206eadafad1c2095c2905af38a299f591f7ebd2322ed78"
+        },
+        {
+          "path": "/tmp/nexaui-content262/release/CMakeCache.txt",
+          "bytes": 19463,
+          "sha256": "8808f93127fa5b495b2a1a6db03fdf63752c71b1baeb5b266b0e07d11a6170cd"
+        },
+        {
+          "path": "/tmp/nexaui-content262/release/tests.xml",
+          "bytes": 1220,
+          "sha256": "927ae47f835a47c85b1834efd700bda963cf47f80fec2f0fad1dcb1f1bd31c16"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+        "bytes": 1185356,
+        "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+      },
+      "dynamic": "\nDynamic section at offset 0xc0a60 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x8776f\n 0x0000000000000019 (INIT_ARRAY)         0xbf500\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xbf508\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xde0\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1636 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc0c70\n 0x0000000000000002 (PLTRELSZ)           2184 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4e48\n 0x0000000000000007 (RELA)               0x1548\n 0x0000000000000008 (RELASZ)             14592 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x1528\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x1444\n 0x000000006ffffff9 (RELACOUNT)          574\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "shared",
+      "cases": [
+        "content_surface_flow",
+        "content_surface_malformed",
+        "content_surface_lifetime",
+        "content_surface_worker"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/surface.c",
+            "bytes": 6373,
+            "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content262/shared/CMakeFiles/content_surface.dir/surface.c.o",
+            "bytes": 4240,
+            "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-content262/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface.dir/surface.c.o -c /tmp/nexaui-content262/consumer/examples/38_external_content/surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/test_surface.c",
+            "bytes": 15397,
+            "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content262/shared/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+            "bytes": 27704,
+            "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-content262/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface_test.dir/test_surface.c.o -c /tmp/nexaui-content262/consumer/examples/38_external_content/test_surface.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-content262/shared/libcontent_surface.a",
+          "bytes": 4512,
+          "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+        },
+        {
+          "path": "/tmp/nexaui-content262/shared/content_surface_test",
+          "bytes": 32624,
+          "sha256": "6fe01b2493e2cbdfcbf61f41ebf0e246c415179bddfc2926accc710a8b544e8b"
+        },
+        {
+          "path": "/tmp/nexaui-content262/shared/compile_commands.json",
+          "bytes": 1215,
+          "sha256": "8a0c806a191703fe807c69b41a48f3b89d95f59da4a3c1e6b12a53346e902851"
+        },
+        {
+          "path": "/tmp/nexaui-content262/shared/CMakeCache.txt",
+          "bytes": 19457,
+          "sha256": "a57288e6c83368c73d8788637a03d8e141d40abcc20b7ca01d6f6f8d12fd9dd5"
+        },
+        {
+          "path": "/tmp/nexaui-content262/shared/tests.xml",
+          "bytes": 1223,
+          "sha256": "b4cb388b63539a7c8d72944f0d590d02e7085f619e1e0d0e0d65344fcc4342d9"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/shared-prefix/lib/libnexaui.so.0.1.33",
+        "bytes": 934464,
+        "sha256": "fa3d43cb8d50f171ee3e008e8dd723081149208557b8ecd5cf243b7a56d9ab31"
+      },
+      "dynamic": "\nDynamic section at offset 0x5cd8 contains 26 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000001d (RUNPATH)            Library runpath: [/tmp/nexaui-ime-handoff202/shared-prefix/lib]\n 0x000000000000000c (INIT)               0x1000\n 0x000000000000000d (FINI)               0x3fdf\n 0x0000000000000019 (INIT_ARRAY)         0x6c20\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6c28\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x6e8\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              729 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6eb8\n 0x0000000000000002 (PLTRELSZ)           768 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xad0\n 0x0000000000000007 (RELA)               0x9c8\n 0x0000000000000008 (RELASZ)             264 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          5\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "asan",
+      "cases": [
+        "content_surface_flow",
+        "content_surface_malformed",
+        "content_surface_lifetime",
+        "content_surface_worker"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/surface.c",
+            "bytes": 6373,
+            "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content262/asan/CMakeFiles/content_surface.dir/surface.c.o",
+            "bytes": 56688,
+            "sha256": "a6f7a57a6abfc4d804b89728d93c565107a2ccfb32daa83f9ff83ad8ef6dc2e7"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content262/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/content_surface.dir/surface.c.o -c /tmp/nexaui-content262/consumer/examples/38_external_content/surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/test_surface.c",
+            "bytes": 15397,
+            "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content262/asan/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+            "bytes": 137032,
+            "sha256": "3c3df38062d5dee2b231da2a97947e0de6345c14418a5ec3596722ddccee6409"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content262/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/content_surface_test.dir/test_surface.c.o -c /tmp/nexaui-content262/consumer/examples/38_external_content/test_surface.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-content262/asan/libcontent_surface.a",
+          "bytes": 56992,
+          "sha256": "45f163179f1208975b1569c8082f750570b1fb2e8ac2f48d017c19bd01c36aee"
+        },
+        {
+          "path": "/tmp/nexaui-content262/asan/content_surface_test",
+          "bytes": 10448800,
+          "sha256": "12f534b218e57c2acd095e97d564f7528b1c0acf07558f77ece350ed79d9c6a5"
+        },
+        {
+          "path": "/tmp/nexaui-content262/asan/compile_commands.json",
+          "bytes": 1265,
+          "sha256": "2cdc528f6100de8dc5f48b6ac4e0aa8441c777f9532e6997a34d7642492078aa"
+        },
+        {
+          "path": "/tmp/nexaui-content262/asan/CMakeCache.txt",
+          "bytes": 19496,
+          "sha256": "6f1d3c3dc87e85ec97fa133c059bed88b37fbdd6168a7b7cd0c630f8fb30641b"
+        },
+        {
+          "path": "/tmp/nexaui-content262/asan/tests.xml",
+          "bytes": 1219,
+          "sha256": "9a92a1be10581daddb75d1225db5a07e35252a8ee42a7b09116f3ae8a2e6633d"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/asan-prefix/lib/libnexaui.a",
+        "bytes": 11569530,
+        "sha256": "cefbf73fb7b7a8ce644d193f3280be5dc98f4bbf0e4ac608b097f663b9539d67"
+      },
+      "dynamic": "\nDynamic section at offset 0x5759e0 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x179000\n 0x000000000000000d (FINI)               0x4dfe8b\n 0x0000000000000019 (INIT_ARRAY)         0x573118\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x573130\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x14a98\n 0x0000000000000006 (SYMTAB)             0x52d0\n 0x000000000000000a (STRSZ)              59781 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x575c00\n 0x0000000000000002 (PLTRELSZ)           1320 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x1784b8\n 0x0000000000000007 (RELA)               0x24918\n 0x0000000000000008 (RELASZ)             1391520 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x248c8\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x2341e\n 0x000000006ffffff9 (RELACOUNT)          57903\n 0x0000000000000000 (NULL)               0x0\n"
+    }
+  ],
+  "ctests": 12,
+  "negative": {
+    "candidate": "5fa854d9b0f68c7951ef418801fb846accd248bb",
+    "mutations": [
+      {
+        "variant": "stale-generation",
+        "path": "/tmp/nexaui-content263/stale-generation/consumer/examples/38_external_content/surface.c",
+        "before_sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b",
+        "after_sha256": "43fd308be03e353d8843d359706eab49f1962f73a925823612caa4b9839a2631"
+      },
+      {
+        "variant": "held-snapshot",
+        "path": "/tmp/nexaui-content263/held-snapshot/consumer/examples/38_external_content/surface.c",
+        "before_sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b",
+        "after_sha256": "0e2b94946132888a9d90aaba9d780a7922dd88438135045a4da59a50bb664cbb"
+      },
+      {
+        "variant": "borrowed-pixels",
+        "path": "/tmp/nexaui-content263/borrowed-pixels/consumer/examples/38_external_content/surface.c",
+        "before_sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b",
+        "after_sha256": "4d36a74ccd25fa1d5500db9e1d33312f7fdd7d7fea8d0920d9a42d5c3db34666"
+      }
+    ],
+    "commands": [
+      {
+        "variant": "stale-generation",
+        "profile": "release",
+        "case": "worker",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-content263/stale-generation/consumer/examples/38_external_content",
+          "-B",
+          "/tmp/nexaui-content263/stale-generation/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 6.495600792000005,
+        "log": "content263-stale-generation-configure.log",
+        "sha256": "c90cf9120c427b79824745705a81dd8e63279c369100b2fb5322fb4ab0b761af"
+      },
+      {
+        "variant": "stale-generation",
+        "profile": "release",
+        "case": "worker",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-content263/stale-generation/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.5700982200000055,
+        "log": "content263-stale-generation-build.log",
+        "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+      },
+      {
+        "variant": "stale-generation",
+        "profile": "release",
+        "case": "worker",
+        "phase": "probe",
+        "command": [
+          "/tmp/nexaui-content263/stale-generation/build/content_surface_test",
+          "worker"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.024064227999986088,
+        "log": "content263-stale-generation-probe.log",
+        "sha256": "89c9d056b7db70dd77718a1ff751971475d40243a35417ace313b363f16676b9"
+      },
+      {
+        "variant": "held-snapshot",
+        "profile": "release",
+        "case": "flow",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-content263/held-snapshot/consumer/examples/38_external_content",
+          "-B",
+          "/tmp/nexaui-content263/held-snapshot/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 4.887016778000003,
+        "log": "content263-held-snapshot-configure.log",
+        "sha256": "acd79a07525921c5439a256210e5bd2f0f0929d0bc786f75842a398e345d39ba"
+      },
+      {
+        "variant": "held-snapshot",
+        "profile": "release",
+        "case": "flow",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-content263/held-snapshot/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.419594563000004,
+        "log": "content263-held-snapshot-build.log",
+        "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+      },
+      {
+        "variant": "held-snapshot",
+        "profile": "release",
+        "case": "flow",
+        "phase": "probe",
+        "command": [
+          "/tmp/nexaui-content263/held-snapshot/build/content_surface_test",
+          "flow"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.009209016999989217,
+        "log": "content263-held-snapshot-probe.log",
+        "sha256": "45c62cbc6cdfa3608a35d90cde68e6fcfec3dfd882825ec9220a53c7d0bb6895"
+      },
+      {
+        "variant": "borrowed-pixels",
+        "profile": "asan",
+        "case": "flow",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-content263/borrowed-pixels/consumer/examples/38_external_content",
+          "-B",
+          "/tmp/nexaui-content263/borrowed-pixels/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Debug",
+          "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/asan-prefix"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 6.184799303999995,
+        "log": "content263-borrowed-pixels-configure.log",
+        "sha256": "9ea9681f366417163e72f2e2a6bb4395a8b62df329a8234556b411b3da5b20cb"
+      },
+      {
+        "variant": "borrowed-pixels",
+        "profile": "asan",
+        "case": "flow",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-content263/borrowed-pixels/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.9207773390000114,
+        "log": "content263-borrowed-pixels-build.log",
+        "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+      },
+      {
+        "variant": "borrowed-pixels",
+        "profile": "asan",
+        "case": "flow",
+        "phase": "probe",
+        "command": [
+          "/tmp/nexaui-content263/borrowed-pixels/build/content_surface_test",
+          "flow"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.12036103900001649,
+        "log": "content263-borrowed-pixels-probe.log",
+        "sha256": "5ccec03d3b5e37b895fea8f9b89e645b8b5b9f5bf2bb665019cb9e72854b28ef"
+      }
+    ]
+  },
+  "environment": {
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "compiler": "Alpine clang version 22.1.3\nTarget: x86_64-alpine-linux-musl\nThread model: posix\nInstalledDir: /usr/lib/llvm22/bin\nConfiguration file: /etc/clang22/x86_64-alpine-linux-musl.cfg\n",
+    "cmake": "cmake version 4.2.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+    "ctest": "ctest version 4.2.3\n\nCMake suite maintained and supported by Kitware (kitware.com/cmake).\n",
+    "ninja": "1.9\n",
+    "sanitizers": {
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+    }
+  },
+  "sdk_source_unchanged": true,
+  "sdk_receipt": {
+    "path": "/mnt/d/NexaUI/out/ime-handoff206-final.json",
+    "bytes": 117581,
+    "sha256": "755444049b7934cee07cfab87e31b8d18847670f129311b36d49535397cf5ec2"
+  },
+  "catalogue": {
+    "path": "/mnt/d/NexaUI/NEXT_AETHERI_UI.md",
+    "bytes": 85768,
+    "sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65"
+  },
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-content264.tar.gz",
+    "bytes": 8618463,
+    "sha256": "a455aa25db854189a9a9d3d6164e908fee7b9dd534a3f13cf4fb6c65448c9b71",
+    "verified_members": 108
+  },
+  "manifest": [
+    {
+      "member": "consumer/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 948,
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "member": "consumer/examples/38_external_content/README.md",
+      "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/README.md",
+      "bytes": 4877,
+      "sha256": "a8a657ef6b03d7dbc033b612001e1e3d0e72af0cfd3f2a30c6223f580443b1ed"
+    },
+    {
+      "member": "consumer/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "consumer/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/surface.c",
+      "bytes": 6373,
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "member": "consumer/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content262/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "logs/content262-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/content262-release-configure.log",
+      "bytes": 709,
+      "sha256": "f5dd9c0e9c15038a5c49408fb9631d17cce8874ba8cdc9419fd018ad8c4fb7fc"
+    },
+    {
+      "member": "logs/content262-release-build.log",
+      "path": "/mnt/d/NexaUI/out/content262-release-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "logs/content262-release-test.log",
+      "path": "/mnt/d/NexaUI/out/content262-release-test.log",
+      "bytes": 1981,
+      "sha256": "238fb1dc8d35eccce21aebced8167c126a5bf3da8870cc1535e5b9679e15dcf3"
+    },
+    {
+      "member": "release/objects/surface.c.o",
+      "path": "/tmp/nexaui-content262/release/CMakeFiles/content_surface.dir/surface.c.o",
+      "bytes": 4240,
+      "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+    },
+    {
+      "member": "release/objects/test_surface.c.o",
+      "path": "/tmp/nexaui-content262/release/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+      "bytes": 27704,
+      "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+    },
+    {
+      "member": "release/libcontent_surface.a",
+      "path": "/tmp/nexaui-content262/release/libcontent_surface.a",
+      "bytes": 4512,
+      "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+    },
+    {
+      "member": "release/content_surface_test",
+      "path": "/tmp/nexaui-content262/release/content_surface_test",
+      "bytes": 850328,
+      "sha256": "84e1767cdeac0404a3e5bde2f7a6f6354626924a1b4bd81aaf4b4d5e59b09949"
+    },
+    {
+      "member": "release/compile_commands.json",
+      "path": "/tmp/nexaui-content262/release/compile_commands.json",
+      "bytes": 1189,
+      "sha256": "a5ec8122f8e2a32984206eadafad1c2095c2905af38a299f591f7ebd2322ed78"
+    },
+    {
+      "member": "release/CMakeCache.txt",
+      "path": "/tmp/nexaui-content262/release/CMakeCache.txt",
+      "bytes": 19463,
+      "sha256": "8808f93127fa5b495b2a1a6db03fdf63752c71b1baeb5b266b0e07d11a6170cd"
+    },
+    {
+      "member": "release/tests.xml",
+      "path": "/tmp/nexaui-content262/release/tests.xml",
+      "bytes": 1220,
+      "sha256": "927ae47f835a47c85b1834efd700bda963cf47f80fec2f0fad1dcb1f1bd31c16"
+    },
+    {
+      "member": "logs/content262-shared-configure.log",
+      "path": "/mnt/d/NexaUI/out/content262-shared-configure.log",
+      "bytes": 708,
+      "sha256": "4587f78b201b19707a6c4b63d7553c3ea8b00cff86f75812ab5d930d9527ac14"
+    },
+    {
+      "member": "logs/content262-shared-build.log",
+      "path": "/mnt/d/NexaUI/out/content262-shared-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "logs/content262-shared-test.log",
+      "path": "/mnt/d/NexaUI/out/content262-shared-test.log",
+      "bytes": 1970,
+      "sha256": "6942e3515a9802bb90d7f1fd2b99719e4a7bf0d38b1f35f6e95cf9b6731d60b6"
+    },
+    {
+      "member": "shared/objects/surface.c.o",
+      "path": "/tmp/nexaui-content262/shared/CMakeFiles/content_surface.dir/surface.c.o",
+      "bytes": 4240,
+      "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+    },
+    {
+      "member": "shared/objects/test_surface.c.o",
+      "path": "/tmp/nexaui-content262/shared/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+      "bytes": 27704,
+      "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+    },
+    {
+      "member": "shared/libcontent_surface.a",
+      "path": "/tmp/nexaui-content262/shared/libcontent_surface.a",
+      "bytes": 4512,
+      "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+    },
+    {
+      "member": "shared/content_surface_test",
+      "path": "/tmp/nexaui-content262/shared/content_surface_test",
+      "bytes": 32624,
+      "sha256": "6fe01b2493e2cbdfcbf61f41ebf0e246c415179bddfc2926accc710a8b544e8b"
+    },
+    {
+      "member": "shared/compile_commands.json",
+      "path": "/tmp/nexaui-content262/shared/compile_commands.json",
+      "bytes": 1215,
+      "sha256": "8a0c806a191703fe807c69b41a48f3b89d95f59da4a3c1e6b12a53346e902851"
+    },
+    {
+      "member": "shared/CMakeCache.txt",
+      "path": "/tmp/nexaui-content262/shared/CMakeCache.txt",
+      "bytes": 19457,
+      "sha256": "a57288e6c83368c73d8788637a03d8e141d40abcc20b7ca01d6f6f8d12fd9dd5"
+    },
+    {
+      "member": "shared/tests.xml",
+      "path": "/tmp/nexaui-content262/shared/tests.xml",
+      "bytes": 1223,
+      "sha256": "b4cb388b63539a7c8d72944f0d590d02e7085f619e1e0d0e0d65344fcc4342d9"
+    },
+    {
+      "member": "logs/content262-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/content262-asan-configure.log",
+      "bytes": 706,
+      "sha256": "a15376a9c55b62ff849fe290e176d4ca401737c0a69a6a66b5b348396de351cc"
+    },
+    {
+      "member": "logs/content262-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/content262-asan-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "logs/content262-asan-test.log",
+      "path": "/mnt/d/NexaUI/out/content262-asan-test.log",
+      "bytes": 1948,
+      "sha256": "1757007b94ae6f5f6935f412771a6c7759b69437d3966c449426163612a5c269"
+    },
+    {
+      "member": "asan/objects/surface.c.o",
+      "path": "/tmp/nexaui-content262/asan/CMakeFiles/content_surface.dir/surface.c.o",
+      "bytes": 56688,
+      "sha256": "a6f7a57a6abfc4d804b89728d93c565107a2ccfb32daa83f9ff83ad8ef6dc2e7"
+    },
+    {
+      "member": "asan/objects/test_surface.c.o",
+      "path": "/tmp/nexaui-content262/asan/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+      "bytes": 137032,
+      "sha256": "3c3df38062d5dee2b231da2a97947e0de6345c14418a5ec3596722ddccee6409"
+    },
+    {
+      "member": "asan/libcontent_surface.a",
+      "path": "/tmp/nexaui-content262/asan/libcontent_surface.a",
+      "bytes": 56992,
+      "sha256": "45f163179f1208975b1569c8082f750570b1fb2e8ac2f48d017c19bd01c36aee"
+    },
+    {
+      "member": "asan/content_surface_test",
+      "path": "/tmp/nexaui-content262/asan/content_surface_test",
+      "bytes": 10448800,
+      "sha256": "12f534b218e57c2acd095e97d564f7528b1c0acf07558f77ece350ed79d9c6a5"
+    },
+    {
+      "member": "asan/compile_commands.json",
+      "path": "/tmp/nexaui-content262/asan/compile_commands.json",
+      "bytes": 1265,
+      "sha256": "2cdc528f6100de8dc5f48b6ac4e0aa8441c777f9532e6997a34d7642492078aa"
+    },
+    {
+      "member": "asan/CMakeCache.txt",
+      "path": "/tmp/nexaui-content262/asan/CMakeCache.txt",
+      "bytes": 19496,
+      "sha256": "6f1d3c3dc87e85ec97fa133c059bed88b37fbdd6168a7b7cd0c630f8fb30641b"
+    },
+    {
+      "member": "asan/tests.xml",
+      "path": "/tmp/nexaui-content262/asan/tests.xml",
+      "bytes": 1219,
+      "sha256": "9a92a1be10581daddb75d1225db5a07e35252a8ee42a7b09116f3ae8a2e6633d"
+    },
+    {
+      "member": "logs/content263-stale-generation-configure.log",
+      "path": "/mnt/d/NexaUI/out/content263-stale-generation-configure.log",
+      "bytes": 724,
+      "sha256": "c90cf9120c427b79824745705a81dd8e63279c369100b2fb5322fb4ab0b761af"
+    },
+    {
+      "member": "logs/content263-stale-generation-build.log",
+      "path": "/mnt/d/NexaUI/out/content263-stale-generation-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "logs/content263-stale-generation-probe.log",
+      "path": "/mnt/d/NexaUI/out/content263-stale-generation-probe.log",
+      "bytes": 108,
+      "sha256": "89c9d056b7db70dd77718a1ff751971475d40243a35417ace313b363f16676b9"
+    },
+    {
+      "member": "negative/stale-generation/consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-content263/stale-generation/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 948,
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "member": "negative/stale-generation/consumer/README.md",
+      "path": "/tmp/nexaui-content263/stale-generation/consumer/examples/38_external_content/README.md",
+      "bytes": 4877,
+      "sha256": "a8a657ef6b03d7dbc033b612001e1e3d0e72af0cfd3f2a30c6223f580443b1ed"
+    },
+    {
+      "member": "negative/stale-generation/consumer/surface.h",
+      "path": "/tmp/nexaui-content263/stale-generation/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "negative/stale-generation/consumer/surface.c",
+      "path": "/tmp/nexaui-content263/stale-generation/consumer/examples/38_external_content/surface.c",
+      "bytes": 6321,
+      "sha256": "43fd308be03e353d8843d359706eab49f1962f73a925823612caa4b9839a2631"
+    },
+    {
+      "member": "negative/stale-generation/consumer/test_surface.c",
+      "path": "/tmp/nexaui-content263/stale-generation/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "negative/stale-generation/libcontent_surface.a",
+      "path": "/tmp/nexaui-content263/stale-generation/build/libcontent_surface.a",
+      "bytes": 4496,
+      "sha256": "4e44186228835d197e0bf01ddb4587fb0c13418a9f8b33e8f088b76fcd9f7711"
+    },
+    {
+      "member": "negative/stale-generation/content_surface_test",
+      "path": "/tmp/nexaui-content263/stale-generation/build/content_surface_test",
+      "bytes": 850328,
+      "sha256": "155e4c4c165db9c31f1992ddde6efabe72c0842fcbea3f76f3c81a3fb8fe9f75"
+    },
+    {
+      "member": "negative/stale-generation/CMakeCache.txt",
+      "path": "/tmp/nexaui-content263/stale-generation/build/CMakeCache.txt",
+      "bytes": 19672,
+      "sha256": "8257d93dbfa1c0712985ec5c6df12c2f0c7b0136cca9927e9471da36ab61c4c9"
+    },
+    {
+      "member": "logs/content263-held-snapshot-configure.log",
+      "path": "/mnt/d/NexaUI/out/content263-held-snapshot-configure.log",
+      "bytes": 721,
+      "sha256": "acd79a07525921c5439a256210e5bd2f0f0929d0bc786f75842a398e345d39ba"
+    },
+    {
+      "member": "logs/content263-held-snapshot-build.log",
+      "path": "/mnt/d/NexaUI/out/content263-held-snapshot-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "logs/content263-held-snapshot-probe.log",
+      "path": "/mnt/d/NexaUI/out/content263-held-snapshot-probe.log",
+      "bytes": 120,
+      "sha256": "45c62cbc6cdfa3608a35d90cde68e6fcfec3dfd882825ec9220a53c7d0bb6895"
+    },
+    {
+      "member": "negative/held-snapshot/consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-content263/held-snapshot/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 948,
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "member": "negative/held-snapshot/consumer/README.md",
+      "path": "/tmp/nexaui-content263/held-snapshot/consumer/examples/38_external_content/README.md",
+      "bytes": 4877,
+      "sha256": "a8a657ef6b03d7dbc033b612001e1e3d0e72af0cfd3f2a30c6223f580443b1ed"
+    },
+    {
+      "member": "negative/held-snapshot/consumer/surface.h",
+      "path": "/tmp/nexaui-content263/held-snapshot/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "negative/held-snapshot/consumer/surface.c",
+      "path": "/tmp/nexaui-content263/held-snapshot/consumer/examples/38_external_content/surface.c",
+      "bytes": 6324,
+      "sha256": "0e2b94946132888a9d90aaba9d780a7922dd88438135045a4da59a50bb664cbb"
+    },
+    {
+      "member": "negative/held-snapshot/consumer/test_surface.c",
+      "path": "/tmp/nexaui-content263/held-snapshot/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "negative/held-snapshot/libcontent_surface.a",
+      "path": "/tmp/nexaui-content263/held-snapshot/build/libcontent_surface.a",
+      "bytes": 4408,
+      "sha256": "4b16072579a7ad728837054b683633d8efccbba8b2c958ebd50b16f1f221eaa5"
+    },
+    {
+      "member": "negative/held-snapshot/content_surface_test",
+      "path": "/tmp/nexaui-content263/held-snapshot/build/content_surface_test",
+      "bytes": 850328,
+      "sha256": "2907084e1b81e506c13e727b998b8f2af25ff161f0e75400e9685c1d3e9f3c29"
+    },
+    {
+      "member": "negative/held-snapshot/CMakeCache.txt",
+      "path": "/tmp/nexaui-content263/held-snapshot/build/CMakeCache.txt",
+      "bytes": 19654,
+      "sha256": "6a0f90c1cc19b6602a15c0457338b150360614abb9d33604d380ce4286605003"
+    },
+    {
+      "member": "logs/content263-borrowed-pixels-configure.log",
+      "path": "/mnt/d/NexaUI/out/content263-borrowed-pixels-configure.log",
+      "bytes": 723,
+      "sha256": "9ea9681f366417163e72f2e2a6bb4395a8b62df329a8234556b411b3da5b20cb"
+    },
+    {
+      "member": "logs/content263-borrowed-pixels-build.log",
+      "path": "/mnt/d/NexaUI/out/content263-borrowed-pixels-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "logs/content263-borrowed-pixels-probe.log",
+      "path": "/mnt/d/NexaUI/out/content263-borrowed-pixels-probe.log",
+      "bytes": 3921,
+      "sha256": "5ccec03d3b5e37b895fea8f9b89e645b8b5b9f5bf2bb665019cb9e72854b28ef"
+    },
+    {
+      "member": "negative/borrowed-pixels/consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 948,
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "member": "negative/borrowed-pixels/consumer/README.md",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/consumer/examples/38_external_content/README.md",
+      "bytes": 4877,
+      "sha256": "a8a657ef6b03d7dbc033b612001e1e3d0e72af0cfd3f2a30c6223f580443b1ed"
+    },
+    {
+      "member": "negative/borrowed-pixels/consumer/surface.h",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "negative/borrowed-pixels/consumer/surface.c",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/consumer/examples/38_external_content/surface.c",
+      "bytes": 6453,
+      "sha256": "4d36a74ccd25fa1d5500db9e1d33312f7fdd7d7fea8d0920d9a42d5c3db34666"
+    },
+    {
+      "member": "negative/borrowed-pixels/consumer/test_surface.c",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "negative/borrowed-pixels/libcontent_surface.a",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/build/libcontent_surface.a",
+      "bytes": 57008,
+      "sha256": "4f1892f7513275282d5527e64d9279a37ee46ebf23a9fb8ffee56d86db47f9df"
+    },
+    {
+      "member": "negative/borrowed-pixels/content_surface_test",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/build/content_surface_test",
+      "bytes": 10448928,
+      "sha256": "39ebd36b2468b3f8c4237fb78f3a43aa10c26ee0203e931b9bad5e5efb79e7af"
+    },
+    {
+      "member": "negative/borrowed-pixels/CMakeCache.txt",
+      "path": "/tmp/nexaui-content263/borrowed-pixels/build/CMakeCache.txt",
+      "bytes": 19711,
+      "sha256": "a0fc5633b8f50c61115f72a91806bc0e5b02018a633597c8d1b2a81a9f5858c2"
+    },
+    {
+      "member": "pilot254/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content254/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 948,
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "member": "pilot254/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content254/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "pilot254/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content254/consumer/examples/38_external_content/surface.c",
+      "bytes": 6339,
+      "sha256": "735c77621a955cdc682c5d0f084b2768ead42bdac8269296130920a4f3cb82d3"
+    },
+    {
+      "member": "pilot254/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content254/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15122,
+      "sha256": "95bbf4b8eb6c2a17e4b30c3286c463be97b600749ac30fc2266f1120689c0d62"
+    },
+    {
+      "member": "pilot254/content254-configure.log",
+      "path": "/mnt/d/NexaUI/out/content254-configure.log",
+      "bytes": 709,
+      "sha256": "670418014cb5189a5cdf03bbe2686aa0411a4a5baa2f729ecd78f1a3339021d3"
+    },
+    {
+      "member": "pilot254/content254-build.log",
+      "path": "/mnt/d/NexaUI/out/content254-build.log",
+      "bytes": 1041,
+      "sha256": "d29823a5437385724eb6ca8b7d62369ec9510d1805e91a93a3fa8e68c4127baf"
+    },
+    {
+      "member": "pilot255/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content255/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 948,
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "member": "pilot255/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content255/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "pilot255/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content255/consumer/examples/38_external_content/surface.c",
+      "bytes": 6373,
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "member": "pilot255/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content255/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15122,
+      "sha256": "95bbf4b8eb6c2a17e4b30c3286c463be97b600749ac30fc2266f1120689c0d62"
+    },
+    {
+      "member": "pilot255/content255-configure.log",
+      "path": "/mnt/d/NexaUI/out/content255-configure.log",
+      "bytes": 709,
+      "sha256": "4d339edf7f858ba91b5cd331904cd4ec492f9126c22741b39fe402a0290857d7"
+    },
+    {
+      "member": "pilot255/content255-build.log",
+      "path": "/mnt/d/NexaUI/out/content255-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "pilot255/content255-test.log",
+      "path": "/mnt/d/NexaUI/out/content255-test.log",
+      "bytes": 1981,
+      "sha256": "2de0fdad1ee04b919342ed9b76fe3656789c26bed609061bd4ac394f55a98267"
+    },
+    {
+      "member": "pilot256/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content256/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 948,
+      "sha256": "922895af7720709efb8116e58c375584f7ce90185035eeffa99144f7d8898663"
+    },
+    {
+      "member": "pilot256/examples/38_external_content/README.md",
+      "path": "/tmp/nexaui-content256/consumer/examples/38_external_content/README.md",
+      "bytes": 4877,
+      "sha256": "a8a657ef6b03d7dbc033b612001e1e3d0e72af0cfd3f2a30c6223f580443b1ed"
+    },
+    {
+      "member": "pilot256/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content256/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "pilot256/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content256/consumer/examples/38_external_content/surface.c",
+      "bytes": 6373,
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "member": "pilot256/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content256/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15210,
+      "sha256": "89ee7a8c7db203c4f8586a39bcb0db5593adce2232b20c8eec579842a2319953"
+    },
+    {
+      "member": "pilot256/content256-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/content256-release-configure.log",
+      "bytes": 709,
+      "sha256": "e69946e43e0cef871d17adf8dabbacea3af42d9cc303bc63568d650bfad7cea2"
+    },
+    {
+      "member": "pilot256/content256-release-build.log",
+      "path": "/mnt/d/NexaUI/out/content256-release-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "pilot256/content256-release-test.log",
+      "path": "/mnt/d/NexaUI/out/content256-release-test.log",
+      "bytes": 1981,
+      "sha256": "9c1292c10762f3d2d5d8ce792c11ca5d3a21a762b29d122b41e8500bab5a4236"
+    },
+    {
+      "member": "pilot256/content256-shared-configure.log",
+      "path": "/mnt/d/NexaUI/out/content256-shared-configure.log",
+      "bytes": 708,
+      "sha256": "45e026777da681b643214aa25ab1cc8ba83aabed2a89cdbd811a0eb4257b6773"
+    },
+    {
+      "member": "pilot256/content256-shared-build.log",
+      "path": "/mnt/d/NexaUI/out/content256-shared-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "pilot256/content256-shared-test.log",
+      "path": "/mnt/d/NexaUI/out/content256-shared-test.log",
+      "bytes": 1970,
+      "sha256": "86bc0fcf870520071a40903e737dc45e47e6cddf8c72f610366a3f8352962aa7"
+    },
+    {
+      "member": "pilot256/content256-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/content256-asan-configure.log",
+      "bytes": 706,
+      "sha256": "e6f5da7f9c2b39f6c9d8227bae20bbc4522652e58e15e2ff8548157fffc77e18"
+    },
+    {
+      "member": "pilot256/content256-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/content256-asan-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "pilot256/content256-asan-test.log",
+      "path": "/mnt/d/NexaUI/out/content256-asan-test.log",
+      "bytes": 1948,
+      "sha256": "edf7c881792d2a426dcbf15c5b051a1d21601234fe9d82717ff0c79cc6f4d5a5"
+    },
+    {
+      "member": "helpers/check_content254.py",
+      "path": "/mnt/d/NexaUI/out/check_content254.py",
+      "bytes": 1956,
+      "sha256": "13cbaeff9754cface5db4c89a6e6b38a9d67f27694a73f332d73a64c18d0e89d"
+    },
+    {
+      "member": "helpers/check_content255.py",
+      "path": "/mnt/d/NexaUI/out/check_content255.py",
+      "bytes": 1958,
+      "sha256": "60ff1067d039747300bd5bb0a3992187afb53961ee26e2d48262c314468e6550"
+    },
+    {
+      "member": "helpers/build_content256.py",
+      "path": "/mnt/d/NexaUI/out/build_content256.py",
+      "bytes": 2703,
+      "sha256": "86a6b79103a02ee75a8804e030341b64b1a49183392ff73a7a0272bf0c6b916e"
+    },
+    {
+      "member": "helpers/build_content259.py",
+      "path": "/mnt/d/NexaUI/out/build_content259.py",
+      "bytes": 2705,
+      "sha256": "f8b7f967157a8f7a518f5f08f3e6f185c41833d51e332499e71d973b2865ce4e"
+    },
+    {
+      "member": "helpers/build_content262.py",
+      "path": "/mnt/d/NexaUI/out/build_content262.py",
+      "bytes": 2705,
+      "sha256": "5fef1708fa21d86984eed4379a09037b02ccce90b782c0be25309a871697f7cf"
+    },
+    {
+      "member": "helpers/negative_content263.py",
+      "path": "/mnt/d/NexaUI/out/negative_content263.py",
+      "bytes": 3503,
+      "sha256": "4261fdabdeb56d8d951e984adf67cd69efff2c2d255479896c904c8679179833"
+    },
+    {
+      "member": "helpers/verify_content264.py",
+      "path": "/mnt/d/NexaUI/out/verify_content264.py",
+      "bytes": 7804,
+      "sha256": "36acc29476190e5bac8f7f4337c6e0dba382f676e79ed87e65f167a85c19b2d6"
+    },
+    {
+      "member": "helpers/content254-local.json",
+      "path": "/mnt/d/NexaUI/out/content254-local.json",
+      "bytes": 1846,
+      "sha256": "b317ee54f576b4d29be69342482d4bb1768a3e8eee78076469a4f2e2cf67ef61"
+    },
+    {
+      "member": "helpers/content255-local.json",
+      "path": "/mnt/d/NexaUI/out/content255-local.json",
+      "bytes": 2288,
+      "sha256": "b9604d708fa238da828977d6a6498f69d9469f7fe131e88ee7dcdba5d4861e74"
+    },
+    {
+      "member": "helpers/content256-local.json",
+      "path": "/mnt/d/NexaUI/out/content256-local.json",
+      "bytes": 6529,
+      "sha256": "a662a5dec8c656ab92c562aedbd99f131de0d5628a7396af37b075fb080f41b2"
+    },
+    {
+      "member": "helpers/content262-local.json",
+      "path": "/mnt/d/NexaUI/out/content262-local.json",
+      "bytes": 6538,
+      "sha256": "3821b917a1291858d30492799c777db6ab69be1396a8acdd1b64a18e19c313a1"
+    },
+    {
+      "member": "helpers/content263-negative.json",
+      "path": "/mnt/d/NexaUI/out/content263-negative.json",
+      "bytes": 6583,
+      "sha256": "c02fa386212957454a12e38cc1d8868f4722d7c70169038646164fd5a2c42f37"
+    },
+    {
+      "member": "catalogue/NEXT_AETHERI_UI.md",
+      "path": "/mnt/d/NexaUI/NEXT_AETHERI_UI.md",
+      "bytes": 85768,
+      "sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65"
+    }
+  ],
+  "remaining": [
+    "Selected maintained browser/PDF/guest engine and actual app integration",
+    "Native presentation/input/escape/IME/accessibility subtree and GPU interop",
+    "Windows/macOS consumer checks; production/physical/human/performance acceptance",
+    "Full 103-ID catalogue and remaining delivery packets"
+  ]
+}

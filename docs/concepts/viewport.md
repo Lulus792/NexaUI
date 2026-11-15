@@ -40,6 +40,15 @@ the call. Defer a close requested from a callback until the call returns and
 any successful frame lease is complete. A separate surface and context can
 still run on the same owner thread.
 
+For asynchronously published CPU frames, the
+[installed external-content consumer](../../examples/38_external_content/README.md)
+reuses `nx_snapshot_exchange` and this viewport API. Snapshot borrows must be
+released before UI frame end; viewport pixels must survive later rendering.
+The example stages each new accepted frame into a bounded app-owned buffer,
+then releases its snapshot inside acquire. Its generation/resize tuple rejects
+late producer results after tab replacement. This is an example consumer
+policy, not a new SDK lifetime rule or a selected browser/guest engine.
+
 `nx_viewport_surface_destroy` frees the NexaUI wrapper but does not destroy
 the application-owned source or pixels. The application may release those
 resources after all leases are complete. The

@@ -1,0 +1,14 @@
+{
+  "candidate": "5fa854d9b0f68c7951ef418801fb846accd248bb",
+  "receipt_sha256": "ef3a5cf25970d84fb0226e269f58acfb76cc6edff58f6328d973cbeb53b302b4",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-content264.tar.gz",
+    "bytes": 8618463,
+    "sha256": "a455aa25db854189a9a9d3d6164e908fee7b9dd534a3f13cf4fb6c65448c9b71",
+    "verified_members": 108
+  },
+  "verified_members": 108,
+  "ctests": 12,
+  "negative_variants": 3,
+  "scope": "Installed CPU-frame staging and headless/native-thread checks; native engine input/presentation remains open"
+}

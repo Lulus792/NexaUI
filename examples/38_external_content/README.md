@@ -53,7 +53,7 @@ Completing a deliberately discarded frame is also allowed if no renderer will
 use it. Repeated unchanged frames allocate and copy no new staging payload.
 
 Resize allocation/budget failure preserves the previous request, pixels and
-sequence. Zero-size suspension retires staging and advances the resize ID.
+sequence. Transition to zero-size suspension retires staging and advances the resize ID.
 Destroy returns `NX_ERROR_STATE` while a viewport lease remains active and
 preserves the surface for later completion. Before destroying a published native
 context, switch/detach its native semantics using the existing window contract.
@@ -78,3 +78,8 @@ accessibility subtrees, engine crash recovery and reviewed GPU interop still
 need integration. A selected maintained engine and its real browser/document/
 guest workflows remain external engineering gates. Guest pixels cannot serve
 as host admission or permission UI. No application pin or 1.0 release changes.
+
+The [source-bound report](../../docs/quality/external-content-report.md) records
+the executed Linux profile matrix, complete-image checks and rejected generation,
+snapshot-borrow and retired-pixel variants. Native/engine and Windows/macOS
+consumer acceptance remain separate.

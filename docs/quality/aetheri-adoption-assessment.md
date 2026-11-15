@@ -1,5 +1,14 @@
 # Aetheri adoption: initial source assessment
 
+External CPU content handoff for R06/R10/D08/P05/Q02/Q08, starting packet7.
+Consumer `5fa854d` retains SDK `368cd38` and reuses snapshot/viewport contracts.
+Twelve installed CTests pass across static/shared/sanitized profiles, with full
+RGBA comparisons, actual late worker completion and three rejected defects.
+R06/R10/D08 now record scoped partial implementation; selected-engine/native
+input/IME/accessibility/GPU and physical/human/performance gates remain open.
+All 103 IDs/priorities, other statuses and remaining delivery packets persist.
+[Evidence](external-content-report.md)
+
 Native credential-peer exit for B03/W10/T06/A01/A06/D06/P05/Q02/Q08.
 Consumer `eddad29` keeps SDK `368cd38` and original Aetheri `7d5fa47`.
 Sixteen CTests and 48 native tasks pass, including three separate-process exit
