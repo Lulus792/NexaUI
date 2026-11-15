@@ -127,6 +127,18 @@ fixture reply. The independent client waits for unknown state without further
 typing, checks retired objects and closes with Escape. These modes use the
 same client/Weston/frame limits and establish no production admission.
 
+`--ime --connection-loop --connection-loss peer-exit` uses a separate owned
+child as the kernel-credential peer. The child creates the stream and transfers
+its client endpoint plus a remote keeper to the synthetic parent harness. The
+host selects the child's pidfd from its own fork result. The harness alone
+drives protocol bytes; its retained remote endpoint deliberately prevents EOF
+after child exit. The original connection must still fence on process loss.
+The client observes protected preedit retirement and unknown state, then closes
+with Escape. Logs require a readable pidfd, no socket EOF, child exit0 and
+original error `-ESRCH`. The fixture closes its descriptors and reaps its child;
+a parent-death signal also bounds the owned child if a failed probe kills the
+host. This is a local process-lifetime test, not actual Aetheri daemon admission.
+
 Add `--replace-view` with `--connection-loop` to replace the native view while
 each answer is queued but still unsent. The host builds and publishes a new
 context bound to the same original connection before releasing the old view.

@@ -269,7 +269,7 @@ int main(int argc, char **argv) {
         CHECK(getenv("NEXAUI_LOGIN_TEST_CONNECTION_LOOP"));
         if (loss) {
             CHECK(ime && !cancel && !replace);
-            CHECK(!strcmp(loss, "eof") || !strcmp(loss, "admission") || !strcmp(loss, "timeout"));
+            CHECK(!strcmp(loss, "eof") || !strcmp(loss, "admission") || !strcmp(loss, "timeout") || !strcmp(loss, "peer-exit"));
         }
         CHECK(pipe(controls) == 0);
         for (unsigned i = 0; i < 2; ++i) {
@@ -317,11 +317,13 @@ int main(int argc, char **argv) {
                 CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT_CLEARED secret requests=0"));
                 CHECK(press_control(app, "Answer"));
             } else {
-                const char command = !strcmp(loss, "eof") ? 'E' : 'A';
+                const char command = !strcmp(loss, "eof") ? 'E' : !strcmp(loss, "peer-exit") ? 'D' : 'A';
                 CHECK(write(controls[1], &command, 1) == 1);
             }
             CHECK(observe_present(app, "Login state unknown. Close this view to leave the conversation."));
             CHECK(host_marker(host_log, "LOGIN_FIXTURE_CONNECTION_UNKNOWN"));
+            if (!strcmp(loss, "peer-exit"))
+                CHECK(host_marker(host_log, "LOGIN_FIXTURE_PROCESS_EXIT pidfd_readable=1 socket_eof=0 child_exit=0"));
             CHECK(state(secret, ATSPI_STATE_DEFUNCT));
             AtspiAccessible *answer = find(app, "Answer", 0);
             int missing = answer == NULL;

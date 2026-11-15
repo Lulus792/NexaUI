@@ -17,7 +17,7 @@ def main():
     parser.add_argument('--cancel-preedit', action='store_true')
     parser.add_argument('--connection', action='store_true')
     parser.add_argument('--connection-loop', action='store_true')
-    parser.add_argument('--connection-loss', choices=('eof', 'admission', 'timeout'))
+    parser.add_argument('--connection-loss', choices=('eof', 'admission', 'timeout', 'peer-exit'))
     parser.add_argument('--replace-view', action='store_true')
     parser.add_argument('--inside', action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()

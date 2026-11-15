@@ -9,12 +9,16 @@
 #include "login/connection.h"
 #include <errno.h>
 #include <limits.h>
+#include <poll.h>
+#include <signal.h>
+#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/syscall.h>
+#include <sys/wait.h>
 #include <unistd.h>
 #endif
 
-/* Private synthetic peer only. This self-process socket/pin and test callback
+/* Private synthetic peer only. The self/owned-child pins and test callback
    do not admit Aetheri's service, greeter, policy or a production trusted role. */
 typedef struct fixture_conversation {
     struct ae_login *model;
@@ -23,10 +27,87 @@ typedef struct fixture_conversation {
     int peer;
     unsigned checks;
     int admission_error;
+    pid_t child;
+    int child_control, client_watch, child_watch;
 #endif
 } fixture_conversation;
 
 #ifdef AETHERI_LOGIN_CONNECTION_VIEW
+/* The child creates both stream endpoints, so their kernel peer credentials
+   name that child. It transfers the client plus a remote keeper to the parent,
+   closes its client alias, then confirms exclusive client ownership. The parent
+   alone drives synthetic protocol bytes. Keeping the remote alias after child
+   exit deliberately prevents EOF and isolates the original pidfd check. */
+static void fixture_child(int control, pid_t owner) {
+    if (prctl(PR_SET_PDEATHSIG, SIGKILL) || getppid() != owner) _exit(120);
+    int pair[2];
+    if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, pair)) _exit(121);
+    char tag = 'T';
+    struct iovec vector = {.iov_base = &tag, .iov_len = 1};
+    union { struct cmsghdr align; unsigned char bytes[CMSG_SPACE(2 * sizeof(int))]; } ancillary;
+    memset(&ancillary, 0, sizeof(ancillary));
+    struct msghdr message = {.msg_iov = &vector, .msg_iovlen = 1,
+        .msg_control = ancillary.bytes, .msg_controllen = sizeof(ancillary.bytes)};
+    struct cmsghdr *rights = CMSG_FIRSTHDR(&message);
+    rights->cmsg_level = SOL_SOCKET; rights->cmsg_type = SCM_RIGHTS;
+    rights->cmsg_len = CMSG_LEN(sizeof(pair));
+    memcpy(CMSG_DATA(rights), pair, sizeof(pair));
+    if (sendmsg(control, &message, MSG_NOSIGNAL) != 1 || close(pair[0]) ||
+        send(control, "R", 1, MSG_NOSIGNAL) != 1) _exit(122);
+    ssize_t count;
+    do { count = recv(control, &tag, 1, 0); } while (count < 0 && errno == EINTR);
+    int result = count == 0 || (count == 1 && tag == 'D') ? 0 : 123;
+    close(pair[1]); close(control);
+    _exit(result);
+}
+
+static int fixture_readable(int fd) {
+    struct pollfd ready = {.fd = fd, .events = POLLIN};
+    return poll(&ready, 1, 2000) == 1 && (ready.revents & POLLIN);
+}
+
+static int fixture_process_pair(fixture_conversation *fixture, int *client) {
+    int controls[2];
+    if (socketpair(AF_UNIX, SOCK_SEQPACKET | SOCK_CLOEXEC, 0, controls)) return -1;
+    pid_t owner = getpid();
+    fixture->child = fork();
+    if (!fixture->child) {
+        close(controls[0]);
+        fixture_child(controls[1], owner);
+    }
+    close(controls[1]);
+    fixture->child_control = controls[0];
+    if (fixture->child < 0 || !fixture_readable(controls[0])) return -1;
+    char tag = 0;
+    struct iovec vector = {.iov_base = &tag, .iov_len = 1};
+    union { struct cmsghdr align; unsigned char bytes[CMSG_SPACE(2 * sizeof(int))]; } ancillary;
+    memset(&ancillary, 0, sizeof(ancillary));
+    struct msghdr message = {.msg_iov = &vector, .msg_iovlen = 1,
+        .msg_control = ancillary.bytes, .msg_controllen = sizeof(ancillary.bytes)};
+    ssize_t size = recvmsg(controls[0], &message, MSG_DONTWAIT | MSG_CMSG_CLOEXEC);
+    struct cmsghdr *rights = CMSG_FIRSTHDR(&message);
+    int received[2] = {-1, -1};
+    size_t count = 0;
+    if (rights && rights->cmsg_level == SOL_SOCKET && rights->cmsg_type == SCM_RIGHTS &&
+        rights->cmsg_len >= CMSG_LEN(0) && rights->cmsg_len <= message.msg_controllen) {
+        count = (rights->cmsg_len - CMSG_LEN(0)) / sizeof(int);
+        if (count > 2) count = 2;
+        memcpy(received, CMSG_DATA(rights), count * sizeof(int));
+    }
+    if (count != 2) {
+        for (size_t i = 0; i < count; ++i) close(received[i]);
+        return -1;
+    }
+    *client = received[0]; fixture->peer = received[1];
+    if (size != 1 || tag != 'T' || (message.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) || !fixture_readable(controls[0]) ||
+        recv(controls[0], &tag, 1, MSG_DONTWAIT) != 1 || tag != 'R') return -1;
+    struct ucred credentials;
+    socklen_t length = sizeof(credentials);
+    if (getsockopt(*client, SOL_SOCKET, SO_PEERCRED, &credentials, &length) ||
+        length != sizeof(credentials) || credentials.pid != fixture->child) return -1;
+    return 0;
+}
+
 static int fixture_admitted(void *user) {
     fixture_conversation *fixture = user;
     ++fixture->checks;
@@ -49,6 +130,19 @@ static int fixture_peer_empty(fixture_conversation *fixture) {
     return recv(fixture->peer, &byte, 1, MSG_DONTWAIT) == -1 &&
         (errno == EAGAIN || errno == EWOULDBLOCK);
 }
+
+static int fixture_child_witness(fixture_conversation *fixture) {
+    if (fixture->child <= 0 || fixture->client_watch < 0 || fixture->child_watch < 0) return 0;
+    struct pollfd pin = {.fd = fixture->child_watch, .events = POLLIN};
+    char byte;
+    if (poll(&pin, 1, 0) != 1 || !(pin.revents & POLLIN) ||
+        recv(fixture->client_watch, &byte, 1, MSG_DONTWAIT | MSG_PEEK) != -1 ||
+        (errno != EAGAIN && errno != EWOULDBLOCK) || !fixture_peer_empty(fixture)) return 0;
+    int status = 0;
+    if (waitpid(fixture->child, &status, WNOHANG) != fixture->child) return 0;
+    fixture->child = -1;
+    return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+}
 #endif
 
 static int fixture_close(fixture_conversation **out) {
@@ -61,6 +155,18 @@ static int fixture_close(fixture_conversation **out) {
         result = ae_login_connection_close(&fixture->connection);
     }
     if (fixture->peer >= 0 && close(fixture->peer)) result = -1;
+    if (fixture->child_control >= 0 && close(fixture->child_control)) result = -1;
+    if (fixture->child > 0) {
+        int status = 0;
+        if (!fixture_readable(fixture->child_watch)) {
+            (void)kill(fixture->child, SIGKILL);
+            result = -1;
+        }
+        pid_t ended;
+        do { ended = waitpid(fixture->child, &status, 0); } while (ended < 0 && errno == EINTR);
+        if (ended != fixture->child || !WIFEXITED(status) || WEXITSTATUS(status)) result = -1;
+    }
+    if (fixture->child_watch >= 0 && close(fixture->child_watch)) result = -1;
 #endif
     ae_login_close(&fixture->model);
     free(fixture);
@@ -73,22 +179,36 @@ static int fixture_open(fixture_conversation **out) {
     if (!fixture) return -1;
     *out = fixture;
 #ifdef AETHERI_LOGIN_CONNECTION_VIEW
-    fixture->peer = -1;
+    fixture->peer = fixture->child_control = fixture->client_watch = fixture->child_watch = -1;
+    fixture->child = -1;
     if (getenv("NEXAUI_LOGIN_TEST_CONNECTION")) {
         int sockets[2] = {-1, -1};
-        if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, sockets)) return -1;
-        long descriptor = syscall(SYS_pidfd_open, getpid(), 0);
+        const char *loss = getenv("NEXAUI_LOGIN_TEST_CONNECTION_LOSS");
+        int process = loss && !strcmp(loss, "peer-exit");
+        if (process) {
+            if (fixture_process_pair(fixture, &sockets[0])) {
+                if (sockets[0] >= 0) close(sockets[0]);
+                return -1;
+            }
+        } else if (socketpair(AF_UNIX, SOCK_STREAM | SOCK_NONBLOCK | SOCK_CLOEXEC, 0, sockets)) return -1;
+        long descriptor = syscall(SYS_pidfd_open, process ? fixture->child : getpid(), 0);
         if (descriptor < 0 || descriptor > INT_MAX) {
-            close(sockets[0]); close(sockets[1]);
+            close(sockets[0]); if (sockets[1] >= 0) close(sockets[1]);
             return -1;
         }
         int pin = (int)descriptor;
         struct ae_login_connection_source source = {.peer_pidfd = pin,
             .uid = getuid(), .gid = getgid(), .check = fixture_admitted, .userdata = fixture};
         int result = ae_login_connection_create(&fixture->connection, &sockets[0], &source);
-        close(pin);
-        if (result) { close(sockets[0]); close(sockets[1]); return result; }
-        fixture->peer = sockets[1];
+        if (process) fixture->child_watch = pin;
+        else close(pin);
+        if (result) { close(sockets[0]); if (sockets[1] >= 0) close(sockets[1]); return result; }
+        if (process) {
+            short events = 0;
+            int peer_pin = -1;
+            if (ae_login_connection_watch(fixture->connection, &fixture->client_watch, &events, &peer_pin)) return -1;
+            puts("LOGIN_FIXTURE_PROCESS separate_peer=1 retained_remote_alias=1");
+        } else fixture->peer = sockets[1];
         return 0;
     }
 #endif

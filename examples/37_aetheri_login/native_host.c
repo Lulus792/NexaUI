@@ -80,7 +80,7 @@ int main(void) {
     int replace = getenv("NEXAUI_LOGIN_TEST_REPLACE_VIEW") != NULL;
     if (replace && (!loop || loss)) { free(data); return 2; }
     if (loss && (!loop || !ime || cancel ||
-        (strcmp(loss, "eof") && strcmp(loss, "admission") && strcmp(loss, "timeout")))) {
+        (strcmp(loss, "eof") && strcmp(loss, "admission") && strcmp(loss, "timeout") && strcmp(loss, "peer-exit")))) {
         free(data);
         return 2;
     }
@@ -88,7 +88,7 @@ int main(void) {
     unsigned expected_requests = loss ? (!strcmp(loss, "timeout") ? 1u : 0u) : 2u;
 #ifdef AETHERI_LOGIN_CONNECTION_VIEW
     aetheri_login_poll *poller = NULL;
-    int control = -1, queued = 0, observing_replacement = 0;
+    int control = -1, queued = 0, observing_replacement = 0, process_witnessed = 0;
     unsigned replacements = 0;
     uint64_t deadline = 0;
 #endif
@@ -153,6 +153,9 @@ int main(void) {
                     if (close(model->peer)) goto done;
                     model->peer = -1;
                 } else if (command == 'A') model->admission_error = -EACCES;
+                else if (command == 'D' && model->child > 0 && model->child_control >= 0) {
+                    if (send(model->child_control, "D", 1, MSG_NOSIGNAL) != 1) goto done;
+                }
                 else if (command == 'R' && observing_replacement) {
                     struct ae_login_status held;
                     if (fixture_status(model, &held) || held.phase != AE_LOGIN_SENDING ||
@@ -249,6 +252,13 @@ int main(void) {
                 }
                 if (loss && status.phase == AE_LOGIN_UNKNOWN && !unknown_presented) {
                     if (preedit_bytes || !service_error) goto done;
+#ifdef AETHERI_LOGIN_CONNECTION_VIEW
+                    if (!strcmp(loss, "peer-exit")) {
+                        if (!fixture_child_witness(model)) goto done;
+                        process_witnessed = 1;
+                        puts("LOGIN_FIXTURE_PROCESS_EXIT pidfd_readable=1 socket_eof=0 child_exit=0");
+                    }
+#endif
                     unknown_presented = 1;
                     printf("LOGIN_FIXTURE_CONNECTION_UNKNOWN error=%d preedit=0 requests=%u\n", service_error, requests);
                 }
@@ -274,8 +284,10 @@ done:
     if (replace && (replacements != 2 || observing_replacement || !model || !fixture_peer_empty(model)))
         result = 1;
     if (loss && model) {
-        int wanted = !strcmp(loss, "eof") ? -ECONNRESET : !strcmp(loss, "admission") ? -EACCES : -ECANCELED;
+        int wanted = !strcmp(loss, "eof") ? -ECONNRESET : !strcmp(loss, "admission") ? -EACCES :
+            !strcmp(loss, "peer-exit") ? -ESRCH : -ECANCELED;
         if (service_error != wanted || !fixture_peer_empty(model)) result = 1;
+        if (!strcmp(loss, "peer-exit") && !process_witnessed) result = 1;
     }
 #endif
     if (window && nx_window_publish_semantics(window, NULL) != NX_OK) result = 1;
