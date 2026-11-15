@@ -1536,10 +1536,14 @@ static void nx_wayland_ime_v3_preedit(void *data,
     int32_t cursor_begin, int32_t cursor_end) {
     nx_wayland_window *window = data;
     (void)input;
-    if (window->ime_pending_preedit)
+    if (window->ime_pending_preedit) {
+        if (window->ime_password)
+            nx_private_secure_zero(window->ime_pending_preedit,
+                window->ime_pending_preedit_length + 1u);
         window->allocator.deallocate(window->allocator.user,
             window->ime_pending_preedit,
             window->ime_pending_preedit_length + 1u);
+    }
     window->ime_pending_preedit = NULL;
     window->ime_pending_preedit_length = 0;
     window->ime_pending_preedit_begin = 0;

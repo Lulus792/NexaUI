@@ -2,6 +2,7 @@
 
 ## 0.1.33 — Development snapshot
 
+- Overwrite a retired Wayland password preedit when a v3 reply replaces or clears it before `done`, including invalid replacement input. Existing composition visibility, cancellation and public ABI remain unchanged.
 - Overwrite retired keyboard and text-system records in native input queues and UI contexts. Borrowed frame events keep their documented lifetime through the next successful `nx_begin_frame` or context destruction.
 - Guard viewport surfaces during producer callbacks. Same-surface draw, completion and destruction return `NX_ERROR_STATE` during resize, acquire and release. A completed render still releases its pixels once.
 - The optional original Editor native runner accepts checked 0.1.32/0.1.33 SDK receipts while retaining artifact hashes and feature floors. Its frame observer reads one coherent state and locates the latest frame without repeatedly scanning earlier frame records; the original native deadlines and assertions remain unchanged.

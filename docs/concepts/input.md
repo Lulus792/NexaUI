@@ -32,6 +32,14 @@ frame retires the previous borrowed array. Both queues overwrite their old
 records when growing or releasing their storage. Callers remain responsible
 for copies obtained by manual dispatch and for storage outside these queues.
 
+The Wayland adapter also overwrites its owned password preedit and pending
+commit copies before freeing them. This includes replacement or clearing of
+a pending v3 preedit before `done`, invalid replacement input, focus loss,
+purpose changes, deactivation and window destruction. A successful `done` can
+transfer a pending preedit to the current composition; that live copy remains
+readable until replacement or cancellation. This does not overwrite copies
+inside the input method, compositor, protocol transport or application.
+
 The context privately retains the pointer capture owner and focus owner at each
 event's dispatch. General and numeric text fields consume their events in that
 order, so a press, drag, release and second-field edit within one queued frame

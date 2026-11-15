@@ -18,6 +18,10 @@ REQUIRED = (
     'nexaui_settings_keyboard_clipboard_timeout_poll_many_delayed_record',
     'nexaui_wayland_poll_many_transfer',
     'nexaui_wayland_poll_many_transfer_pty_early_writable',
+    'nexaui_wayland_ime_storage_replace',
+    'nexaui_wayland_ime_storage_empty',
+    'nexaui_wayland_ime_storage_invalid',
+    'nexaui_wayland_ime_storage_lifecycle',
 )
 
 
