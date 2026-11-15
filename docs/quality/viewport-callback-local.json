@@ -1,0 +1,1196 @@
+{
+  "candidate": "529d5a9d102d975f4fa0664df4936d343bc63b58",
+  "development_version": "0.1.33",
+  "old_installed_sdk": "1e00a6f4f3a0ab3a7da1aa35a36f02679421366b",
+  "source_archive": {
+    "path": "/mnt/d/NexaUI/out/viewport153-source.tar.gz",
+    "bytes": 16458543,
+    "sha256": "f1f0f0868cc9cbf8f87a331c4b003957f19cc6fc4f4420b02dd387cdb02e3f1d"
+  },
+  "profiles": [
+    {
+      "name": "release",
+      "ctests": [
+        "nexaui_snapshot",
+        "nexaui_sim_channel",
+        "nexaui_viewport",
+        "nexaui_viewport_reentry",
+        "nexaui_core",
+        "nexaui_layout",
+        "nexaui_docking",
+        "nexaui_widget",
+        "nexaui_scroll_virtual",
+        "nexaui_overlay",
+        "nexaui_interaction",
+        "nexaui_semantics"
+      ],
+      "installed_ctests": [
+        "viewport_test",
+        "viewport_uaf"
+      ],
+      "library": {
+        "path": "/tmp/nexaui-viewport153/release-prefix/lib/libnexaui.a",
+        "bytes": 1179868,
+        "sha256": "24d2aba03f1e327779b60b161c8a0bed4b303fe1767fc8ae0c18169af33a9915"
+      },
+      "test_binary": {
+        "path": "/tmp/nexaui-viewport153/release/nexaui_viewport_reentry_tests",
+        "bytes": 832528,
+        "sha256": "0178761df063dc13cd42d02707ae37ee2a6ac11915763e24bd060334fdd0aba5"
+      },
+      "installed_test_binary": {
+        "path": "/tmp/nexaui-viewport153/release-external-final/viewport_test_consumer",
+        "bytes": 832504,
+        "sha256": "192949e16bb069a3505bc10b5949020d22529b9982441a711535fe28f5315b79"
+      },
+      "minimal_test_binary": {
+        "path": "/tmp/nexaui-viewport153/release-external-final/viewport_uaf_consumer",
+        "bytes": 824144,
+        "sha256": "512c4569c682bb20a3de7ea1029be8919d23c860ace6d3aec6bd88cbbe2c1687"
+      },
+      "dynamic_section": "\nDynamic section at offset 0xbca90 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x8409f\n 0x0000000000000019 (INIT_ARRAY)         0xbb5e0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xbb5e8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xd68\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1569 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xbcca0\n 0x0000000000000002 (PLTRELSZ)           2064 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4d58\n 0x0000000000000007 (RELA)               0x1488\n 0x0000000000000008 (RELASZ)             14544 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x1468\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x138a\n 0x000000006ffffff9 (RELACOUNT)          572\n 0x0000000000000000 (NULL)               0x0\n",
+      "commands": [
+        {
+          "step": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-viewport153/source",
+            "-B",
+            "/tmp/nexaui-viewport153/release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-viewport153/release-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DNEXAUI_SOURCE_REVISION=529d5a9d102d975f4fa0664df4936d343bc63b58"
+          ],
+          "exit": 0,
+          "seconds": 8.217528705000063,
+          "log": "viewport153-release-configure.log",
+          "sha256": "62dd5475d3f15a2ac9aa128fec0aa748e5f47897db875830ad1a31bae3501318"
+        },
+        {
+          "step": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-viewport153/release",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_viewport_tests",
+            "nexaui_viewport_reentry_tests",
+            "nexaui_tests",
+            "nexaui_interaction_tests",
+            "nexaui_widget_tests",
+            "nexaui_semantics_tests",
+            "nexaui_layout_tests",
+            "nexaui_overlay_tests",
+            "nexaui_docking_tests",
+            "nexaui_scroll_virtual_tests",
+            "nexaui_snapshot_tests",
+            "nexaui_sim_channel_tests"
+          ],
+          "exit": 0,
+          "seconds": 27.02674173999992,
+          "log": "viewport153-release-build.log",
+          "sha256": "58d107c30473f68371cf69855e09a05bf0564d405929e13775db5d423d5597d1"
+        },
+        {
+          "step": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-viewport153/release",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-viewport153/release/tests.xml",
+            "-R",
+            "^nexaui_(viewport|viewport_reentry|core|interaction|widget|semantics|layout|overlay|docking|scroll_virtual|snapshot|sim_channel)$"
+          ],
+          "exit": 0,
+          "seconds": 0.26865895100002035,
+          "log": "viewport153-release-test.log",
+          "sha256": "261f1226b589b9bb6904f40ad33eefbf5a6ed25f772680f2a7bea5a3a60f0b9a"
+        },
+        {
+          "step": "install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-viewport153/release"
+          ],
+          "exit": 0,
+          "seconds": 0.07122884800003249,
+          "log": "viewport153-release-install.log",
+          "sha256": "f5f93961f09d0b8d9ab7ce19d411c1ed830f4625810c90183dfaba028178c835"
+        },
+        {
+          "step": "consumer-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-viewport153/external",
+            "-B",
+            "/tmp/nexaui-viewport153/release-external-final",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-viewport153/release-prefix"
+          ],
+          "exit": 0,
+          "seconds": 5.739858812999955,
+          "log": "viewport153-release-consumer-configure-final.log",
+          "sha256": "30db25dbb20427da21cec415875e41a6e0144429330d3ab908f19acb03b1f5ce"
+        },
+        {
+          "step": "consumer-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-viewport153/release-external-final",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 0.3692503319999787,
+          "log": "viewport153-release-consumer-build-final.log",
+          "sha256": "7fa0af9e26878d127d42a71c8c2192c7f28783444ebc7abebcf40f36160141c4"
+        },
+        {
+          "step": "consumer-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-viewport153/release-external-final",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-viewport153/release-external-final/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.118555721000007,
+          "log": "viewport153-release-consumer-test-final.log",
+          "sha256": "b6d6c9c997cdd9b2e40436aa4e399ac092858e04dab85cb536d9ef88ec496bea"
+        }
+      ]
+    },
+    {
+      "name": "shared",
+      "ctests": [
+        "nexaui_snapshot",
+        "nexaui_sim_channel",
+        "nexaui_viewport",
+        "nexaui_viewport_reentry",
+        "nexaui_core",
+        "nexaui_layout",
+        "nexaui_docking",
+        "nexaui_widget",
+        "nexaui_scroll_virtual",
+        "nexaui_overlay",
+        "nexaui_interaction",
+        "nexaui_semantics"
+      ],
+      "installed_ctests": [
+        "viewport_test",
+        "viewport_uaf"
+      ],
+      "library": {
+        "path": "/tmp/nexaui-viewport153/shared-prefix/lib/libnexaui.so.0.1.33",
+        "bytes": 930296,
+        "sha256": "5434b78b2b9b44b0c9ef01671be30b625c3a0229a3b555b155aff6c1f4bf0460"
+      },
+      "test_binary": {
+        "path": "/tmp/nexaui-viewport153/shared/nexaui_viewport_reentry_tests",
+        "bytes": 23248,
+        "sha256": "5a8f685eff29c7a1848dff3a88790f0d43c978fefb37905b15ee6a63bb29445d"
+      },
+      "installed_test_binary": {
+        "path": "/tmp/nexaui-viewport153/shared-external-final/viewport_test_consumer",
+        "bytes": 23232,
+        "sha256": "18dd38b9912494ef54c911efaf87b1ae717f92602e6a5debbc15d145864ff491"
+      },
+      "minimal_test_binary": {
+        "path": "/tmp/nexaui-viewport153/shared-external-final/viewport_uaf_consumer",
+        "bytes": 18968,
+        "sha256": "d51d1d7e9ab3ecf761f8899349a7bc7f9619edff6b320b68b6bbd3bcb89a7b3b"
+      },
+      "dynamic_section": "\nDynamic section at offset 0x3d50 contains 26 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000001d (RUNPATH)            Library runpath: [/tmp/nexaui-viewport153/shared-prefix/lib]\n 0x000000000000000c (INIT)               0x1000\n 0x000000000000000d (FINI)               0x22a6\n 0x0000000000000019 (INIT_ARRAY)         0x4d40\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x4d48\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x580\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              488 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x4f30\n 0x0000000000000002 (PLTRELSZ)           408 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x840\n 0x0000000000000007 (RELA)               0x768\n 0x0000000000000008 (RELASZ)             216 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n",
+      "commands": [
+        {
+          "step": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-viewport153/source",
+            "-B",
+            "/tmp/nexaui-viewport153/shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-viewport153/shared-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=ON",
+            "-DNEXAUI_SOURCE_REVISION=529d5a9d102d975f4fa0664df4936d343bc63b58"
+          ],
+          "exit": 0,
+          "seconds": 8.066345196999919,
+          "log": "viewport153-shared-configure.log",
+          "sha256": "b601e1f4c92cbf21250b81caf0c40e12c32e654522542a41cfdbcd6cb9986801"
+        },
+        {
+          "step": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-viewport153/shared",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_viewport_tests",
+            "nexaui_viewport_reentry_tests",
+            "nexaui_tests",
+            "nexaui_interaction_tests",
+            "nexaui_widget_tests",
+            "nexaui_semantics_tests",
+            "nexaui_layout_tests",
+            "nexaui_overlay_tests",
+            "nexaui_docking_tests",
+            "nexaui_scroll_virtual_tests",
+            "nexaui_snapshot_tests",
+            "nexaui_sim_channel_tests"
+          ],
+          "exit": 0,
+          "seconds": 27.20355207700004,
+          "log": "viewport153-shared-build.log",
+          "sha256": "aa61d5b4ec2f89e79dee7fcfb5ddfc10286d8783a506a7ea68d8a40b13ec4857"
+        },
+        {
+          "step": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-viewport153/shared",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-viewport153/shared/tests.xml",
+            "-R",
+            "^nexaui_(viewport|viewport_reentry|core|interaction|widget|semantics|layout|overlay|docking|scroll_virtual|snapshot|sim_channel)$"
+          ],
+          "exit": 0,
+          "seconds": 0.22689894199993432,
+          "log": "viewport153-shared-test.log",
+          "sha256": "43e1700e722151e8ba0c969587fc86c98084e0100a327279b2c69563f00ad67c"
+        },
+        {
+          "step": "install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-viewport153/shared"
+          ],
+          "exit": 0,
+          "seconds": 0.07504000699998414,
+          "log": "viewport153-shared-install.log",
+          "sha256": "71264510249f0428cdd012a17745da43134645ad34febd7f880ed1f6d44521ef"
+        },
+        {
+          "step": "consumer-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-viewport153/external",
+            "-B",
+            "/tmp/nexaui-viewport153/shared-external-final",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-viewport153/shared-prefix"
+          ],
+          "exit": 0,
+          "seconds": 4.028030839000053,
+          "log": "viewport153-shared-consumer-configure-final.log",
+          "sha256": "843502ba87c4b2050e01c5f1bb65e5bfa0b1c5ddbe6226a588da325130f1aeb3"
+        },
+        {
+          "step": "consumer-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-viewport153/shared-external-final",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 0.31835289499997543,
+          "log": "viewport153-shared-consumer-build-final.log",
+          "sha256": "7fa0af9e26878d127d42a71c8c2192c7f28783444ebc7abebcf40f36160141c4"
+        },
+        {
+          "step": "consumer-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-viewport153/shared-external-final",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-viewport153/shared-external-final/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.035640697000076216,
+          "log": "viewport153-shared-consumer-test-final.log",
+          "sha256": "b7c0a0d9b787bd5519e3182be4b79d730efdc5cbbd7d455c39345b86d10e4a03"
+        }
+      ]
+    },
+    {
+      "name": "asan",
+      "ctests": [
+        "nexaui_snapshot",
+        "nexaui_sim_channel",
+        "nexaui_viewport",
+        "nexaui_viewport_reentry",
+        "nexaui_core",
+        "nexaui_layout",
+        "nexaui_docking",
+        "nexaui_widget",
+        "nexaui_scroll_virtual",
+        "nexaui_overlay",
+        "nexaui_interaction",
+        "nexaui_semantics"
+      ],
+      "installed_ctests": [
+        "viewport_test",
+        "viewport_uaf"
+      ],
+      "library": {
+        "path": "/tmp/nexaui-viewport153/asan-prefix/lib/libnexaui.a",
+        "bytes": 11545578,
+        "sha256": "565576150dd8703a0f2cb170d133d47585137b77f25746b1589a9d3ff0f2c515"
+      },
+      "test_binary": {
+        "path": "/tmp/nexaui-viewport153/asan/nexaui_viewport_reentry_tests",
+        "bytes": 10320840,
+        "sha256": "c316147dc56bbfe6f84f877d65631bba7b21c37002a9294d54c039992a4e495c"
+      },
+      "installed_test_binary": {
+        "path": "/tmp/nexaui-viewport153/asan-external-final/viewport_test_consumer",
+        "bytes": 10320896,
+        "sha256": "6b55c85263309503dcf3ac069fec63708dd8fddbc6df8aac0f7b7fa948776732"
+      },
+      "minimal_test_binary": {
+        "path": "/tmp/nexaui-viewport153/asan-external-final/viewport_uaf_consumer",
+        "bytes": 10290816,
+        "sha256": "09fb43883accbd1cb007d236a0ff1ec1e2c2ba8b856d3bd4ca27ccd24d4d6600"
+      },
+      "dynamic_section": "\nDynamic section at offset 0x564a00 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x174000\n 0x000000000000000d (FINI)               0x4d117b\n 0x0000000000000019 (INIT_ARRAY)         0x562238\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x562250\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x14a50\n 0x0000000000000006 (SYMTAB)             0x52d0\n 0x000000000000000a (STRSZ)              59740 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x564c20\n 0x0000000000000002 (PLTRELSZ)           1248 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x1735b0\n 0x0000000000000007 (RELA)               0x248a0\n 0x0000000000000008 (RELASZ)             1371408 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x24850\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x233ac\n 0x000000006ffffff9 (RELACOUNT)          57065\n 0x0000000000000000 (NULL)               0x0\n",
+      "commands": [
+        {
+          "step": "configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-viewport153/source",
+            "-B",
+            "/tmp/nexaui-viewport153/asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-viewport153/asan-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DNEXAUI_SOURCE_REVISION=529d5a9d102d975f4fa0664df4936d343bc63b58"
+          ],
+          "exit": 0,
+          "seconds": 9.773830904999954,
+          "log": "viewport153-asan-configure.log",
+          "sha256": "50008d463cdcd0828c64d276398c40af54605bc63c60c5f2f5dbc7228b7773b0"
+        },
+        {
+          "step": "build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-viewport153/asan",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_viewport_tests",
+            "nexaui_viewport_reentry_tests",
+            "nexaui_tests",
+            "nexaui_interaction_tests",
+            "nexaui_widget_tests",
+            "nexaui_semantics_tests",
+            "nexaui_layout_tests",
+            "nexaui_overlay_tests",
+            "nexaui_docking_tests",
+            "nexaui_scroll_virtual_tests",
+            "nexaui_snapshot_tests",
+            "nexaui_sim_channel_tests"
+          ],
+          "exit": 0,
+          "seconds": 64.01180949299999,
+          "log": "viewport153-asan-build.log",
+          "sha256": "58d107c30473f68371cf69855e09a05bf0564d405929e13775db5d423d5597d1"
+        },
+        {
+          "step": "test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-viewport153/asan",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-viewport153/asan/tests.xml",
+            "-R",
+            "^nexaui_(viewport|viewport_reentry|core|interaction|widget|semantics|layout|overlay|docking|scroll_virtual|snapshot|sim_channel)$"
+          ],
+          "exit": 0,
+          "seconds": 1.2711387759999297,
+          "log": "viewport153-asan-test.log",
+          "sha256": "084ace5dd8f63429699d654dffab6d30da70fdae18fe7bc129dd899c30c3af11"
+        },
+        {
+          "step": "install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-viewport153/asan"
+          ],
+          "exit": 0,
+          "seconds": 0.06748591699999906,
+          "log": "viewport153-asan-install.log",
+          "sha256": "aa64bc3174bb1224470d60c26ba7aaf3a6242c0b4b99a6037a14278fe654d1cf"
+        },
+        {
+          "step": "consumer-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-viewport153/external",
+            "-B",
+            "/tmp/nexaui-viewport153/asan-external-final",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-viewport153/asan-prefix"
+          ],
+          "exit": 0,
+          "seconds": 4.530675973000029,
+          "log": "viewport153-asan-consumer-configure-final.log",
+          "sha256": "0c40b1442bf3b01835d36e771e3b0bc8d833d8740f617420bb077926ab3711c3"
+        },
+        {
+          "step": "consumer-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-viewport153/asan-external-final",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 0.7201116410000168,
+          "log": "viewport153-asan-consumer-build-final.log",
+          "sha256": "7fa0af9e26878d127d42a71c8c2192c7f28783444ebc7abebcf40f36160141c4"
+        },
+        {
+          "step": "consumer-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-viewport153/asan-external-final",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-viewport153/asan-external-final/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.2183041119999416,
+          "log": "viewport153-asan-consumer-test-final.log",
+          "sha256": "1c55b4a8c7b6c024fa44d2df83ea68b1b671f996f042ef124cb6896e2fd58eab"
+        }
+      ]
+    }
+  ],
+  "sdk_ctests": 36,
+  "installed_ctests": 6,
+  "old_diagnostics": [
+    {
+      "name": "release-phase1",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/release/test",
+        "1"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 1",
+      "seconds": 0.009622413000002439,
+      "log": "viewport-reentry151-release-phase1.log",
+      "sha256": "7296ae5959f9239bb35ce388f45fa947b00b41842585398d2e7a60d84fe51bca"
+    },
+    {
+      "name": "release-phase2",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/release/test",
+        "2"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 2",
+      "seconds": 0.009891641999999479,
+      "log": "viewport-reentry151-release-phase2.log",
+      "sha256": "985033b3620fb0b2cfc3a5e16b754d287231570275d0f8bc35d9ecbb0e63af33"
+    },
+    {
+      "name": "release-phase3",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/release/test",
+        "3"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 3",
+      "seconds": 0.01075224400000252,
+      "log": "viewport-reentry151-release-phase3.log",
+      "sha256": "af0555ff0428841b62216cb2c50fd8a09bf358d5f2b3fa19e3cbf356e94410b0"
+    },
+    {
+      "name": "release-phase4",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/release/test",
+        "4"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 4",
+      "seconds": 0.010553279999996334,
+      "log": "viewport-reentry151-release-phase4.log",
+      "sha256": "cf068774b4a23a6ad28da610a27dae47499926613dc90c61339031f1b5e3e6c6"
+    },
+    {
+      "name": "release-phase5",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/release/test",
+        "5"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 5",
+      "seconds": 0.010023078000003238,
+      "log": "viewport-reentry151-release-phase5.log",
+      "sha256": "782d51f72049dd8206784c90a1101b9b76c4c6916c8fd901aa8ce3d8c10818b5"
+    },
+    {
+      "name": "asan-phase1",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/asan/test",
+        "1"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 1",
+      "seconds": 0.12191449099999829,
+      "log": "viewport-reentry151-asan-phase1.log",
+      "sha256": "7296ae5959f9239bb35ce388f45fa947b00b41842585398d2e7a60d84fe51bca"
+    },
+    {
+      "name": "asan-phase2",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/asan/test",
+        "2"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 2",
+      "seconds": 0.12700852200000412,
+      "log": "viewport-reentry151-asan-phase2.log",
+      "sha256": "985033b3620fb0b2cfc3a5e16b754d287231570275d0f8bc35d9ecbb0e63af33"
+    },
+    {
+      "name": "asan-phase3",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/asan/test",
+        "3"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 3",
+      "seconds": 0.17308890400000365,
+      "log": "viewport-reentry151-asan-phase3.log",
+      "sha256": "af0555ff0428841b62216cb2c50fd8a09bf358d5f2b3fa19e3cbf356e94410b0"
+    },
+    {
+      "name": "asan-phase4",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/asan/test",
+        "4"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 4",
+      "seconds": 0.12165557400000182,
+      "log": "viewport-reentry151-asan-phase4.log",
+      "sha256": "cf068774b4a23a6ad28da610a27dae47499926613dc90c61339031f1b5e3e6c6"
+    },
+    {
+      "name": "asan-phase5",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/asan/test",
+        "5"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "viewport reentry phase 5",
+      "seconds": 0.1224598169999993,
+      "log": "viewport-reentry151-asan-phase5.log",
+      "sha256": "782d51f72049dd8206784c90a1101b9b76c4c6916c8fd901aa8ce3d8c10818b5"
+    },
+    {
+      "name": "asan-uaf",
+      "command": [
+        "/tmp/nexaui-viewport-reentry151-old/asan/uaf"
+      ],
+      "exit": 1,
+      "expected_diagnostic": "AddressSanitizer: heap-use-after-free",
+      "seconds": 0.12604179299999885,
+      "log": "viewport-reentry151-asan-uaf.log",
+      "sha256": "ace7d55955f09b2fc0f7ae48b582c37bf8fb4f1ced254233eb30928400b5f0ee"
+    }
+  ],
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-viewport154-evidence.tar.gz",
+    "bytes": 32043304,
+    "sha256": "0da2655cf529621fcecca77f3651b41cdadd3916e15725659e2f8b81dbe4364e"
+  },
+  "verified_members": 81,
+  "raw_manifest": [
+    {
+      "member": "000/viewport153-source.tar.gz",
+      "path": "/mnt/d/NexaUI/out/viewport153-source.tar.gz",
+      "bytes": 16458543,
+      "sha256": "f1f0f0868cc9cbf8f87a331c4b003957f19cc6fc4f4420b02dd387cdb02e3f1d"
+    },
+    {
+      "member": "001/build_viewport153.py",
+      "path": "/mnt/d/NexaUI/out/build_viewport153.py",
+      "bytes": 4353,
+      "sha256": "743c1ba433788a69e29a1e4c87d96949f1ec94107a0e45f9cb6a7b4ebd389f7a"
+    },
+    {
+      "member": "002/verify_viewport154.py",
+      "path": "/mnt/d/NexaUI/out/verify_viewport154.py",
+      "bytes": 4411,
+      "sha256": "47c2eecbb2325545c0e2299deb482c39ef9275889c4f145f359c617f4a746e4a"
+    },
+    {
+      "member": "003/viewport153-local.json",
+      "path": "/mnt/d/NexaUI/out/viewport153-local.json",
+      "bytes": 17123,
+      "sha256": "8c7fefd278e4af6b677342a67b1d800ff0af9b06a61eb38d6e5a21c0fb9c9243"
+    },
+    {
+      "member": "004/viewport-reentry151-old.json",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-old.json",
+      "bytes": 7125,
+      "sha256": "d663333513df188ee13671d19b97968c1ef708a84b51f5dafe47087de6738239"
+    },
+    {
+      "member": "005/check_viewport_reentry151_old.py",
+      "path": "/mnt/d/NexaUI/out/check_viewport_reentry151_old.py",
+      "bytes": 4060,
+      "sha256": "7abb8feb3b5f40022b51f5c66c02c13f9364cd4b4514d81ae09255ceb112126e"
+    },
+    {
+      "member": "006/build_viewport152.py",
+      "path": "/mnt/d/NexaUI/out/build_viewport152.py",
+      "bytes": 4360,
+      "sha256": "975da8ec84d655ca678e885a0aefdbfbcaa38ef8fc2ca3bbeac011f75f8e50ab"
+    },
+    {
+      "member": "007/CMakeLists.txt",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-repro/CMakeLists.txt",
+      "bytes": 347,
+      "sha256": "73587a4d865dba3cb3086c6c5a63655f020582242ef9e81655672ac62b0f5845"
+    },
+    {
+      "member": "008/test.c",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-repro/test.c",
+      "bytes": 6943,
+      "sha256": "568cbb867751433e6767994688a734dd0d144b59fa5b02e9319793e2ab8bee3a"
+    },
+    {
+      "member": "009/uaf.c",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-repro/uaf.c",
+      "bytes": 1541,
+      "sha256": "3fe0da1e3844bfc31e7c8371e66cc5a4831f1b23149acf2b0a261708de7b5355"
+    },
+    {
+      "member": "010/viewport-reentry151-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-release-configure.log",
+      "bytes": 722,
+      "sha256": "f3656059ad2c00ea60bd8396bdcaa31d31db8bb4f3a7b331ed27cf976dcd1ccd"
+    },
+    {
+      "member": "011/viewport-reentry151-release-build.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-release-build.log",
+      "bytes": 167,
+      "sha256": "086a357455f95d966d28ae233954ee236abe3aff54c75fbd282c6b714568411b"
+    },
+    {
+      "member": "012/viewport-reentry151-release-phase1.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-release-phase1.log",
+      "bytes": 53,
+      "sha256": "7296ae5959f9239bb35ce388f45fa947b00b41842585398d2e7a60d84fe51bca"
+    },
+    {
+      "member": "013/viewport-reentry151-release-phase2.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-release-phase2.log",
+      "bytes": 53,
+      "sha256": "985033b3620fb0b2cfc3a5e16b754d287231570275d0f8bc35d9ecbb0e63af33"
+    },
+    {
+      "member": "014/viewport-reentry151-release-phase3.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-release-phase3.log",
+      "bytes": 71,
+      "sha256": "af0555ff0428841b62216cb2c50fd8a09bf358d5f2b3fa19e3cbf356e94410b0"
+    },
+    {
+      "member": "015/viewport-reentry151-release-phase4.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-release-phase4.log",
+      "bytes": 53,
+      "sha256": "cf068774b4a23a6ad28da610a27dae47499926613dc90c61339031f1b5e3e6c6"
+    },
+    {
+      "member": "016/viewport-reentry151-release-phase5.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-release-phase5.log",
+      "bytes": 53,
+      "sha256": "782d51f72049dd8206784c90a1101b9b76c4c6916c8fd901aa8ce3d8c10818b5"
+    },
+    {
+      "member": "017/viewport-reentry151-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-configure.log",
+      "bytes": 719,
+      "sha256": "2148ec75370b9466d6b97bf94a0fc754c1eb6383426c41eba75ba49d396de155"
+    },
+    {
+      "member": "018/viewport-reentry151-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-build.log",
+      "bytes": 167,
+      "sha256": "086a357455f95d966d28ae233954ee236abe3aff54c75fbd282c6b714568411b"
+    },
+    {
+      "member": "019/viewport-reentry151-asan-phase1.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-phase1.log",
+      "bytes": 53,
+      "sha256": "7296ae5959f9239bb35ce388f45fa947b00b41842585398d2e7a60d84fe51bca"
+    },
+    {
+      "member": "020/viewport-reentry151-asan-phase2.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-phase2.log",
+      "bytes": 53,
+      "sha256": "985033b3620fb0b2cfc3a5e16b754d287231570275d0f8bc35d9ecbb0e63af33"
+    },
+    {
+      "member": "021/viewport-reentry151-asan-phase3.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-phase3.log",
+      "bytes": 71,
+      "sha256": "af0555ff0428841b62216cb2c50fd8a09bf358d5f2b3fa19e3cbf356e94410b0"
+    },
+    {
+      "member": "022/viewport-reentry151-asan-phase4.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-phase4.log",
+      "bytes": 53,
+      "sha256": "cf068774b4a23a6ad28da610a27dae47499926613dc90c61339031f1b5e3e6c6"
+    },
+    {
+      "member": "023/viewport-reentry151-asan-phase5.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-phase5.log",
+      "bytes": 53,
+      "sha256": "782d51f72049dd8206784c90a1101b9b76c4c6916c8fd901aa8ce3d8c10818b5"
+    },
+    {
+      "member": "024/viewport-reentry151-asan-uaf.log",
+      "path": "/mnt/d/NexaUI/out/viewport-reentry151-asan-uaf.log",
+      "bytes": 3606,
+      "sha256": "ace7d55955f09b2fc0f7ae48b582c37bf8fb4f1ced254233eb30928400b5f0ee"
+    },
+    {
+      "member": "025/CMakeLists.txt",
+      "path": "/tmp/nexaui-viewport153/external/CMakeLists.txt",
+      "bytes": 547,
+      "sha256": "9f2cbfcb1f55f9b49e5be1f28fb6dc4166694e67592aeb72d776035e1db83d3b"
+    },
+    {
+      "member": "026/uaf.c",
+      "path": "/tmp/nexaui-viewport153/external/uaf.c",
+      "bytes": 1541,
+      "sha256": "3fe0da1e3844bfc31e7c8371e66cc5a4831f1b23149acf2b0a261708de7b5355"
+    },
+    {
+      "member": "027/test.c",
+      "path": "/tmp/nexaui-viewport153/external/test.c",
+      "bytes": 7042,
+      "sha256": "70c0e308976c8ce4f864777788b15cf3d8f8fc6127312b38c545c56cb3790908"
+    },
+    {
+      "member": "028/retry_viewport153_consumer.py",
+      "path": "/mnt/d/NexaUI/out/retry_viewport153_consumer.py",
+      "bytes": 2020,
+      "sha256": "a534df81a00f84552c4146c28b273c9de9c03b84e51b36cf4c6bf41e086c4504"
+    },
+    {
+      "member": "029/viewport153-external-before.cmake",
+      "path": "/mnt/d/NexaUI/out/viewport153-external-before.cmake",
+      "bytes": 475,
+      "sha256": "ec53fe2fb435a2f648cd5cef17f786ec3e53181b8841bc0dadb9729e72a4f8ea"
+    },
+    {
+      "member": "030/viewport153-external-retry-before.cmake",
+      "path": "/mnt/d/NexaUI/out/viewport153-external-retry-before.cmake",
+      "bytes": 567,
+      "sha256": "bb8b0e8da368dd01770e286b91f2ac56f10309fbc6c33cdaad72a8805bd057fe"
+    },
+    {
+      "member": "031/viewport153-release-consumer-build-retry.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-consumer-build-retry.log",
+      "bytes": 38,
+      "sha256": "d70e69c8568c1837f89610802802322b9c4f4fe4114424c2fdca9df9f2381969"
+    },
+    {
+      "member": "032/viewport153-release-consumer-configure-retry.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-consumer-configure-retry.log",
+      "bytes": 131,
+      "sha256": "3d1fdf0699ad324484ce4ce1440304b935e11423d4f76316a5d57c98220b6344"
+    },
+    {
+      "member": "033/viewport153-release-consumer-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-consumer-configure.log",
+      "bytes": 752,
+      "sha256": "09ab45030980c859db23556e0ec1fd17fe74ebd9b684cc852e67bec2cd32474e"
+    },
+    {
+      "member": "034/viewport153-shared-consumer-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-consumer-configure.log",
+      "bytes": 752,
+      "sha256": "09ab45030980c859db23556e0ec1fd17fe74ebd9b684cc852e67bec2cd32474e"
+    },
+    {
+      "member": "035/viewport153-asan-consumer-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-consumer-configure.log",
+      "bytes": 752,
+      "sha256": "09ab45030980c859db23556e0ec1fd17fe74ebd9b684cc852e67bec2cd32474e"
+    },
+    {
+      "member": "036/libnexaui.a",
+      "path": "/tmp/nexaui-viewport153/release-prefix/lib/libnexaui.a",
+      "bytes": 1179868,
+      "sha256": "24d2aba03f1e327779b60b161c8a0bed4b303fe1767fc8ae0c18169af33a9915"
+    },
+    {
+      "member": "037/tests.xml",
+      "path": "/tmp/nexaui-viewport153/release/tests.xml",
+      "bytes": 2475,
+      "sha256": "b69990fc8ac549f63484d3ed022bec5c7fb4aa5a267eeebb76d481b94a9422b5"
+    },
+    {
+      "member": "038/compile_commands.json",
+      "path": "/tmp/nexaui-viewport153/release/compile_commands.json",
+      "bytes": 168456,
+      "sha256": "184b0a9b0341430ca76d9c7608b8e6b7d87d2a51e9307fcb477f57359746f9df"
+    },
+    {
+      "member": "039/nexaui_viewport_reentry_tests",
+      "path": "/tmp/nexaui-viewport153/release/nexaui_viewport_reentry_tests",
+      "bytes": 832528,
+      "sha256": "0178761df063dc13cd42d02707ae37ee2a6ac11915763e24bd060334fdd0aba5"
+    },
+    {
+      "member": "040/tests.xml",
+      "path": "/tmp/nexaui-viewport153/release-external-final/tests.xml",
+      "bytes": 808,
+      "sha256": "547ab8d4b4e335b51b8752c1a8a10974f17c26e2d63b292db75cdd267d61f3bb"
+    },
+    {
+      "member": "041/compile_commands.json",
+      "path": "/tmp/nexaui-viewport153/release-external-final/compile_commands.json",
+      "bytes": 879,
+      "sha256": "4986b80d66f08ae6b2745ed378733c8e1298a4ff4db531a1643fc633507b17dc"
+    },
+    {
+      "member": "042/viewport_test_consumer",
+      "path": "/tmp/nexaui-viewport153/release-external-final/viewport_test_consumer",
+      "bytes": 832504,
+      "sha256": "192949e16bb069a3505bc10b5949020d22529b9982441a711535fe28f5315b79"
+    },
+    {
+      "member": "043/viewport_uaf_consumer",
+      "path": "/tmp/nexaui-viewport153/release-external-final/viewport_uaf_consumer",
+      "bytes": 824144,
+      "sha256": "512c4569c682bb20a3de7ea1029be8919d23c860ace6d3aec6bd88cbbe2c1687"
+    },
+    {
+      "member": "044/viewport153-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-configure.log",
+      "bytes": 796,
+      "sha256": "62dd5475d3f15a2ac9aa128fec0aa748e5f47897db875830ad1a31bae3501318"
+    },
+    {
+      "member": "045/viewport153-release-build.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-build.log",
+      "bytes": 6525,
+      "sha256": "58d107c30473f68371cf69855e09a05bf0564d405929e13775db5d423d5597d1"
+    },
+    {
+      "member": "046/viewport153-release-test.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-test.log",
+      "bytes": 4581,
+      "sha256": "261f1226b589b9bb6904f40ad33eefbf5a6ed25f772680f2a7bea5a3a60f0b9a"
+    },
+    {
+      "member": "047/viewport153-release-install.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-install.log",
+      "bytes": 1316,
+      "sha256": "f5f93961f09d0b8d9ab7ce19d411c1ed830f4625810c90183dfaba028178c835"
+    },
+    {
+      "member": "048/viewport153-release-consumer-configure-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-consumer-configure-final.log",
+      "bytes": 725,
+      "sha256": "30db25dbb20427da21cec415875e41a6e0144429330d3ab908f19acb03b1f5ce"
+    },
+    {
+      "member": "049/viewport153-release-consumer-build-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-consumer-build-final.log",
+      "bytes": 239,
+      "sha256": "7fa0af9e26878d127d42a71c8c2192c7f28783444ebc7abebcf40f36160141c4"
+    },
+    {
+      "member": "050/viewport153-release-consumer-test-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-release-consumer-test-final.log",
+      "bytes": 1382,
+      "sha256": "b6d6c9c997cdd9b2e40436aa4e399ac092858e04dab85cb536d9ef88ec496bea"
+    },
+    {
+      "member": "051/libnexaui.so.0.1.33",
+      "path": "/tmp/nexaui-viewport153/shared-prefix/lib/libnexaui.so.0.1.33",
+      "bytes": 930296,
+      "sha256": "5434b78b2b9b44b0c9ef01671be30b625c3a0229a3b555b155aff6c1f4bf0460"
+    },
+    {
+      "member": "052/tests.xml",
+      "path": "/tmp/nexaui-viewport153/shared/tests.xml",
+      "bytes": 2477,
+      "sha256": "6bee781e6f117dc78ff46721a1b436325e597b9e04513bae30b2d2781d48224d"
+    },
+    {
+      "member": "053/compile_commands.json",
+      "path": "/tmp/nexaui-viewport153/shared/compile_commands.json",
+      "bytes": 173504,
+      "sha256": "bb1e976aa16ec7a0dd4113bf6dbab1b8a84c1231cdfddd92ae5fd2eb426bd8ce"
+    },
+    {
+      "member": "054/nexaui_viewport_reentry_tests",
+      "path": "/tmp/nexaui-viewport153/shared/nexaui_viewport_reentry_tests",
+      "bytes": 23248,
+      "sha256": "5a8f685eff29c7a1848dff3a88790f0d43c978fefb37905b15ee6a63bb29445d"
+    },
+    {
+      "member": "055/tests.xml",
+      "path": "/tmp/nexaui-viewport153/shared-external-final/tests.xml",
+      "bytes": 808,
+      "sha256": "c9df95e5734fffb2878748aedd71e328c7a1270868b5f0ee0337df6f62de4a6a"
+    },
+    {
+      "member": "056/compile_commands.json",
+      "path": "/tmp/nexaui-viewport153/shared-external-final/compile_commands.json",
+      "bytes": 905,
+      "sha256": "d882b9c2e9494d75c115685ae65b505113bcb2cb1c21980349b7589e7e4b7d03"
+    },
+    {
+      "member": "057/viewport_test_consumer",
+      "path": "/tmp/nexaui-viewport153/shared-external-final/viewport_test_consumer",
+      "bytes": 23232,
+      "sha256": "18dd38b9912494ef54c911efaf87b1ae717f92602e6a5debbc15d145864ff491"
+    },
+    {
+      "member": "058/viewport_uaf_consumer",
+      "path": "/tmp/nexaui-viewport153/shared-external-final/viewport_uaf_consumer",
+      "bytes": 18968,
+      "sha256": "d51d1d7e9ab3ecf761f8899349a7bc7f9619edff6b320b68b6bbd3bcb89a7b3b"
+    },
+    {
+      "member": "059/viewport153-shared-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-configure.log",
+      "bytes": 795,
+      "sha256": "b601e1f4c92cbf21250b81caf0c40e12c32e654522542a41cfdbcd6cb9986801"
+    },
+    {
+      "member": "060/viewport153-shared-build.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-build.log",
+      "bytes": 6594,
+      "sha256": "aa61d5b4ec2f89e79dee7fcfb5ddfc10286d8783a506a7ea68d8a40b13ec4857"
+    },
+    {
+      "member": "061/viewport153-shared-test.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-test.log",
+      "bytes": 4555,
+      "sha256": "43e1700e722151e8ba0c969587fc86c98084e0100a327279b2c69563f00ad67c"
+    },
+    {
+      "member": "062/viewport153-shared-install.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-install.log",
+      "bytes": 1451,
+      "sha256": "71264510249f0428cdd012a17745da43134645ad34febd7f880ed1f6d44521ef"
+    },
+    {
+      "member": "063/viewport153-shared-consumer-configure-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-consumer-configure-final.log",
+      "bytes": 724,
+      "sha256": "843502ba87c4b2050e01c5f1bb65e5bfa0b1c5ddbe6226a588da325130f1aeb3"
+    },
+    {
+      "member": "064/viewport153-shared-consumer-build-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-consumer-build-final.log",
+      "bytes": 239,
+      "sha256": "7fa0af9e26878d127d42a71c8c2192c7f28783444ebc7abebcf40f36160141c4"
+    },
+    {
+      "member": "065/viewport153-shared-consumer-test-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-shared-consumer-test-final.log",
+      "bytes": 1376,
+      "sha256": "b7c0a0d9b787bd5519e3182be4b79d730efdc5cbbd7d455c39345b86d10e4a03"
+    },
+    {
+      "member": "066/libnexaui.a",
+      "path": "/tmp/nexaui-viewport153/asan-prefix/lib/libnexaui.a",
+      "bytes": 11545578,
+      "sha256": "565576150dd8703a0f2cb170d133d47585137b77f25746b1589a9d3ff0f2c515"
+    },
+    {
+      "member": "067/tests.xml",
+      "path": "/tmp/nexaui-viewport153/asan/tests.xml",
+      "bytes": 2465,
+      "sha256": "e637ef31bfa418a6bdf3257f9ae630baeaac987364aa0d98e8ddb842ac637f73"
+    },
+    {
+      "member": "068/compile_commands.json",
+      "path": "/tmp/nexaui-viewport153/asan/compile_commands.json",
+      "bytes": 178905,
+      "sha256": "071b70df456ded71d2383e71f1665b64596e6c61ef5a4a46676931f4589aa30a"
+    },
+    {
+      "member": "069/nexaui_viewport_reentry_tests",
+      "path": "/tmp/nexaui-viewport153/asan/nexaui_viewport_reentry_tests",
+      "bytes": 10320840,
+      "sha256": "c316147dc56bbfe6f84f877d65631bba7b21c37002a9294d54c039992a4e495c"
+    },
+    {
+      "member": "070/tests.xml",
+      "path": "/tmp/nexaui-viewport153/asan-external-final/tests.xml",
+      "bytes": 806,
+      "sha256": "cff16ba32d5ec5d9ee0d5e07c3f4488248609be7d18134d457a64d1b344188ff"
+    },
+    {
+      "member": "071/compile_commands.json",
+      "path": "/tmp/nexaui-viewport153/asan-external-final/compile_commands.json",
+      "bytes": 955,
+      "sha256": "d2ca07cffc87a695dba91d777a797fda2e33a3fcf20313a601f3181f70ee5660"
+    },
+    {
+      "member": "072/viewport_test_consumer",
+      "path": "/tmp/nexaui-viewport153/asan-external-final/viewport_test_consumer",
+      "bytes": 10320896,
+      "sha256": "6b55c85263309503dcf3ac069fec63708dd8fddbc6df8aac0f7b7fa948776732"
+    },
+    {
+      "member": "073/viewport_uaf_consumer",
+      "path": "/tmp/nexaui-viewport153/asan-external-final/viewport_uaf_consumer",
+      "bytes": 10290816,
+      "sha256": "09fb43883accbd1cb007d236a0ff1ec1e2c2ba8b856d3bd4ca27ccd24d4d6600"
+    },
+    {
+      "member": "074/viewport153-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-configure.log",
+      "bytes": 793,
+      "sha256": "50008d463cdcd0828c64d276398c40af54605bc63c60c5f2f5dbc7228b7773b0"
+    },
+    {
+      "member": "075/viewport153-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-build.log",
+      "bytes": 6525,
+      "sha256": "58d107c30473f68371cf69855e09a05bf0564d405929e13775db5d423d5597d1"
+    },
+    {
+      "member": "076/viewport153-asan-test.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-test.log",
+      "bytes": 4503,
+      "sha256": "084ace5dd8f63429699d654dffab6d30da70fdae18fe7bc129dd899c30c3af11"
+    },
+    {
+      "member": "077/viewport153-asan-install.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-install.log",
+      "bytes": 1267,
+      "sha256": "aa64bc3174bb1224470d60c26ba7aaf3a6242c0b4b99a6037a14278fe654d1cf"
+    },
+    {
+      "member": "078/viewport153-asan-consumer-configure-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-consumer-configure-final.log",
+      "bytes": 722,
+      "sha256": "0c40b1442bf3b01835d36e771e3b0bc8d833d8740f617420bb077926ab3711c3"
+    },
+    {
+      "member": "079/viewport153-asan-consumer-build-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-consumer-build-final.log",
+      "bytes": 239,
+      "sha256": "7fa0af9e26878d127d42a71c8c2192c7f28783444ebc7abebcf40f36160141c4"
+    },
+    {
+      "member": "080/viewport153-asan-consumer-test-final.log",
+      "path": "/mnt/d/NexaUI/out/viewport153-asan-consumer-test-final.log",
+      "bytes": 1364,
+      "sha256": "1c55b4a8c7b6c024fa44d2df83ea68b1b671f996f042ef124cb6896e2fd58eab"
+    }
+  ]
+}

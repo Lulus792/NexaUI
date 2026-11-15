@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Viewport callback lifetime for R06/R10/P05/Q02. Source `529d5a9` guards the
+existing CPU frame lease during resize, acquisition and release. Three
+Wayland-only profiles passed 36 SDK and six installed-package CTests. The
+original SDK failed five callback cases in both tested profiles and reproduced
+an invalid memory access under ASan. The content engine, input, IME and
+accessible subtree gates for R06/I08/D08 remain open. [Evidence](viewport-callback-report.md)
+
 Original Sound observation failure: consumer`3f51e2b` retains installed0.1.33/
 `1e00a6f` and unchanged original Aetheri`de4b61d` inputs. Three profiles pass30
 consumer CTests and24 native tasks, including12 new post-submit unreadable-state
