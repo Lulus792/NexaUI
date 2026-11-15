@@ -133,11 +133,12 @@ static int fixture_peer_empty(fixture_conversation *fixture) {
 
 static int fixture_child_witness(fixture_conversation *fixture) {
     if (fixture->child <= 0 || fixture->client_watch < 0 || fixture->child_watch < 0) return 0;
-    struct pollfd pin = {.fd = fixture->child_watch, .events = POLLIN};
-    char byte;
-    if (poll(&pin, 1, 0) != 1 || !(pin.revents & POLLIN) ||
-        recv(fixture->client_watch, &byte, 1, MSG_DONTWAIT | MSG_PEEK) != -1 ||
-        (errno != EAGAIN && errno != EWOULDBLOCK) || !fixture_peer_empty(fixture)) return 0;
+    struct pollfd watched[2] = {{.fd = fixture->client_watch, .events = POLLIN},
+                               {.fd = fixture->child_watch, .events = POLLIN}};
+    /* The original client descriptor is borrowed for poll only. EOF would
+       make it readable; the owned remote keeper deliberately prevents it. */
+    if (poll(watched, 2, 0) != 1 || watched[0].revents ||
+        !(watched[1].revents & POLLIN) || !fixture_peer_empty(fixture)) return 0;
     int status = 0;
     if (waitpid(fixture->child, &status, WNOHANG) != fixture->child) return 0;
     fixture->child = -1;
