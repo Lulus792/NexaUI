@@ -127,6 +127,16 @@ fixture reply. The independent client waits for unknown state without further
 typing, checks retired objects and closes with Escape. These modes use the
 same client/Weston/frame limits and establish no production admission.
 
+Add `--replace-view` with `--connection-loop` to replace the native view while
+each answer is queued but still unsent. The host builds and publishes a new
+context bound to the same original connection before releasing the old view.
+The independent client observes the sending label, retired fields and rejected
+old actions before releasing the private observation gate. This gate pauses
+fixture transport only; it is not application deadline or admission policy.
+The original queued bytes and request deadline survive the replacement. Both
+keyboard and IME/cancellation workflows retain exactly two responses and close
+with Escape. The fixture accepts no combined loss/replacement mode.
+
 The [source-bound readiness-loop report](../../docs/quality/aetheri-login-loop-report.md)
 records the executed profile matrix, queued-send lifetime checks, native loss
 cases and rejected missing-pump/missing-deadline variants. Production admission,

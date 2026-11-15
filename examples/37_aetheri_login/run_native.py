@@ -18,6 +18,7 @@ def main():
     parser.add_argument('--connection', action='store_true')
     parser.add_argument('--connection-loop', action='store_true')
     parser.add_argument('--connection-loss', choices=('eof', 'admission', 'timeout'))
+    parser.add_argument('--replace-view', action='store_true')
     parser.add_argument('--inside', action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.cancel_preedit and not args.ime:
@@ -26,6 +27,8 @@ def main():
         args.connection = True
     if args.connection_loss and (not args.connection_loop or not args.ime or args.cancel_preedit):
         parser.error('--connection-loss requires --connection-loop --ime without --cancel-preedit')
+    if args.replace_view and (not args.connection_loop or args.connection_loss):
+        parser.error('--replace-view requires --connection-loop without --connection-loss')
     for name in ('build_dir', 'font', 'registry'):
         setattr(args, name, getattr(args, name).resolve(strict=True))
     args.work_dir = args.work_dir.resolve()
@@ -47,7 +50,8 @@ def main():
                NEXAUI_LOGIN_TEST_FONT=str(args.font), NEXAUI_LOGIN_TEST_XDOTOOL=xdotool)
     for key in ('NEXAUI_LOGIN_TEST_SIMPLE_IME', 'NEXAUI_LOGIN_TEST_IME_CANCEL',
                 'NEXAUI_LOGIN_TEST_CONNECTION', 'NEXAUI_LOGIN_TEST_CONNECTION_LOOP',
-                'NEXAUI_LOGIN_TEST_CONNECTION_LOSS', 'NEXAUI_LOGIN_TEST_CONTROL_FD'):
+                'NEXAUI_LOGIN_TEST_CONNECTION_LOSS', 'NEXAUI_LOGIN_TEST_CONTROL_FD',
+                'NEXAUI_LOGIN_TEST_REPLACE_VIEW'):
         env.pop(key, None)
     if args.connection:
         env['NEXAUI_LOGIN_TEST_CONNECTION'] = '1'
@@ -55,6 +59,8 @@ def main():
         env['NEXAUI_LOGIN_TEST_CONNECTION_LOOP'] = '1'
     if args.connection_loss:
         env['NEXAUI_LOGIN_TEST_CONNECTION_LOSS'] = args.connection_loss
+    if args.replace_view:
+        env['NEXAUI_LOGIN_TEST_REPLACE_VIEW'] = '1'
     if args.ime:
         libexec = env.get('NEXAUI_WESTON_LIBEXEC')
         if not libexec or not (Path(libexec) / 'weston-simple-im').is_file():

@@ -26,22 +26,27 @@ static int state(AtspiAccessible *node, AtspiStateType flag) {
     return present;
 }
 
-static AtspiAccessible *find(AtspiAccessible *root, const char *name, unsigned depth) {
+static AtspiAccessible *find_kind(AtspiAccessible *root, const char *name, unsigned depth, int label_only) {
     if (!root || depth > 8) return NULL;
     atspi_accessible_clear_cache(root);
     char *current = atspi_accessible_get_name(root, NULL);
     int match = current && !strcmp(current, name);
     g_free(current);
-    if (match) return g_object_ref(root);
+    if (match && (!label_only || atspi_accessible_get_role(root, NULL) == ATSPI_ROLE_LABEL))
+        return g_object_ref(root);
     int count = atspi_accessible_get_child_count(root, NULL);
     if (count > 32) return NULL;
     for (int i = 0; i < count; ++i) {
         AtspiAccessible *child = atspi_accessible_get_child_at_index(root, i, NULL);
-        AtspiAccessible *found = find(child, name, depth + 1);
+        AtspiAccessible *found = find_kind(child, name, depth + 1, label_only);
         if (child) g_object_unref(child);
         if (found) return found;
     }
     return NULL;
+}
+
+static AtspiAccessible *find(AtspiAccessible *root, const char *name, unsigned depth) {
+    return find_kind(root, name, depth, 0);
 }
 
 static AtspiAccessible *application(AtspiAccessible *desktop, pid_t child) {
@@ -173,6 +178,33 @@ static int host_marker(FILE *log, const char *marker) {
     return 0;
 }
 
+static int rejected_action(AtspiAction *action) {
+    GError *error = NULL;
+    int accepted = atspi_action_do_action(action, 0, &error);
+    int rejected = !accepted || error != NULL;
+    if (error) g_error_free(error);
+    return rejected;
+}
+
+static int replacement_checkpoint(AtspiAccessible *app, FILE *log, unsigned index,
+    AtspiAccessible *field, AtspiAccessible *answer, AtspiAction *action,
+    AtspiAccessible **prior_sending, int control) {
+    char marker[96];
+    if (snprintf(marker, sizeof(marker), "LOGIN_FIXTURE_REPLACED sending=%u requests=%u peer_empty=1",
+                 index, index - 1u) < 1 || !host_marker(log, marker) ||
+        !observe_present(app, "Sending request.") || !state(field, ATSPI_STATE_DEFUNCT) ||
+        !state(answer, ATSPI_STATE_DEFUNCT) || !rejected_action(action)) return 0;
+    if (*prior_sending && !state(*prior_sending, ATSPI_STATE_DEFUNCT)) return 0;
+    const char *absent[] = {"Answer", "Secret response", "Response"};
+    for (unsigned i = 0; i < 3; ++i) {
+        AtspiAccessible *node = find(app, absent[i], 0);
+        if (node) { g_object_unref(node); return 0; }
+    }
+    if (*prior_sending) g_object_unref(*prior_sending);
+    *prior_sending = find_kind(app, "Sending request.", 0, 1);
+    return *prior_sending && write(control, "R", 1) == 1;
+}
+
 static int x11_output(char id[32]) {
     const char *path = getenv("NEXAUI_TEST_WESTON_LOG");
     FILE *log = path ? fopen(path, "r") : NULL;
@@ -220,6 +252,8 @@ int main(int argc, char **argv) {
     if (argc != 2 || !isolated || strcmp(isolated, "1") || !display ||
         strcmp(display, "nexaui-test") || !getenv("NEXAUI_TEST_ATSPI_ADDRESS")) return 2;
     AtspiAccessible *desktop = NULL, *app = NULL, *secret = NULL, *visible = NULL, *confirmed = NULL;
+    AtspiAccessible *old_answer = NULL, *prior_sending = NULL;
+    AtspiAction *old_action = NULL;
     pid_t child = -1;
     int result = 1, initialized = 0;
     int ime = getenv("NEXAUI_LOGIN_TEST_SIMPLE_IME") != NULL;
@@ -227,12 +261,16 @@ int main(int argc, char **argv) {
     FILE *host_log = NULL;
     int controls[2] = {-1, -1};
     const char *loss = getenv("NEXAUI_LOGIN_TEST_CONNECTION_LOSS");
+    int replace = getenv("NEXAUI_LOGIN_TEST_REPLACE_VIEW") != NULL;
     char id[32];
     CHECK(x11_output(id));
     CHECK((host_log = tmpfile()));
-    if (loss) {
-        CHECK(ime && !cancel && getenv("NEXAUI_LOGIN_TEST_CONNECTION_LOOP"));
-        CHECK(!strcmp(loss, "eof") || !strcmp(loss, "admission") || !strcmp(loss, "timeout"));
+    if (loss || replace) {
+        CHECK(getenv("NEXAUI_LOGIN_TEST_CONNECTION_LOOP"));
+        if (loss) {
+            CHECK(ime && !cancel && !replace);
+            CHECK(!strcmp(loss, "eof") || !strcmp(loss, "admission") || !strcmp(loss, "timeout"));
+        }
         CHECK(pipe(controls) == 0);
         for (unsigned i = 0; i < 2; ++i) {
             CHECK(fcntl(controls[i], F_SETFD, FD_CLOEXEC) == 0);
@@ -243,7 +281,7 @@ int main(int argc, char **argv) {
     child = fork();
     CHECK(child >= 0);
     if (!child) {
-        if (loss) {
+        if (loss || replace) {
             char descriptor[32];
             close(controls[1]);
             if (snprintf(descriptor, sizeof(descriptor), "%d", controls[0]) < 1 ||
@@ -304,7 +342,16 @@ int main(int argc, char **argv) {
         CHECK(xdotool("type", "test") && xdotool("key", "Tab") && observe_focus(app, "Answer"));
         CHECK(xdotool("key", "shift+Tab") && observe_focus(app, "Secret response") && protected_field(secret));
     }
+    if (replace) {
+        CHECK((old_answer = find(app, "Answer", 0)));
+        CHECK((old_action = atspi_accessible_get_action_iface(old_answer)));
+    }
     CHECK(ime ? press_control(app, "Answer") : xdotool("key", "Return"));
+    if (replace) {
+        CHECK(replacement_checkpoint(app, host_log, 1, secret, old_answer, old_action, &prior_sending, controls[1]));
+        g_object_unref(old_action); old_action = NULL;
+        g_object_unref(old_answer); old_answer = NULL;
+    }
     CHECK((visible = focused(app, "Response")));
     CHECK(state(secret, ATSPI_STATE_DEFUNCT));
     CHECK(atspi_accessible_get_role(visible, NULL) == ATSPI_ROLE_ENTRY);
@@ -315,7 +362,16 @@ int main(int argc, char **argv) {
         CHECK(xdotool("key", "a") && observe_value(visible, "\xc3\xa1"));
         CHECK(host_marker(host_log, "LOGIN_FIXTURE_PREEDIT_CLEARED visible requests=1"));
     } else CHECK(xdotool("type", "visible") && observe_value(visible, "visible"));
+    if (replace) {
+        CHECK((old_answer = find(app, "Answer", 0)));
+        CHECK((old_action = atspi_accessible_get_action_iface(old_answer)));
+    }
     CHECK(ime ? press_control(app, "Answer") : xdotool("key", "Return"));
+    if (replace) {
+        CHECK(replacement_checkpoint(app, host_log, 2, visible, old_answer, old_action, &prior_sending, controls[1]));
+        g_object_unref(old_action); old_action = NULL;
+        g_object_unref(old_answer); old_answer = NULL;
+    }
     CHECK((confirmed = focused(app, "Start session")));
     CHECK(state(visible, ATSPI_STATE_DEFUNCT));
     CHECK(xdotool("key", "Escape"));
@@ -329,13 +385,17 @@ window_closed: ;
     CHECK(ended == child);
     child = -1;
     CHECK(WIFEXITED(status) && !WEXITSTATUS(status));
-    if (loss) printf("Native login connection loop: %s retires protected preedit and closes in unknown state\n", loss);
+    if (replace) puts("Native login replacement: two queued requests survive native context replacement; stale actions rejected");
+    else if (loss) printf("Native login connection loop: %s retires protected preedit and closes in unknown state\n", loss);
     else if (ime) puts(cancel ? "Native login IME: focus cancellation and later Unicode commit passed" :
                           "Native login IME: separate secret/visible preedit and Unicode commits passed");
     else puts("Native login: protected password, real keyboard, retired fields and close passed");
     result = 0;
 done:
     if (child > 0) { kill(child, SIGKILL); waitpid(child, NULL, 0); }
+    if (old_action) g_object_unref(old_action);
+    if (old_answer) g_object_unref(old_answer);
+    if (prior_sending) g_object_unref(prior_sending);
     if (confirmed) g_object_unref(confirmed);
     if (visible) g_object_unref(visible);
     if (secret) g_object_unref(secret);
