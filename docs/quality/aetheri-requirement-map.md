@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Login conversation view for D06/T06/A01/A06/P05/P08/Q08. Example37 at
+`9aa8796` reuses original Aetheri `6eda6fe` and installed SDK `529d5a9`.
+Three profiles passed the headless rendered workflow through secret and visible
+prompts, explicit acknowledgement, cancellation, denial and interruption.
+Trusted placement, native input/IME/accessibility and service admission remain
+open. [Evidence](aetheri-login-view-report.md)
+
 Viewport callback lifetime for R06/R10/P05/Q02. Source `529d5a9` guards the
 existing CPU frame lease during resize, acquisition and release. Three
 Wayland-only profiles passed 36 SDK and six installed-package CTests. The
