@@ -1,4 +1,7 @@
 #include "view.h"
+#ifdef AETHERI_LOGIN_CONNECTION_VIEW
+#include "login/connection.h"
+#endif
 
 #include <math.h>
 #include <stdlib.h>
@@ -8,6 +11,9 @@
 
 struct aetheri_login_view {
     struct ae_login *conversation;
+#ifdef AETHERI_LOGIN_CONNECTION_VIEW
+    struct ae_login_connection *connection;
+#endif
     const nx_font_collection *fonts;
     nx_window *ime_window;
     nx_context *context;
@@ -55,6 +61,52 @@ nx_result aetheri_login_view_create(struct ae_login *conversation,
     view->ime_window = ime_window;
     *out_view = view;
     return NX_OK;
+}
+
+#ifdef AETHERI_LOGIN_CONNECTION_VIEW
+nx_result aetheri_login_view_create_connection(struct ae_login_connection *connection,
+    const nx_font_collection *fonts, nx_window *ime_window,
+    aetheri_login_view **out_view) {
+    nx_result result = aetheri_login_view_create(NULL, fonts, ime_window, out_view);
+    if (result == NX_OK) (*out_view)->connection = connection;
+    return result;
+}
+#endif
+
+static int model_available(const aetheri_login_view *view) {
+#ifdef AETHERI_LOGIN_CONNECTION_VIEW
+    if (view->connection) return 1;
+#endif
+    return view->conversation != NULL;
+}
+
+static int model_status(aetheri_login_view *view, struct ae_login_status *status) {
+#ifdef AETHERI_LOGIN_CONNECTION_VIEW
+    if (view->connection) return ae_login_connection_status(view->connection, status);
+#endif
+    return view->conversation ? ae_login_status(view->conversation, status) : 0;
+}
+
+static int model_request(aetheri_login_view *view, enum ae_login_operation operation,
+                         const char *response, size_t length) {
+#ifdef AETHERI_LOGIN_CONNECTION_VIEW
+    if (view->connection) {
+        switch (operation) {
+        case AE_LOGIN_CREATE: return ae_login_connection_begin(view->connection, response, length);
+        case AE_LOGIN_ANSWER: return ae_login_connection_answer(view->connection, response, length);
+        case AE_LOGIN_CANCEL: return ae_login_connection_cancel(view->connection);
+        case AE_LOGIN_START: return ae_login_connection_start(view->connection);
+        default: return -1;
+        }
+    }
+#endif
+    switch (operation) {
+    case AE_LOGIN_CREATE: return ae_login_begin(view->conversation, response, length);
+    case AE_LOGIN_ANSWER: return ae_login_answer(view->conversation, response, length);
+    case AE_LOGIN_CANCEL: return ae_login_cancel(view->conversation);
+    case AE_LOGIN_START: return ae_login_start(view->conversation);
+    default: return -1;
+    }
 }
 
 void aetheri_login_view_destroy(aetheri_login_view *view) {
@@ -196,7 +248,7 @@ nx_result aetheri_login_view_frame(aetheri_login_view *view, float width,
         width < 240 || height < 200) return NX_ERROR_ARGUMENT;
     *out_changes = 0;
     struct ae_login_status status = {.phase = AE_LOGIN_UNKNOWN};
-    if (view->conversation && ae_login_status(view->conversation, &status))
+    if (model_status(view, &status))
         return NX_ERROR_STATE;
     int entering = !view->generation || status.phase != view->previous.phase ||
         status.prompt != view->previous.prompt || status.operation != view->previous.operation;
@@ -228,7 +280,7 @@ nx_result aetheri_login_view_frame(aetheri_login_view *view, float width,
     float message_height = controls_y - (view->field ? 78 : 26);
     nx_rect message_bounds = {16, 16, inner_width, message_height};
     result = prompt_message(view, base, message_bounds,
-                            message(&status, view->conversation != NULL), &first_focus);
+                            message(&status, model_available(view)), &first_focus);
     if (result == NX_OK && view->field) {
         nx_text_field_desc desc = {0};
         size_t limit = status.phase == AE_LOGIN_IDLE ? 256u : AE_LOGIN_RESPONSE_MAX;
@@ -288,13 +340,13 @@ nx_result aetheri_login_view_frame(aetheri_login_view *view, float width,
         if (result != NX_OK) return result;
     }
     const char *response = draft.data ? draft.data : "";
-    if (cancel) accepted = ae_login_cancel(view->conversation);
+    if (cancel) accepted = model_request(view, AE_LOGIN_CANCEL, NULL, 0);
     else if (status.phase == AE_LOGIN_IDLE)
-        accepted = ae_login_begin(view->conversation, response, draft.length);
+        accepted = model_request(view, AE_LOGIN_CREATE, response, draft.length);
     else if (status.phase == AE_LOGIN_PROMPT)
-        accepted = ae_login_answer(view->conversation, view->field ? response : NULL,
-                                   draft.length);
-    else accepted = ae_login_start(view->conversation);
+        accepted = model_request(view, AE_LOGIN_ANSWER, view->field ? response : NULL,
+                                 draft.length);
+    else accepted = model_request(view, AE_LOGIN_START, NULL, 0);
     if (view->rejected != (accepted != 0)) *out_changes = AETHERI_LOGIN_REPAINT;
     view->rejected = accepted != 0;
     if (!accepted) {

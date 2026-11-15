@@ -47,6 +47,30 @@ scroll position.
 The headless tests cover a maximum-size message at the minimum view size,
 including a rendered final glyph and Tab navigation.
 
+An optional Linux build can borrow Aetheri's original admitted connection with
+`-DNEXAUI_LOGIN_WITH_CONNECTION_MODEL=ON`. Add `src/login/connection.{c,h}` to
+the frozen source export; the connection checks use original revision
+`7d5fa4723c13460e9d61dc7db33b6a521409053f` and installed SDK source
+`368cd38292498bd538964ba514ff02e0e9924358`. The default build keeps the minimal
+conversation-only inputs above. The target publishes the feature macro for
+`aetheri_login_view_create_connection` in `view.h`.
+
+The host independently constructs and admits that connection before binding
+it. The view borrows it and routes explicit commands through its original
+methods, including their current admission checks. Status is the connection's
+local observation, not a fresh admission check. The host owns watch/pump,
+readiness/deadlines, interruption and close; it must keep the connection alive
+until after destroying the view. Replacing or closing a view does not cancel,
+restart or replay a conversation. A missing connection displays unavailable.
+Native service/greeter/policy admission and trusted placement remain external.
+
+On Linux libraries lacking `sys/pidfd.h`, the example uses a private header
+adapter over the installed kernel UAPI and the Linux socket ABI constants.
+It supplies no emulated process pins or checks. The imported connection source
+remains byte-identical; only its musl `CMSG_NXTHDR` mixed-sign diagnostic is
+excluded from `-Wsign-compare`. The view and tests retain their strict warnings.
+The runtime still requires actual peer pidfds, pidfs and `PIDFD_GET_INFO`.
+
 The optional native fixture uses an ordinary Wayland window, the software
 presenter and a separate libatspi client. Build it with
 `-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON` and the Linux AT-SPI development files.
@@ -69,6 +93,12 @@ observes retired objects, and closes with Escape. The fixture consumes two
 exact synthetic responses and requires a clean exit. Trusted compositor
 placement, human screen-reader interaction, backend admission and real session
 readiness remain open.
+
+With both optional build flags enabled, add `--connection` to `run_native.py`
+to exercise the borrowed-connection view through real local socket I/O and
+kernel-observed self-process pins. The synthetic fixture's callback admits only
+its own test setup; this is no claim of production service, greeter or policy
+admission. The independent native peer keeps its original assertions and limits.
 
 The native runner can also configure Compose on its owned Xvfb seat and start
 Weston's `weston-simple-im`. It uses `setxkbmap` or an existing `xkbcomp` to

@@ -1,26 +1,11 @@
-#define _POSIX_C_SOURCE 200809L
+#define _GNU_SOURCE
 #include "view.h"
 #include <nexaui/software.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
-static int consume_request(struct ae_login *model, const char *expected) {
-    const uint8_t *wire = NULL;
-    size_t size = 0;
-    uint32_t length;
-    if (ae_login_output(model, &wire, &size) || size < 4) return 0;
-    memcpy(&length, wire, 4);
-    return size - 4 == length && length == strlen(expected) &&
-        !memcmp(wire + 4, expected, length) && !ae_login_sent(model, size);
-}
-
-static int receive_reply(struct ae_login *model, const char *json) {
-    uint32_t length = (uint32_t)strlen(json);
-    return !ae_login_receive(model, (const uint8_t *)&length, 4) &&
-        ae_login_receive(model, (const uint8_t *)json, length) == 1;
-}
+#include "fixture_conversation.h"
 
 static uint8_t *font_bytes(const char *path, size_t *size) {
     FILE *file = fopen(path, "rb");
@@ -47,7 +32,10 @@ int main(void) {
     const char *path = getenv("NEXAUI_LOGIN_TEST_FONT");
     if (!isolated || strcmp(isolated, "1") || !display || strcmp(display, "nexaui-test") ||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS") || !path) return 2;
-    struct ae_login *model = NULL;
+#ifndef AETHERI_LOGIN_CONNECTION_VIEW
+    if (getenv("NEXAUI_LOGIN_TEST_CONNECTION")) return 2;
+#endif
+    fixture_conversation *model = NULL;
     nx_window *window = NULL;
     nx_software_view *software = NULL;
     nx_font *font = NULL;
@@ -70,11 +58,11 @@ int main(void) {
     const nx_window_desc desc = {.title_utf8 = "NexaUI login fixture", .width = 420, .height = 260};
     if (!data || nx_font_open(data, bytes, NULL, &font) != NX_OK ||
         nx_font_collection_create(NULL, &fonts) != NX_OK || nx_font_collection_add(fonts, font) != NX_OK ||
-        ae_login_create(&model) || ae_login_begin(model, "fixture", 7) ||
+        fixture_open(&model) || fixture_begin(model, "fixture", 7) ||
         !consume_request(model, "{\"type\":\"create_session\",\"username\":\"fixture\"}") ||
         !receive_reply(model, "{\"type\":\"auth_message\",\"auth_message_type\":\"secret\",\"auth_message\":\"Fixture secret prompt\"}") ||
         nx_window_create(&desc, &window) != NX_OK || nx_software_view_open(window, &software) != NX_OK ||
-        aetheri_login_view_create(model, fonts, window, &view) != NX_OK) goto done;
+        fixture_view(model, fonts, window, &view) != NX_OK) goto done;
 
     nx_context *ctx = aetheri_login_view_context(view);
     int first = 1, pending_render = 0;
@@ -114,7 +102,7 @@ int main(void) {
                 int32_t begin = 0, end = 0;
                 struct ae_login_status status;
                 if (nx_window_get_ime_preedit(window, NULL, 0, &preedit_bytes, &begin, &end) != NX_OK ||
-                    ae_login_status(model, &status)) break;
+                    fixture_status(model, &status)) break;
                 if (status.phase == AE_LOGIN_PROMPT && status.prompt == AE_LOGIN_SECRET && requests == 0) {
                     if (preedit_bytes && !secret_preedit) {
                         secret_preedit = 1;
@@ -154,7 +142,7 @@ done:
     if (software && nx_software_view_close(&software) != NX_OK) result = 1;
     aetheri_login_view_destroy(view);
     if (window) nx_window_destroy(window);
-    ae_login_close(&model);
+    if (fixture_close(&model)) result = 1;
     nx_font_collection_destroy(fonts);
     nx_font_close(font);
     free(data);

@@ -15,6 +15,7 @@ def main():
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--ime', action='store_true')
     parser.add_argument('--cancel-preedit', action='store_true')
+    parser.add_argument('--connection', action='store_true')
     parser.add_argument('--inside', action='store_true', help=argparse.SUPPRESS)
     args = parser.parse_args()
     if args.cancel_preedit and not args.ime:
@@ -38,8 +39,11 @@ def main():
         parser.error('xdotool is required')
     env = dict(os.environ, NEXAUI_PLATFORM='wayland',
                NEXAUI_LOGIN_TEST_FONT=str(args.font), NEXAUI_LOGIN_TEST_XDOTOOL=xdotool)
-    for key in ('NEXAUI_LOGIN_TEST_SIMPLE_IME', 'NEXAUI_LOGIN_TEST_IME_CANCEL'):
+    for key in ('NEXAUI_LOGIN_TEST_SIMPLE_IME', 'NEXAUI_LOGIN_TEST_IME_CANCEL',
+                'NEXAUI_LOGIN_TEST_CONNECTION'):
         env.pop(key, None)
+    if args.connection:
+        env['NEXAUI_LOGIN_TEST_CONNECTION'] = '1'
     if args.ime:
         libexec = env.get('NEXAUI_WESTON_LIBEXEC')
         if not libexec or not (Path(libexec) / 'weston-simple-im').is_file():
