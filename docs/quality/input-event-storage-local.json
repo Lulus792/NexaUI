@@ -1,0 +1,1062 @@
+{
+  "revision": "9056af80fb2ccf2be0e2839e9cef76ba46cc8660",
+  "source_archive": "event-storage172-source.tar.gz",
+  "archive_sha256": "8ea7de161f3c7d69ee87221ab3fbac3e01bae6ed2c1783f02022ae19feb0a03b",
+  "uid": 65534,
+  "profiles": [
+    {
+      "name": "release",
+      "failed_preflight": {
+        "step": "sdk-test",
+        "command": [
+          "ctest",
+          "--test-dir",
+          "/tmp/nexaui-event-storage172/release",
+          "--verbose",
+          "--no-tests=error",
+          "--output-junit",
+          "/tmp/nexaui-event-storage172/release/tests.xml",
+          "-R",
+          "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic)$"
+        ],
+        "exit": 8,
+        "seconds": 0.2687185089999957,
+        "log": "event-storage172-release-sdk-test.log",
+        "sha256": "962378e9e59c37151acaff150b03398188771da17bbfdf08b383f411003f31ed"
+      },
+      "final": [
+        {
+          "step": "sdk-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-event-storage172/source",
+            "-B",
+            "/tmp/nexaui-event-storage172/release",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-event-storage172/release-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DNEXAUI_SOURCE_REVISION=9056af80fb2ccf2be0e2839e9cef76ba46cc8660"
+          ],
+          "exit": 0,
+          "seconds": 6.142127957,
+          "log": "event-storage172-release-sdk-configure.log",
+          "sha256": "99dce93cdbd93c179a8fa58beb1c830ea79605bce3b588b966ee066d4f115640"
+        },
+        {
+          "step": "sdk-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-event-storage172/release",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_tests",
+            "nexaui_platform_event_queue_tests",
+            "nexaui_input_tests",
+            "nexaui_interaction_tests",
+            "nexaui_text_field_tests",
+            "nexaui_text_value_tests",
+            "nexaui_ime_field_atomic_tests",
+            "nexaui_numeric_field_tests",
+            "nexaui_wayland_text_input_v1_tests",
+            "nexaui_wayland_text_input_v3_tests",
+            "nexaui_wayland_ime_transactions_tests",
+            "nexaui_wayland_ime_atomic_tests"
+          ],
+          "exit": 0,
+          "seconds": 28.758836711,
+          "log": "event-storage172-release-sdk-build.log",
+          "sha256": "d2951e0725951b3a89cfc02d8973c232f544e030c5f89cc66b1d68d5f3b10f5c"
+        },
+        {
+          "step": "sdk-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-event-storage172/release",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-event-storage172/release/tests-final.xml",
+            "-R",
+            "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic)$"
+          ],
+          "exit": 0,
+          "seconds": 0.4247832660000057,
+          "log": "event-storage173-release-sdk-test.log",
+          "sha256": "3aa37fda8685564c09d6f55dd8f51c312a713b2134fc027379a82f558dcefc7c"
+        },
+        {
+          "step": "sdk-install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-event-storage172/release"
+          ],
+          "exit": 0,
+          "seconds": 0.07012448300000074,
+          "log": "event-storage173-release-sdk-install.log",
+          "sha256": "f0adb91b37ac5b3a28902fec2b12cc78f9b20522007dab32d6640e28379b8d7e"
+        },
+        {
+          "step": "login-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-event-storage172/source/examples/37_aetheri_login",
+            "-B",
+            "/tmp/nexaui-event-storage172/release-login",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-event-storage172/release-prefix",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view167/original",
+            "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON"
+          ],
+          "exit": 0,
+          "seconds": 5.938515258999999,
+          "log": "event-storage173-release-login-configure.log",
+          "sha256": "8ae4990dc3d5ced2bf51e8322e10603ae60406df58ab5df62262aa08eb267875"
+        },
+        {
+          "step": "login-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-event-storage172/release-login",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 2.2615460150000075,
+          "log": "event-storage173-release-login-build.log",
+          "sha256": "3604a5347ba1854974cd63906477193d86582795a250f1020c778226e425f0e9"
+        },
+        {
+          "step": "login-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-event-storage172/release-login",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-event-storage172/release-login/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.2698993420000022,
+          "log": "event-storage173-release-login-test.log",
+          "sha256": "a0192fc9eff2c8360f2a974c7d3fe6681c181f4ec165f2a81cd98bc2088846fa"
+        }
+      ],
+      "isolated_runtime": "/tmp/nexaui-event-storage172/release-empty-runtime"
+    },
+    {
+      "name": "shared",
+      "failed_preflight": {
+        "step": "sdk-test",
+        "command": [
+          "ctest",
+          "--test-dir",
+          "/tmp/nexaui-event-storage172/shared",
+          "--verbose",
+          "--no-tests=error",
+          "--output-junit",
+          "/tmp/nexaui-event-storage172/shared/tests.xml",
+          "-R",
+          "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic)$"
+        ],
+        "exit": 8,
+        "seconds": 0.545139792999997,
+        "log": "event-storage172-shared-sdk-test.log",
+        "sha256": "aa273ad0b3b0d7c40313cc8b2fcd8f442c2853ff90324a168c0a90867d74c49a"
+      },
+      "final": [
+        {
+          "step": "sdk-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-event-storage172/source",
+            "-B",
+            "/tmp/nexaui-event-storage172/shared",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-event-storage172/shared-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=ON",
+            "-DNEXAUI_SOURCE_REVISION=9056af80fb2ccf2be0e2839e9cef76ba46cc8660"
+          ],
+          "exit": 0,
+          "seconds": 6.089012089999999,
+          "log": "event-storage172-shared-sdk-configure.log",
+          "sha256": "5b0c231a11d81a8cfb8d3e2b67ec87a5652d0acdc5bd961cccb084efde6fbc7c"
+        },
+        {
+          "step": "sdk-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-event-storage172/shared",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_tests",
+            "nexaui_platform_event_queue_tests",
+            "nexaui_input_tests",
+            "nexaui_interaction_tests",
+            "nexaui_text_field_tests",
+            "nexaui_text_value_tests",
+            "nexaui_ime_field_atomic_tests",
+            "nexaui_numeric_field_tests",
+            "nexaui_wayland_text_input_v1_tests",
+            "nexaui_wayland_text_input_v3_tests",
+            "nexaui_wayland_ime_transactions_tests",
+            "nexaui_wayland_ime_atomic_tests"
+          ],
+          "exit": 0,
+          "seconds": 28.111620216,
+          "log": "event-storage172-shared-sdk-build.log",
+          "sha256": "68bbf0678a15a164607b6cd51da92ce3c57ba98ecbbcb9baa355cbb68d8764e3"
+        },
+        {
+          "step": "sdk-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-event-storage172/shared",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-event-storage172/shared/tests-final.xml",
+            "-R",
+            "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic)$"
+          ],
+          "exit": 0,
+          "seconds": 0.4252556319999883,
+          "log": "event-storage173-shared-sdk-test.log",
+          "sha256": "74b0c8d4bc900bbdaf6ae2a1ff17b5e0cb35755a9927083fc4f51af6b189cdc4"
+        },
+        {
+          "step": "sdk-install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-event-storage172/shared"
+          ],
+          "exit": 0,
+          "seconds": 0.06903913400000761,
+          "log": "event-storage173-shared-sdk-install.log",
+          "sha256": "4e824bcef58c13ca36ed4e19106cbe18d6e0baba3aa3bf425e06097660ed6af9"
+        },
+        {
+          "step": "login-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-event-storage172/source/examples/37_aetheri_login",
+            "-B",
+            "/tmp/nexaui-event-storage172/shared-login",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Release",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-event-storage172/shared-prefix",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view167/original",
+            "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON"
+          ],
+          "exit": 0,
+          "seconds": 5.8921825059999975,
+          "log": "event-storage173-shared-login-configure.log",
+          "sha256": "61b40d1de105353d7433fe9524c9672f933b3bf601266c6c4f394a1c62522ce7"
+        },
+        {
+          "step": "login-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-event-storage172/shared-login",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 2.2907881570000086,
+          "log": "event-storage173-shared-login-build.log",
+          "sha256": "3604a5347ba1854974cd63906477193d86582795a250f1020c778226e425f0e9"
+        },
+        {
+          "step": "login-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-event-storage172/shared-login",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-event-storage172/shared-login/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.31930183500000453,
+          "log": "event-storage173-shared-login-test.log",
+          "sha256": "7b05e8c33e6569f97afdf811ca6bdc302f87b1dd4604632637effef6e62d6136"
+        }
+      ],
+      "isolated_runtime": "/tmp/nexaui-event-storage172/shared-empty-runtime"
+    },
+    {
+      "name": "asan",
+      "failed_preflight": {
+        "step": "sdk-test",
+        "command": [
+          "ctest",
+          "--test-dir",
+          "/tmp/nexaui-event-storage172/asan",
+          "--verbose",
+          "--no-tests=error",
+          "--output-junit",
+          "/tmp/nexaui-event-storage172/asan/tests.xml",
+          "-R",
+          "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic)$"
+        ],
+        "exit": 8,
+        "seconds": 1.8248468459999998,
+        "log": "event-storage172-asan-sdk-test.log",
+        "sha256": "78115c40f62891d46eabb228ce2518b5838648a84b80f55219dde620d337cad6"
+      },
+      "final": [
+        {
+          "step": "sdk-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-event-storage172/source",
+            "-B",
+            "/tmp/nexaui-event-storage172/asan",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DNEXAUI_BUILD_EXAMPLES=OFF",
+            "-DNEXAUI_BUILD_VULKAN=OFF",
+            "-DNEXAUI_ENABLE_X11=OFF",
+            "-DCMAKE_INSTALL_PREFIX=/tmp/nexaui-event-storage172/asan-prefix",
+            "-DCMAKE_INSTALL_LIBDIR=lib",
+            "-DBUILD_SHARED_LIBS=OFF",
+            "-DNEXAUI_SOURCE_REVISION=9056af80fb2ccf2be0e2839e9cef76ba46cc8660"
+          ],
+          "exit": 0,
+          "seconds": 7.490372928999999,
+          "log": "event-storage172-asan-sdk-configure.log",
+          "sha256": "d8c7bca278a9c5b2a6899a2d7549ec354a136f408eb8078c5f2cbd26d006c372"
+        },
+        {
+          "step": "sdk-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-event-storage172/asan",
+            "--parallel",
+            "2",
+            "--target",
+            "nexaui_tests",
+            "nexaui_platform_event_queue_tests",
+            "nexaui_input_tests",
+            "nexaui_interaction_tests",
+            "nexaui_text_field_tests",
+            "nexaui_text_value_tests",
+            "nexaui_ime_field_atomic_tests",
+            "nexaui_numeric_field_tests",
+            "nexaui_wayland_text_input_v1_tests",
+            "nexaui_wayland_text_input_v3_tests",
+            "nexaui_wayland_ime_transactions_tests",
+            "nexaui_wayland_ime_atomic_tests"
+          ],
+          "exit": 0,
+          "seconds": 65.663208161,
+          "log": "event-storage172-asan-sdk-build.log",
+          "sha256": "d2951e0725951b3a89cfc02d8973c232f544e030c5f89cc66b1d68d5f3b10f5c"
+        },
+        {
+          "step": "sdk-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-event-storage172/asan",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-event-storage172/asan/tests-final.xml",
+            "-R",
+            "^nexaui_(core|platform_event_queue|input|interaction|text_field|text_value|ime_field_atomic|numeric_field|wayland_text_input_v1|wayland_text_input_v1_transactions|wayland_text_input_v3|wayland_text_input_v3_commit_controls|wayland_text_input_v3_selection_revert|wayland_text_input_v3_field_replace|wayland_ime_transactions|wayland_ime_transactions_legacy|wayland_ime_atomic)$"
+          ],
+          "exit": 0,
+          "seconds": 2.881993007999995,
+          "log": "event-storage173-asan-sdk-test.log",
+          "sha256": "77508475b4f97e1838c963b034a475d15178b29f12c895abcfc4fafc89091612"
+        },
+        {
+          "step": "sdk-install",
+          "command": [
+            "cmake",
+            "--install",
+            "/tmp/nexaui-event-storage172/asan"
+          ],
+          "exit": 0,
+          "seconds": 0.12094174199999941,
+          "log": "event-storage173-asan-sdk-install.log",
+          "sha256": "bb329372d6271c4d0a1753608053933f8efb49816a9a37302bd1fa73096fa447"
+        },
+        {
+          "step": "login-configure",
+          "command": [
+            "cmake",
+            "-S",
+            "/tmp/nexaui-event-storage172/source/examples/37_aetheri_login",
+            "-B",
+            "/tmp/nexaui-event-storage172/asan-login",
+            "-G",
+            "Ninja",
+            "-DCMAKE_C_COMPILER=clang",
+            "-DCMAKE_C_STANDARD=17",
+            "-DCMAKE_C_EXTENSIONS=OFF",
+            "-DCMAKE_BUILD_TYPE=Debug",
+            "-DCMAKE_C_FLAGS_DEBUG=-g -O1",
+            "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON",
+            "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer",
+            "-DCMAKE_PREFIX_PATH=/tmp/nexaui-event-storage172/asan-prefix",
+            "-DAETHERI_SOURCE_DIR=/tmp/nexaui-login-view167/original",
+            "-DNEXAUI_LOGIN_BUILD_NATIVE_FIXTURE=ON"
+          ],
+          "exit": 0,
+          "seconds": 7.6558658769999965,
+          "log": "event-storage173-asan-login-configure.log",
+          "sha256": "8bfcf797dc9db42fea891195e783b05a399765d58c2c2392d5551f2a0adf5cf9"
+        },
+        {
+          "step": "login-build",
+          "command": [
+            "cmake",
+            "--build",
+            "/tmp/nexaui-event-storage172/asan-login",
+            "--parallel",
+            "2"
+          ],
+          "exit": 0,
+          "seconds": 2.5756640999999973,
+          "log": "event-storage173-asan-login-build.log",
+          "sha256": "3604a5347ba1854974cd63906477193d86582795a250f1020c778226e425f0e9"
+        },
+        {
+          "step": "login-test",
+          "command": [
+            "ctest",
+            "--test-dir",
+            "/tmp/nexaui-event-storage172/asan-login",
+            "--verbose",
+            "--no-tests=error",
+            "--output-junit",
+            "/tmp/nexaui-event-storage172/asan-login/tests.xml"
+          ],
+          "exit": 0,
+          "seconds": 0.9211695080000197,
+          "log": "event-storage173-asan-login-test.log",
+          "sha256": "d6f4497e92350f9b59af326ad66c5532e6dd5be89c0a52fe0f376bc8437de78f"
+        }
+      ],
+      "isolated_runtime": "/tmp/nexaui-event-storage172/asan-empty-runtime"
+    }
+  ],
+  "aetheri_revision": "6eda6feb98b37048ca84d73b65e24f919297987c",
+  "aetheri_inputs": [
+    {
+      "path": "LICENSE",
+      "sha256": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a"
+    },
+    {
+      "path": "src/login/protocol.c",
+      "sha256": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66"
+    },
+    {
+      "path": "src/login/protocol.h",
+      "sha256": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160"
+    },
+    {
+      "path": "src/text/grapheme.c",
+      "sha256": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4"
+    },
+    {
+      "path": "src/text/grapheme.h",
+      "sha256": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145"
+    },
+    {
+      "path": "src/text/grapheme_data.h",
+      "sha256": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1"
+    }
+  ],
+  "old_counterexamples": {
+    "platform_source": "6c5cd56fd4c940b1aa8c6417d0c2c7319ef04709",
+    "sdk": "529d5a9d102d975f4fa0664df4936d343bc63b58",
+    "test_sha256": "4c21e61b4dc8129d24fac0c5b6e6c7fcf09b02e69c08ba8442bfd26d9cd79793",
+    "commands": [
+      {
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-event-storage171/source",
+          "-B",
+          "/tmp/nexaui-event-storage171/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-viewport153/release-prefix"
+        ],
+        "exit": 0,
+        "expected": null,
+        "log": "event-storage171-old-configure.log",
+        "sha256": "b4034cb9a819bc6f0097e8ad113401e18e5c2eabf2ad3bba4e480bb0288d9db9"
+      },
+      {
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-event-storage171/build"
+        ],
+        "exit": 0,
+        "expected": null,
+        "log": "event-storage171-old-build.log",
+        "sha256": "a09b64c6afc60889757043aef955d9bd4e212bf6d9a25e07afdd8b38ba30893d"
+      },
+      {
+        "command": [
+          "/tmp/nexaui-event-storage171/build/retirement",
+          "native-retirement"
+        ],
+        "exit": 1,
+        "expected": "zero_bytes(queue.events, sizeof(nx_event))",
+        "log": "event-storage171-old-native.log",
+        "sha256": "75212794b3f8c0f0f680c1fdcb8af7a48cb0d60da4a870a2fd371d34dfd37e08"
+      },
+      {
+        "command": [
+          "/tmp/nexaui-event-storage171/build/retirement",
+          "context-retirement"
+        ],
+        "exit": 1,
+        "expected": "probe.watched_frees == 1 && !probe.watched_dirty",
+        "log": "event-storage171-old-context.log",
+        "sha256": "e334c29ecccebc93e90f00c6ff6f7ac738f2cc401f3d69d3da06df063b0a94ca"
+      }
+    ]
+  },
+  "native": [
+    {
+      "profile": "release",
+      "exit": 0,
+      "command": [
+        "xvfb-run",
+        "-a",
+        "-s",
+        "-screen 0 1600x1200x24",
+        "python3",
+        "/tmp/nexaui-event-storage172/source/tests/run_weston_native.py",
+        "--work-dir",
+        "/tmp/nexaui-event-storage172/release-native",
+        "--timeout",
+        "60",
+        "--",
+        "python3",
+        "/tmp/nexaui-event-storage172/source/tests/run_atspi_native.py",
+        "/usr/libexec/at-spi2-registryd",
+        "/tmp/nexaui-event-storage172/release-login/aetheri_login_atspi_peer",
+        "/tmp/nexaui-event-storage172/release-login/aetheri_login_native_host"
+      ],
+      "log": "event-storage172-release-native.log",
+      "sha256": "12b0014a701449597401c0aa363131986d802c801bc0596f53a62e109ad1e1a2"
+    },
+    {
+      "profile": "shared",
+      "exit": 0,
+      "command": [
+        "xvfb-run",
+        "-a",
+        "-s",
+        "-screen 0 1600x1200x24",
+        "python3",
+        "/tmp/nexaui-event-storage172/source/tests/run_weston_native.py",
+        "--work-dir",
+        "/tmp/nexaui-event-storage172/shared-native",
+        "--timeout",
+        "60",
+        "--",
+        "python3",
+        "/tmp/nexaui-event-storage172/source/tests/run_atspi_native.py",
+        "/usr/libexec/at-spi2-registryd",
+        "/tmp/nexaui-event-storage172/shared-login/aetheri_login_atspi_peer",
+        "/tmp/nexaui-event-storage172/shared-login/aetheri_login_native_host"
+      ],
+      "log": "event-storage172-shared-native.log",
+      "sha256": "9322f6c678b875415abf2f407e31b9bcf16a81ec6d2d43ddad6460daf41c1da5"
+    },
+    {
+      "profile": "asan",
+      "exit": 0,
+      "command": [
+        "xvfb-run",
+        "-a",
+        "-s",
+        "-screen 0 1600x1200x24",
+        "python3",
+        "/tmp/nexaui-event-storage172/source/tests/run_weston_native.py",
+        "--work-dir",
+        "/tmp/nexaui-event-storage172/asan-native",
+        "--timeout",
+        "60",
+        "--",
+        "python3",
+        "/tmp/nexaui-event-storage172/source/tests/run_atspi_native.py",
+        "/usr/libexec/at-spi2-registryd",
+        "/tmp/nexaui-event-storage172/asan-login/aetheri_login_atspi_peer",
+        "/tmp/nexaui-event-storage172/asan-login/aetheri_login_native_host"
+      ],
+      "log": "event-storage172-asan-native.log",
+      "sha256": "447e6cca7a6fcf09532b819a32bb8004553d10668e84ab1b787cf9598cc889e4"
+    }
+  ],
+  "verified_profiles": [
+    {
+      "profile": "release",
+      "sdk_cases": [
+        "nexaui_platform_event_queue",
+        "nexaui_wayland_text_input_v1",
+        "nexaui_wayland_text_input_v1_transactions",
+        "nexaui_wayland_text_input_v3",
+        "nexaui_wayland_text_input_v3_commit_controls",
+        "nexaui_wayland_text_input_v3_selection_revert",
+        "nexaui_wayland_text_input_v3_field_replace",
+        "nexaui_wayland_ime_transactions",
+        "nexaui_wayland_ime_transactions_legacy",
+        "nexaui_wayland_ime_atomic",
+        "nexaui_core",
+        "nexaui_numeric_field",
+        "nexaui_text_field",
+        "nexaui_ime_field_atomic",
+        "nexaui_text_value",
+        "nexaui_input",
+        "nexaui_interaction"
+      ],
+      "consumer_cases": [
+        "aetheri_login_view"
+      ],
+      "native_frames": 53,
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-event-storage172/release-prefix/lib/libnexaui.a",
+          "sha256": "d5e4dcee91199ff3fde33ed6bfb61842903a0a89af832cb183abe2d6783416da",
+          "member": "release/00/libnexaui.a"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/tests.xml",
+          "sha256": "1113b33c4abfddec46f977f0256694ed0c28368824439376f6ee0256f0b63ddf",
+          "member": "release/01/tests.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/tests-final.xml",
+          "sha256": "2cec27ca6beb0cd3c0a461d94fd5e5f159ffacdefe45e2bc9125c2977021c70f",
+          "member": "release/02/tests-final.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/compile_commands.json",
+          "sha256": "5669fc36f21e3756410678a7c358a71483a4fb6960417d2f76e89e7516eae58a",
+          "member": "release/03/compile_commands.json"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/nexaui_platform_event_queue_tests",
+          "sha256": "b1e47bc872c675416b9d8f641080b13956fa8e76e306db0c1b1462ea02a9d4ce",
+          "member": "release/04/nexaui_platform_event_queue_tests"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release-login/tests.xml",
+          "sha256": "edab6ac5ece4bfab3b86c96178d004ffc2e3018972d8c14220d36cf244e2dcea",
+          "member": "release/05/tests.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release-login/compile_commands.json",
+          "sha256": "9ee5c1248f80339af299c3a0fcd794722dafe8e0779523d889ee8861cd5a718b",
+          "member": "release/06/compile_commands.json"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release-login/aetheri_login_atspi_peer",
+          "sha256": "729e2437e2fe22415952e2774140bb047a13caa7dd67e537c7eb18fa2ed030df",
+          "member": "release/07/aetheri_login_atspi_peer"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release-login/aetheri_login_native_host",
+          "sha256": "4006789dba9ebab7d382e296cb75543627eefd9e2bc0410cff29bf1ba4045d17",
+          "member": "release/08/aetheri_login_native_host"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/CMakeFiles/nexaui.dir/platform/common/event_queue.c.o",
+          "sha256": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+          "member": "release/09/event_queue.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/CMakeFiles/nexaui.dir/src/nexaui.c.o",
+          "sha256": "0c0b99b5b5f2e39f08da18594ade7fd0b11acd6b38e9808bd8c6a89b5d9881c1",
+          "member": "release/10/nexaui.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/CMakeFiles/nexaui_platform_event_queue_tests.dir/platform/common/event_queue.c.o",
+          "sha256": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+          "member": "release/11/event_queue.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/release/CMakeFiles/nexaui_platform_event_queue_tests.dir/tests/test_platform_event_queue.c.o",
+          "sha256": "a4aa9d15fe9732830e076c3e7bb23f8b56be4e2c25b34aa732f5e796115fe2b7",
+          "member": "release/12/test_platform_event_queue.c.o"
+        }
+      ]
+    },
+    {
+      "profile": "shared",
+      "sdk_cases": [
+        "nexaui_platform_event_queue",
+        "nexaui_wayland_text_input_v1",
+        "nexaui_wayland_text_input_v1_transactions",
+        "nexaui_wayland_text_input_v3",
+        "nexaui_wayland_text_input_v3_commit_controls",
+        "nexaui_wayland_text_input_v3_selection_revert",
+        "nexaui_wayland_text_input_v3_field_replace",
+        "nexaui_wayland_ime_transactions",
+        "nexaui_wayland_ime_transactions_legacy",
+        "nexaui_wayland_ime_atomic",
+        "nexaui_core",
+        "nexaui_numeric_field",
+        "nexaui_text_field",
+        "nexaui_ime_field_atomic",
+        "nexaui_text_value",
+        "nexaui_input",
+        "nexaui_interaction"
+      ],
+      "consumer_cases": [
+        "aetheri_login_view"
+      ],
+      "native_frames": 51,
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-event-storage172/shared-prefix/lib/libnexaui.so.0.1.33",
+          "sha256": "ea3746ff80b96752355a6148148ee9235ef17505445515b16af8e7f90ff4d464",
+          "member": "shared/00/libnexaui.so.0.1.33"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/tests.xml",
+          "sha256": "09c02aa896aa732751457411d21a7c0931b67ca781c739ba7c4e0977e454f6c0",
+          "member": "shared/01/tests.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/tests-final.xml",
+          "sha256": "2ceb0a910b8269cad57e7278f696da4b0026ead3756aff6c1e110b4bee625a1a",
+          "member": "shared/02/tests-final.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/compile_commands.json",
+          "sha256": "38645217d631056c9517ade67526951e72684fef4ccf20c12b16f1da0b8f90c2",
+          "member": "shared/03/compile_commands.json"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/nexaui_platform_event_queue_tests",
+          "sha256": "0d8993bab12cb456ce7f9ad24d93b5aac67e1aa0e6a484d21d635da8f539d660",
+          "member": "shared/04/nexaui_platform_event_queue_tests"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared-login/tests.xml",
+          "sha256": "1b910e5de6ed9b58e3ac635d0f883ef55777a5cf55144503888329123f85de66",
+          "member": "shared/05/tests.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared-login/compile_commands.json",
+          "sha256": "3297b5cb11c29c27563c1e60e4a33bea4d2e0ad10ad77143e9f2140f0d1d996f",
+          "member": "shared/06/compile_commands.json"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared-login/aetheri_login_atspi_peer",
+          "sha256": "729e2437e2fe22415952e2774140bb047a13caa7dd67e537c7eb18fa2ed030df",
+          "member": "shared/07/aetheri_login_atspi_peer"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared-login/aetheri_login_native_host",
+          "sha256": "90643d6583fefd3026e9854229d696a1fdb6bd6f7baeb788ee80d0e65801f400",
+          "member": "shared/08/aetheri_login_native_host"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/CMakeFiles/nexaui.dir/platform/common/event_queue.c.o",
+          "sha256": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+          "member": "shared/09/event_queue.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/CMakeFiles/nexaui.dir/src/nexaui.c.o",
+          "sha256": "0c0b99b5b5f2e39f08da18594ade7fd0b11acd6b38e9808bd8c6a89b5d9881c1",
+          "member": "shared/10/nexaui.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/CMakeFiles/nexaui_platform_event_queue_tests.dir/platform/common/event_queue.c.o",
+          "sha256": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+          "member": "shared/11/event_queue.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/shared/CMakeFiles/nexaui_platform_event_queue_tests.dir/tests/test_platform_event_queue.c.o",
+          "sha256": "a4aa9d15fe9732830e076c3e7bb23f8b56be4e2c25b34aa732f5e796115fe2b7",
+          "member": "shared/12/test_platform_event_queue.c.o"
+        }
+      ]
+    },
+    {
+      "profile": "asan",
+      "sdk_cases": [
+        "nexaui_platform_event_queue",
+        "nexaui_wayland_text_input_v1",
+        "nexaui_wayland_text_input_v1_transactions",
+        "nexaui_wayland_text_input_v3",
+        "nexaui_wayland_text_input_v3_commit_controls",
+        "nexaui_wayland_text_input_v3_selection_revert",
+        "nexaui_wayland_text_input_v3_field_replace",
+        "nexaui_wayland_ime_transactions",
+        "nexaui_wayland_ime_transactions_legacy",
+        "nexaui_wayland_ime_atomic",
+        "nexaui_core",
+        "nexaui_numeric_field",
+        "nexaui_text_field",
+        "nexaui_ime_field_atomic",
+        "nexaui_text_value",
+        "nexaui_input",
+        "nexaui_interaction"
+      ],
+      "consumer_cases": [
+        "aetheri_login_view"
+      ],
+      "native_frames": 52,
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-event-storage172/asan-prefix/lib/libnexaui.a",
+          "sha256": "cb8fc57d844fec80c7c4c848d1db8b97aab302eed6707977c2de8b4a09e9e26a",
+          "member": "asan/00/libnexaui.a"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/tests.xml",
+          "sha256": "8ae26082e816c3ddf241afe15e105675bb7bfc1d49950ac2a84d2ad9f5316046",
+          "member": "asan/01/tests.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/tests-final.xml",
+          "sha256": "30d1d30eb66ab0fd829edac65a6f3f0712af02e7a2d2926b0a7d991ce0e4d2fc",
+          "member": "asan/02/tests-final.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/compile_commands.json",
+          "sha256": "d54f557bea05c4cab51a36793a37a52a675923f395d96d1a7118d4c6085aa417",
+          "member": "asan/03/compile_commands.json"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/nexaui_platform_event_queue_tests",
+          "sha256": "3c59e4c3df8da4ad6a062a2c87a5eabcdcacde9bc27588d6a4a3434a5c8090b4",
+          "member": "asan/04/nexaui_platform_event_queue_tests"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan-login/tests.xml",
+          "sha256": "54a72f2fec53ccb7c6c25a4f16a7d554e0467d8347be608e9f66bac32096108d",
+          "member": "asan/05/tests.xml"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan-login/compile_commands.json",
+          "sha256": "2592f753c614ca7901e969d84d2fb475b118b5306349c2d765564ae3d166aba9",
+          "member": "asan/06/compile_commands.json"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan-login/aetheri_login_atspi_peer",
+          "sha256": "d29fc52dcf9abcf665314e80a573fa9e9dfba5c2f838d7eaf9e498933493d750",
+          "member": "asan/07/aetheri_login_atspi_peer"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan-login/aetheri_login_native_host",
+          "sha256": "4ed3e706e4cd390c2047ae0d55f10e9dcf7c158320a253280cab493540ab1f71",
+          "member": "asan/08/aetheri_login_native_host"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/CMakeFiles/nexaui.dir/platform/common/event_queue.c.o",
+          "sha256": "0f99c18a98f27086aec5378192bc7ea70ffb43fa63a8e2dae26ff32b393e4f0c",
+          "member": "asan/09/event_queue.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/CMakeFiles/nexaui.dir/src/nexaui.c.o",
+          "sha256": "e0315767c9f54ad29c5f76159301239b63d523a4b609ec88d43102a9e8394a9d",
+          "member": "asan/10/nexaui.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/CMakeFiles/nexaui_platform_event_queue_tests.dir/platform/common/event_queue.c.o",
+          "sha256": "0f99c18a98f27086aec5378192bc7ea70ffb43fa63a8e2dae26ff32b393e4f0c",
+          "member": "asan/11/event_queue.c.o"
+        },
+        {
+          "path": "/tmp/nexaui-event-storage172/asan/CMakeFiles/nexaui_platform_event_queue_tests.dir/tests/test_platform_event_queue.c.o",
+          "sha256": "02fc384fdbd8630b71c5cceb1028b500e1adc7bd2f3e7564024d4a8ce68c54c9",
+          "member": "asan/12/test_platform_event_queue.c.o"
+        }
+      ]
+    }
+  ],
+  "executed_sdk_ctests": 51,
+  "executed_installed_ctests": 3,
+  "executed_native_login_tasks": 3,
+  "shared_export_count": 546,
+  "shared_exports_equal": true,
+  "raw_archive": {
+    "name": "nexaui-event-storage174.tar.gz",
+    "size": 30744236,
+    "sha256": "b911024220060e2d355229f8e27f25038d08093475b50dde2d9139449780dcf9",
+    "members": 101
+  },
+  "raw_manifest": {
+    "source/event-storage172-source.tar.gz": "8ea7de161f3c7d69ee87221ab3fbac3e01bae6ed2c1783f02022ae19feb0a03b",
+    "helpers/negative_event_storage171.py": "7343f9c6dc36cce03c9d3a72ec975b97f1b4d3586f9ccfe0d77b1d78cf713246",
+    "helpers/build_event_storage172.py": "ec9fdfffaf791666843a664c47e83ceeaa17318fc1e56f8bbeefa3a3384214f9",
+    "helpers/resume_event_storage173.py": "82137ab24d6a21bd05d56ad283a8355391f8af02d49f8f9778cdfec53b5ba9e9",
+    "helpers/run_event_storage172_native.py": "cc740687f3e485cd792c89744d32f4bf8f9331abf7199bc86b84f5a5265f9f60",
+    "helpers/verify_event_storage174.py": "b24139ece9e58d6285bdf39dd1264b65f21f806cfbdd752d2468ef4a439fee79",
+    "helpers/event-storage171-old.json": "61f854214375469c7139aed4d9de100b9690cdf7698f18de9d846a529b48c8ca",
+    "helpers/event-storage173-local.json": "45fe213b874fbf8159a015b299615f7bb545ba9e2d68b710d5cc3a38d634ce51",
+    "helpers/event-storage172-native.json": "846d609d9107d0eb2acdf5278979551d0b63e767dd7162a69634d062aae4ade8",
+    "baseline/CMakeLists.txt": "e4b226f48abfb9adfe55fd26e47f2fbf720fe6e3e0080f9ddc8d74cee01fd70c",
+    "baseline/event_queue.h": "849e5dce1a6d07de0a8f72c23da8b61863aaf9b3526d2ebbb2a6ac45298cf080",
+    "baseline/test.c": "4c21e61b4dc8129d24fac0c5b6e6c7fcf09b02e69c08ba8442bfd26d9cd79793",
+    "baseline/event_queue.c": "0827b802e548ff8cceffdd4a0618056c7463f4d28fa98b10aecb8fa21c14bd0d",
+    "aetheri/LICENSE": "6b160e331afc59e499b71990572b40335fabbe2a16fca939bcc3dd30a678fb3a",
+    "aetheri/src/login/protocol.c": "c17d7bded35d1b37909a0118abae4b5e9426effa038702530094a22475ec9b66",
+    "aetheri/src/login/protocol.h": "2c15fb4990537b973aa08a0949b4b6463f791df8c94c308222df45e0e2c81160",
+    "aetheri/src/text/grapheme.c": "eb7e0f4af709ff8edc70ad6ec576869129974a22229ed84dbed559beaa1a97b4",
+    "aetheri/src/text/grapheme.h": "4c536f4a1a2e0cc0a2d5c28f000eedd79d23022da11c638f39716c9fa584f145",
+    "aetheri/src/text/grapheme_data.h": "fe8e0e85dfb481c1d10ca4b6dc08938dc93e96dfce7356314a7b954eb94be3e1",
+    "logs/event-storage171-old-configure.log": "b4034cb9a819bc6f0097e8ad113401e18e5c2eabf2ad3bba4e480bb0288d9db9",
+    "logs/event-storage171-old-build.log": "a09b64c6afc60889757043aef955d9bd4e212bf6d9a25e07afdd8b38ba30893d",
+    "logs/event-storage171-old-native.log": "75212794b3f8c0f0f680c1fdcb8af7a48cb0d60da4a870a2fd371d34dfd37e08",
+    "logs/event-storage171-old-context.log": "e334c29ecccebc93e90f00c6ff6f7ac738f2cc401f3d69d3da06df063b0a94ca",
+    "logs/event-storage172-release-sdk-configure.log": "99dce93cdbd93c179a8fa58beb1c830ea79605bce3b588b966ee066d4f115640",
+    "logs/event-storage172-release-sdk-build.log": "d2951e0725951b3a89cfc02d8973c232f544e030c5f89cc66b1d68d5f3b10f5c",
+    "logs/event-storage173-release-sdk-test.log": "3aa37fda8685564c09d6f55dd8f51c312a713b2134fc027379a82f558dcefc7c",
+    "logs/event-storage173-release-sdk-install.log": "f0adb91b37ac5b3a28902fec2b12cc78f9b20522007dab32d6640e28379b8d7e",
+    "logs/event-storage173-release-login-configure.log": "8ae4990dc3d5ced2bf51e8322e10603ae60406df58ab5df62262aa08eb267875",
+    "logs/event-storage173-release-login-build.log": "3604a5347ba1854974cd63906477193d86582795a250f1020c778226e425f0e9",
+    "logs/event-storage173-release-login-test.log": "a0192fc9eff2c8360f2a974c7d3fe6681c181f4ec165f2a81cd98bc2088846fa",
+    "logs/event-storage172-release-sdk-test.log": "962378e9e59c37151acaff150b03398188771da17bbfdf08b383f411003f31ed",
+    "logs/event-storage172-release-native.log": "12b0014a701449597401c0aa363131986d802c801bc0596f53a62e109ad1e1a2",
+    "release/00/libnexaui.a": "d5e4dcee91199ff3fde33ed6bfb61842903a0a89af832cb183abe2d6783416da",
+    "release/01/tests.xml": "1113b33c4abfddec46f977f0256694ed0c28368824439376f6ee0256f0b63ddf",
+    "release/02/tests-final.xml": "2cec27ca6beb0cd3c0a461d94fd5e5f159ffacdefe45e2bc9125c2977021c70f",
+    "release/03/compile_commands.json": "5669fc36f21e3756410678a7c358a71483a4fb6960417d2f76e89e7516eae58a",
+    "release/04/nexaui_platform_event_queue_tests": "b1e47bc872c675416b9d8f641080b13956fa8e76e306db0c1b1462ea02a9d4ce",
+    "release/05/tests.xml": "edab6ac5ece4bfab3b86c96178d004ffc2e3018972d8c14220d36cf244e2dcea",
+    "release/06/compile_commands.json": "9ee5c1248f80339af299c3a0fcd794722dafe8e0779523d889ee8861cd5a718b",
+    "release/07/aetheri_login_atspi_peer": "729e2437e2fe22415952e2774140bb047a13caa7dd67e537c7eb18fa2ed030df",
+    "release/08/aetheri_login_native_host": "4006789dba9ebab7d382e296cb75543627eefd9e2bc0410cff29bf1ba4045d17",
+    "release/09/event_queue.c.o": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+    "release/10/nexaui.c.o": "0c0b99b5b5f2e39f08da18594ade7fd0b11acd6b38e9808bd8c6a89b5d9881c1",
+    "release/11/event_queue.c.o": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+    "release/12/test_platform_event_queue.c.o": "a4aa9d15fe9732830e076c3e7bb23f8b56be4e2c25b34aa732f5e796115fe2b7",
+    "release/weston/weston.stderr": "c00a00ce1c16978bc0e5c005a4d635f17d7178b6552685ba72659ba4f32def2c",
+    "release/weston/result.json": "d9598a1b62ea36e85025e0d5cb5cbafc1e43d5554c0636a3a0e8356d2a1912b8",
+    "release/weston/weston.ini": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890",
+    "release/weston/weston.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/event-storage172-shared-sdk-configure.log": "5b0c231a11d81a8cfb8d3e2b67ec87a5652d0acdc5bd961cccb084efde6fbc7c",
+    "logs/event-storage172-shared-sdk-build.log": "68bbf0678a15a164607b6cd51da92ce3c57ba98ecbbcb9baa355cbb68d8764e3",
+    "logs/event-storage173-shared-sdk-test.log": "74b0c8d4bc900bbdaf6ae2a1ff17b5e0cb35755a9927083fc4f51af6b189cdc4",
+    "logs/event-storage173-shared-sdk-install.log": "4e824bcef58c13ca36ed4e19106cbe18d6e0baba3aa3bf425e06097660ed6af9",
+    "logs/event-storage173-shared-login-configure.log": "61b40d1de105353d7433fe9524c9672f933b3bf601266c6c4f394a1c62522ce7",
+    "logs/event-storage173-shared-login-build.log": "3604a5347ba1854974cd63906477193d86582795a250f1020c778226e425f0e9",
+    "logs/event-storage173-shared-login-test.log": "7b05e8c33e6569f97afdf811ca6bdc302f87b1dd4604632637effef6e62d6136",
+    "logs/event-storage172-shared-sdk-test.log": "aa273ad0b3b0d7c40313cc8b2fcd8f442c2853ff90324a168c0a90867d74c49a",
+    "logs/event-storage172-shared-native.log": "9322f6c678b875415abf2f407e31b9bcf16a81ec6d2d43ddad6460daf41c1da5",
+    "shared/00/libnexaui.so.0.1.33": "ea3746ff80b96752355a6148148ee9235ef17505445515b16af8e7f90ff4d464",
+    "shared/01/tests.xml": "09c02aa896aa732751457411d21a7c0931b67ca781c739ba7c4e0977e454f6c0",
+    "shared/02/tests-final.xml": "2ceb0a910b8269cad57e7278f696da4b0026ead3756aff6c1e110b4bee625a1a",
+    "shared/03/compile_commands.json": "38645217d631056c9517ade67526951e72684fef4ccf20c12b16f1da0b8f90c2",
+    "shared/04/nexaui_platform_event_queue_tests": "0d8993bab12cb456ce7f9ad24d93b5aac67e1aa0e6a484d21d635da8f539d660",
+    "shared/05/tests.xml": "1b910e5de6ed9b58e3ac635d0f883ef55777a5cf55144503888329123f85de66",
+    "shared/06/compile_commands.json": "3297b5cb11c29c27563c1e60e4a33bea4d2e0ad10ad77143e9f2140f0d1d996f",
+    "shared/07/aetheri_login_atspi_peer": "729e2437e2fe22415952e2774140bb047a13caa7dd67e537c7eb18fa2ed030df",
+    "shared/08/aetheri_login_native_host": "90643d6583fefd3026e9854229d696a1fdb6bd6f7baeb788ee80d0e65801f400",
+    "shared/09/event_queue.c.o": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+    "shared/10/nexaui.c.o": "0c0b99b5b5f2e39f08da18594ade7fd0b11acd6b38e9808bd8c6a89b5d9881c1",
+    "shared/11/event_queue.c.o": "79e2bdf538da7d5ad57ac6f0ba9a3c13529e99c3721d6ddc687fdc7a7043e2cc",
+    "shared/12/test_platform_event_queue.c.o": "a4aa9d15fe9732830e076c3e7bb23f8b56be4e2c25b34aa732f5e796115fe2b7",
+    "shared/weston/weston.stderr": "d7f589962bf55125c5366697feae8654118b1ac5ae8e97ce1567d13688b7b675",
+    "shared/weston/result.json": "d7ca0d550d027370f95ae9972311f7966fc800f9ff46d315d5038de528a5fda0",
+    "shared/weston/weston.ini": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890",
+    "shared/weston/weston.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "logs/event-storage172-asan-sdk-configure.log": "d8c7bca278a9c5b2a6899a2d7549ec354a136f408eb8078c5f2cbd26d006c372",
+    "logs/event-storage172-asan-sdk-build.log": "d2951e0725951b3a89cfc02d8973c232f544e030c5f89cc66b1d68d5f3b10f5c",
+    "logs/event-storage173-asan-sdk-test.log": "77508475b4f97e1838c963b034a475d15178b29f12c895abcfc4fafc89091612",
+    "logs/event-storage173-asan-sdk-install.log": "bb329372d6271c4d0a1753608053933f8efb49816a9a37302bd1fa73096fa447",
+    "logs/event-storage173-asan-login-configure.log": "8bfcf797dc9db42fea891195e783b05a399765d58c2c2392d5551f2a0adf5cf9",
+    "logs/event-storage173-asan-login-build.log": "3604a5347ba1854974cd63906477193d86582795a250f1020c778226e425f0e9",
+    "logs/event-storage173-asan-login-test.log": "d6f4497e92350f9b59af326ad66c5532e6dd5be89c0a52fe0f376bc8437de78f",
+    "logs/event-storage172-asan-sdk-test.log": "78115c40f62891d46eabb228ce2518b5838648a84b80f55219dde620d337cad6",
+    "logs/event-storage172-asan-native.log": "447e6cca7a6fcf09532b819a32bb8004553d10668e84ab1b787cf9598cc889e4",
+    "asan/00/libnexaui.a": "cb8fc57d844fec80c7c4c848d1db8b97aab302eed6707977c2de8b4a09e9e26a",
+    "asan/01/tests.xml": "8ae26082e816c3ddf241afe15e105675bb7bfc1d49950ac2a84d2ad9f5316046",
+    "asan/02/tests-final.xml": "30d1d30eb66ab0fd829edac65a6f3f0712af02e7a2d2926b0a7d991ce0e4d2fc",
+    "asan/03/compile_commands.json": "d54f557bea05c4cab51a36793a37a52a675923f395d96d1a7118d4c6085aa417",
+    "asan/04/nexaui_platform_event_queue_tests": "3c59e4c3df8da4ad6a062a2c87a5eabcdcacde9bc27588d6a4a3434a5c8090b4",
+    "asan/05/tests.xml": "54a72f2fec53ccb7c6c25a4f16a7d554e0467d8347be608e9f66bac32096108d",
+    "asan/06/compile_commands.json": "2592f753c614ca7901e969d84d2fb475b118b5306349c2d765564ae3d166aba9",
+    "asan/07/aetheri_login_atspi_peer": "d29fc52dcf9abcf665314e80a573fa9e9dfba5c2f838d7eaf9e498933493d750",
+    "asan/08/aetheri_login_native_host": "4ed3e706e4cd390c2047ae0d55f10e9dcf7c158320a253280cab493540ab1f71",
+    "asan/09/event_queue.c.o": "0f99c18a98f27086aec5378192bc7ea70ffb43fa63a8e2dae26ff32b393e4f0c",
+    "asan/10/nexaui.c.o": "e0315767c9f54ad29c5f76159301239b63d523a4b609ec88d43102a9e8394a9d",
+    "asan/11/event_queue.c.o": "0f99c18a98f27086aec5378192bc7ea70ffb43fa63a8e2dae26ff32b393e4f0c",
+    "asan/12/test_platform_event_queue.c.o": "02fc384fdbd8630b71c5cceb1028b500e1adc7bd2f3e7564024d4a8ce68c54c9",
+    "asan/weston/weston.stderr": "a582260d99fc92f3e56b8468b66f7e447f3f3039ed3fd169a295d3c24d362880",
+    "asan/weston/result.json": "a648ed9ab4cbcc0c8eaa22f9d2531a339f972d60165fb22acb09cf72d1a663e7",
+    "asan/weston/weston.ini": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890",
+    "asan/weston/weston.stdout": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  }
+}

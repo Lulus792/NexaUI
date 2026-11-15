@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Input storage for T06/P05/P08/Q02. SDK `9056af8` overwrites retired keyboard
+and text-system records in both native and context queues. The existing
+frame-event borrow stays usable until the next successful begin. Three SDK
+profiles pass 51 CTests, three headless login workflows and three native
+login workflows. Two targeted old-library counterexamples fail. Further
+native IME and transport-copy work remains open. [Evidence](input-event-storage-report.md)
+
 Native Wayland login for D06/T06/I01/A01/A02/A06/P05/Q08. Consumer `e8abe04`
 uses the installed software window and an independent AT-SPI peer. Three native
 profiles verify protected password semantics, keyboard focus, exact synthetic

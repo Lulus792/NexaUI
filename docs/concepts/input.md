@@ -26,6 +26,12 @@ events; callers reading preedit for a particular editor should use the guarded
 
 Applications call `nx_window_poll` on a window's creation thread. On Win32, one poll dispatches messages for every window on that thread into each window's own queue. Call `nx_window_route_events(window, context, &count)` for each window/context pair before its next frame; use one independent context per window. The transfer keeps an event queued if the context cannot accept it, so the same pair can retry after a context allocation failure. `count` reports events already transferred, and the caller must avoid routing the remainder into a different context if ordering matters. For manual dispatch, repeatedly call `nx_window_next_event` until `available` is zero and queue each event with `nx_context_queue_event`; unlike the route function, a popped event is then the caller's responsibility. The next `nx_begin_frame` swaps the pending queue into a frame-local stream and updates the input snapshot. Events queued during an active frame belong to the next frame. The borrowed array from `nx_frame_events` stays valid until the next begin or context destruction.
 
+The native queue overwrites its stored keyboard and text-system events after
+dequeue or successful routing. The context overwrites those records once a new
+frame retires the previous borrowed array. Both queues overwrite their old
+records when growing or releasing their storage. Callers remain responsible
+for copies obtained by manual dispatch and for storage outside these queues.
+
 The context privately retains the pointer capture owner and focus owner at each
 event's dispatch. General and numeric text fields consume their events in that
 order, so a press, drag, release and second-field edit within one queued frame
