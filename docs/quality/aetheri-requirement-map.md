@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Login prompt reading for D06/I01/A01/A06/L09. Consumer `558f575` uses the
+existing scroll area to read the original maximum-size prompt with the keyboard.
+Three installed profiles verify the final glyph, complete semantic label and
+reachable response and cancellation controls. Native integration gates remain
+open. [Evidence](aetheri-login-scroll-report.md)
+
 Login conversation view for D06/T06/A01/A06/P05/P08/Q08. Example37 at
 `9aa8796` reuses original Aetheri `6eda6fe` and installed SDK `529d5a9`.
 Three profiles passed the headless rendered workflow through secret and visible

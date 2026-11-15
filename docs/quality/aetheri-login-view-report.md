@@ -34,7 +34,10 @@ SHA-256 is `d8699d8d8e581cc48037e017c35467288a564a29ddc351e95c26d8dce135dfd8`.
 All 45 members were read back and verified.
 
 This is a packet 6 checkpoint for D06/T06/A01/A06/P05/P08/Q08. The sample's
-fixed message region clips long prompts. Native compositor and IME integration,
+original fixed message region clipped long prompts. A subsequent checkpoint
+adds keyboard reading and checks the visible final glyph. [Prompt reading](aetheri-login-scroll-report.md)
+
+Native compositor and IME integration,
 independent AT-SPI validation, credential lifetime inside native input queues,
 trusted placement and login service admission still require evidence. The
 Aetheri owner remains responsible for authentication, transport and eventual
