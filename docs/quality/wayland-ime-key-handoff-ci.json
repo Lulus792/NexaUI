@@ -1,0 +1,127 @@
+{
+  "source": "368cd38292498bd538964ba514ff02e0e9924358",
+  "run": 43760877115,
+  "attempt": 1,
+  "url": "https://github.com/Lulus792/NexaUI/actions/runs/43760877115",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "id": 132955185143,
+      "name": "sanitizers",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        282,
+        282
+      ],
+      "executed_passes": 564,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/ime-handoff208-ci-132955185143.log",
+        "bytes": 346074,
+        "sha256": "b86759fd09f2b1b80e597314e0a99feec411d6168f8242e7cfde19b8730eac22"
+      }
+    },
+    {
+      "id": 132955185316,
+      "name": "core (windows-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        148
+      ],
+      "executed_passes": 148,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/ime-handoff208-ci-132955185316.log",
+        "bytes": 103781,
+        "sha256": "b1506a15782dc21077981022961bf35ead23da4256f466f2244025d901c7aa81"
+      }
+    },
+    {
+      "id": 132955185333,
+      "name": "core (ubuntu-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        280
+      ],
+      "executed_passes": 280,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/ime-handoff208-ci-132955185333.log",
+        "bytes": 311919,
+        "sha256": "fc70b123d0f25f97c3730cd499f5e72fcf3ecb5c12f320d74eb36513724ca8ec"
+      }
+    },
+    {
+      "id": 132955185387,
+      "name": "core (macos-latest, ON)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        124
+      ],
+      "executed_passes": 124,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/ime-handoff208-ci-132955185387.log",
+        "bytes": 111891,
+        "sha256": "5e0d4a9196896f64800e40ebe6e90e056c4e8b1ffed84ab8ee4d7a8fe4c162c8"
+      }
+    },
+    {
+      "id": 132955185429,
+      "name": "core (windows-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        149
+      ],
+      "executed_passes": 149,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/ime-handoff208-ci-132955185429.log",
+        "bytes": 103912,
+        "sha256": "e59242030d4407182bf5435a95603923d7e09d5196e22571682d216e767839bc"
+      }
+    },
+    {
+      "id": 132955185444,
+      "name": "core (macos-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        125
+      ],
+      "executed_passes": 125,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/ime-handoff208-ci-132955185444.log",
+        "bytes": 112200,
+        "sha256": "6493c5e529580d4a362ac86975018d934fc59823573d77c28930020ac2dd9771"
+      }
+    },
+    {
+      "id": 132955185507,
+      "name": "core (ubuntu-latest, OFF)",
+      "status": "completed",
+      "conclusion": "success",
+      "ctest_counts": [
+        282,
+        1
+      ],
+      "executed_passes": 283,
+      "log": {
+        "path": "/mnt/d/NexaUI/out/ime-handoff208-ci-132955185507.log",
+        "bytes": 317362,
+        "sha256": "eadd3dd27329058a219ad43d6b2829599de17948419f25775a2c23e91d613d40"
+      }
+    }
+  ],
+  "optional_skipped": [
+    "windows-asan",
+    "fuzz-campaigns"
+  ],
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-ime-handoff208-ci.tar.gz",
+    "bytes": 247347,
+    "sha256": "1429d77d6e550dd76b17e611f3a6e50168cd0d939bb38ed2a433daf4fc1ab716",
+    "verified_members": 10
+  },
+  "scope": "SDK and package CI; the standalone original Login fixture is covered by the separate local receipt, not by these CTest counts."
+}

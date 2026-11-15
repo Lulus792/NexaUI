@@ -68,10 +68,14 @@ The archive `nexaui-ime-handoff204.tar.gz` contains 174 verified regular members
 The separate password archive and receipt are bound by hash. Borrowed fonts and
 external Weston/keymap executables remain outside these source/artifact archives.
 
-SDK/package CI for this source is running in
-[main run 43760877115](https://github.com/Lulus792/NexaUI/actions/runs/43760877115).
-The local counts above cover the standalone original Login fixture separately;
-they are not a claim that the platform CI has completed.
+All seven required SDK/package CI jobs pass on this exact source in
+[main run 43760877115](https://github.com/Lulus792/NexaUI/actions/runs/43760877115),
+attempt 1. Windows static/shared execute 149/148 CTests, macOS 125/124,
+Linux 282/280, and sanitizers 282 in each driver discovery order. Linux static
+also passes the separate presentation-lifecycle repeat. No CTest is skipped;
+the optional Windows-ASan and fuzz-campaign jobs are skipped. The standalone
+original Login fixture has the separate local evidence above.
+[CI receipt and verified raw-log archive](wayland-ime-key-handoff-ci.json)
 
 ## Remaining scope
 
