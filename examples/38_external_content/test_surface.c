@@ -135,7 +135,14 @@ static int start(test_thread *thread, worker_probe *worker) {
     *thread = CreateThread(NULL, 0, worker_entry, worker, 0, NULL); return *thread != NULL;
 }
 static int join(test_thread thread) {
-    DWORD result = WaitForSingleObject(thread, 5000); CloseHandle(thread); return result == WAIT_OBJECT_0;
+    DWORD result = WaitForSingleObject(thread, 5000);
+    if (result != WAIT_OBJECT_0) {
+        /* A failed test cannot free the stack/exchange under a live worker. */
+        fputs("Owned content worker did not join\n", stderr);
+        _Exit(1);
+    }
+    CloseHandle(thread);
+    return 1;
 }
 #else
 static void *worker_entry(void *user) { worker_run(user); return NULL; }
