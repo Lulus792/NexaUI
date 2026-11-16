@@ -110,3 +110,37 @@ The fixture does not decode documents or execute guest/service operations;
 producer pixels never become host permission authority. The full 103-ID catalogue
 and remaining packets stay active. Aetheri can independently adopt this bounded
 CPU handoff where its own producer and lifecycle policy satisfy the contract.
+
+## PNG producer checkpoint, 2026-11-17
+
+Consumer `564e5e980e633b3a16ecbd3c957073746cdb2ccf` uses installed SDK
+`b53513b390dbf135050a858fbdfd434edc04ad08` and Alpine libpng `1.6.59-r0`.
+The optional producer uses the [versioned libpng read API](https://raw.githubusercontent.com/pnggroup/libpng/v1.6.59/png.h)
+to decode borrowed PNG bytes into straight-alpha RGBA8. It fits that image to
+the requested physical size with transparent margins, then transfers the
+complete frame through the existing exchange and viewport. Unit coverage
+includes alpha, centred fit and reduction pixels, truncated data, size limits
+and reuse after rejection. A compiled variant that admits a 4096-pixel source
+fails the source-dimension assertion.
+
+The native fixture decodes four valid PNGs and rejects one truncated PNG
+before publication. It exercises old-generation rejection, accessible error
+status, retained image and semantic object, recovery, 2× backing and close.
+In all three profiles the malformed input leaves every one of the 93,184
+displayed image pixels intact. Recovery updates 5,824 pixels, with 23,296
+bytes staged through the existing damage contract. The worker reports five
+completions, four publications and four disposals on normal close.
+
+On Alpine with Clang 22.1.3, 43 installed CTests and sixteen private native
+cases passed. These include static Release, shared Release and ASan/UBSan/LSan
+with PNG enabled, and a default build without libpng linkage. The standalone
+host's dynamic link audit records `libpng16.so.16` only with the option on.
+Archive `nexaui-content-png384.tar.gz` binds exact source, commands, fixture
+PNGs, logs, captures and the counterexample. Readback verified SHA-256
+`81c7ac570c5ab8ced3e8f1ed699efbf366b7f71945839f62a1c60c5dd7eb5cdf`.
+Local receipt `content-png384-final.json` records the library/header and
+member hashes.
+
+Production image viewer navigation, process-level decoder isolation, broader
+format and metadata handling, PDF/browser/guest engines and GPU handoff
+remain separate acceptance work.

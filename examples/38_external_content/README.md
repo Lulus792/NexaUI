@@ -210,3 +210,25 @@ loss and accessible Disconnect. Its receiver is explicitly a local test model,
 not a VM/backend. Native Windows/macOS, real engines, guest applied/reset
 acknowledgements, text/IME, sharing/reset authorities, engine accessibility and
 physical/human acceptance remain open.
+
+## Optional PNG producer
+
+Configure the standalone consumer with `-DNEXAUI_CONTENT_BUILD_PNG=ON` to
+build `content_png` against libpng. The producer accepts borrowed PNG bytes
+and a copied `content_request`. It returns an owned straight-alpha RGBA8
+snapshot ready for the existing exchange. Let the producer thread dispose
+of a rejected result or transfer a successful snapshot with its disposer.
+The viewport retains its existing lease and generation/resize checks.
+
+The adapter fits the source into the requested physical viewport with
+nearest-neighbor sampling and transparent margins. Encoded input, decoded
+source pixels and output pixels each have a 4 MiB limit. Source dimensions
+are capped at 2048 per axis. These limits describe adapter-owned buffers.
+The decoder manages its own internal working memory.
+
+With both standalone options enabled, `run_native.py --case png` runs the
+ordinary Wayland fixture with real locally generated PNG inputs. The runner
+adds a truncated PNG to exercise the decode-error path. The host reports the
+failure through its accessible status and leaves the last valid image
+visible. A valid follow-up frame restores progress. The fixture also tests a
+late frame across tab replacement and decoding for 2× backing.
