@@ -1,6 +1,8 @@
 #include "nexaui/nexaui.h"
 
 #include <math.h>
+#include <float.h>
+#include <locale.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -437,7 +439,52 @@ static int test_numeric_clipboard(void) {
     return 0;
 }
 
+static int numeric_draft_format(void) {
+    nx_numeric_field *field=NULL;
+    nx_utf8_span text;
+    double committed;
+    int valid=0;
+    CHECK(nx_numeric_field_create(.45,1024,&field)==NX_OK);
+    CHECK(nx_numeric_field_text(field,&text)==NX_OK &&
+          text.length==4 && !memcmp(text.data,"0.45",4));
+    CHECK(nx_numeric_field_commit(field,-DBL_MAX,DBL_MAX,&valid)==NX_OK && valid);
+    CHECK(nx_numeric_field_value(field,&committed)==NX_OK && committed==.45);
+    CHECK(nx_numeric_field_set_value(field,-.45)==NX_OK);
+    CHECK(nx_numeric_field_text(field,&text)==NX_OK &&
+          text.length==5 && !memcmp(text.data,"-0.45",5));
+    CHECK(nx_numeric_field_commit(field,-DBL_MAX,DBL_MAX,&valid)==NX_OK && valid);
+    CHECK(nx_numeric_field_value(field,&committed)==NX_OK && committed==-.45);
+    CHECK(nx_numeric_field_set_value(field,9007199254740991.0)==NX_OK);
+    CHECK(nx_numeric_field_commit(field,-DBL_MAX,DBL_MAX,&valid)==NX_OK && valid);
+    CHECK(nx_numeric_field_value(field,&committed)==NX_OK && committed==9007199254740991.0);
+    CHECK(nx_numeric_field_set_value(field,-0.0)==NX_OK);
+    CHECK(nx_numeric_field_commit(field,-DBL_MAX,DBL_MAX,&valid)==NX_OK && valid);
+    CHECK(nx_numeric_field_value(field,&committed)==NX_OK && committed==0.0 && signbit(committed));
+    CHECK(nx_numeric_field_set_value(field,100000)==NX_OK);
+    CHECK(nx_numeric_field_text(field,&text)==NX_OK &&
+          text.length==6 && !memcmp(text.data,"100000",6));
+
+    /* Try installed non-dot locales in this isolated test process. */
+    const char *names[]={"de-DE","de_DE.UTF-8","German_Germany.1252"};
+    int checked=0;
+    for (size_t i=0;i<sizeof(names)/sizeof(names[0]);++i) {
+        if (!setlocale(LC_NUMERIC,names[i]) || !strcmp(localeconv()->decimal_point,".")) continue;
+        CHECK(nx_numeric_field_set_value(field,.45)==NX_OK);
+        CHECK(nx_numeric_field_text(field,&text)==NX_OK &&
+              text.length==4 && !memcmp(text.data,"0.45",4));
+        CHECK(nx_numeric_field_commit(field,-DBL_MAX,DBL_MAX,&valid)==NX_OK && valid);
+        CHECK(nx_numeric_field_value(field,&committed)==NX_OK && committed==.45);
+        checked=1;
+        break;
+    }
+    CHECK(setlocale(LC_NUMERIC,"C"));
+    printf("numeric field decimal locale fixture: %s\n",checked?"comma locale checked":"comma locale unavailable");
+    nx_numeric_field_destroy(field);
+    return 0;
+}
+
 int main(void) {
+    if (numeric_draft_format()) return 1;
     if (test_numeric_field()) return 1;
     if (test_retry_after_paint_failure()) return 1;
     if (test_native_text_commands()) return 1;

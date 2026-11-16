@@ -6049,6 +6049,53 @@ static nx_result nx_value_format(double value, char text[64], size_t *length) {
     return NX_OK;
 }
 
+static int nx_numeric_draft_ascii(char text[64], int count,
+                                  const char *separator) {
+    if (count <= 0 || count >= 64) return -1;
+    if (!separator || !*separator || !strcmp(separator, ".")) return count;
+    char *point = strstr(text, separator);
+    if (!point) return count;
+    size_t size = strlen(separator);
+    *point = '.';
+    memmove(point + 1, point + size, strlen(point + size) + 1u);
+    return count - (int)(size - 1u);
+}
+
+static nx_result nx_numeric_draft_format(double value, char text[64],
+                                         size_t *length) {
+    /* Capture the separator from the same formatter without changing the
+       process locale or borrowing localeconv's shared result. */
+    char marker[64];
+    int marker_length = snprintf(marker, sizeof(marker), "%.1f", 1.5);
+    if (marker_length < 3 || marker_length >= 64) return NX_ERROR_LIMIT;
+    marker[marker_length - 1] = '\0';
+    const char *separator = marker + 1;
+    int full = nx_numeric_draft_ascii(text,
+        snprintf(text, 64, "%.*g", DBL_DECIMAL_DIG, value), separator);
+    if (full < 0) return NX_ERROR_LIMIT;
+    *length = (size_t)full;
+    if (!strpbrk(text, ".e")) return NX_OK;
+    int full_exponent = strchr(text, 'e') != NULL;
+    for (int precision = 1; precision < DBL_DECIMAL_DIG; ++precision) {
+        char candidate[64];
+        int n = nx_numeric_draft_ascii(candidate,
+            snprintf(candidate, sizeof(candidate), "%.*g", precision, value), separator);
+        if (n < 0 || n >= full ||
+            ((strchr(candidate, 'e') != NULL) != full_exponent))
+            continue;
+        double parsed;
+        int valid;
+        if (nx_numeric_parse(candidate, (size_t)n, -DBL_MAX, DBL_MAX,
+                             &parsed, &valid) == NX_OK &&
+            valid && parsed == value && signbit(parsed) == signbit(value)) {
+            memcpy(text, candidate, (size_t)n + 1u);
+            *length = (size_t)n;
+            break;
+        }
+    }
+    return NX_OK;
+}
+
 static nx_result nx_value_paint(nx_context *ctx,
                                 const nx_value_control_desc *desc,
                                 double value, int drag,
@@ -7246,7 +7293,7 @@ nx_result nx_numeric_field_create(double initial_value,
     if (!isfinite(initial_value)) return NX_ERROR_ARGUMENT;
     char text[64];
     size_t length = 0;
-    nx_result result = nx_value_format(initial_value, text, &length);
+    nx_result result = nx_numeric_draft_format(initial_value, text, &length);
     if (result != NX_OK) return result;
     nx_numeric_field *field = (nx_numeric_field *)calloc(1u, sizeof(*field));
     if (!field) return NX_ERROR_MEMORY;
@@ -7302,7 +7349,7 @@ nx_result nx_numeric_field_set_value(nx_numeric_field *field, double value) {
     if (field->text_value.revision == UINT64_MAX) return NX_ERROR_LIMIT;
     char text[64];
     size_t length = 0;
-    nx_result result = nx_value_format(value, text, &length);
+    nx_result result = nx_numeric_draft_format(value, text, &length);
     if (result != NX_OK) return result;
     nx_text_buffer *replacement = NULL;
     result = nx_text_buffer_create(text, length, field->history_bytes,
