@@ -170,3 +170,44 @@ Local receipt `physim-inspector358-final.json` lists each member hash.
 R11 remains partial. Production Physim adoption and scheduling, spatial
 picking and camera controls, a browsable object tree, spoken screenreader
 output and GPU/physical acceptance still need evidence.
+
+## Spatial selection checkpoint, 2026-11-17
+
+Consumer `b37b6c75eab3887c689fd5f6364083d06dbf0451` uses the same installed SDK
+`b53513b390dbf135050a858fbdfd434edc04ad08` and the same original Physim inputs.
+The app consumes the existing viewport capture result and maps its logical
+position into the backing image. It picks projected spheres, lines and arrows
+in reverse paint order and stages the index for dispatch after lease completion.
+The inspector and its accessible label reflect that selection. A background
+click clears the label back to the scene count. The app discards captures that
+span changes to the projected size, scale or source generation.
+
+The installed view test checks sphere hits at both scales, background clearing,
+release outside the viewport, cancellation, resizing the backing during capture,
+lease refusal and refusal to dispatch the same pick twice. The independent
+native peer computes the original sphere position, finds a visible interior
+pixel and clicks it with the private Wayland seat at 1× and 2×. It checks the
+original object and parent ID via AT-SPI. The native 1× scene pixels match the
+previous approved renderer and stay equal after the selection. The comparison
+uses matching unfocused viewport states. The tests separately verify that
+clicking focuses the viewport.
+
+Early fixture runs found two image-oracle assumptions. The focused viewport
+paints a border over its background, and a fixed point on the projected sphere
+can be covered by a force arrow. The final peer verifies focus first and locates
+its click through the visible sphere color. A build with a const-qualified
+XImage argument also failed strict Clang because XGetPixel takes XImage *.
+The archive preserves those failures alongside the passing runs.
+
+Five installed CTests and four private native Wayland cases passed per profile
+in static Release, shared Release and ASan/UBSan/LSan on Alpine with Clang
+22.1.3. SDK [CI run 43974152462](https://github.com/Lulus792/NexaUI/actions/runs/43974152462)
+passed all seven required jobs on `b53513b`. The standalone consumer was
+checked separately. The archive `nexaui-physim-picking367.tar.gz` includes
+source, commands, logs, CTest XML and captures. Readback verified SHA-256
+`2fd4771597774bc9a4f661b4402eeca124a4f653e56e6ad99f76eb740422de265`.
+The local manifest `physim-picking367-final.json` lists each member hash.
+
+Open scope includes production Physim adoption, a camera, a browsable object
+tree, native arrow and line hit coverage, spoken screenreader output and GPU
+or physical-display acceptance.

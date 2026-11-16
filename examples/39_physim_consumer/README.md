@@ -68,11 +68,20 @@ object. An invalid Apply preserves the selection. A newly published generation
 or a replacement view starts at the object count. Inspection changes only
 view-local state after the render lease is complete.
 
+A primary click in the viewport can also select a sphere, line or arrow
+from the original scene. The app maps the pointer release from logical
+coordinates into the current backing image and uses the same projection as
+the renderer. The last painted hit geometry wins. A release on the scene
+background clears the selection. A cancelled capture or a capture which spans
+a size, scale or model-generation change leaves the selection alone. Text
+labels and group entries remain available through **Inspect next**.
+
 The app-owned CPU renderer projects the original scene's line, sphere, arrow,
 label and group objects into a bounded16MiB image. Original object order,
-positions, colors, labels and group identities remain in the snapshot. This is
-a labelled orthographic reference projection, not Physim's production3D
-renderer, picking, camera model or full object-tree accessibility. Unsupported
+positions, colors, labels and group identities remain in the snapshot. The
+labelled orthographic reference projection supports picking of its three
+geometry types. Physim's production 3D renderer, camera model and full
+object-tree accessibility remain open. Unsupported
 scene shapes return an explicit error. Original scene text/line sizes scale
 with viewport backing. No GPU texture import is implemented.
 
@@ -119,7 +128,9 @@ uses normalized keyboard input for Zoom and invalid/valid numeric entry,
 requires explicit Apply, checks original plot-state equivalence, scene pixels,
 whole-frame equality after view recreation, model preservation and2x backing.
 It checks all twelve inspector entries, wraparound, lease refusal and selection
-reset after model publication.
+reset after model publication. It also checks viewport picking at 1× and 2×,
+background deselection, release outside the viewport, cancellation and resize
+during an active capture.
 The failure case checks live leases, bounded geometry and twelve actual
 context-allocation failures, then retries with a fresh context.
 
@@ -155,8 +166,9 @@ compositor work directory, bus, host and peer. No existing desktop is controlled
 `full` exercises actual keyboard validation/Apply, native editable-text setting,
 original-model changes, Zoom/Pan/Fit, context/view replacement, 2x source backing,
 plot/viewport/inspector Tab navigation and Close. The independent peer checks
-original object metadata after real keyboard and AT-SPI button activation,
-including retention on invalid Apply and reset on publication. It runs the original
+original object metadata after real keyboard and AT-SPI button activation and
+on native clicks at both backing scales. It checks retention on invalid Apply
+and reset on publication. It runs the original
 experiment separately and requires substantial actual screen-pixel coverage of
 its original bob at the expected position. Whole client PPMs are retained.
 
