@@ -190,9 +190,16 @@ int main(int argc,char **argv) {
     CHECK(drive("windowfocus",id)&&drive("park",NULL)&&observe(app,"Model generation 1; length 1.5 m.",0)&&focus(app,"Length (m)"));
     CHECK(text_is(app,"Length (m)","1.5")&&capture(display,outer,1.5,"initial"));
     if(!strcmp(test_case,"full")) {
+        CHECK(focus(app,"Original Physim pendulum scene")&&drive("key","Tab")&&observe(app,"Inspect next",1));
+        CHECK(drive("key","Return")&&observe(app,"1/12 Line #1, parent #100",0));
+        CHECK(drive("key","Return")&&observe(app,"2/12 Sphere #2, parent #100",0));
+        CHECK(press(app,"Inspect next")&&observe(app,"3/12 Sphere #3, parent #101",0));
+        CHECK(capture(display,outer,1.5,"inspected"));
+        CHECK(focus(app,"Length (m)"));
         CHECK(drive("key","ctrl+a")&&drive("key","0")&&drive("key","Return")&&text_is(app,"Length (m)","0"));
         AtspiAccessible *field=find(app,"Length (m)",0);CHECK(field);int invalid=state(field,ATSPI_STATE_INVALID_ENTRY);g_object_unref(field);CHECK(invalid);
         CHECK(press(app,"Apply model")&&observe(app,"Invalid parameters; model generation 1 retained.",0));
+        CHECK(observe(app,"3/12 Sphere #3, parent #101",0));
         CHECK(marker(log,"PHYSIM_ACTION id=12 valid=0 generation=1 length=1.5"));
     } else {
         CHECK(drive("key","108")&&drive("key","apostrophe")&&marker(log,"PHYSIM_PREEDIT focus=10 length=1 generation=1"));
@@ -213,6 +220,7 @@ int main(int argc,char **argv) {
     CHECK(text_is(app,"Length (m)","2.5"));
     CHECK(observe(app,"Model generation 1; length 1.5 m.",0)||observe(app,"Invalid parameters; model generation 1 retained.",0));
     CHECK(focus(app,"Apply model")&&drive("key","Return")&&observe(app,"Model generation 2; length 2.5 m.",0));
+    CHECK(observe(app,"Scene objects (12)",0));
     CHECK(marker(log,"PHYSIM_ACTION id=12 valid=1 generation=2 length=2.5")&&capture(display,outer,2.5,"applied"));
     if(!strcmp(test_case,"full")) {
         CHECK(drive("key","Tab")&&observe(app,"Zoom +",1)&&drive("key","Return"));
@@ -225,7 +233,9 @@ int main(int argc,char **argv) {
         CHECK(focus(app,"Fit data")&&drive("key","Return")&&marker(log,"PHYSIM_ACTION id=15 valid=1 generation=2 length=2.5 low=0 high=1"));
         CHECK(drive("key","F7")&&marker(log,"PHYSIM_SURFACE generation=2 width=752 height=768 backing=2")&&capture(display,outer,2.5,"backing2"));
         CHECK(focus(app,"Original angle channel (rad)")&&drive("key","Tab")&&observe(app,"Original Physim pendulum scene",1));
-        CHECK(drive("key","Tab")&&observe(app,"Length (m)",1)&&drive("key","shift+Tab")&&observe(app,"Original Physim pendulum scene",1));
+        CHECK(drive("key","Tab")&&observe(app,"Inspect next",1));
+        CHECK(drive("key","Tab")&&observe(app,"Length (m)",1)&&drive("key","shift+Tab")&&observe(app,"Inspect next",1));
+        CHECK(drive("key","shift+Tab")&&observe(app,"Original Physim pendulum scene",1));
     }
     CHECK(focus(app,"Close")&&drive("key","Return"));
 closed: ;

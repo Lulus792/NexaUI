@@ -76,6 +76,12 @@ static int save_size(const char *path,const uint8_t *pixels,uint32_t width,uint3
     if(fclose(f))ok=0;return ok;
 }
 static int save(const char *path,const uint8_t *pixels) { return save_size(path,pixels,WIDTH,HEIGHT); }
+static int semantic_name(const nx_context *context,uint64_t id,const char *name) {
+    uint32_t index=0;
+    nx_semantic_view node;
+    return nx_semantics_find(context,id,&index)==NX_OK&&nx_semantics_get(context,index,&node)==NX_OK&&
+        node.name.length==strlen(name)&&!memcmp(node.name.data,name,node.name.length);
+}
 static int view_test(const char *path,const char *image) {
     int ok=0,valid=0;unsigned action=0;nx_context *context=NULL;physim_view *view=NULL;font_data font={0};ps_plot_view plot={0},reference;
     physim_snapshot *model=malloc(sizeof(*model)),*before=malloc(sizeof(*before));
@@ -107,12 +113,31 @@ static int view_test(const char *path,const char *image) {
     CHECK(!memcmp(&plot,&reference,sizeof(plot))&&!memcmp(before,model,sizeof(*model)));
     CHECK(physim_view_dispatch(view,14,&valid)==NX_OK&&valid&&ps_plot_view_pan(&reference,.25,0)&&!memcmp(&plot,&reference,sizeof(plot)));
     CHECK(physim_view_dispatch(view,15,&valid)==NX_OK&&valid&&!ps_plot_view_changed(&plot));
+    CHECK(semantic_name(context,23,"Scene objects (12)"));
+    static const char *const expected[]={
+        "1/12 Line #1, parent #100", "2/12 Sphere #2, parent #100", "3/12 Sphere #3, parent #101",
+        "4/12 Arrow #4, parent #3", "5/12 Aufhaengung #5, parent #2", "6/12 Pendelmasse #6, parent #3",
+        "7/12 Pendel #100, parent root", "8/12 Bewegte Masse #101, parent #100",
+        "9/12 Arrow #7, parent #3", "10/12 Arrow #8, parent #3",
+        "11/12 Gewicht · 0.05 m/N #10, parent #7", "12/12 Stangenkraft · 0.05 m/N #11, parent #8"
+    };
+    CHECK(nx_focus_set(context,PHYSIM_INSPECT_NEXT)==NX_OK&&key(context,NX_KEY_ENTER,0));
+    CHECK(physim_view_frame(view,context,WIDTH,HEIGHT,1,&action)==NX_OK&&action==PHYSIM_INSPECT_NEXT);
+    CHECK(physim_view_dispatch(view,action,&valid)==NX_ERROR_STATE&&!valid&&physim_view_complete(view)==NX_OK);
+    for(size_t i=0;i<sizeof(expected)/sizeof(expected[0])+1u;++i) {
+        CHECK(physim_view_dispatch(view,PHYSIM_INSPECT_NEXT,&valid)==NX_OK&&valid);
+        const char *name=i<sizeof(expected)/sizeof(expected[0])?expected[i]:expected[0];
+        CHECK(render(view,context,1,&action,pixels)==NX_OK&&!action&&semantic_name(context,23,name));
+    }
+    CHECK(!memcmp(before,model,sizeof(*model))&&!ps_plot_view_changed(&plot));
     CHECK(nx_focus_set(context,10)==NX_OK&&key(context,NX_KEY_A,NX_MOD_CONTROL)&&type(context,"0")&&key(context,NX_KEY_ENTER,0));
     CHECK(render(view,context,1,&action,pixels)==NX_OK&&physim_view_dispatch(view,12,&valid)==NX_OK&&!valid&&!memcmp(before,model,sizeof(*model)));
+    CHECK(render(view,context,1,&action,pixels)==NX_OK&&semantic_name(context,23,expected[0]));
     CHECK(key(context,NX_KEY_A,NX_MOD_CONTROL)&&type(context,"2.5")&&key(context,NX_KEY_ENTER,0));
     CHECK(render(view,context,1,&action,pixels)==NX_OK&&physim_view_dispatch(view,12,&valid)==NX_OK&&valid&&model->generation==2&&model->length.value==2.5);
     CHECK(model->samples[120].values[0]!=before->samples[120].values[0]);
-    CHECK(render(view,context,2,&action,pixels)==NX_OK&&memcmp(previous,pixels,bytes)&&save(image,pixels));
+    CHECK(render(view,context,2,&action,pixels)==NX_OK&&semantic_name(context,23,"Scene objects (12)")&&
+        memcmp(previous,pixels,bytes)&&save(image,pixels));
     CHECK(physim_view_destroy(&view)==NX_OK&&physim_view_create(model,&plot,font.fonts,&view)==NX_OK);
     CHECK(render(view,context,1,&action,pixels)==NX_OK&&model->length.value==2.5&&model->generation==2);
     ok=1;

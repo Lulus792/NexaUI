@@ -14,6 +14,7 @@ struct physim_view {
     uint32_t width,height;
     double backing;
     int leased,apply_rejected;
+    uint32_t inspected;
     nx_plot_state plot_state;
     nx_series_envelope scratch[1024];
 };
@@ -101,6 +102,27 @@ static nx_result text(physim_view *v,nx_context *context,uint64_t id,const char 
     if(r==NX_OK)r=nx_label(context,id,1,bounds,layout,(nx_point){bounds.x,bounds.y},(nx_color){.08f,.1f,.15f,1},65536);
     nx_text_layout_destroy(layout);return r;
 }
+static nx_result inspector(physim_view *v,nx_context *context,float width) {
+    const ps_scene *scene=&v->model->scene;
+    char summary[192];
+    if (!v->inspected) {
+        snprintf(summary,sizeof(summary),"Scene objects (%u)",(unsigned)scene->count);
+    } else {
+        const ps_object *object=&scene->objects[v->inspected-1u];
+        static const char *const shape_names[]={
+            [PS_SPHERE]="Sphere", [PS_LINE]="Line", [PS_ARROW]="Arrow",
+            [PS_LABEL]="Label", [PS_GROUP]="Group"
+        };
+        const char *shape=object->shape<sizeof(shape_names)/sizeof(shape_names[0])
+            ?shape_names[object->shape]:NULL;
+        const char *name=object->text[0]?object->text:shape?shape:"Object";
+        char parent[32]="root";
+        if (object->parent_id) snprintf(parent,sizeof(parent),"#%u",(unsigned)object->parent_id);
+        snprintf(summary,sizeof(summary),"%u/%u %s #%u, parent %s",(unsigned)v->inspected,
+            (unsigned)scene->count,name,(unsigned)object->id,parent);
+    }
+    return text(v,context,23,summary,(nx_rect){width*.5f+8,142,width*.5f-24,16},12);
+}
 nx_result physim_view_set_ime_window(physim_view *v,nx_window *window) {
     if(!v)return NX_ERROR_ARGUMENT;if(v->leased)return NX_ERROR_STATE;
     nx_result r=nx_numeric_field_set_ime_window(v->length,window);
@@ -133,7 +155,7 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     nx_result r=nx_begin_frame(context,width,height,0);
     nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,width,height},.name=span("Original Physim pendulum reference")};
     if(r==NX_OK)r=nx_semantics_add(context,&root,NULL);
-    if(r==NX_OK)r=text(v,context,2,"Original Physim pendulum - installed NexaUI reference",(nx_rect){16,12,width-32,26},18);
+    if(r==NX_OK)r=text(v,context,2,"Original Physim pendulum",(nx_rect){16,12,width-164,26},18);
     if(r==NX_OK)r=text(v,context,3,"Length (m)",(nx_rect){16,42,200,18},14);
     if(r==NX_OK)r=text(v,context,4,"Initial angle (rad)",(nx_rect){240,42,200,18},14);
     nx_numeric_field_desc field={.id=10,.parent_id=1,.bounds={16,64,200,32},.name=span("Length (m)"),
@@ -148,7 +170,8 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     char status[128];
     if(v->apply_rejected)snprintf(status,sizeof(status),"Invalid parameters; model generation %llu retained.",(unsigned long long)v->model->generation);
     else snprintf(status,sizeof(status),"Model generation %llu; length %.6g m.",(unsigned long long)v->model->generation,v->model->length.value);
-    if(r==NX_OK)r=text(v,context,5,status,(nx_rect){16,142,width-32,16},12);
+    if(r==NX_OK)r=text(v,context,5,status,(nx_rect){16,142,width*.5f-24,16},12);
+    if(r==NX_OK)r=inspector(v,context,width);
     nx_plot_desc plot={.id=20,.parent_id=1,.bounds={16,160,width*.5f-24,height-176},.name=span("Original angle channel (rad)"),
         .series={PHYSIM_SAMPLE_COUNT,v->model,sample},.scratch=v->scratch,.scratch_capacity=1024,.fonts=v->fonts,
         .pixels_per_em=13,.glyph_cache_bytes=65536};
@@ -160,6 +183,8 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
         .name=span("Original Physim pendulum scene"),.scale=scale};
     v->backing=scale;
     if(r==NX_OK)r=nx_viewport(context,v->surface,&viewport,&state);
+    if(r==NX_OK&&v->model->scene.count)
+        r=button(v,context,PHYSIM_INSPECT_NEXT,"Inspect next",(nx_rect){width-140,8,124,32},action);
     if(r==NX_OK)r=nx_end_frame(context);
     return r;
 }
@@ -177,13 +202,17 @@ nx_result physim_view_dispatch(physim_view *v,unsigned action,int *valid) {
         double length=0,angle=0;
         if((r=nx_numeric_field_value(v->length,&length))!=NX_OK||(r=nx_numeric_field_value(v->angle,&angle))!=NX_OK)return r;
         r=physim_model_run(length,angle,v->model->generation+1u,v->model);
-        if(r==NX_OK) { *valid=1;v->apply_rejected=0; }return r;
+        if(r==NX_OK) { *valid=1;v->apply_rejected=0;v->inspected=0; }return r;
     }
     if(action==13)*valid=ps_plot_view_zoom(v->plot,2,.5,.5);
     else if(action==14)*valid=ps_plot_view_pan(v->plot,.25,0);
     else if(action==15) { ps_plot_view_reset(v->plot);*valid=1; }
     else if(action==16)*valid=1;
     else if(action==17)return NX_ERROR_UNSUPPORTED; /* Owner rebuilds the view. */
+    else if(action==PHYSIM_INSPECT_NEXT&&v->model->scene.count) {
+        v->inspected=v->inspected%v->model->scene.count+1u;
+        *valid=1;
+    }
     else return NX_ERROR_ARGUMENT;
     return *valid?NX_OK:NX_ERROR_STATE;
 }
