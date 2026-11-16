@@ -1,6 +1,17 @@
 # Aetheri adoption: initial source assessment
 
-Content input/host release for B03/R06/R10/I01/I02/I08/A01/D08/P05/Q02/Q08.
+Original Physim model/plot/numeric/viewport seam for B03/R05/R10/R11/T05/L12/I01/P05/Q02/Q08.
+Consumer `7329212` runs27 unchanged Physim inputs from `01ccc27` against installed
+SDK `368cd38`. Twelve CTests pass across static/shared/sanitized Linux profiles;
+all241 times/nine channels compare with an independent original experiment run.
+Three headless RGB outputs match; four compiled consumer defects are rejected.
+This advances packet7/R11 with an actual model, not native application adoption.
+Original runner/workers, native input/IME/AX, full scene/camera/picking, approved
+app design, NexaCloud production and physical/human/performance gates stay open.
+All 103 IDs/priorities, historical evidence and remaining packets persist.
+[Evidence](physim-model-report.md)
+
+Historical `dc6a549` content input/host-release checkpoint for B03/R06/R10/I01/I02/I08/A01/D08/P05/Q02/Q08.
 Consumer `dc6a549` retains SDK `368cd38`, existing staging and worker code.
 36 installed CTests and twelve native workflows pass; 45 whole-body captures
 retain frame checks. The native input case exercises release-before-arm, 2x

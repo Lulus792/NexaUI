@@ -49,13 +49,21 @@ then releases its snapshot inside acquire. Its generation/resize tuple rejects
 late producer results after tab replacement. This is an example consumer
 policy, not a new SDK lifetime rule or a selected browser/guest engine.
 
+The [installed Physim consumer](../../examples/39_physim_consumer/README.md)
+uses the original documented pendulum experiment, its real measurement channels,
+scene objects and app-owned plot model. Numeric Apply computes an original-model
+replacement before publication; a live viewport lease blocks replacement and
+view destruction. The [source-bound model/presentation report](../quality/physim-model-report.md)
+separates those installed/headless checks from native application, production
+runner, camera/picking, IME/accessibility and physical adoption gates.
+
 `nx_viewport_surface_destroy` frees the NexaUI wrapper but does not destroy
 the application-owned source or pixels. The application may release those
 resources after all leases are complete. The
 [headless 3D shell](../../examples/15_3d_viewport_shell/README.md) demonstrates
 both a backing-scale resize and completion after rendering.
 
-This contract currently transports a CPU RGBA8 image. Native D3D12, Metal
-and Vulkan backends and direct GPU texture import are separate planned work;
-the software image path does not establish their synchronization or color
-management behavior.
+This contract transports a CPU RGBA8 image through ordinary bitmap commands.
+Native renderers can consume that bitmap path; direct native GPU texture import
+still needs a separate ownership/fence contract. These CPU examples do not
+establish driver, physical-display or color-management acceptance.

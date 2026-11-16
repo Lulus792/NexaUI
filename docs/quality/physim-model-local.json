@@ -1,0 +1,2817 @@
+{
+  "candidate": "7329212198127adc5350330be12b8e9843c66424",
+  "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+  "sdk_version": "0.1.33",
+  "physim_revision": "01ccc27a94ca611c9e9cdd8ccde0da426aee2378",
+  "consumer_inputs": [
+    {
+      "path": "examples/39_physim_consumer/CMakeLists.txt",
+      "sha256": "a45f0db21ab3857db5c20f6ae3b927ef26174e60a9446a17daf31aaf405fec11"
+    },
+    {
+      "path": "examples/39_physim_consumer/README.md",
+      "sha256": "7726daf25be2d3cc9fb86e7d651940580fe6df37e9f74fe5f5f4caf96872d918"
+    },
+    {
+      "path": "examples/39_physim_consumer/model.c",
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "path": "examples/39_physim_consumer/model.h",
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "path": "examples/39_physim_consumer/prepare.py",
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "path": "examples/39_physim_consumer/source-inputs.json",
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "path": "examples/39_physim_consumer/test_consumer.c",
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "path": "examples/39_physim_consumer/view.c",
+      "sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40"
+    },
+    {
+      "path": "examples/39_physim_consumer/view.h",
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    }
+  ],
+  "original_inputs": [
+    {
+      "path": "LICENSE",
+      "sha256": "66b6a25069bd502cd9ca73c68065c86bbf4f7d8c82a0e36ad0185b7473fe6015"
+    },
+    {
+      "path": "app/plot_view.c",
+      "sha256": "507f52080cc97dd92a3fc827a130bca12192f5104cc0a050ebea1de06e58a12f"
+    },
+    {
+      "path": "app/plot_view.h",
+      "sha256": "60207a43569e8f6ccab3bb1a4d0f9ca84aea186f81b90211a11c25f6ad173e10"
+    },
+    {
+      "path": "examples/documentation/pendulum_main.c",
+      "sha256": "131c0ae37c46354d094d93462d6461a00eedf5c0368decbdd4d4e9c8432e66ca"
+    },
+    {
+      "path": "include/physim/core.h",
+      "sha256": "04fd6d004b7c03e275e2fadb9cfad718b68a24e0580936b2c4d16bd9828f61ff"
+    },
+    {
+      "path": "include/physim/data.h",
+      "sha256": "cca3bf71d7773aee7f77e643a384f2c7f141d583502c5a85d259416bcb66d7ed"
+    },
+    {
+      "path": "include/physim/detail/build_origin.h",
+      "sha256": "370cd9881e8a6e2e8dc6018d31019b424283e8b5c4c356daaa102c448eec1793"
+    },
+    {
+      "path": "include/physim/diagnostic.h",
+      "sha256": "2a40420009aa207ed4d5f8d52a175dcb8b713ed8c1bf01daca79c9fa5f205182"
+    },
+    {
+      "path": "include/physim/experiment.h",
+      "sha256": "130a12fcbd76886b7541a8eeb16acd0c07a772d5004f2b997efe16aacd008fa7"
+    },
+    {
+      "path": "include/physim/log.h",
+      "sha256": "f03e7ec4c7972a82229814350edcb82ab76d2188c6e737cb974b24c9352d7c9d"
+    },
+    {
+      "path": "include/physim/math.h",
+      "sha256": "8be1b56e21ac2807f2f60f5c73cd259be2df60826a5b074042aeb5f56cf45c39"
+    },
+    {
+      "path": "include/physim/numerics.h",
+      "sha256": "9e13b85c13290aff5f0184002e21167b4cb29eef7378c797cae6bd201dac776b"
+    },
+    {
+      "path": "include/physim/snapshot.h",
+      "sha256": "f780febde829776b39c337445b838803062125979158ec5da61a71e9c322d3cd"
+    },
+    {
+      "path": "include/physim/units.h",
+      "sha256": "5a1cf4c9d6a791d348303b31a4aafbf14bbd2cc706bb80f880fba375cbc53089"
+    },
+    {
+      "path": "src/core.c",
+      "sha256": "16dcc1eb5d003b81fc009235165d948b02b5d1cdecae2c77c0a5afd5aa05db17"
+    },
+    {
+      "path": "src/curve_numeric.h",
+      "sha256": "a8821de6e5f524d5f688c93ab057e49088aede5f1ece66c0124f4e822859952b"
+    },
+    {
+      "path": "src/linear_numeric.h",
+      "sha256": "6905b3f8eb9857f23cfe846245adc095d38624e259cbbc2746ec1ae07242b7e4"
+    },
+    {
+      "path": "src/math.c",
+      "sha256": "67eb70bde15d3dcdbfc1a041ccef5c0318d54f8bdb049d6aa359134d2b71af15"
+    },
+    {
+      "path": "src/number_parse.h",
+      "sha256": "9d899815302e9fc125c437d57286152bd12aca290dc2021c43c8b0840473bfb1"
+    },
+    {
+      "path": "src/numerics.c",
+      "sha256": "44fb30fc9cc6e693ca56f3321edf4eac028d4abeeaa4b216fa42e5f9daeede42"
+    },
+    {
+      "path": "src/ode_numeric.h",
+      "sha256": "d0adba6005cfcf963740122d646dc795bc151687073a4131876886a3c13fb15e"
+    },
+    {
+      "path": "src/scalar_numeric.h",
+      "sha256": "8d7f5fbeb5be33fad03e24ef186e2c6422ae0f844ec4dbd48bc88ec1d133d3f3"
+    },
+    {
+      "path": "src/scene.c",
+      "sha256": "71f3ee7e11b08ec7c417557fb95557f66b1c1a68c014173863bf31e4c42babf6"
+    },
+    {
+      "path": "src/text_validation.h",
+      "sha256": "9d064793a58c2c25076f3ea36879c70eb11c09df86b55df928efc21b74ce83a5"
+    },
+    {
+      "path": "src/transform_numeric.h",
+      "sha256": "e7b9b948eb2307bf3de2fb9ed06a01d7a9609da60d99cb0a08ddd6389ff0f9c0"
+    },
+    {
+      "path": "src/units.c",
+      "sha256": "fcde4134dc771122a14ab1a96ff85c6d8dc285bc6c4246413057d1b18fe15928"
+    },
+    {
+      "path": "tests/test_plot_view.c",
+      "sha256": "63f8b6d6d17a24fcd006aab29b1cbfb5c7951783a3f80d9cd93005ff22fd5cac"
+    }
+  ],
+  "original_selected_worktree_diff": "",
+  "prepare": {
+    "command": [
+      "python3",
+      "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/prepare.py",
+      "--source-repo",
+      "/mnt/d/Physim",
+      "--output",
+      "/tmp/nexaui-physim296/original"
+    ],
+    "exit": 0,
+    "log": "physim296-prepare.log",
+    "sha256": "8d7e19abde0e99e5e4d1684fc625eab63d62dcdf9aa8b4595c2c2d28c2a20fc6",
+    "git_config": {
+      "safe.directory": "/mnt/d/Physim",
+      "scope": "child environment only; no global configuration changed"
+    }
+  },
+  "profiles": [
+    {
+      "profile": "release",
+      "cases": [
+        "physim_original_plot",
+        "physim_consumer_model",
+        "physim_consumer_view",
+        "physim_consumer_failure"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/core.c",
+            "bytes": 27908,
+            "sha256": "16dcc1eb5d003b81fc009235165d948b02b5d1cdecae2c77c0a5afd5aa05db17"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+            "bytes": 70456,
+            "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o -c /tmp/nexaui-physim296/original/src/core.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/numerics.c",
+            "bytes": 13909,
+            "sha256": "44fb30fc9cc6e693ca56f3321edf4eac028d4abeeaa4b216fa42e5f9daeede42"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+            "bytes": 33064,
+            "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o -c /tmp/nexaui-physim296/original/src/numerics.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/units.c",
+            "bytes": 7319,
+            "sha256": "fcde4134dc771122a14ab1a96ff85c6d8dc285bc6c4246413057d1b18fe15928"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+            "bytes": 15752,
+            "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o -c /tmp/nexaui-physim296/original/src/units.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/scene.c",
+            "bytes": 9540,
+            "sha256": "71f3ee7e11b08ec7c417557fb95557f66b1c1a68c014173863bf31e4c42babf6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+            "bytes": 16328,
+            "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o -c /tmp/nexaui-physim296/original/src/scene.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/math.c",
+            "bytes": 15232,
+            "sha256": "67eb70bde15d3dcdbfc1a041ccef5c0318d54f8bdb049d6aa359134d2b71af15"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+            "bytes": 54496,
+            "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o -c /tmp/nexaui-physim296/original/src/math.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/app/plot_view.c",
+            "bytes": 3325,
+            "sha256": "507f52080cc97dd92a3fc827a130bca12192f5104cc0a050ebea1de06e58a12f"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+            "bytes": 6304,
+            "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o -c /tmp/nexaui-physim296/original/app/plot_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c",
+            "bytes": 7318,
+            "sha256": "131c0ae37c46354d094d93462d6461a00eedf5c0368decbdd4d4e9c8432e66ca"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+            "bytes": 19064,
+            "sha256": "0a55c1177eac41648391df4b7ed4d3c7aee751bff01e8c726f51e204f3fc02b6"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o -c /tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.c",
+            "bytes": 2657,
+            "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_consumer.dir/model.c.o",
+            "bytes": 3824,
+            "sha256": "793a7846a46198d1d7fe4e4709dac49081b4947b8c65b9e89ae4d5f631b0292b"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer.dir/model.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.c",
+            "bytes": 10753,
+            "sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_consumer.dir/view.c.o",
+            "bytes": 15480,
+            "sha256": "4fe80da0e9c24aff6257380a35a3d1e709184403f4b937c03ab2815967cb2064"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer.dir/view.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/tests/test_plot_view.c",
+            "bytes": 3308,
+            "sha256": "63f8b6d6d17a24fcd006aab29b1cbfb5c7951783a3f80d9cd93005ff22fd5cac"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+            "bytes": 15152,
+            "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o -c /tmp/nexaui-physim296/original/tests/test_plot_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/test_consumer.c",
+            "bytes": 11536,
+            "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+            "bytes": 31864,
+            "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer_test.dir/test_consumer.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/test_consumer.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-physim296/release/libphysim_original.a",
+          "bytes": 218846,
+          "sha256": "52f84ec4a8e419c0ace1273f0b913dc8aed47ee6d558d8e51263a20c34ea631e"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/release/libphysim_consumer.a",
+          "bytes": 19636,
+          "sha256": "2e234c877cb54d3fb918fb253853ecbdaf2b538c6750a469308eba3597b56e62"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/release/physim_original_plot_test",
+          "bytes": 22904,
+          "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/release/physim_consumer_test",
+          "bytes": 901352,
+          "sha256": "593480a8cabdf3282a3f16ba1643ad1c9036d692ccc9d4b738f4fbc6292bdff0"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/release/compile_commands.json",
+          "bytes": 6632,
+          "sha256": "58635a99ac99e3fac07882ca56a08cc46fcec2896e22e0d55aa7c5817e6d3381"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/release/CMakeCache.txt",
+          "bytes": 19777,
+          "sha256": "7c6c18b5f9da028945c673073a5187e37dc92d831024105849efa34c9f25f3d5"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/release/tests.xml",
+          "bytes": 1075,
+          "sha256": "7d2e8e6be315098496826c7aacd5075c07b2cce529106a0393889bd3f300c540"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+        "bytes": 1185356,
+        "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+      },
+      "dynamic": "\nDynamic section at offset 0xcca30 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x92c9f\n 0x0000000000000019 (INIT_ARRAY)         0xcc470\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xcc478\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xe88\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1632 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xcdc40\n 0x0000000000000002 (PLTRELSZ)           2352 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x50a8\n 0x0000000000000007 (RELA)               0x15f8\n 0x0000000000000008 (RELASZ)             15024 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x15d8\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x14e8\n 0x000000006ffffff9 (RELACOUNT)          592\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "shared",
+      "cases": [
+        "physim_original_plot",
+        "physim_consumer_model",
+        "physim_consumer_view",
+        "physim_consumer_failure"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/core.c",
+            "bytes": 27908,
+            "sha256": "16dcc1eb5d003b81fc009235165d948b02b5d1cdecae2c77c0a5afd5aa05db17"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+            "bytes": 70456,
+            "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o -c /tmp/nexaui-physim296/original/src/core.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/numerics.c",
+            "bytes": 13909,
+            "sha256": "44fb30fc9cc6e693ca56f3321edf4eac028d4abeeaa4b216fa42e5f9daeede42"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+            "bytes": 33064,
+            "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o -c /tmp/nexaui-physim296/original/src/numerics.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/units.c",
+            "bytes": 7319,
+            "sha256": "fcde4134dc771122a14ab1a96ff85c6d8dc285bc6c4246413057d1b18fe15928"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+            "bytes": 15752,
+            "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o -c /tmp/nexaui-physim296/original/src/units.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/scene.c",
+            "bytes": 9540,
+            "sha256": "71f3ee7e11b08ec7c417557fb95557f66b1c1a68c014173863bf31e4c42babf6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+            "bytes": 16328,
+            "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o -c /tmp/nexaui-physim296/original/src/scene.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/math.c",
+            "bytes": 15232,
+            "sha256": "67eb70bde15d3dcdbfc1a041ccef5c0318d54f8bdb049d6aa359134d2b71af15"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+            "bytes": 54496,
+            "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o -c /tmp/nexaui-physim296/original/src/math.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/app/plot_view.c",
+            "bytes": 3325,
+            "sha256": "507f52080cc97dd92a3fc827a130bca12192f5104cc0a050ebea1de06e58a12f"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+            "bytes": 6304,
+            "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o -c /tmp/nexaui-physim296/original/app/plot_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c",
+            "bytes": 7318,
+            "sha256": "131c0ae37c46354d094d93462d6461a00eedf5c0368decbdd4d4e9c8432e66ca"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+            "bytes": 19064,
+            "sha256": "0a55c1177eac41648391df4b7ed4d3c7aee751bff01e8c726f51e204f3fc02b6"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o -c /tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.c",
+            "bytes": 2657,
+            "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_consumer.dir/model.c.o",
+            "bytes": 3824,
+            "sha256": "793a7846a46198d1d7fe4e4709dac49081b4947b8c65b9e89ae4d5f631b0292b"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer.dir/model.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.c",
+            "bytes": 10753,
+            "sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_consumer.dir/view.c.o",
+            "bytes": 15480,
+            "sha256": "4fe80da0e9c24aff6257380a35a3d1e709184403f4b937c03ab2815967cb2064"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer.dir/view.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/tests/test_plot_view.c",
+            "bytes": 3308,
+            "sha256": "63f8b6d6d17a24fcd006aab29b1cbfb5c7951783a3f80d9cd93005ff22fd5cac"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+            "bytes": 15152,
+            "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o -c /tmp/nexaui-physim296/original/tests/test_plot_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/test_consumer.c",
+            "bytes": 11536,
+            "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+            "bytes": 31864,
+            "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Werror -O3 -DNDEBUG -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer_test.dir/test_consumer.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/test_consumer.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-physim296/shared/libphysim_original.a",
+          "bytes": 218846,
+          "sha256": "52f84ec4a8e419c0ace1273f0b913dc8aed47ee6d558d8e51263a20c34ea631e"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/shared/libphysim_consumer.a",
+          "bytes": 19636,
+          "sha256": "2e234c877cb54d3fb918fb253853ecbdaf2b538c6750a469308eba3597b56e62"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/shared/physim_original_plot_test",
+          "bytes": 22904,
+          "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/shared/physim_consumer_test",
+          "bytes": 97400,
+          "sha256": "b8eafeaa9735389201f76dbbd386ff32cb5c0f80ede5342c70ac45fd6287f7bb"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/shared/compile_commands.json",
+          "bytes": 6655,
+          "sha256": "5f98ddc9fe54fc82362a5b20368d079fc306b20be1801dab4103b738cb6e700d"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/shared/CMakeCache.txt",
+          "bytes": 19771,
+          "sha256": "b0a584786b13df03e0f2b9ce2315df32615111171cc20bcbb24e66e4e61de8bf"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/shared/tests.xml",
+          "bytes": 1075,
+          "sha256": "adbe935b40f19ae1ae2f57f25996dabbb4b8a2a980fc1334419d881702f39b92"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/shared-prefix/lib/libnexaui.so.0.1.33",
+        "bytes": 934464,
+        "sha256": "fa3d43cb8d50f171ee3e008e8dd723081149208557b8ecd5cf243b7a56d9ab31"
+      },
+      "dynamic": "\nDynamic section at offset 0x14bf0 contains 26 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000001d (RUNPATH)            Library runpath: [/tmp/nexaui-ime-handoff202/shared-prefix/lib]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x10ca6\n 0x0000000000000019 (INIT_ARRAY)         0x15ad0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x15ad8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x988\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1022 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x15dd0\n 0x0000000000000002 (PLTRELSZ)           1440 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x1040\n 0x0000000000000007 (RELA)               0xd88\n 0x0000000000000008 (RELASZ)             696 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          23\n 0x0000000000000000 (NULL)               0x0\n"
+    },
+    {
+      "profile": "asan",
+      "cases": [
+        "physim_original_plot",
+        "physim_consumer_model",
+        "physim_consumer_view",
+        "physim_consumer_failure"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/core.c",
+            "bytes": 27908,
+            "sha256": "16dcc1eb5d003b81fc009235165d948b02b5d1cdecae2c77c0a5afd5aa05db17"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+            "bytes": 382920,
+            "sha256": "2a02d5b4949d0a1578db442a25aef9d6bb5f98a6dd1543e8b8ed8f2617b91c76"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o -c /tmp/nexaui-physim296/original/src/core.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/numerics.c",
+            "bytes": 13909,
+            "sha256": "44fb30fc9cc6e693ca56f3321edf4eac028d4abeeaa4b216fa42e5f9daeede42"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+            "bytes": 198000,
+            "sha256": "df4bfd81b9dfcb70e5e27a5dc96356b0a29f36109cdfb0f73d3990e28b11d408"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o -c /tmp/nexaui-physim296/original/src/numerics.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/units.c",
+            "bytes": 7319,
+            "sha256": "fcde4134dc771122a14ab1a96ff85c6d8dc285bc6c4246413057d1b18fe15928"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+            "bytes": 70744,
+            "sha256": "09d727cf35e57e45521511c4fb0aefcda6452d6099a07e0e30fdf4c463d15052"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o -c /tmp/nexaui-physim296/original/src/units.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/scene.c",
+            "bytes": 9540,
+            "sha256": "71f3ee7e11b08ec7c417557fb95557f66b1c1a68c014173863bf31e4c42babf6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+            "bytes": 139120,
+            "sha256": "88ffeda98e67e5793170c3d6c68379eeecce15f49c98c0c75e69e100ad5eb4c8"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o -c /tmp/nexaui-physim296/original/src/scene.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/src/math.c",
+            "bytes": 15232,
+            "sha256": "67eb70bde15d3dcdbfc1a041ccef5c0318d54f8bdb049d6aa359134d2b71af15"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+            "bytes": 265616,
+            "sha256": "3a7ad16a79b823118747dc1a973b37578de1f842a7238b43e3c890974b47d87a"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o -c /tmp/nexaui-physim296/original/src/math.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/app/plot_view.c",
+            "bytes": 3325,
+            "sha256": "507f52080cc97dd92a3fc827a130bca12192f5104cc0a050ebea1de06e58a12f"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+            "bytes": 52808,
+            "sha256": "8c89dec442650362208c94aac0c6bf8e9052f880202095a81c947d7b3de5b723"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o -c /tmp/nexaui-physim296/original/app/plot_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c",
+            "bytes": 7318,
+            "sha256": "131c0ae37c46354d094d93462d6461a00eedf5c0368decbdd4d4e9c8432e66ca"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+            "bytes": 135944,
+            "sha256": "2069d5a16a0ac1b12e5f0c5268e9afbd40bf9b6452b0d181b59bbeb771c2fc5d"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -ffunction-sections -fdata-sections -o CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o -c /tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.c",
+            "bytes": 2657,
+            "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_consumer.dir/model.c.o",
+            "bytes": 40272,
+            "sha256": "3d73f02d9223c38861714685158af5a0792f9c294c6e296e27ff5e065cbf6438"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer.dir/model.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.c",
+            "bytes": 10753,
+            "sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_consumer.dir/view.c.o",
+            "bytes": 136728,
+            "sha256": "df91a743b995ef9eba32c2f9f204b126712937852e1445503a8868b99506d364"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer.dir/view.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/original/tests/test_plot_view.c",
+            "bytes": 3308,
+            "sha256": "63f8b6d6d17a24fcd006aab29b1cbfb5c7951783a3f80d9cd93005ff22fd5cac"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+            "bytes": 46064,
+            "sha256": "f8a5c5cdedc7fcd85ed922d8d1f9446fb0c263e852dce58b764ad580bc79fc67"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o -c /tmp/nexaui-physim296/original/tests/test_plot_view.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/test_consumer.c",
+            "bytes": 11536,
+            "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+          },
+          "object": {
+            "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+            "bytes": 191648,
+            "sha256": "3bd3573f6fac3d3109b9eda08b9ab4e6fcce48b16cc8e35a3749bddd6d66d351"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/. -I/tmp/nexaui-physim296/original/include -I/tmp/nexaui-physim296/original/app -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -o CMakeFiles/physim_consumer_test.dir/test_consumer.c.o -c /tmp/nexaui-physim296/consumer/examples/39_physim_consumer/test_consumer.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-physim296/asan/libphysim_original.a",
+          "bytes": 1249298,
+          "sha256": "7116a17db261f85b1a372d9168c056b4b6a4252569245b15108ce66d40a8c238"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/asan/libphysim_consumer.a",
+          "bytes": 177394,
+          "sha256": "eaa0671b72361cb80cfd51df39830d3558341b602ef9c2af17b09a7ee1936327"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/asan/physim_original_plot_test",
+          "bytes": 2764584,
+          "sha256": "24107289800bb37d8b35380922538f45e7bc8ffcc70d0667ff424ac0dd0e8ff1"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/asan/physim_consumer_test",
+          "bytes": 10817624,
+          "sha256": "ab3e7d2c2e9ba36ba0b178292830dea2be33aee1a2745cca428bb2880bc5f99a"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/asan/compile_commands.json",
+          "bytes": 7074,
+          "sha256": "0e5b654b8bdf7fac8404d60fcfdb492351395c4c3f846b24b805b8cc7e98aaf5"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/asan/CMakeCache.txt",
+          "bytes": 19810,
+          "sha256": "e7ae3145e25017cd2dab43c774977a271c1a4e69095a06f15e363460dd7dbb66"
+        },
+        {
+          "path": "/tmp/nexaui-physim296/asan/tests.xml",
+          "bytes": 1070,
+          "sha256": "4d7d6bc019964728097fa54d55ce36b4c3c3fcdd4e1375d726e706abee3025ff"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/asan-prefix/lib/libnexaui.a",
+        "bytes": 11569530,
+        "sha256": "cefbf73fb7b7a8ce644d193f3280be5dc98f4bbf0e4ac608b097f663b9539d67"
+      },
+      "dynamic": "\nDynamic section at offset 0x5999e0 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x188000\n 0x000000000000000d (FINI)               0x50314b\n 0x0000000000000019 (INIT_ARRAY)         0x597b98\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x597bb0\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x14a98\n 0x0000000000000006 (SYMTAB)             0x52d0\n 0x000000000000000a (STRSZ)              59725 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x59ac00\n 0x0000000000000002 (PLTRELSZ)           1392 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x1874b0\n 0x0000000000000007 (RELA)               0x248e0\n 0x0000000000000008 (RELASZ)             1453008 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x24890\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x233e6\n 0x000000006ffffff9 (RELACOUNT)          60469\n 0x0000000000000000 (NULL)               0x0\n"
+    }
+  ],
+  "ctests": 12,
+  "native_tasks": 0,
+  "body_capture_count": 0,
+  "ppm_count": 3,
+  "images": [
+    {
+      "profile": "release",
+      "path": "/tmp/nexaui-physim296/release/physim-view.ppm",
+      "bytes": 1344015,
+      "sha256": "fcb578018b10e121e37bdbc2a1e112b5d169c46a987058cac6e6aa6b46e9fea9",
+      "width": 800,
+      "height": 560,
+      "rgb_sha256": "ed0d86def21aa137d837490b303835cc63decd36706135925bb52ea836430449"
+    },
+    {
+      "profile": "shared",
+      "path": "/tmp/nexaui-physim296/shared/physim-view.ppm",
+      "bytes": 1344015,
+      "sha256": "fcb578018b10e121e37bdbc2a1e112b5d169c46a987058cac6e6aa6b46e9fea9",
+      "width": 800,
+      "height": 560,
+      "rgb_sha256": "ed0d86def21aa137d837490b303835cc63decd36706135925bb52ea836430449"
+    },
+    {
+      "profile": "asan",
+      "path": "/tmp/nexaui-physim296/asan/physim-view.ppm",
+      "bytes": 1344015,
+      "sha256": "fcb578018b10e121e37bdbc2a1e112b5d169c46a987058cac6e6aa6b46e9fea9",
+      "width": 800,
+      "height": 560,
+      "rgb_sha256": "ed0d86def21aa137d837490b303835cc63decd36706135925bb52ea836430449"
+    }
+  ],
+  "cross_profile_rgb_equal": true,
+  "negative": {
+    "candidate": "7329212198127adc5350330be12b8e9843c66424",
+    "mutations": [
+      {
+        "variant": "wrong-channel",
+        "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/model.c",
+        "before_sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e",
+        "after_sha256": "a889037d5069f9664a4da74f75b27cacccb79193f4a482d1e9770c5c490f0363",
+        "case": "model"
+      },
+      {
+        "variant": "no-model-apply",
+        "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/view.c",
+        "before_sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40",
+        "after_sha256": "fd03d3f7e10a8fd91d09ca0a535e3fb6355536403fbd853952d8b65b059c1793",
+        "case": "view"
+      },
+      {
+        "variant": "no-original-zoom",
+        "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/view.c",
+        "before_sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40",
+        "after_sha256": "9bc427ccb81c04f54d601ba8e727b8931b0e49038a6665bb9996b23bf5938227",
+        "case": "view"
+      },
+      {
+        "variant": "omit-bob-pixels",
+        "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/view.c",
+        "before_sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40",
+        "after_sha256": "9419917028ab7de68f94de8f84373213c02679d735d5f9280d1d576a7d34c5ea",
+        "case": "view"
+      }
+    ],
+    "commands": [
+      {
+        "variant": "wrong-channel",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer",
+          "-B",
+          "/tmp/nexaui-physim297/wrong-channel/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DPHYSIM_SOURCE_DIR=/tmp/nexaui-physim296/original",
+          "-DPHYSIM_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 7.040590392,
+        "log": "physim297-wrong-channel-configure.log",
+        "sha256": "847e9bf9429a8081bcd7c04192c80b1e2c87abc3b620e1b8b028aee4233cc944"
+      },
+      {
+        "variant": "wrong-channel",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-physim297/wrong-channel/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 2.7268550860000005,
+        "log": "physim297-wrong-channel-build.log",
+        "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+      },
+      {
+        "variant": "wrong-channel",
+        "phase": "unit",
+        "command": [
+          "/tmp/nexaui-physim297/wrong-channel/build/physim_consumer_test",
+          "model",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "/tmp/nexaui-physim297/wrong-channel/build/unexpected.ppm"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.007153104000000354,
+        "log": "physim297-wrong-channel-unit.log",
+        "sha256": "ee39d5355c64c9597e00b5432638bc09378e158d1b73d28b8c625f63b11f24d9"
+      },
+      {
+        "variant": "no-model-apply",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer",
+          "-B",
+          "/tmp/nexaui-physim297/no-model-apply/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DPHYSIM_SOURCE_DIR=/tmp/nexaui-physim296/original",
+          "-DPHYSIM_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 5.131159437999999,
+        "log": "physim297-no-model-apply-configure.log",
+        "sha256": "8486f0467f1b41258e2929622b80707634346acaba2707682a2b07e273e7813f"
+      },
+      {
+        "variant": "no-model-apply",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-physim297/no-model-apply/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 3.0783792299999995,
+        "log": "physim297-no-model-apply-build.log",
+        "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+      },
+      {
+        "variant": "no-model-apply",
+        "phase": "unit",
+        "command": [
+          "/tmp/nexaui-physim297/no-model-apply/build/physim_consumer_test",
+          "view",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "/tmp/nexaui-physim297/no-model-apply/build/unexpected.ppm"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.11888928100000129,
+        "log": "physim297-no-model-apply-unit.log",
+        "sha256": "431cfbf62d84fc9c52139860b1c2b57a020dfbea42f1013c2aaf15cf9d94a114"
+      },
+      {
+        "variant": "no-original-zoom",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer",
+          "-B",
+          "/tmp/nexaui-physim297/no-original-zoom/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DPHYSIM_SOURCE_DIR=/tmp/nexaui-physim296/original",
+          "-DPHYSIM_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 5.634605317999998,
+        "log": "physim297-no-original-zoom-configure.log",
+        "sha256": "dce9eb54c3fdc4469969aa6736fc884e0b831c34bf0f6865eaafe09ae1363874"
+      },
+      {
+        "variant": "no-original-zoom",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-physim297/no-original-zoom/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 2.475468609,
+        "log": "physim297-no-original-zoom-build.log",
+        "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+      },
+      {
+        "variant": "no-original-zoom",
+        "phase": "unit",
+        "command": [
+          "/tmp/nexaui-physim297/no-original-zoom/build/physim_consumer_test",
+          "view",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "/tmp/nexaui-physim297/no-original-zoom/build/unexpected.ppm"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.06734738499999793,
+        "log": "physim297-no-original-zoom-unit.log",
+        "sha256": "118ee7d17692a76a2c24799a0dbc8050806fe899e049612a679d515099f3cc3d"
+      },
+      {
+        "variant": "omit-bob-pixels",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer",
+          "-B",
+          "/tmp/nexaui-physim297/omit-bob-pixels/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DPHYSIM_SOURCE_DIR=/tmp/nexaui-physim296/original",
+          "-DPHYSIM_TEST_FONT=/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 4.478774561000002,
+        "log": "physim297-omit-bob-pixels-configure.log",
+        "sha256": "db3704bdc47c68c6784b04d3c5033e31b2373c4df4c0dd4fe45ab1c7f753775e"
+      },
+      {
+        "variant": "omit-bob-pixels",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-physim297/omit-bob-pixels/build",
+          "--parallel",
+          "2"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 2.6255246360000015,
+        "log": "physim297-omit-bob-pixels-build.log",
+        "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+      },
+      {
+        "variant": "omit-bob-pixels",
+        "phase": "unit",
+        "command": [
+          "/tmp/nexaui-physim297/omit-bob-pixels/build/physim_consumer_test",
+          "view",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "/tmp/nexaui-physim297/omit-bob-pixels/build/unexpected.ppm"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 0.03584476300000006,
+        "log": "physim297-omit-bob-pixels-unit.log",
+        "sha256": "126e2ab8ee5b413334e08b47d8418fac0d49dc7787a71fd1b020c21a70e91bfd"
+      },
+      {
+        "variant": "source-hash",
+        "phase": "refusal",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer",
+          "-B",
+          "/tmp/nexaui-physim297/changed-build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DPHYSIM_SOURCE_DIR=/tmp/nexaui-physim297/changed-original"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "log": "physim297-source-hash.log",
+        "sha256": "fa41e58b6b4db82bf0459edfdbd1ff09523365bda758c79e158e8e6acbd458b5"
+      },
+      {
+        "variant": "existing-export",
+        "phase": "refusal",
+        "command": [
+          "python3",
+          "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/prepare.py",
+          "--source-repo",
+          "/mnt/d/Physim",
+          "--output",
+          "/tmp/nexaui-physim296/original"
+        ],
+        "exit": 2,
+        "expected_exit": 2,
+        "log": "physim297-existing-export.log",
+        "sha256": "dcdef5c106e059758252b03fd30e080d3e4ff3d6313412b49469668dd7a52392"
+      },
+      {
+        "variant": "nested-export",
+        "phase": "refusal",
+        "command": [
+          "python3",
+          "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/prepare.py",
+          "--source-repo",
+          "/mnt/d/Physim",
+          "--output",
+          "/mnt/d/Physim/nexaui-forbidden-export"
+        ],
+        "exit": 2,
+        "expected_exit": 2,
+        "log": "physim297-nested-export.log",
+        "sha256": "d5c4452a62dcef5cb784638e9a9efdd9a2bcd0e8bc92fc05f97af79520c157b4"
+      }
+    ]
+  },
+  "pilot_outcomes": [
+    {
+      "number": 293,
+      "exits": [
+        0,
+        0,
+        8
+      ]
+    },
+    {
+      "number": 294,
+      "exits": [
+        0,
+        0,
+        0
+      ]
+    },
+    {
+      "number": 295,
+      "exits": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "environment": {
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "compiler": "Alpine clang version 22.1.3\nTarget: x86_64-alpine-linux-musl\nThread model: posix\nInstalledDir: /usr/lib/llvm22/bin\nConfiguration file: /etc/clang22/x86_64-alpine-linux-musl.cfg\n",
+    "borrowed_font": {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+      "bytes": 1045720,
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+    },
+    "sanitizers": {
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+    }
+  },
+  "previews": [
+    {
+      "path": "/mnt/d/NexaUI/out/physim298-view.png",
+      "bytes": 18455,
+      "sha256": "56342b534679a8b5102b51cd1206c85cefd3a30382e14b9bd4354e0c005c23fb",
+      "source": {
+        "path": "/tmp/nexaui-physim296/release/physim-view.ppm",
+        "bytes": 1344015,
+        "sha256": "fcb578018b10e121e37bdbc2a1e112b5d169c46a987058cac6e6aa6b46e9fea9"
+      },
+      "rgb_sha256": "ed0d86def21aa137d837490b303835cc63decd36706135925bb52ea836430449"
+    }
+  ],
+  "sdk_source_unchanged": true,
+  "sdk_receipt": {
+    "path": "/mnt/d/NexaUI/out/ime-handoff206-final.json",
+    "bytes": 117581,
+    "sha256": "755444049b7934cee07cfab87e31b8d18847670f129311b36d49535397cf5ec2"
+  },
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-physim-model298.tar.gz",
+    "bytes": 9073901,
+    "sha256": "8a96200de2c0843f75c4f085f1519b84f12793c6ebe4ddf0d758e30f1264cf3f",
+    "verified_members": 272
+  },
+  "manifest": [
+    {
+      "member": "consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3445,
+      "sha256": "a45f0db21ab3857db5c20f6ae3b927ef26174e60a9446a17daf31aaf405fec11"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/README.md",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/README.md",
+      "bytes": 6532,
+      "sha256": "7726daf25be2d3cc9fb86e7d651940580fe6df37e9f74fe5f5f4caf96872d918"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2657,
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11536,
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10753,
+      "sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40"
+    },
+    {
+      "member": "consumer/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim296/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "original/LICENSE",
+      "path": "/tmp/nexaui-physim296/original/LICENSE",
+      "bytes": 1076,
+      "sha256": "66b6a25069bd502cd9ca73c68065c86bbf4f7d8c82a0e36ad0185b7473fe6015"
+    },
+    {
+      "member": "original/app/plot_view.c",
+      "path": "/tmp/nexaui-physim296/original/app/plot_view.c",
+      "bytes": 3325,
+      "sha256": "507f52080cc97dd92a3fc827a130bca12192f5104cc0a050ebea1de06e58a12f"
+    },
+    {
+      "member": "original/app/plot_view.h",
+      "path": "/tmp/nexaui-physim296/original/app/plot_view.h",
+      "bytes": 834,
+      "sha256": "60207a43569e8f6ccab3bb1a4d0f9ca84aea186f81b90211a11c25f6ad173e10"
+    },
+    {
+      "member": "original/examples/documentation/pendulum_main.c",
+      "path": "/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c",
+      "bytes": 7318,
+      "sha256": "131c0ae37c46354d094d93462d6461a00eedf5c0368decbdd4d4e9c8432e66ca"
+    },
+    {
+      "member": "original/include/physim/core.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/core.h",
+      "bytes": 4526,
+      "sha256": "04fd6d004b7c03e275e2fadb9cfad718b68a24e0580936b2c4d16bd9828f61ff"
+    },
+    {
+      "member": "original/include/physim/data.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/data.h",
+      "bytes": 5048,
+      "sha256": "cca3bf71d7773aee7f77e643a384f2c7f141d583502c5a85d259416bcb66d7ed"
+    },
+    {
+      "member": "original/include/physim/detail/build_origin.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/detail/build_origin.h",
+      "bytes": 620,
+      "sha256": "370cd9881e8a6e2e8dc6018d31019b424283e8b5c4c356daaa102c448eec1793"
+    },
+    {
+      "member": "original/include/physim/diagnostic.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/diagnostic.h",
+      "bytes": 2438,
+      "sha256": "2a40420009aa207ed4d5f8d52a175dcb8b713ed8c1bf01daca79c9fa5f205182"
+    },
+    {
+      "member": "original/include/physim/experiment.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/experiment.h",
+      "bytes": 12103,
+      "sha256": "130a12fcbd76886b7541a8eeb16acd0c07a772d5004f2b997efe16aacd008fa7"
+    },
+    {
+      "member": "original/include/physim/log.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/log.h",
+      "bytes": 1210,
+      "sha256": "f03e7ec4c7972a82229814350edcb82ab76d2188c6e737cb974b24c9352d7c9d"
+    },
+    {
+      "member": "original/include/physim/math.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/math.h",
+      "bytes": 5245,
+      "sha256": "8be1b56e21ac2807f2f60f5c73cd259be2df60826a5b074042aeb5f56cf45c39"
+    },
+    {
+      "member": "original/include/physim/numerics.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/numerics.h",
+      "bytes": 6028,
+      "sha256": "9e13b85c13290aff5f0184002e21167b4cb29eef7378c797cae6bd201dac776b"
+    },
+    {
+      "member": "original/include/physim/snapshot.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/snapshot.h",
+      "bytes": 1414,
+      "sha256": "f780febde829776b39c337445b838803062125979158ec5da61a71e9c322d3cd"
+    },
+    {
+      "member": "original/include/physim/units.h",
+      "path": "/tmp/nexaui-physim296/original/include/physim/units.h",
+      "bytes": 2042,
+      "sha256": "5a1cf4c9d6a791d348303b31a4aafbf14bbd2cc706bb80f880fba375cbc53089"
+    },
+    {
+      "member": "original/src/core.c",
+      "path": "/tmp/nexaui-physim296/original/src/core.c",
+      "bytes": 27908,
+      "sha256": "16dcc1eb5d003b81fc009235165d948b02b5d1cdecae2c77c0a5afd5aa05db17"
+    },
+    {
+      "member": "original/src/curve_numeric.h",
+      "path": "/tmp/nexaui-physim296/original/src/curve_numeric.h",
+      "bytes": 4410,
+      "sha256": "a8821de6e5f524d5f688c93ab057e49088aede5f1ece66c0124f4e822859952b"
+    },
+    {
+      "member": "original/src/linear_numeric.h",
+      "path": "/tmp/nexaui-physim296/original/src/linear_numeric.h",
+      "bytes": 4664,
+      "sha256": "6905b3f8eb9857f23cfe846245adc095d38624e259cbbc2746ec1ae07242b7e4"
+    },
+    {
+      "member": "original/src/math.c",
+      "path": "/tmp/nexaui-physim296/original/src/math.c",
+      "bytes": 15232,
+      "sha256": "67eb70bde15d3dcdbfc1a041ccef5c0318d54f8bdb049d6aa359134d2b71af15"
+    },
+    {
+      "member": "original/src/number_parse.h",
+      "path": "/tmp/nexaui-physim296/original/src/number_parse.h",
+      "bytes": 720,
+      "sha256": "9d899815302e9fc125c437d57286152bd12aca290dc2021c43c8b0840473bfb1"
+    },
+    {
+      "member": "original/src/numerics.c",
+      "path": "/tmp/nexaui-physim296/original/src/numerics.c",
+      "bytes": 13909,
+      "sha256": "44fb30fc9cc6e693ca56f3321edf4eac028d4abeeaa4b216fa42e5f9daeede42"
+    },
+    {
+      "member": "original/src/ode_numeric.h",
+      "path": "/tmp/nexaui-physim296/original/src/ode_numeric.h",
+      "bytes": 2923,
+      "sha256": "d0adba6005cfcf963740122d646dc795bc151687073a4131876886a3c13fb15e"
+    },
+    {
+      "member": "original/src/scalar_numeric.h",
+      "path": "/tmp/nexaui-physim296/original/src/scalar_numeric.h",
+      "bytes": 4080,
+      "sha256": "8d7f5fbeb5be33fad03e24ef186e2c6422ae0f844ec4dbd48bc88ec1d133d3f3"
+    },
+    {
+      "member": "original/src/scene.c",
+      "path": "/tmp/nexaui-physim296/original/src/scene.c",
+      "bytes": 9540,
+      "sha256": "71f3ee7e11b08ec7c417557fb95557f66b1c1a68c014173863bf31e4c42babf6"
+    },
+    {
+      "member": "original/src/text_validation.h",
+      "path": "/tmp/nexaui-physim296/original/src/text_validation.h",
+      "bytes": 1463,
+      "sha256": "9d064793a58c2c25076f3ea36879c70eb11c09df86b55df928efc21b74ce83a5"
+    },
+    {
+      "member": "original/src/transform_numeric.h",
+      "path": "/tmp/nexaui-physim296/original/src/transform_numeric.h",
+      "bytes": 10919,
+      "sha256": "e7b9b948eb2307bf3de2fb9ed06a01d7a9609da60d99cb0a08ddd6389ff0f9c0"
+    },
+    {
+      "member": "original/src/units.c",
+      "path": "/tmp/nexaui-physim296/original/src/units.c",
+      "bytes": 7319,
+      "sha256": "fcde4134dc771122a14ab1a96ff85c6d8dc285bc6c4246413057d1b18fe15928"
+    },
+    {
+      "member": "original/tests/test_plot_view.c",
+      "path": "/tmp/nexaui-physim296/original/tests/test_plot_view.c",
+      "bytes": 3308,
+      "sha256": "63f8b6d6d17a24fcd006aab29b1cbfb5c7951783a3f80d9cd93005ff22fd5cac"
+    },
+    {
+      "member": "logs/physim296-prepare.log",
+      "path": "/mnt/d/NexaUI/out/physim296-prepare.log",
+      "bytes": 82,
+      "sha256": "8d7e19abde0e99e5e4d1684fc625eab63d62dcdf9aa8b4595c2c2d28c2a20fc6"
+    },
+    {
+      "member": "logs/physim296-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim296-release-configure.log",
+      "bytes": 822,
+      "sha256": "29dbe450b2113dfb71bd7c18ba9984c05de69d6f4633f4f9d1ac9f78d7787f1c"
+    },
+    {
+      "member": "logs/physim296-release-build.log",
+      "path": "/mnt/d/NexaUI/out/physim296-release-build.log",
+      "bytes": 1278,
+      "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+    },
+    {
+      "member": "logs/physim296-release-test.log",
+      "path": "/mnt/d/NexaUI/out/physim296-release-test.log",
+      "bytes": 2151,
+      "sha256": "5f8627cd16a60ccaff11bedfc251b9a45f98250d4c5b89f55b99b718cda96442"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "bytes": 70456,
+      "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "bytes": 33064,
+      "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "bytes": 15752,
+      "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "bytes": 16328,
+      "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "bytes": 54496,
+      "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "bytes": 6304,
+      "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "bytes": 19064,
+      "sha256": "0a55c1177eac41648391df4b7ed4d3c7aee751bff01e8c726f51e204f3fc02b6"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_consumer.dir/model.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_consumer.dir/model.c.o",
+      "bytes": 3824,
+      "sha256": "793a7846a46198d1d7fe4e4709dac49081b4947b8c65b9e89ae4d5f631b0292b"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_consumer.dir/view.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_consumer.dir/view.c.o",
+      "bytes": 15480,
+      "sha256": "4fe80da0e9c24aff6257380a35a3d1e709184403f4b937c03ab2815967cb2064"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "bytes": 15152,
+      "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+    },
+    {
+      "member": "release/objects/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "path": "/tmp/nexaui-physim296/release/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "bytes": 31864,
+      "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+    },
+    {
+      "member": "release/libphysim_original.a",
+      "path": "/tmp/nexaui-physim296/release/libphysim_original.a",
+      "bytes": 218846,
+      "sha256": "52f84ec4a8e419c0ace1273f0b913dc8aed47ee6d558d8e51263a20c34ea631e"
+    },
+    {
+      "member": "release/libphysim_consumer.a",
+      "path": "/tmp/nexaui-physim296/release/libphysim_consumer.a",
+      "bytes": 19636,
+      "sha256": "2e234c877cb54d3fb918fb253853ecbdaf2b538c6750a469308eba3597b56e62"
+    },
+    {
+      "member": "release/physim_original_plot_test",
+      "path": "/tmp/nexaui-physim296/release/physim_original_plot_test",
+      "bytes": 22904,
+      "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+    },
+    {
+      "member": "release/physim_consumer_test",
+      "path": "/tmp/nexaui-physim296/release/physim_consumer_test",
+      "bytes": 901352,
+      "sha256": "593480a8cabdf3282a3f16ba1643ad1c9036d692ccc9d4b738f4fbc6292bdff0"
+    },
+    {
+      "member": "release/compile_commands.json",
+      "path": "/tmp/nexaui-physim296/release/compile_commands.json",
+      "bytes": 6632,
+      "sha256": "58635a99ac99e3fac07882ca56a08cc46fcec2896e22e0d55aa7c5817e6d3381"
+    },
+    {
+      "member": "release/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim296/release/CMakeCache.txt",
+      "bytes": 19777,
+      "sha256": "7c6c18b5f9da028945c673073a5187e37dc92d831024105849efa34c9f25f3d5"
+    },
+    {
+      "member": "release/tests.xml",
+      "path": "/tmp/nexaui-physim296/release/tests.xml",
+      "bytes": 1075,
+      "sha256": "7d2e8e6be315098496826c7aacd5075c07b2cce529106a0393889bd3f300c540"
+    },
+    {
+      "member": "release/physim-view.ppm",
+      "path": "/tmp/nexaui-physim296/release/physim-view.ppm",
+      "bytes": 1344015,
+      "sha256": "fcb578018b10e121e37bdbc2a1e112b5d169c46a987058cac6e6aa6b46e9fea9"
+    },
+    {
+      "member": "logs/physim296-shared-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim296-shared-configure.log",
+      "bytes": 821,
+      "sha256": "15290e0bad56b98b28dd5c759193f47df5cc0300d0675103a1a4885ca4728ec3"
+    },
+    {
+      "member": "logs/physim296-shared-build.log",
+      "path": "/mnt/d/NexaUI/out/physim296-shared-build.log",
+      "bytes": 1278,
+      "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+    },
+    {
+      "member": "logs/physim296-shared-test.log",
+      "path": "/mnt/d/NexaUI/out/physim296-shared-test.log",
+      "bytes": 2137,
+      "sha256": "052c9b31522e56f3b9b86c30e77aa1766cb3f79e4b084fc29ebc7680bea1b167"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "bytes": 70456,
+      "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "bytes": 33064,
+      "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "bytes": 15752,
+      "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "bytes": 16328,
+      "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "bytes": 54496,
+      "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "bytes": 6304,
+      "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "bytes": 19064,
+      "sha256": "0a55c1177eac41648391df4b7ed4d3c7aee751bff01e8c726f51e204f3fc02b6"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_consumer.dir/model.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_consumer.dir/model.c.o",
+      "bytes": 3824,
+      "sha256": "793a7846a46198d1d7fe4e4709dac49081b4947b8c65b9e89ae4d5f631b0292b"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_consumer.dir/view.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_consumer.dir/view.c.o",
+      "bytes": 15480,
+      "sha256": "4fe80da0e9c24aff6257380a35a3d1e709184403f4b937c03ab2815967cb2064"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "bytes": 15152,
+      "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+    },
+    {
+      "member": "shared/objects/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "path": "/tmp/nexaui-physim296/shared/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "bytes": 31864,
+      "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+    },
+    {
+      "member": "shared/libphysim_original.a",
+      "path": "/tmp/nexaui-physim296/shared/libphysim_original.a",
+      "bytes": 218846,
+      "sha256": "52f84ec4a8e419c0ace1273f0b913dc8aed47ee6d558d8e51263a20c34ea631e"
+    },
+    {
+      "member": "shared/libphysim_consumer.a",
+      "path": "/tmp/nexaui-physim296/shared/libphysim_consumer.a",
+      "bytes": 19636,
+      "sha256": "2e234c877cb54d3fb918fb253853ecbdaf2b538c6750a469308eba3597b56e62"
+    },
+    {
+      "member": "shared/physim_original_plot_test",
+      "path": "/tmp/nexaui-physim296/shared/physim_original_plot_test",
+      "bytes": 22904,
+      "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+    },
+    {
+      "member": "shared/physim_consumer_test",
+      "path": "/tmp/nexaui-physim296/shared/physim_consumer_test",
+      "bytes": 97400,
+      "sha256": "b8eafeaa9735389201f76dbbd386ff32cb5c0f80ede5342c70ac45fd6287f7bb"
+    },
+    {
+      "member": "shared/compile_commands.json",
+      "path": "/tmp/nexaui-physim296/shared/compile_commands.json",
+      "bytes": 6655,
+      "sha256": "5f98ddc9fe54fc82362a5b20368d079fc306b20be1801dab4103b738cb6e700d"
+    },
+    {
+      "member": "shared/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim296/shared/CMakeCache.txt",
+      "bytes": 19771,
+      "sha256": "b0a584786b13df03e0f2b9ce2315df32615111171cc20bcbb24e66e4e61de8bf"
+    },
+    {
+      "member": "shared/tests.xml",
+      "path": "/tmp/nexaui-physim296/shared/tests.xml",
+      "bytes": 1075,
+      "sha256": "adbe935b40f19ae1ae2f57f25996dabbb4b8a2a980fc1334419d881702f39b92"
+    },
+    {
+      "member": "shared/physim-view.ppm",
+      "path": "/tmp/nexaui-physim296/shared/physim-view.ppm",
+      "bytes": 1344015,
+      "sha256": "fcb578018b10e121e37bdbc2a1e112b5d169c46a987058cac6e6aa6b46e9fea9"
+    },
+    {
+      "member": "logs/physim296-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim296-asan-configure.log",
+      "bytes": 819,
+      "sha256": "654bb8f0c53f0e01582d85e5225f6377ede3210498dcf73f0a85da10ca05fece"
+    },
+    {
+      "member": "logs/physim296-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/physim296-asan-build.log",
+      "bytes": 1278,
+      "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+    },
+    {
+      "member": "logs/physim296-asan-test.log",
+      "path": "/mnt/d/NexaUI/out/physim296-asan-test.log",
+      "bytes": 2109,
+      "sha256": "d66c53f6456ef2b68aab0e47ca6228c60eba24446b3364ebe0af8576c1889745"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "bytes": 382920,
+      "sha256": "2a02d5b4949d0a1578db442a25aef9d6bb5f98a6dd1543e8b8ed8f2617b91c76"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "bytes": 198000,
+      "sha256": "df4bfd81b9dfcb70e5e27a5dc96356b0a29f36109cdfb0f73d3990e28b11d408"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "bytes": 70744,
+      "sha256": "09d727cf35e57e45521511c4fb0aefcda6452d6099a07e0e30fdf4c463d15052"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "bytes": 139120,
+      "sha256": "88ffeda98e67e5793170c3d6c68379eeecce15f49c98c0c75e69e100ad5eb4c8"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "bytes": 265616,
+      "sha256": "3a7ad16a79b823118747dc1a973b37578de1f842a7238b43e3c890974b47d87a"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "bytes": 52808,
+      "sha256": "8c89dec442650362208c94aac0c6bf8e9052f880202095a81c947d7b3de5b723"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "bytes": 135944,
+      "sha256": "2069d5a16a0ac1b12e5f0c5268e9afbd40bf9b6452b0d181b59bbeb771c2fc5d"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_consumer.dir/model.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_consumer.dir/model.c.o",
+      "bytes": 40272,
+      "sha256": "3d73f02d9223c38861714685158af5a0792f9c294c6e296e27ff5e065cbf6438"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_consumer.dir/view.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_consumer.dir/view.c.o",
+      "bytes": 136728,
+      "sha256": "df91a743b995ef9eba32c2f9f204b126712937852e1445503a8868b99506d364"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "bytes": 46064,
+      "sha256": "f8a5c5cdedc7fcd85ed922d8d1f9446fb0c263e852dce58b764ad580bc79fc67"
+    },
+    {
+      "member": "asan/objects/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "path": "/tmp/nexaui-physim296/asan/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "bytes": 191648,
+      "sha256": "3bd3573f6fac3d3109b9eda08b9ab4e6fcce48b16cc8e35a3749bddd6d66d351"
+    },
+    {
+      "member": "asan/libphysim_original.a",
+      "path": "/tmp/nexaui-physim296/asan/libphysim_original.a",
+      "bytes": 1249298,
+      "sha256": "7116a17db261f85b1a372d9168c056b4b6a4252569245b15108ce66d40a8c238"
+    },
+    {
+      "member": "asan/libphysim_consumer.a",
+      "path": "/tmp/nexaui-physim296/asan/libphysim_consumer.a",
+      "bytes": 177394,
+      "sha256": "eaa0671b72361cb80cfd51df39830d3558341b602ef9c2af17b09a7ee1936327"
+    },
+    {
+      "member": "asan/physim_original_plot_test",
+      "path": "/tmp/nexaui-physim296/asan/physim_original_plot_test",
+      "bytes": 2764584,
+      "sha256": "24107289800bb37d8b35380922538f45e7bc8ffcc70d0667ff424ac0dd0e8ff1"
+    },
+    {
+      "member": "asan/physim_consumer_test",
+      "path": "/tmp/nexaui-physim296/asan/physim_consumer_test",
+      "bytes": 10817624,
+      "sha256": "ab3e7d2c2e9ba36ba0b178292830dea2be33aee1a2745cca428bb2880bc5f99a"
+    },
+    {
+      "member": "asan/compile_commands.json",
+      "path": "/tmp/nexaui-physim296/asan/compile_commands.json",
+      "bytes": 7074,
+      "sha256": "0e5b654b8bdf7fac8404d60fcfdb492351395c4c3f846b24b805b8cc7e98aaf5"
+    },
+    {
+      "member": "asan/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim296/asan/CMakeCache.txt",
+      "bytes": 19810,
+      "sha256": "e7ae3145e25017cd2dab43c774977a271c1a4e69095a06f15e363460dd7dbb66"
+    },
+    {
+      "member": "asan/tests.xml",
+      "path": "/tmp/nexaui-physim296/asan/tests.xml",
+      "bytes": 1070,
+      "sha256": "4d7d6bc019964728097fa54d55ce36b4c3c3fcdd4e1375d726e706abee3025ff"
+    },
+    {
+      "member": "asan/physim-view.ppm",
+      "path": "/tmp/nexaui-physim296/asan/physim-view.ppm",
+      "bytes": 1344015,
+      "sha256": "fcb578018b10e121e37bdbc2a1e112b5d169c46a987058cac6e6aa6b46e9fea9"
+    },
+    {
+      "member": "logs/physim297-wrong-channel-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim297-wrong-channel-configure.log",
+      "bytes": 720,
+      "sha256": "847e9bf9429a8081bcd7c04192c80b1e2c87abc3b620e1b8b028aee4233cc944"
+    },
+    {
+      "member": "logs/physim297-wrong-channel-build.log",
+      "path": "/mnt/d/NexaUI/out/physim297-wrong-channel-build.log",
+      "bytes": 1278,
+      "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+    },
+    {
+      "member": "logs/physim297-wrong-channel-unit.log",
+      "path": "/mnt/d/NexaUI/out/physim297-wrong-channel-unit.log",
+      "bytes": 78,
+      "sha256": "ee39d5355c64c9597e00b5432638bc09378e158d1b73d28b8c625f63b11f24d9"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3445,
+      "sha256": "a45f0db21ab3857db5c20f6ae3b927ef26174e60a9446a17daf31aaf405fec11"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/README.md",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/README.md",
+      "bytes": 6532,
+      "sha256": "7726daf25be2d3cc9fb86e7d651940580fe6df37e9f74fe5f5f4caf96872d918"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2665,
+      "sha256": "a889037d5069f9664a4da74f75b27cacccb79193f4a482d1e9770c5c490f0363"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11536,
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10753,
+      "sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40"
+    },
+    {
+      "member": "negative/wrong-channel/consumer/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim297/wrong-channel/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_consumer.dir/model.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_consumer.dir/model.c.o",
+      "bytes": 3832,
+      "sha256": "3bd91c7fb2c6475faf87d3ff08173675721a6084f39e737625ffdca25448dd67"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_consumer.dir/view.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_consumer.dir/view.c.o",
+      "bytes": 15480,
+      "sha256": "4fe80da0e9c24aff6257380a35a3d1e709184403f4b937c03ab2815967cb2064"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "bytes": 31864,
+      "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "bytes": 6304,
+      "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "bytes": 19064,
+      "sha256": "6bc5a5af8b2330969386b74ad3e7ea2d5df7b5d83e4eaab28c5a67dea5574551"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "bytes": 70456,
+      "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "bytes": 54496,
+      "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "bytes": 33064,
+      "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "bytes": 16328,
+      "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "bytes": 15752,
+      "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+    },
+    {
+      "member": "negative/wrong-channel/objects/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "bytes": 15152,
+      "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+    },
+    {
+      "member": "negative/wrong-channel/libphysim_original.a",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/libphysim_original.a",
+      "bytes": 218846,
+      "sha256": "87ffd574b98fa51894a1a7960b8f006231a0990a76ff275cd33a82463949c1b3"
+    },
+    {
+      "member": "negative/wrong-channel/libphysim_consumer.a",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/libphysim_consumer.a",
+      "bytes": 19644,
+      "sha256": "764bec4a93d880046f26e1b188ddc3a3edd15cf985554735512bf3721ae292f4"
+    },
+    {
+      "member": "negative/wrong-channel/physim_consumer_test",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/physim_consumer_test",
+      "bytes": 901352,
+      "sha256": "3ed9e610613b20454d81c76e088a94c1db4a31025ad885d5351e6da8862a944b"
+    },
+    {
+      "member": "negative/wrong-channel/physim_original_plot_test",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/physim_original_plot_test",
+      "bytes": 22904,
+      "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+    },
+    {
+      "member": "negative/wrong-channel/compile_commands.json",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/compile_commands.json",
+      "bytes": 7022,
+      "sha256": "2d8c8a4d21fddf095432b269d7acddf8a34b645a0ec4e4f8206abd38101db4da"
+    },
+    {
+      "member": "negative/wrong-channel/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim297/wrong-channel/build/CMakeCache.txt",
+      "bytes": 19747,
+      "sha256": "66e469fb703943feea34d2531759fae85f138008d7b3045a1b52531ef6afbd6f"
+    },
+    {
+      "member": "logs/physim297-no-model-apply-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim297-no-model-apply-configure.log",
+      "bytes": 721,
+      "sha256": "8486f0467f1b41258e2929622b80707634346acaba2707682a2b07e273e7813f"
+    },
+    {
+      "member": "logs/physim297-no-model-apply-build.log",
+      "path": "/mnt/d/NexaUI/out/physim297-no-model-apply-build.log",
+      "bytes": 1278,
+      "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+    },
+    {
+      "member": "logs/physim297-no-model-apply-unit.log",
+      "path": "/mnt/d/NexaUI/out/physim297-no-model-apply-unit.log",
+      "bytes": 171,
+      "sha256": "431cfbf62d84fc9c52139860b1c2b57a020dfbea42f1013c2aaf15cf9d94a114"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3445,
+      "sha256": "a45f0db21ab3857db5c20f6ae3b927ef26174e60a9446a17daf31aaf405fec11"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/README.md",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/README.md",
+      "bytes": 6532,
+      "sha256": "7726daf25be2d3cc9fb86e7d651940580fe6df37e9f74fe5f5f4caf96872d918"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2657,
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11536,
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10695,
+      "sha256": "fd03d3f7e10a8fd91d09ca0a535e3fb6355536403fbd853952d8b65b059c1793"
+    },
+    {
+      "member": "negative/no-model-apply/consumer/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim297/no-model-apply/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_consumer.dir/model.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_consumer.dir/model.c.o",
+      "bytes": 3824,
+      "sha256": "793a7846a46198d1d7fe4e4709dac49081b4947b8c65b9e89ae4d5f631b0292b"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_consumer.dir/view.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_consumer.dir/view.c.o",
+      "bytes": 15368,
+      "sha256": "7df524320f4bcb86be044bb853a1d030b19b46e0d2802315d37981ef91ba2516"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "bytes": 31864,
+      "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "bytes": 6304,
+      "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "bytes": 19064,
+      "sha256": "65d114ce7a42bd7af91096d8897dce9d620b0a873a11bb37009f364f0da8ddc4"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "bytes": 70456,
+      "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "bytes": 54496,
+      "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "bytes": 33064,
+      "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "bytes": 16328,
+      "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "bytes": 15752,
+      "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+    },
+    {
+      "member": "negative/no-model-apply/objects/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "bytes": 15152,
+      "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+    },
+    {
+      "member": "negative/no-model-apply/libphysim_original.a",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/libphysim_original.a",
+      "bytes": 218846,
+      "sha256": "31f92df8ba3981d4101ff5814dcc6736f127d2d5c19d4abed67e21fe447138c8"
+    },
+    {
+      "member": "negative/no-model-apply/libphysim_consumer.a",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/libphysim_consumer.a",
+      "bytes": 19524,
+      "sha256": "ac65420252d9158b19e5d839745bcd385a07d56e99d17228d64903509c78ca03"
+    },
+    {
+      "member": "negative/no-model-apply/physim_consumer_test",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/physim_consumer_test",
+      "bytes": 901352,
+      "sha256": "4e25a5ccb02b71622eef5bfa6632edbcffe82ed15efb73f094da5d163a2ce105"
+    },
+    {
+      "member": "negative/no-model-apply/physim_original_plot_test",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/physim_original_plot_test",
+      "bytes": 22904,
+      "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+    },
+    {
+      "member": "negative/no-model-apply/compile_commands.json",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/compile_commands.json",
+      "bytes": 7053,
+      "sha256": "c06e12eb2a93d8f37276db887892be9522c80b15ac7d61637663d090b46ee4ce"
+    },
+    {
+      "member": "negative/no-model-apply/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim297/no-model-apply/build/CMakeCache.txt",
+      "bytes": 19753,
+      "sha256": "3337326fc03691118416a5401428bf7695a8a3bd2c199deea4687d817856c654"
+    },
+    {
+      "member": "logs/physim297-no-original-zoom-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim297-no-original-zoom-configure.log",
+      "bytes": 723,
+      "sha256": "dce9eb54c3fdc4469969aa6736fc884e0b831c34bf0f6865eaafe09ae1363874"
+    },
+    {
+      "member": "logs/physim297-no-original-zoom-build.log",
+      "path": "/mnt/d/NexaUI/out/physim297-no-original-zoom-build.log",
+      "bytes": 1278,
+      "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+    },
+    {
+      "member": "logs/physim297-no-original-zoom-unit.log",
+      "path": "/mnt/d/NexaUI/out/physim297-no-original-zoom-unit.log",
+      "bytes": 103,
+      "sha256": "118ee7d17692a76a2c24799a0dbc8050806fe899e049612a679d515099f3cc3d"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3445,
+      "sha256": "a45f0db21ab3857db5c20f6ae3b927ef26174e60a9446a17daf31aaf405fec11"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/README.md",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/README.md",
+      "bytes": 6532,
+      "sha256": "7726daf25be2d3cc9fb86e7d651940580fe6df37e9f74fe5f5f4caf96872d918"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2657,
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11536,
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10720,
+      "sha256": "9bc427ccb81c04f54d601ba8e727b8931b0e49038a6665bb9996b23bf5938227"
+    },
+    {
+      "member": "negative/no-original-zoom/consumer/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_consumer.dir/model.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_consumer.dir/model.c.o",
+      "bytes": 3824,
+      "sha256": "793a7846a46198d1d7fe4e4709dac49081b4947b8c65b9e89ae4d5f631b0292b"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_consumer.dir/view.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_consumer.dir/view.c.o",
+      "bytes": 15232,
+      "sha256": "bbaf219930a052a75c93767658f0862bc727284426193a7b319f8492f33b6088"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "bytes": 31864,
+      "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "bytes": 6304,
+      "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "bytes": 19064,
+      "sha256": "7c6e30a593bf060a7c584b73d73ef772cda27dc2da07f9afec80b595e62fd027"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "bytes": 70456,
+      "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "bytes": 54496,
+      "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "bytes": 33064,
+      "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "bytes": 16328,
+      "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "bytes": 15752,
+      "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+    },
+    {
+      "member": "negative/no-original-zoom/objects/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "bytes": 15152,
+      "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+    },
+    {
+      "member": "negative/no-original-zoom/libphysim_original.a",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/libphysim_original.a",
+      "bytes": 218846,
+      "sha256": "2409ad8e85cc9e7981686a71fa8bf66f0cbace45636e972d8d376d76d01da129"
+    },
+    {
+      "member": "negative/no-original-zoom/libphysim_consumer.a",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/libphysim_consumer.a",
+      "bytes": 19388,
+      "sha256": "e87149f0aca6f377c0ea7bb08292b2e9ad1ea9a70c47dba5e27659ac5955b112"
+    },
+    {
+      "member": "negative/no-original-zoom/physim_consumer_test",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/physim_consumer_test",
+      "bytes": 901352,
+      "sha256": "59a49ca2cd68da1315a32bed9f77d38d2ed6d338b4aced98bcc43bfe42f74ddb"
+    },
+    {
+      "member": "negative/no-original-zoom/physim_original_plot_test",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/physim_original_plot_test",
+      "bytes": 22904,
+      "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+    },
+    {
+      "member": "negative/no-original-zoom/compile_commands.json",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/compile_commands.json",
+      "bytes": 7115,
+      "sha256": "62eb753d06c0c4b43ba238711f6c35a7c686ed694a00e8d352f00803841bba75"
+    },
+    {
+      "member": "negative/no-original-zoom/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim297/no-original-zoom/build/CMakeCache.txt",
+      "bytes": 19765,
+      "sha256": "f8324fb6e195a4c21c6ad52d4e1ff4efc0a719db6397d26f015406e30d3db643"
+    },
+    {
+      "member": "logs/physim297-omit-bob-pixels-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim297-omit-bob-pixels-configure.log",
+      "bytes": 722,
+      "sha256": "db3704bdc47c68c6784b04d3c5033e31b2373c4df4c0dd4fe45ab1c7f753775e"
+    },
+    {
+      "member": "logs/physim297-omit-bob-pixels-build.log",
+      "path": "/mnt/d/NexaUI/out/physim297-omit-bob-pixels-build.log",
+      "bytes": 1278,
+      "sha256": "7f80cc7a1f0a07ec4dc5380b060cdf1a73f6797990178d30ea9a5e3b375b3b45"
+    },
+    {
+      "member": "logs/physim297-omit-bob-pixels-unit.log",
+      "path": "/mnt/d/NexaUI/out/physim297-omit-bob-pixels-unit.log",
+      "bytes": 60,
+      "sha256": "126e2ab8ee5b413334e08b47d8418fac0d49dc7787a71fd1b020c21a70e91bfd"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3445,
+      "sha256": "a45f0db21ab3857db5c20f6ae3b927ef26174e60a9446a17daf31aaf405fec11"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/README.md",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/README.md",
+      "bytes": 6532,
+      "sha256": "7726daf25be2d3cc9fb86e7d651940580fe6df37e9f74fe5f5f4caf96872d918"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2657,
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11536,
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10678,
+      "sha256": "9419917028ab7de68f94de8f84373213c02679d735d5f9280d1d576a7d34c5ea"
+    },
+    {
+      "member": "negative/omit-bob-pixels/consumer/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_consumer.dir/model.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_consumer.dir/model.c.o",
+      "bytes": 3824,
+      "sha256": "793a7846a46198d1d7fe4e4709dac49081b4947b8c65b9e89ae4d5f631b0292b"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_consumer.dir/view.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_consumer.dir/view.c.o",
+      "bytes": 15320,
+      "sha256": "16fedf3a4264b721cd05eca370e7d3edeefce41394e96ee530bec8414e72cb86"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_consumer_test.dir/test_consumer.c.o",
+      "bytes": 31864,
+      "sha256": "702ad2c7f6c8fe9891ada0d33fd03f1b9de5fd39a113c162199dc24696d383a8"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/app/plot_view.c.o",
+      "bytes": 6304,
+      "sha256": "ddb08f2c434e4aac15e5adfb9d1c91bba88f3ad1ea39c96ff044f2e89f976c74"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/examples/documentation/pendulum_main.c.o",
+      "bytes": 19064,
+      "sha256": "a9ca1ff1db9ae118d04f2968d9f55d2923ea086129eaacff3b404906fa90e764"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/core.c.o",
+      "bytes": 70456,
+      "sha256": "6ba2c7d9bc1e36b45beac696e3b7a046e58ac6ce6a81da975718208195e18537"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/math.c.o",
+      "bytes": 54496,
+      "sha256": "a8b5a22f836b838552395eb37e04330f51681bfde2ae7ebf343b33e442e868fb"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/numerics.c.o",
+      "bytes": 33064,
+      "sha256": "36ba14b3b7bff1d1cc58c071c46580b9aa522f3659cc643602f7addf2213c1f1"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/scene.c.o",
+      "bytes": 16328,
+      "sha256": "684a7eeca2b68da74495c0b617395d6a6e5205f0d911ff5e09d8f9847985630a"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original.dir/tmp/nexaui-physim296/original/src/units.c.o",
+      "bytes": 15752,
+      "sha256": "6945c6294e4c8659c631d881dc85302424176a5ad60f341f7990fc7b2564081f"
+    },
+    {
+      "member": "negative/omit-bob-pixels/objects/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeFiles/physim_original_plot_test.dir/tmp/nexaui-physim296/original/tests/test_plot_view.c.o",
+      "bytes": 15152,
+      "sha256": "42424018421d1bf3279f7a6970aae058d239174cf0113b38234dd7bfb95c741a"
+    },
+    {
+      "member": "negative/omit-bob-pixels/libphysim_original.a",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/libphysim_original.a",
+      "bytes": 218846,
+      "sha256": "19272270733c7d36d8149815e517268ff018ae59aed15e1131b012c810452812"
+    },
+    {
+      "member": "negative/omit-bob-pixels/libphysim_consumer.a",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/libphysim_consumer.a",
+      "bytes": 19476,
+      "sha256": "b0c6b6cc52d3a531bcdf64f9db7fba09383a949c57468e2c8397096479eaae67"
+    },
+    {
+      "member": "negative/omit-bob-pixels/physim_consumer_test",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/physim_consumer_test",
+      "bytes": 901352,
+      "sha256": "258589959828f438e0ca1db9afbc378c00c6cb8076ca7bfd60bf4d37bdaeb2ce"
+    },
+    {
+      "member": "negative/omit-bob-pixels/physim_original_plot_test",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/physim_original_plot_test",
+      "bytes": 22904,
+      "sha256": "01d81657ef7ac0cc8b366bb47eafbf453038d040bf8e7707a28cc09d5fb40a01"
+    },
+    {
+      "member": "negative/omit-bob-pixels/compile_commands.json",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/compile_commands.json",
+      "bytes": 7084,
+      "sha256": "eda2091f608c6002d40b7f85d17c875e6960d008fa305df32c1c0bcc242d57a3"
+    },
+    {
+      "member": "negative/omit-bob-pixels/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim297/omit-bob-pixels/build/CMakeCache.txt",
+      "bytes": 19759,
+      "sha256": "31c4aff0736c00e5b5ccf70de7a7bf9411f19e8c3dedb23f553d394561f30f2f"
+    },
+    {
+      "member": "logs/physim297-source-hash.log",
+      "path": "/mnt/d/NexaUI/out/physim297-source-hash.log",
+      "bytes": 726,
+      "sha256": "fa41e58b6b4db82bf0459edfdbd1ff09523365bda758c79e158e8e6acbd458b5"
+    },
+    {
+      "member": "logs/physim297-existing-export.log",
+      "path": "/mnt/d/NexaUI/out/physim297-existing-export.log",
+      "bytes": 111,
+      "sha256": "dcdef5c106e059758252b03fd30e080d3e4ff3d6313412b49469668dd7a52392"
+    },
+    {
+      "member": "logs/physim297-nested-export.log",
+      "path": "/mnt/d/NexaUI/out/physim297-nested-export.log",
+      "bytes": 148,
+      "sha256": "d5c4452a62dcef5cb784638e9a9efdd9a2bcd0e8bc92fc05f97af79520c157b4"
+    },
+    {
+      "member": "negative/source-hash/plot_view.c",
+      "path": "/tmp/nexaui-physim297/changed-original/app/plot_view.c",
+      "bytes": 3326,
+      "sha256": "541e90302cb66a540d2841d01c6f6a4d987d73df49016d5e1c97a9dd5b18e599"
+    },
+    {
+      "member": "negative/source-hash/CMakeCache.txt",
+      "path": "/tmp/nexaui-physim297/changed-build/CMakeCache.txt",
+      "bytes": 17763,
+      "sha256": "d96533a27587213f2d3a73c46e9cc86a9dec33b5ef265f31dda176931ddaf5e0"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3213,
+      "sha256": "53b1ef6a5ab3b4cfbb79c7be0fe6150bdd277a62398cf07aca6d445465ecbcfd"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2657,
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11146,
+      "sha256": "d7ffa8648ed296a2acee870f564e28adc612b974aa051c8b54b6181f3bde7080"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10620,
+      "sha256": "b4e4db197b464749014154dbd134136fc7e4623a243a8fefa3a3500e1e8de998"
+    },
+    {
+      "member": "pilot293/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim293/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "pilots/physim293-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim293-configure.log",
+      "bytes": 708,
+      "sha256": "953c55f955f528aaf92a04cf9b411a02af951def282991ebaeb1b38d698f2a79"
+    },
+    {
+      "member": "pilots/physim293-build.log",
+      "path": "/mnt/d/NexaUI/out/physim293-build.log",
+      "bytes": 1262,
+      "sha256": "dc456312f1f924e951c37bf50839fa61750343703bbeb570790454ad33f911e2"
+    },
+    {
+      "member": "pilots/physim293-test.log",
+      "path": "/mnt/d/NexaUI/out/physim293-test.log",
+      "bytes": 2459,
+      "sha256": "70a1fff36dc994d526411647470418d5f99fcf14b8d7d20b61f1bb1135751294"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3213,
+      "sha256": "53b1ef6a5ab3b4cfbb79c7be0fe6150bdd277a62398cf07aca6d445465ecbcfd"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2657,
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11536,
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10620,
+      "sha256": "b4e4db197b464749014154dbd134136fc7e4623a243a8fefa3a3500e1e8de998"
+    },
+    {
+      "member": "pilot294/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim294/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "pilots/physim294-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim294-configure.log",
+      "bytes": 708,
+      "sha256": "db84b043a441cbadb4b0b90b58299125c66cf9a01c01bf51b15baf2a9f9c1cbf"
+    },
+    {
+      "member": "pilots/physim294-build.log",
+      "path": "/mnt/d/NexaUI/out/physim294-build.log",
+      "bytes": 1262,
+      "sha256": "dc456312f1f924e951c37bf50839fa61750343703bbeb570790454ad33f911e2"
+    },
+    {
+      "member": "pilots/physim294-test.log",
+      "path": "/mnt/d/NexaUI/out/physim294-test.log",
+      "bytes": 2151,
+      "sha256": "d3dcdfdb5122a34ab0e146e9606fe85396656325228d11222c4bbfe847eb019a"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/CMakeLists.txt",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/CMakeLists.txt",
+      "bytes": 3213,
+      "sha256": "53b1ef6a5ab3b4cfbb79c7be0fe6150bdd277a62398cf07aca6d445465ecbcfd"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/README.md",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/README.md",
+      "bytes": 6532,
+      "sha256": "7726daf25be2d3cc9fb86e7d651940580fe6df37e9f74fe5f5f4caf96872d918"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/model.c",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/model.c",
+      "bytes": 2657,
+      "sha256": "ae18baa5a6da33e9e62a96241b3777d5e525883c1361ee67db91261644434f4e"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/model.h",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/model.h",
+      "bytes": 965,
+      "sha256": "d81ea335bdcad54ad68e6c912044e7117fc282a37c7f469ef544914bfb4f9158"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/prepare.py",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/prepare.py",
+      "bytes": 1723,
+      "sha256": "e6bf8a8fc6ce8feeb70b824e4542c102b3601b40d450cd98d5b2ade97ee81b9a"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/source-inputs.json",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/source-inputs.json",
+      "bytes": 3811,
+      "sha256": "45b2e14c35e13601bc2f1617cbf4decfb9dafdbcc464404538ae933ecb4de85b"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/test_consumer.c",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/test_consumer.c",
+      "bytes": 11536,
+      "sha256": "b11231a73353a7f90b844002ebdf0709114a21c5951e373a215f43ee67b439a6"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/view.c",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/view.c",
+      "bytes": 10753,
+      "sha256": "e39967a73d31d80a40dc1fd64ddcf3ca9ab99a1f9e69fbfd83337ab9c7b4dc40"
+    },
+    {
+      "member": "pilot295/examples/39_physim_consumer/view.h",
+      "path": "/tmp/nexaui-physim295/consumer/examples/39_physim_consumer/view.h",
+      "bytes": 1506,
+      "sha256": "9c1e9680038aeda1faaf8fe5b30fe99982de3e26b70c99fb8184ae46a7fe92a1"
+    },
+    {
+      "member": "pilots/physim295-configure.log",
+      "path": "/mnt/d/NexaUI/out/physim295-configure.log",
+      "bytes": 708,
+      "sha256": "e07d9ff33c28b182e58a402dfc767610e539a93fbb824de157d8fa96ae5eeb1f"
+    },
+    {
+      "member": "pilots/physim295-build.log",
+      "path": "/mnt/d/NexaUI/out/physim295-build.log",
+      "bytes": 1262,
+      "sha256": "dc456312f1f924e951c37bf50839fa61750343703bbeb570790454ad33f911e2"
+    },
+    {
+      "member": "pilots/physim295-test.log",
+      "path": "/mnt/d/NexaUI/out/physim295-test.log",
+      "bytes": 2151,
+      "sha256": "91fcec793390828233b5975baaa84fb335da4b26ff6aedb6250260edad72cae0"
+    },
+    {
+      "member": "helpers/build_physim293.py",
+      "path": "/mnt/d/NexaUI/out/build_physim293.py",
+      "bytes": 1951,
+      "sha256": "e9c7df9766e69d68ca41b8f53c1791ade4be8cba94b1de6ea2179bf77b2a9447"
+    },
+    {
+      "member": "helpers/build_physim294.py",
+      "path": "/mnt/d/NexaUI/out/build_physim294.py",
+      "bytes": 1951,
+      "sha256": "265cdadf9f60363266b2bf3446cd0091730b50e7c815d9dbe284757a9989366c"
+    },
+    {
+      "member": "helpers/build_physim295.py",
+      "path": "/mnt/d/NexaUI/out/build_physim295.py",
+      "bytes": 1951,
+      "sha256": "f8c7a539db538f0274fbd070fd7774221ba47c6285d2b61d54be5b956b01b5f0"
+    },
+    {
+      "member": "helpers/build_physim296.py",
+      "path": "/mnt/d/NexaUI/out/build_physim296.py",
+      "bytes": 3516,
+      "sha256": "30da2225af06220feb96eb2a74f2ffdfa7b493ca835d48707768d2929624dff2"
+    },
+    {
+      "member": "helpers/export_physim292.py",
+      "path": "/mnt/d/NexaUI/out/export_physim292.py",
+      "bytes": 2064,
+      "sha256": "5020e58d861d58dbda5a70b5765f4d1f41704e93d93002d0c031e8d6cf85ef5f"
+    },
+    {
+      "member": "helpers/negative_physim297.py",
+      "path": "/mnt/d/NexaUI/out/negative_physim297.py",
+      "bytes": 4841,
+      "sha256": "921d77c5442d9845745623842eb4ac40022054a7b498d9f3cda753cff22a9073"
+    },
+    {
+      "member": "helpers/verify_physim298.py",
+      "path": "/mnt/d/NexaUI/out/verify_physim298.py",
+      "bytes": 10414,
+      "sha256": "faba74bbd5b8532a96c375f30bd01d860d2c71430514df7f3b92006c3bba8d31"
+    },
+    {
+      "member": "helpers/physim292-export.json",
+      "path": "/mnt/d/NexaUI/out/physim292-export.json",
+      "bytes": 3855,
+      "sha256": "6638cb76b6d56d276f8641aa78c27d2dc128d6ab3f3c92d3caec54b6aaf5f7d6"
+    },
+    {
+      "member": "helpers/physim293-pilot.json",
+      "path": "/mnt/d/NexaUI/out/physim293-pilot.json",
+      "bytes": 2881,
+      "sha256": "cb43993fe092b5d44ccd6074fb9d4abb368f71a04d2c4bec9e1b40cb71720ba5"
+    },
+    {
+      "member": "helpers/physim294-pilot.json",
+      "path": "/mnt/d/NexaUI/out/physim294-pilot.json",
+      "bytes": 2880,
+      "sha256": "80b4ac8b69bcece1bc4528e9ac85b5c8d422e04d3f7456bb2bc56cfd1bf8c1a2"
+    },
+    {
+      "member": "helpers/physim295-pilot.json",
+      "path": "/mnt/d/NexaUI/out/physim295-pilot.json",
+      "bytes": 3032,
+      "sha256": "caafd630ce933caf30bd807088d0297b1a2f91fed9e3c029c7b105fc4d4f5428"
+    },
+    {
+      "member": "helpers/physim296-local.json",
+      "path": "/mnt/d/NexaUI/out/physim296-local.json",
+      "bytes": 8185,
+      "sha256": "72b7be21178ece8de6f4cd215de68a4d0d026bf15d76aa9c1d916b62efe2f0a6"
+    },
+    {
+      "member": "helpers/physim297-negative.json",
+      "path": "/mnt/d/NexaUI/out/physim297-negative.json",
+      "bytes": 10785,
+      "sha256": "617ea1bc031129818baa8940ab09d0d54552d8a93fbd0c19b982fe80c5497405"
+    },
+    {
+      "member": "preview/physim-view.png",
+      "path": "/mnt/d/NexaUI/out/physim298-view.png",
+      "bytes": 18455,
+      "sha256": "56342b534679a8b5102b51cd1206c85cefd3a30382e14b9bd4354e0c005c23fb"
+    }
+  ],
+  "remaining": [
+    "Native window/input/IME/AX composition and actual Physim application/runner adoption",
+    "Full scene/camera/picking, object tree, dataset/plot varieties and approved app design",
+    "Windows/macOS/GPU/physical/human/performance gates",
+    "NexaCloud production application integration and full 103-ID catalogue"
+  ]
+}

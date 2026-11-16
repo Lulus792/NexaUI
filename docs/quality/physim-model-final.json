@@ -1,0 +1,29 @@
+{
+  "candidate": "7329212198127adc5350330be12b8e9843c66424",
+  "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+  "receipt_sha256": "7b519a7893948bfa3bfd431411025b02251d7ce322177eb53ee6bf8e00f44312",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-physim-model298.tar.gz",
+    "bytes": 9073901,
+    "sha256": "8a96200de2c0843f75c4f085f1519b84f12793c6ebe4ddf0d758e30f1264cf3f",
+    "verified_members": 272
+  },
+  "verified_members": 272,
+  "ctests": 12,
+  "native_tasks": 0,
+  "body_capture_count": 0,
+  "ppm_count": 3,
+  "previews": [
+    {
+      "path": "/mnt/d/NexaUI/out/physim298-view.png",
+      "sha256": "56342b534679a8b5102b51cd1206c85cefd3a30382e14b9bd4354e0c005c23fb",
+      "width": 800,
+      "height": 560,
+      "rgb_roundtrip": true
+    }
+  ],
+  "observed_live_fixture_executables": [],
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "catalogue_ids": 103,
+  "scope": "Original Physim model/plot/numeric/CPU viewport installed headless consumer; native app/IME/AX/GPU/physical gates open"
+}
