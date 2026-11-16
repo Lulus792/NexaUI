@@ -82,7 +82,8 @@ int main(int argc, char **argv) {
     int verify_ime=verify_ime_compose || verify_ime_cancel || verify_ime_control || verify_ime_replace || verify_ime_aetheri;
     int verify_keyboard=verify_keyboard_text || verify_keyboard_controls || verify_keyboard_small || verify_pending_close;
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
-    int idle_probe=argc==3 && !strcmp(argv[2],"--idle-probe");
+    int idle_hidden=argc==3 && !strcmp(argv[2],"--idle-probe-hidden");
+    int idle_probe=idle_hidden || (argc==3 && !strcmp(argv[2],"--idle-probe"));
     int simulate_unknown=argc==3 && !strcmp(argv[2],"--simulate-unknown");
     int verify_reopen=argc==3 && !strcmp(argv[2],"--verify-reopen");
     int marker_fd=STDOUT_FILENO;
@@ -98,11 +99,12 @@ int main(int argc, char **argv) {
     int german=(argc==3 && !strcmp(argv[2],"--de")) || german_error ||
         ((verify_ax || verify_keyboard) && getenv("NEXAUI_SETTINGS_TEST_GERMAN"));
     int fail_first=simulate_error || (verify_ax && getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR"));
-    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !simulate_unknown && !verify_reopen && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--simulate-error|--simulate-unknown]\n",stderr); return 2; }
+    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !simulate_unknown && !verify_reopen && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--idle-probe-hidden|--simulate-error|--simulate-unknown]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; settings_session *session=NULL; settings_renderer *renderer=NULL;
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0, pending_close_seen=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
+    unsigned render_attempts=0, suspended_attempts=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0, renderer_waiting=0;
     apply_worker worker={0}; worker.read_fd=-1;
     worker.test_gate_fd=-1;
@@ -114,10 +116,12 @@ int main(int argc, char **argv) {
     }
     nx_window_info previous={0};
     nx_window_desc desc={german?"Einstellungsbeispiel":"Settings example",640,360,0,{0}};
+    if (idle_hidden) desc.flags|=NX_WINDOW_HIDDEN;
     if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
     if (!font || nx_window_create(&desc,&window)!=NX_OK ||
         !settings_create(font,font_size,window,&scene)) goto cleanup;
-    nx_result renderer_open_result=settings_renderer_open(window,&renderer);
+    nx_result renderer_open_result=idle_hidden ? settings_renderer_open_software(window,&renderer) :
+        settings_renderer_open(window,&renderer);
     if (renderer_open_result!=NX_OK) {
         fprintf(stderr,"Could not initialize a Settings renderer: %d\n",(int)renderer_open_result);
         goto cleanup;
@@ -194,12 +198,17 @@ int main(int argc, char **argv) {
             elapsed=now-start;cpu_elapsed=cpu-cpu_start;
             if(elapsed>=3.0) break;
         }
-        if (routed || info.width!=previous.width || info.height!=previous.height || info.scale!=previous.scale)
+        int changed=routed || worker_events || info.width!=previous.width ||
+            info.height!=previous.height || info.scale!=previous.scale;
+        if (changed)
             dirty=1;
         previous=info;
         drawable=info.width>=128 && info.height>=120;
         if (!drawable) continue;
-        if (!dirty) {
+        /* A timer or an unrelated return from poll cannot make a Wayland
+           software surface drawable. Keep the dirty frame pending until an
+           event, geometry change or worker result can affect it. */
+        if (!dirty || (renderer_waiting && !changed && !smoke && !test_continuous)) {
             if (ax_unavailable) {
                 double now=seconds(CLOCK_MONOTONIC);
                 if (now<0) {okay=0;break;}
@@ -252,15 +261,18 @@ int main(int argc, char **argv) {
         nx_pixel_size pixels;
         if (nx_window_get_pixel_size(window,&pixels)!=NX_OK || nx_frame_commands(settings_context(scene),&commands,&count)!=NX_OK) { okay=0; break; }
         nx_color bg; settings_renderer_outcome outcome;
+        ++render_attempts;
         if (nx_theme_color(settings_context(scene),NX_COLOR_BACKGROUND,&bg)!=NX_OK ||
             settings_renderer_render(renderer,pixels,info.scale,commands,count,bg,&outcome)!=NX_OK) { okay=0; break; }
         if (outcome==SETTINGS_RENDER_DEVICE_LOST && settings_renderer_recover(renderer)!=NX_OK) { okay=0; break; }
-        renderer_waiting=outcome==SETTINGS_RENDER_BUSY;
+        renderer_waiting=outcome==SETTINGS_RENDER_BUSY || outcome==SETTINGS_RENDER_CPU_SUSPENDED;
         if (verify_keyboard_small && outcome==SETTINGS_RENDER_READY && (info.width!=(verify_keyboard_minimum?128:240) || info.height!=150)) {
             fprintf(stderr,"Unexpected small-window size %.0fx%.0f\n",info.width,info.height);
             okay=0; break;
         }
         if (outcome==SETTINGS_RENDER_READY) ++presented;
+        if (outcome==SETTINGS_RENDER_SUSPENDED || outcome==SETTINGS_RENDER_CPU_SUSPENDED)
+            ++suspended_attempts;
         if (verify_keyboard && outcome==SETTINGS_RENDER_READY && !keyboard_ready) {
             puts("SETTINGS_KEYBOARD_READY"); fflush(stdout); keyboard_ready=1;
         }
@@ -379,7 +391,9 @@ cleanup:
                                (verify_ime_cancel && ime_stage==3) ||
                                (verify_ime_control && ime_stage==4))) { puts("SETTINGS_IME_CLOSED"); fflush(stdout); }
     else if (verify_ime) okay=0;
-    if (idle_probe && okay) printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u long_waits=%u ax_unavailable=%d\n",elapsed,cpu_elapsed,polls,presented,idle_long_waits,ax_unavailable);
+    if (idle_probe && okay)
+        printf("idle elapsed=%.6f cpu=%.6f polls=%u presents=%u long_waits=%u ax_unavailable=%d renders=%u suspended=%u\n",
+               elapsed,cpu_elapsed,polls,presented,idle_long_waits,ax_unavailable,render_attempts,suspended_attempts);
     if (!okay) fputs("Settings example failed\n",stderr);
     return okay ? 0 : 1;
 }

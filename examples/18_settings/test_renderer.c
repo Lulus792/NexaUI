@@ -59,6 +59,18 @@ int main(void) {
     CHECK(render(renderer,&outcome)==NX_OK && outcome==SETTINGS_RENDER_BUSY);
     CHECK(settings_renderer_close(&renderer)==NX_OK && !renderer && cpu_closes==1);
 
+    reset();
+    CHECK(settings_renderer_open_software(window,&renderer)==NX_OK && gpu_opens==0 && cpu_opens==1);
+    cpu_outcome=NX_SOFTWARE_VIEW_SUSPENDED;
+    CHECK(render(renderer,&outcome)==NX_OK && outcome==SETTINGS_RENDER_CPU_SUSPENDED);
+    CHECK(settings_renderer_close(&renderer)==NX_OK && !renderer && cpu_closes==1);
+
+    reset();
+    CHECK(settings_renderer_open(window,&renderer)==NX_OK && gpu_opens==1 && cpu_opens==0);
+    gpu_outcome=NX_VULKAN_VIEW_SUSPENDED;
+    CHECK(render(renderer,&outcome)==NX_OK && outcome==SETTINGS_RENDER_SUSPENDED);
+    CHECK(settings_renderer_close(&renderer)==NX_OK && !renderer && gpu_closes==1);
+
     reset(); gpu_open=NX_ERROR_MEMORY;
     CHECK(settings_renderer_open(window,&renderer)==NX_ERROR_MEMORY && !renderer && cpu_opens==0);
     reset(); gpu_open=NX_ERROR_UNSUPPORTED; cpu_open=NX_ERROR_PLATFORM;

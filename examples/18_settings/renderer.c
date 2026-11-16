@@ -21,7 +21,7 @@ static nx_result open_software(settings_renderer *renderer, int fallback) {
     return result;
 }
 
-nx_result settings_renderer_open(nx_window *window, settings_renderer **out) {
+static nx_result open_renderer(nx_window *window, int software, settings_renderer **out) {
     if (!out) return NX_ERROR_ARGUMENT;
     *out=NULL;
     if (!window) return NX_ERROR_ARGUMENT;
@@ -30,15 +30,27 @@ nx_result settings_renderer_open(nx_window *window, settings_renderer **out) {
     renderer->window=window;
     nx_result result;
 #ifdef NEXAUI_SETTINGS_HAVE_VULKAN
-    result=nx_vulkan_view_open(window,&renderer->vulkan);
-    if (result==NX_ERROR_UNSUPPORTED) result=open_software(renderer,1);
-    else if (result==NX_OK) fputs("Settings renderer: Vulkan\n",stderr);
+    if (software) result=open_software(renderer,0);
+    else {
+        result=nx_vulkan_view_open(window,&renderer->vulkan);
+        if (result==NX_ERROR_UNSUPPORTED) result=open_software(renderer,1);
+        else if (result==NX_OK) fputs("Settings renderer: Vulkan\n",stderr);
+    }
 #else
+    (void)software;
     result=open_software(renderer,0);
 #endif
     if (result!=NX_OK) {free(renderer);return result;}
     *out=renderer;
     return NX_OK;
+}
+
+nx_result settings_renderer_open(nx_window *window, settings_renderer **out) {
+    return open_renderer(window,0,out);
+}
+
+nx_result settings_renderer_open_software(nx_window *window, settings_renderer **out) {
+    return open_renderer(window,1,out);
 }
 
 nx_result settings_renderer_render(settings_renderer *renderer, nx_pixel_size pixels,
@@ -70,7 +82,7 @@ nx_result settings_renderer_render(settings_renderer *renderer, nx_pixel_size pi
     nx_result result=nx_software_view_render(renderer->software,commands,count,clear,&cpu);
     if (result==NX_OK)
         *outcome=cpu==NX_SOFTWARE_VIEW_READY?SETTINGS_RENDER_READY:
-            cpu==NX_SOFTWARE_VIEW_BUSY?SETTINGS_RENDER_BUSY:SETTINGS_RENDER_SUSPENDED;
+            cpu==NX_SOFTWARE_VIEW_BUSY?SETTINGS_RENDER_BUSY:SETTINGS_RENDER_CPU_SUSPENDED;
     return result;
 }
 
