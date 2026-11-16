@@ -83,3 +83,40 @@ The [source-bound report](../../docs/quality/external-content-report.md) records
 the executed Linux profile matrix, complete-image checks and rejected generation,
 snapshot-borrow and retired-pixel variants. Native/engine and Windows/macOS
 consumer acceptance remain separate.
+
+## Optional native fixture
+
+On Linux, `-DNEXAUI_CONTENT_BUILD_NATIVE_FIXTURE=ON` additionally builds an
+ordinary Wayland/software-window host and a separate libatspi/X11 test peer.
+The peer's X11 dependency reads only the owned Xvfb/Weston output; the host and
+SDK retain their Wayland-only presentation dependencies. Default builds do not
+discover or link X11 for this example.
+
+```sh
+python3 examples/38_external_content/run_native.py \
+  --build-dir /tmp/content-native --font /path/to/font.ttf \
+  --registry /path/to/at-spi2-registryd --work-dir /tmp/new-content-run
+```
+
+Use the repository's existing private Weston tool configuration when required.
+The runner owns its Xvfb seat, compositor work directory and assistive bus.
+`--case pending-close` closes while a prepared producer allocation is held;
+`--case rejected-close` closes after a late old-generation frame is rejected.
+The default `full` case replaces the tab, releases that late frame, admits fresh
+pixels, rejects an unsupported format, recovers and requests 2x content backing.
+This is still a deterministic producer, not a selected browser or guest engine.
+
+Native controls remain reachable by keyboard. The peer independently checks
+stale object/focus rejection and entering/leaving the viewport with Tab. It reads
+every pixel in the 448x208 content rectangle from the private X11 carrier window
+and retains PPM captures; fresh/recovered/scaled content must match distinct
+fixture colors, while rejected states show the placeholder. A successful SDK
+software submit alone is not treated as displayed output. The worker uses the
+existing public fd-wait API for completion wakeups, carries only copied request
+metadata, and is stopped/joined before exchange destruction. Closing a tab does
+not stop or replay its producer. The fixture closes its window with a held job
+by releasing only its own worker gate during cleanup.
+
+These checks cover ordinary native composition and host focus, not engine input
+forwarding, guest capture/escape or stuck-key release, IME/candidates, engine
+accessibility subtrees, GPU import, physical output or final product design.
