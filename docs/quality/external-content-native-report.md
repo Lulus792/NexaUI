@@ -1,5 +1,10 @@
 # Native external CPU content composition
 
+Follow-up: [explicit input/host release](external-content-input-report.md),
+consumer `dc6a549`, adds normalized input and native escape/focus-loss/disconnect
+evidence while retaining this frame/staging contract. The results below remain
+attributed to their original `2ef9a56` checkpoint.
+
 Consumer `2ef9a56791c3dec63e542e66429ff2b7a43abba2` adds an optional ordinary
 Wayland/software-window fixture to example38. It retains installed NexaUI
 0.1.33/source `368cd38292498bd538964ba514ff02e0e9924358` and the exact previously

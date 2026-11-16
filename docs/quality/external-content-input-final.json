@@ -1,0 +1,36 @@
+{
+  "candidate": "dc6a5493c5048cdb17dcaaa5476fb05b21e085b3",
+  "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+  "receipt_sha256": "f85394b672d14dc4efb291f008f92005a74dc06cfaecc3ebf487b01b1d4e5d68",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-content-input289.tar.gz",
+    "bytes": 14736579,
+    "sha256": "c126237b7df0ae293463c327ed0a5cc0618c9dc5c8b33ff21b0821f31cf0beed",
+    "verified_members": 508
+  },
+  "verified_members": 508,
+  "ctests": 36,
+  "native_tasks": 12,
+  "body_capture_count": 45,
+  "ppm_count": 63,
+  "previews": [
+    {
+      "path": "/mnt/d/NexaUI/out/input289-input-active-window.png",
+      "sha256": "c703a292a32ddf3f1bc85f9fd5843ea9e433fd909bc711128a42c345e55c871c",
+      "width": 480,
+      "height": 360,
+      "rgb_roundtrip": true
+    },
+    {
+      "path": "/mnt/d/NexaUI/out/input289-input-disconnected-window.png",
+      "sha256": "26d55ea83ccf405bf6c693e4424228cba780def78734d5fdb074f59e51b301d4",
+      "width": 480,
+      "height": 360,
+      "rgb_roundtrip": true
+    }
+  ],
+  "observed_live_fixture_executables": [],
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "catalogue_ids": 103,
+  "scope": "Local atomic normalized-key/absolute-pointer fixture with native escape/focus-loss/disconnect; engine/text/IME/AX/GPU/physical gates open"
+}

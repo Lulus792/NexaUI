@@ -1,6 +1,17 @@
 # Aetheri adoption: initial source assessment
 
-Native CPU content for B03/W10/R06/R10/I07/I08/A01/A06/D08/P05/Q02/Q08.
+Content input/host release for B03/R06/R10/I01/I02/I08/A01/D08/P05/Q02/Q08.
+Consumer `dc6a549` retains SDK `368cd38`, existing staging and worker code.
+36 installed CTests and twelve native workflows pass; 45 whole-body captures
+retain frame checks. The native input case exercises release-before-arm, 2x
+absolute pointer, configured escape, real focus loss and Disconnect. Four
+compiled unit mutations and three native counterexamples are rejected.
+I08/D08 record scoped normalized input/escape support; selected-engine input,
+remote acknowledgements, text/IME/AX/GPU, actual Aetheri and physical/human/
+performance gates remain open. All 103 IDs/priorities and packets persist.
+[Evidence](external-content-input-report.md)
+
+Historical `2ef9a56` native CPU/focus checkpoint for B03/W10/R06/R10/I07/I08/A01/A06/D08/P05/Q02/Q08.
 Consumer `2ef9a56` retains SDK `368cd38` and the original staging adapter.
 Sixteen CTests and nine native workflows pass; 27 independent carrier captures
 check complete content rectangles. Generation and result-conditioned display
