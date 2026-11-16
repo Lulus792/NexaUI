@@ -686,7 +686,10 @@ if(NEXAUI_BUILD_TESTS)
             set_tests_properties(nexaui_wayland_text_input_v1_transactions PROPERTIES TIMEOUT 15)
             add_test(NAME nexaui_wayland_text_input_v1_burst
                 COMMAND nexaui_wayland_text_input_v1_tests --burst)
-            set_tests_properties(nexaui_wayland_text_input_v1_burst PROPERTIES TIMEOUT 15)
+            add_test(NAME nexaui_wayland_text_input_v1_burst_atomic
+                COMMAND nexaui_wayland_text_input_v1_tests --burst-atomic)
+            set_tests_properties(nexaui_wayland_text_input_v1_burst
+                nexaui_wayland_text_input_v1_burst_atomic PROPERTIES TIMEOUT 15)
             add_executable(nexaui_wayland_text_input_v3_tests
                 tests/test_wayland_text_input_v3.c
                 ${NEXAUI_WAYLAND_PROTOCOL_DIR}/xdg-shell-protocol.c

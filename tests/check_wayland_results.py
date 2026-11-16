@@ -27,6 +27,8 @@ REQUIRED = (
     'nexaui_wayland_ime_key_handoff_forwarded',
     'nexaui_wayland_ime_key_handoff_normal',
     'nexaui_wayland_ime_key_handoff_refresh',
+    'nexaui_wayland_text_input_v1_burst',
+    'nexaui_wayland_text_input_v1_burst_atomic',
 )
 
 

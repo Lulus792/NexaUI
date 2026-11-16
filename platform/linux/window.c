@@ -11,6 +11,7 @@
 #include "window_internal.h"
 #include "accessibility.h"
 #include "../../src/secure_zero.h"
+#include "../../src/ime_applied.h"
 
 #include <pthread.h>
 #include <stdlib.h>
@@ -486,6 +487,14 @@ nx_result nx_window_get_ime_preedit_for(nx_window *window,
     if (!nx_linux_on_owner_thread(window)) return NX_ERROR_STATE;
     return NX_LINUX_DISPATCH(nx_wayland_window_get_ime_preedit_for(window->native.wayland,
         target,revision,bytes,capacity,out_length,out_cursor_begin,out_cursor_end),NX_ERROR_UNSUPPORTED);
+}
+
+void nx_linux_window_ime_applied(nx_window *window, uint64_t target,
+    uint64_t source_revision, uint64_t before_revision, uint64_t after_revision) {
+    if (!window || !nx_linux_on_owner_thread(window) || window->retired ||
+        window->backend != NX_LINUX_WAYLAND) return;
+    nx_wayland_window_ime_applied(window->native.wayland, target,
+        source_revision, before_revision, after_revision);
 }
 
 nx_result nx_window_set_ime_surrounding_text(nx_window *window,

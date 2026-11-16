@@ -124,6 +124,8 @@ struct nx_wayland_window {
     size_t ime_surrounding_anchor;
     uint64_t ime_surrounding_target, ime_surrounding_revision;
     uint32_t ime_surrounding_serial;
+    uint32_t ime_surrounding_state_serial;
+    uint64_t ime_applied_source_revision, ime_applied_after_revision;
     uint32_t ime_pending_delete_before, ime_pending_delete_after;
     int32_t ime_v1_delete_index;
     uint32_t ime_v1_delete_length;
@@ -1127,6 +1129,9 @@ static void nx_wayland_ime_clear_surrounding(nx_wayland_window *window) {
     window->ime_surrounding_target = 0;
     window->ime_surrounding_revision = 0;
     window->ime_surrounding_serial = 0;
+    window->ime_surrounding_state_serial = 0;
+    window->ime_applied_source_revision = 0;
+    window->ime_applied_after_revision = 0;
     window->ime_surrounding_sent = 0;
     window->ime_surrounding_withdrawn = 0;
 }
@@ -1284,13 +1289,12 @@ static void nx_wayland_ime_preedit(void *data,
     int cursor_set = window->ime_v1_preedit_cursor_set;
     int32_t cursor = window->ime_v1_preedit_cursor;
     window->ime_v1_preedit_cursor_set = 0;
-    /* Cursor-rectangle commits may overtake a preedit reply. As for committed
-       text, accept the earlier serial only while its editor snapshot remains
-       current; a withdrawn, replaced or untagged snapshot stays strict. */
+    /* Cursor-only commits may overtake preedit. Require its original text
+       snapshot even when an older plain insertion could still be accepted. */
     int snapshot_current = window->ime_surrounding_target &&
         window->ime_surrounding_sent && !window->ime_surrounding_withdrawn &&
-        (uint32_t)(serial - window->ime_surrounding_serial) <=
-        (uint32_t)(window->ime_serial - window->ime_surrounding_serial);
+        (uint32_t)(serial - window->ime_surrounding_state_serial) <=
+        (uint32_t)(window->ime_serial - window->ime_surrounding_state_serial);
     if (!value || !nx_wayland_ime_serial_valid(window, serial) ||
         (serial != window->ime_serial && !snapshot_current) ||
         (window->ime_surrounding_target && !snapshot_current)) return;
@@ -1365,10 +1369,9 @@ static void nx_wayland_ime_commit(void *data, struct zwp_text_input_v1 *input,
         window->ime_surrounding_sent &&
         (uint32_t)(serial - window->ime_surrounding_serial) <=
         (uint32_t)(window->ime_serial - window->ime_surrounding_serial);
-    /* Cursor-rectangle commits advance the protocol serial without changing
-       the text snapshot. Permit an older in-flight commit only when it still
-       refers to the currently advertised editor revision; otherwise retain
-       the strict serial check, including for untagged/password input. */
+    /* Cursor updates and proven accepted IME edits may overtake in-flight
+       commits. External edits still advance the floor. The editor tags below
+       always name the current snapshot, never a previously applied event. */
     int valid = nx_wayland_ime_serial_valid(window, serial) && text &&
         !window->ime_surrounding_withdrawn &&
         (serial == window->ime_serial || snapshot_current);
@@ -1390,7 +1393,11 @@ static void nx_wayland_ime_commit(void *data, struct zwp_text_input_v1 *input,
     }
     nx_event deletion = {0};
     if (window->ime_v1_delete_pending && window->ime_v1_delete_length) {
-        if (!snapshot_current) {
+        /* An older insertion can continue at the current caret. Byte ranges
+           cannot be rebased across changed text without a separate mapping. */
+        if (!snapshot_current ||
+            (uint32_t)(serial - window->ime_surrounding_state_serial) >
+            (uint32_t)(window->ime_serial - window->ime_surrounding_state_serial)) {
             nx_wayland_ime_v1_clear_delete(window);
             return;
         }
@@ -1833,6 +1840,7 @@ static void nx_wayland_ime_activate(nx_wayland_window *window) {
             (uint32_t)window->ime_surrounding_cursor,
             (uint32_t)window->ime_surrounding_anchor);
         window->ime_surrounding_serial = window->ime_serial;
+        window->ime_surrounding_state_serial = window->ime_serial;
     }
     zwp_text_input_v1_commit_state(window->text_input, window->ime_serial);
 }
@@ -3188,6 +3196,24 @@ nx_result nx_wayland_window_get_ime_preedit_for(nx_wayland_window *window,
     return r;
 }
 
+void nx_wayland_window_ime_applied(nx_wayland_window *window, uint64_t target,
+    uint64_t source_revision, uint64_t before_revision, uint64_t after_revision) {
+    if (!window || !nx_wayland_on_owner_thread(window) || !window->text_input ||
+        window->text_input_v3 || window->ime_password || !window->ime_activated ||
+        !window->ime_entered || !window->ime_surrounding_sent ||
+        window->ime_surrounding_withdrawn || !target ||
+        target != window->ime_surrounding_target || !before_revision ||
+        !after_revision || before_revision == after_revision) return;
+    if ((!window->ime_applied_after_revision &&
+         source_revision == window->ime_surrounding_revision &&
+         before_revision == source_revision) ||
+        (window->ime_applied_source_revision == source_revision &&
+         window->ime_applied_after_revision == before_revision)) {
+        window->ime_applied_source_revision = source_revision;
+        window->ime_applied_after_revision = after_revision;
+    }
+}
+
 nx_result nx_wayland_window_set_ime_surrounding_text(nx_wayland_window *window,
     uint64_t target, uint64_t revision, const char *bytes, size_t length,
     size_t cursor, size_t anchor) {
@@ -3241,6 +3267,12 @@ nx_result nx_wayland_window_set_ime_surrounding_text(nx_wayland_window *window,
     memcpy(copy, bytes, length);
     copy[length] = '\0';
     int changed_target = target != window->ime_surrounding_target;
+    int ime_continuation = !changed_target && !window->ime_password &&
+        window->text_input && !window->text_input_v3 && window->ime_activated &&
+        window->ime_entered && window->ime_surrounding_sent &&
+        !window->ime_surrounding_withdrawn && window->ime_applied_after_revision &&
+        revision == window->ime_applied_after_revision;
+    uint32_t previous_floor = window->ime_surrounding_serial;
     int reenable = window->text_input_v3 && window->ime_activated &&
         (target != window->ime_surrounding_target ||
          !window->ime_surrounding_sent ||
@@ -3272,7 +3304,8 @@ nx_result nx_wayland_window_set_ime_surrounding_text(nx_wayland_window *window,
             copy, (uint32_t)cursor, (uint32_t)anchor);
         zwp_text_input_v1_commit_state(window->text_input,
             ++window->ime_serial);
-        window->ime_surrounding_serial = window->ime_serial;
+        window->ime_surrounding_serial = ime_continuation ? previous_floor : window->ime_serial;
+        window->ime_surrounding_state_serial = window->ime_serial;
         window->ime_surrounding_sent = 1;
     }
     return NX_OK;

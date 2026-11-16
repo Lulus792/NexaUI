@@ -10,6 +10,7 @@
 #include "document_presentation.h"
 #include "selection_model.h"
 #include "source_revision.h"
+#include "ime_applied.h"
 
 #include <stdint.h>
 #include <float.h>
@@ -7177,6 +7178,31 @@ static uint64_t nx_buffer_ime_revision(const nx_text_buffer *buffer,
     return hash ? hash : 1u;
 }
 
+static uint64_t nx_editor_ime_before(nx_window *window, const nx_event *event,
+    const nx_text_buffer *buffer, const void *owner, const nx_text_value_target *model) {
+#if defined(NEXAUI_BUILD_LINUX)
+    if (window && event->ime_target &&
+        (event->type == NX_EVENT_TEXT || event->type == NX_EVENT_IME_DELETE_RANGE ||
+         event->type == NX_EVENT_IME_DELETE_SURROUNDING ||
+         event->type == NX_EVENT_IME_TRANSACTION_BEGIN))
+        return nx_buffer_ime_revision(buffer, owner, model);
+#else
+    (void)window; (void)event; (void)buffer; (void)owner; (void)model;
+#endif
+    return 0;
+}
+
+static void nx_editor_ime_applied(nx_window *window, const nx_event *event,
+    uint64_t before, const nx_text_buffer *buffer, const void *owner,
+    const nx_text_value_target *model) {
+#if defined(NEXAUI_BUILD_LINUX)
+    if (before) nx_linux_window_ime_applied(window, event->ime_target,
+        event->ime_revision, before, nx_buffer_ime_revision(buffer, owner, model));
+#else
+    (void)window; (void)event; (void)before; (void)buffer; (void)owner; (void)model;
+#endif
+}
+
 static int nx_ime_sequence_current(const nx_ime_sequence *sequence,
     const nx_event *event,const nx_event_route *route,uint64_t current,const nx_window *window) {
     return sequence->target==event->ime_target && sequence->revision==event->ime_revision &&
@@ -7533,6 +7559,8 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
             size_t event_index=field->next_event_index;
             const nx_event *event = &ctx->frame_events.data[field->next_event_index];
             const nx_event_route *route=&ctx->frame_events.routes[field->next_event_index];
+            uint64_t ime_before=nx_editor_ime_before(field->ime_window,event,
+                field->buffer,field,&field->text_value);
             if (route->ime_end) {
                 int applied=0;
                 uint64_t current=nx_buffer_ime_revision(field->buffer,field,&field->text_value);
@@ -7546,6 +7574,8 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                 if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN) {
                     field->ime_sequence=(nx_ime_sequence){0};
                     if (applied) {
+                        nx_editor_ime_applied(field->ime_window,event,ime_before,
+                            field->buffer,field,&field->text_value);
                         field->ime_sequence=(nx_ime_sequence){event->ime_target,event->ime_revision,
                             nx_buffer_ime_revision(field->buffer,field,&field->text_value),route->focus_serial,field->ime_window};
                         field->pointer.active=0;field->suppress_caret_reveal=0;
@@ -7599,6 +7629,8 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                     if (result == NX_ERROR_ARGUMENT) { ime_batch_accepted=0; result=NX_OK; }
                     if (result != NX_OK) goto rollback;
                     if (ime_batch_accepted) {
+                        nx_editor_ime_applied(field->ime_window,event,ime_before,
+                            field->buffer,field,&field->text_value);
                         field->pointer.active=0; field->suppress_caret_reveal=0;
                         field->command_caret_valid=field->vertical_x_valid=0;
                     }
@@ -7668,6 +7700,8 @@ nx_result nx_numeric_field_widget(nx_context *ctx,
                         &handled, &valid);
                 if (result != NX_OK) goto rollback;
                 if (handled) field->command_caret_valid=field->vertical_x_valid=0;
+                if (handled) nx_editor_ime_applied(field->ime_window,event,ime_before,
+                    field->buffer,field,&field->text_value);
             }
             ++field->next_event_index;
         }
@@ -8587,6 +8621,8 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
             nx_text_value_target event_model=field->text_value;
             const nx_event *event = &ctx->frame_events.data[field->next_event_index];
             const nx_event_route *route=&ctx->frame_events.routes[field->next_event_index];
+            uint64_t ime_before=desc->password ? 0 : nx_editor_ime_before(desc->ime_window,
+                event,field->buffer,field,&field->text_value);
             if (route->ime_end) {
                 int applied=0;
                 uint64_t current=desc->ime_window?nx_field_ime_revision(field):nx_field_host_ime_revision(ctx,field);
@@ -8600,6 +8636,8 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
                 if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN) {
                     field->ime_sequence=(nx_ime_sequence){0};
                     if (applied) {
+                        nx_editor_ime_applied(desc->ime_window,event,ime_before,
+                            field->buffer,field,&field->text_value);
                         current=desc->ime_window?nx_field_ime_revision(field):nx_field_host_ime_revision(ctx,field);
                         field->ime_sequence=(nx_ime_sequence){event->ime_target,event->ime_revision,current,route->focus_serial,desc->ime_window};
                         field->pointer.active=0;field->suppress_caret_reveal=0;
@@ -8719,7 +8757,11 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
                         result = NX_OK;
                     }
                     if (result != NX_OK) goto rollback;
-                    if (ime_batch_accepted) field->suppress_caret_reveal=field->command_caret_valid=field->vertical_x_valid=0;
+                    if (ime_batch_accepted) {
+                        nx_editor_ime_applied(desc->ime_window,event,ime_before,
+                            field->buffer,field,&field->text_value);
+                        field->suppress_caret_reveal=field->command_caret_valid=field->vertical_x_valid=0;
+                    }
                 }
             } else if (event->type == NX_EVENT_TEXT &&
                        event->ime_target) {
@@ -8738,6 +8780,8 @@ static nx_result nx_text_field_widget_impl(nx_context *ctx,
                                                          &handled);
                     if (result != NX_OK) goto rollback;
                     if (handled) field->suppress_caret_reveal = field->command_caret_valid = field->vertical_x_valid = 0;
+                    if (handled) nx_editor_ime_applied(desc->ime_window,event,ime_before,
+                        field->buffer,field,&field->text_value);
                 }
             } else if (event->type == NX_EVENT_KEY_DOWN ||
                        event->type == NX_EVENT_TEXT) {
