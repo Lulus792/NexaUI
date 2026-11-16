@@ -85,6 +85,21 @@ so a later acquire can retry. There are no hidden threads, files, services or
 window ownership in this initial view/model layer. The test writes only its
 explicitly supplied create-only PPM output.
 
+## Exporting a published view
+
+Use `physim_export_render` with a successful model snapshot, the current
+original plot range, the font collection, and explicit logical dimensions
+and scale. Pass a zero-initialized `physim_export_image`. The result owns
+packed RGBA8 pixels with each scaled extent rounded up. For example,
+641×401 at 1.25× produces 802×502 pixels. Release the result with
+`physim_export_release`.
+
+The export builds the same scene and plot in a separate context from the
+published parameters. It can run on the UI owner thread while an interactive
+frame has a live render lease. It borrows no window, live input, focus,
+unsaved field drafts or presentation state. Caller-owned image encoding,
+color management and printing remain outside this adapter.
+
 ## Checked and open scope
 
 The original plot test checks anchored zoom/pan, extremes and clipping. The

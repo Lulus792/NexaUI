@@ -123,9 +123,12 @@ static nx_result sample(void *user,size_t index,nx_series_point *point) {
     if(index>=PHYSIM_SAMPLE_COUNT||!point)return NX_ERROR_ARGUMENT;
     *point=(nx_series_point){model->samples[index].time,model->samples[index].values[0]};return NX_OK;
 }
+static int valid_view_size(double width,double height,double scale) {
+    return isfinite(width) && isfinite(height) && width>=640 && width<=2048 &&
+        height>=400 && height<=1200 && isfinite(scale) && scale>=.5 && scale<=2;
+}
 nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float height,double scale,unsigned *action) {
-    if(!v||!context||!action||!isfinite(width)||!isfinite(height)||width<640||width>2048||height<400||height>1200||
-        !isfinite(scale)||scale<.5||scale>2)return NX_ERROR_ARGUMENT;
+    if(!v||!context||!action||!valid_view_size(width,height,scale))return NX_ERROR_ARGUMENT;
     *action=0;if(v->leased)return NX_ERROR_STATE;
     nx_result r=nx_begin_frame(context,width,height,0);
     nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,width,height},.name=span("Original Physim pendulum reference")};
@@ -190,4 +193,60 @@ nx_result physim_view_destroy(physim_view **view) {
     if(v->surface) { nx_result r=nx_viewport_surface_destroy(v->surface);if(r!=NX_OK)return r; }
     nx_numeric_field_destroy(v->length);nx_numeric_field_destroy(v->angle);nx_context_destroy(v->canvas);
     free(v->pixels);free(v);*view=NULL;return NX_OK;
+}
+
+nx_result physim_export_render(const physim_snapshot *model, const ps_plot_view *plot,
+    const nx_font_collection *fonts, uint32_t width, uint32_t height, double scale,
+    physim_export_image *out) {
+    if (!model || !plot || !fonts || !out || out->pixels ||
+        !valid_view_size(width,height,scale) || !ps_scene_valid(&model->scene))
+        return NX_ERROR_ARGUMENT;
+    physim_export_image image = {
+        .width = (uint32_t)ceil((double)width * scale),
+        .height = (uint32_t)ceil((double)height * scale),
+    };
+    image.stride = (size_t)image.width * 4u;
+    if (image.stride > (40u * 1024u * 1024u) / image.height) return NX_ERROR_LIMIT;
+
+    /* The interactive view can edit its model and plot. Give the export its
+       own copies and context so it cannot consume live input or alter a lease. */
+    physim_snapshot *snapshot = malloc(sizeof(*snapshot));
+    if (!snapshot) return NX_ERROR_MEMORY;
+    *snapshot = *model;
+    ps_plot_view range = *plot;
+    nx_context *context = NULL;
+    physim_view *view = NULL;
+    nx_result result = physim_view_create(snapshot,&range,fonts,&view);
+    if (result == NX_OK) result = nx_context_create(NULL,&context);
+    if (result == NX_OK) result = nx_context_set_text_raster_scale(context,(float)scale);
+    unsigned action = 0;
+    if (result == NX_OK)
+        result = physim_view_frame(view,context,(float)width,(float)height,scale,&action);
+    const nx_command *commands = NULL;
+    size_t count = 0;
+    if (result == NX_OK) result = nx_frame_commands(context,&commands,&count);
+    if (result == NX_OK) {
+        image.pixels = malloc(image.stride * image.height);
+        if (!image.pixels) result = NX_ERROR_MEMORY;
+    }
+    if (result == NX_OK)
+        result = nx_headless_render_scaled(commands,count,image.pixels,image.width,
+            image.height,image.stride,(nx_color){1,1,1,1},scale);
+    if (view && view->leased) {
+        nx_result completed = physim_view_complete(view);
+        if (result == NX_OK) result = completed;
+    }
+    nx_result destroyed = physim_view_destroy(&view);
+    if (result == NX_OK) result = destroyed;
+    nx_context_destroy(context);
+    free(snapshot);
+    if (result == NX_OK) *out = image;
+    else free(image.pixels);
+    return result;
+}
+
+void physim_export_release(physim_export_image *image) {
+    if (!image) return;
+    free(image->pixels);
+    *image = (physim_export_image){0};
 }

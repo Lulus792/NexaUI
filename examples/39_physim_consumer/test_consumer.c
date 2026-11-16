@@ -69,12 +69,13 @@ static int type(nx_context *context,const char *text) {
     for(;*text;++text) { nx_event e={.type=NX_EVENT_TEXT,.scalar=(unsigned char)*text};if(nx_context_queue_event(context,&e)!=NX_OK)return 0; }
     return 1;
 }
-static int save(const char *path,const uint8_t *pixels) {
+static int save_size(const char *path,const uint8_t *pixels,uint32_t width,uint32_t height) {
     FILE *f=fopen(path,"wbx");if(!f)return 0;
-    int ok=fprintf(f,"P6\n%u %u\n255\n",WIDTH,HEIGHT)>0;
-    for(size_t i=0;ok&&i<(size_t)WIDTH*HEIGHT;++i)ok=fwrite(pixels+i*4u,1,3,f)==3;
+    int ok=fprintf(f,"P6\n%u %u\n255\n",width,height)>0;
+    for(size_t i=0;ok&&i<(size_t)width*height;++i)ok=fwrite(pixels+i*4u,1,3,f)==3;
     if(fclose(f))ok=0;return ok;
 }
+static int save(const char *path,const uint8_t *pixels) { return save_size(path,pixels,WIDTH,HEIGHT); }
 static int view_test(const char *path,const char *image) {
     int ok=0,valid=0;unsigned action=0;nx_context *context=NULL;physim_view *view=NULL;font_data font={0};ps_plot_view plot={0},reference;
     physim_snapshot *model=malloc(sizeof(*model)),*before=malloc(sizeof(*before));
@@ -159,11 +160,80 @@ done:
     if(view) { (void)physim_view_complete(view);physim_view_destroy(&view); }
     nx_context_destroy(context);close_font(&font);free(model);free(before);free(pixels);return ok;
 }
+static int export_test(const char *path,const char *output) {
+    const uint32_t width=641,height=401,physical_width=802,physical_height=502;
+    const double scale=1.25;
+    int ok=0;
+    unsigned action=0;
+    font_data font={0};
+    ps_plot_view plot={0},saved_plot;
+    physim_snapshot *model=malloc(sizeof(*model)),*saved=malloc(sizeof(*saved));
+    physim_export_image image={0}, rejected={0};
+    physim_view *live=NULL,*reference=NULL;
+    nx_context *live_context=NULL,*reference_context=NULL;
+    const nx_command *commands=NULL;
+    size_t count=0;
+    size_t live_bytes=(size_t)WIDTH*HEIGHT*4u;
+    size_t image_bytes=(size_t)physical_width*physical_height*4u;
+    uint8_t *before=malloc(live_bytes),*after=malloc(live_bytes),*expected=malloc(image_bytes);
+    CHECK(model&&saved&&before&&after&&expected&&open_font(path,&font));
+    CHECK(physim_model_run(2.5,.45,7,model)==NX_OK);
+    ps_plot_view_reset(&plot);
+    CHECK(ps_plot_view_zoom(&plot,2,.5,.5));
+    saved_plot=plot;
+    *saved=*model;
+    CHECK(nx_context_create(NULL,&live_context)==NX_OK);
+    CHECK(physim_view_create(model,&plot,font.fonts,&live)==NX_OK);
+    CHECK(physim_view_frame(live,live_context,WIDTH,HEIGHT,1,&action)==NX_OK);
+    CHECK(nx_frame_commands(live_context,&commands,&count)==NX_OK);
+    CHECK(nx_headless_render(commands,count,before,WIDTH,HEIGHT,WIDTH*4u,(nx_color){1,1,1,1})==NX_OK);
+
+    CHECK(physim_export_render(model,&plot,font.fonts,width,height,scale,&image)==NX_OK);
+    CHECK(image.width==physical_width&&image.height==physical_height&&image.stride==physical_width*4u);
+    uint8_t *first=image.pixels;
+    CHECK(physim_export_render(model,&plot,font.fonts,width,height,scale,&image)==NX_ERROR_ARGUMENT&&image.pixels==first);
+    CHECK(physim_export_render(model,&plot,font.fonts,639,height,scale,&rejected)==NX_ERROR_ARGUMENT);
+    CHECK(physim_export_render(model,&plot,font.fonts,UINT32_MAX,height,scale,&rejected)==NX_ERROR_ARGUMENT);
+    CHECK(physim_export_render(model,&plot,font.fonts,width,height,NAN,&rejected)==NX_ERROR_ARGUMENT);
+    CHECK(!rejected.pixels&&!rejected.width&&!rejected.height&&!rejected.stride);
+    CHECK(!memcmp(saved,model,sizeof(*model))&&!memcmp(&saved_plot,&plot,sizeof(plot)));
+    CHECK(physim_view_destroy(&live)==NX_ERROR_STATE&&live);
+    CHECK(nx_headless_render(commands,count,after,WIDTH,HEIGHT,WIDTH*4u,(nx_color){1,1,1,1})==NX_OK);
+    CHECK(!memcmp(before,after,live_bytes));
+    CHECK(physim_view_complete(live)==NX_OK);
+
+    CHECK(nx_context_create(NULL,&reference_context)==NX_OK);
+    CHECK(nx_context_set_text_raster_scale(reference_context,(float)scale)==NX_OK);
+    CHECK(physim_view_create(saved,&saved_plot,font.fonts,&reference)==NX_OK);
+    CHECK(physim_view_frame(reference,reference_context,(float)width,(float)height,scale,&action)==NX_OK&&!action);
+    CHECK(nx_frame_commands(reference_context,&commands,&count)==NX_OK);
+    CHECK(nx_headless_render_scaled(commands,count,expected,physical_width,physical_height,
+        (size_t)physical_width*4u,(nx_color){1,1,1,1},scale)==NX_OK);
+    CHECK(!memcmp(expected,image.pixels,image_bytes));
+    CHECK(physim_view_complete(reference)==NX_OK);
+    CHECK(physim_export_render(model,&plot,font.fonts,width,height,.5,&rejected)==NX_OK);
+    CHECK(rejected.width==321&&rejected.height==201&&rejected.stride==321u*4u);
+    CHECK(save_size(output,image.pixels,image.width,image.height));
+    physim_export_release(&image);
+    CHECK(!image.pixels&&!image.width&&!image.height&&!image.stride);
+    ok=1;
+done:
+    if(live) { (void)physim_view_complete(live);physim_view_destroy(&live); }
+    if(reference) { (void)physim_view_complete(reference);physim_view_destroy(&reference); }
+    nx_context_destroy(live_context);
+    nx_context_destroy(reference_context);
+    physim_export_release(&image);
+    physim_export_release(&rejected);
+    close_font(&font);
+    free(model);free(saved);free(before);free(after);free(expected);
+    return ok;
+}
 int main(int argc,char **argv) {
     if(argc!=4)return 2;int ok=0;
     if(!strcmp(argv[1],"model"))ok=model_test();
     else if(!strcmp(argv[1],"view"))ok=view_test(argv[2],argv[3]);
     else if(!strcmp(argv[1],"failure"))ok=failure_test(argv[2]);
+    else if(!strcmp(argv[1],"export"))ok=export_test(argv[2],argv[3]);
     else return 2;
     if(ok)printf("Original Physim consumer %s passed\n",argv[1]);return ok?0:1;
 }

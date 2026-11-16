@@ -26,4 +26,21 @@ nx_result physim_view_complete(physim_view *view);
    apply/dispatch/destroy. Zoom/pan/fit call original ps_plot_view functions. */
 nx_result physim_view_dispatch(physim_view *view, unsigned action, int *valid);
 nx_result physim_view_destroy(physim_view **view);
+
+typedef struct physim_export_image {
+    uint8_t *pixels;
+    uint32_t width, height;
+    size_t stride;
+} physim_export_image;
+
+/* Render an immutable published snapshot and a copy of the original plot range
+   in a separate context. Use the same owner thread as the live view, if any.
+   Logical size is 640..2048 by 400..1200, scale is finite in [0.5, 2].
+   The packed RGBA8 dimensions round each scaled extent up. Zero-initialize
+   out, which is assigned only on success and holds at most 40 MiB. A live
+   output must be released before reuse. The caller owns file encoding. */
+nx_result physim_export_render(const physim_snapshot *model, const ps_plot_view *plot,
+    const nx_font_collection *fonts, uint32_t width, uint32_t height, double scale,
+    physim_export_image *out);
+void physim_export_release(physim_export_image *image);
 #endif
