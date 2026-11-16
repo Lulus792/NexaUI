@@ -211,3 +211,33 @@ The local manifest `physim-picking367-final.json` lists each member hash.
 Open scope includes production Physim adoption, a camera, a browsable object
 tree, native arrow and line hit coverage, spoken screenreader output and GPU
 or physical-display acceptance.
+
+## Object tree checkpoint, 2026-11-17
+
+Consumer `289ced7ed669c45adad2cd127a37ce01654b5e6e` builds the tree with the
+installed SDK `b53513b390dbf135050a858fbdfd434edc04ad08`. Physim's original
+parent lookup provides the hierarchy. NexaUI's `nx_tree` and `nx_tree_item`
+publish nested tree roles, stable per-object IDs, and selectable, expandable
+rows. The tree swaps into the plot pane and keeps the viewport visible. Tree
+and viewport selection share the inspector. A collapsed ancestor receives
+focus from a hidden descendant. The plot toggle receives focus when the
+assistive close action removes a focused row.
+
+Six installed CTests and four private Wayland cases passed in each of static
+Release, shared Release and ASan/UBSan/LSan on Alpine with Clang 22.1.3.
+The installed tree test counts twelve rows at 640×400 and verifies hierarchy,
+keyboard selection, stable IDs through collapse, and focus return. The
+independent AT-SPI peer verifies native role and parentage, uses real keys to
+navigate and select, collapses an ancestor through its native action, and
+clicks the original sphere to reopen its branch and select its row. It then
+switches back to the plot and verifies focus return. The right-hand scene
+region in the native image matches the previous checkpoint pixel for pixel.
+The 640×400 headless image was inspected separately using the exact consumer
+library and a capture-only test harness.
+
+The local archive `nexaui-physim-tree370.tar.gz` binds source, commands, logs,
+CTest XML and images. Readback verified SHA-256
+`3f433c1d7427545de9860e89c12cc24b6b94935e03023d4b9004a0deec790d48`.
+Local receipt `physim-tree370-final.json` lists each member hash.
+Production Physim integration, camera controls, native line and arrow hit
+coverage, spoken screenreader output and GPU/physical acceptance remain open.

@@ -76,12 +76,21 @@ background clears the selection. A cancelled capture or a capture which spans
 a size, scale or model-generation change leaves the selection alone. Text
 labels and group entries remain available through **Inspect next**.
 
+**Scene tree** opens the original object hierarchy beside the viewport.
+Tab from **Show plot** enters the tree. Use Up and Down to move, Right and
+Left to expand, collapse or move between levels, and Enter to select a row.
+Viewport selection expands the chosen object's ancestors. Collapsing a branch
+preserves its selected object in the inspector and returns hidden focus to the
+nearest visible ancestor. **Show plot** restores the plot pane and returns
+focus to its toggle if a row held focus. A successful Apply clears selection
+and expands the hierarchy for the newly published model.
+
 The app-owned CPU renderer projects the original scene's line, sphere, arrow,
 label and group objects into a bounded16MiB image. Original object order,
 positions, colors, labels and group identities remain in the snapshot. The
 labelled orthographic reference projection supports picking of its three
-geometry types. Physim's production 3D renderer, camera model and full
-object-tree accessibility remain open. Unsupported
+geometry types. Physim's production 3D renderer, camera model, and validation
+with screen readers and other platforms remain open. Unsupported
 scene shapes return an explicit error. Original scene text/line sizes scale
 with viewport backing. No GPU texture import is implemented.
 
@@ -132,9 +141,11 @@ reset after model publication. It also checks viewport picking at 1× and 2×,
 background deselection, release outside the viewport, cancellation and resize
 during an active capture.
 The failure case checks live leases, bounded geometry and twelve actual
-context-allocation failures, then retries with a fresh context.
+context-allocation failures, then retries with a fresh context. The tree case
+checks all twelve rows at minimum window size, parent IDs, navigation, stable
+identity and focus return on collapse and close.
 
-These five CTests are installed/headless C17 consumer checks, not native-window, IME,
+These six CTests are installed/headless C17 consumer checks, not native-window, IME,
 screenreader, real-runner/worker, filesystem/storage, approved-design or GPU/
 physical adoption evidence. Native keyboard/IME/accessibility composition,
 full scene/camera/object tree, production dataset/plot varieties and original
@@ -168,7 +179,9 @@ original-model changes, Zoom/Pan/Fit, context/view replacement, 2x source backin
 plot/viewport/inspector Tab navigation and Close. The independent peer checks
 original object metadata after real keyboard and AT-SPI button activation and
 on native clicks at both backing scales. It checks retention on invalid Apply
-and reset on publication. It runs the original
+and reset on publication. The same peer verifies the actual tree item role,
+parent relationships, selection, keyboard navigation and AT-SPI collapse.
+It runs the original
 experiment separately and requires substantial actual screen-pixel coverage of
 its original bob at the expected position. Whole client PPMs are retained.
 
