@@ -60,6 +60,14 @@ separate temporary state and publishes one new generation only on success.
 Invalid drafts leave the model untouched. Zoom/Pan/Fit dispatch to the original
 app plot functions; UI-owned state never becomes a second physics model.
 
+Tab from the viewport to **Inspect next** and press Enter, or activate the
+button through accessibility. The read-only label above the viewport shows
+the selected object's position in the list, original name or shape, original
+ID and parent ID. It follows the published scene order and wraps to the first
+object. An invalid Apply preserves the selection. A newly published generation
+or a replacement view starts at the object count. Inspection changes only
+view-local state after the render lease is complete.
+
 The app-owned CPU renderer projects the original scene's line, sphere, arrow,
 label and group objects into a bounded16MiB image. Original object order,
 positions, colors, labels and group identities remain in the snapshot. This is
@@ -71,7 +79,8 @@ with viewport backing. No GPU texture import is implemented.
 One owner thread builds the UI. The returned commands and source pixels remain
 borrowed through rendering. Call `physim_view_complete` only when rendering is
 finished or the frame has deliberately been discarded. Apply, another frame
-and destroy return STATE while the viewport lease is live. Destroy preserves
+and destroy return STATE while the viewport lease is live. Inspection follows
+the same dispatch rule. Destroy preserves
 the object on that refusal. Keep borrowed model/plot/fonts alive throughout.
 Snapshot replacement must happen through the owner after lease completion.
 View recreation retains the model and original plot state; widget drafts are
@@ -109,10 +118,12 @@ limits. It checks whole-output preservation on rejected inputs. The view case
 uses normalized keyboard input for Zoom and invalid/valid numeric entry,
 requires explicit Apply, checks original plot-state equivalence, scene pixels,
 whole-frame equality after view recreation, model preservation and2x backing.
+It checks all twelve inspector entries, wraparound, lease refusal and selection
+reset after model publication.
 The failure case checks live leases, bounded geometry and twelve actual
 context-allocation failures, then retries with a fresh context.
 
-These four CTests are installed/headless C17 consumer checks, not native-window, IME,
+These five CTests are installed/headless C17 consumer checks, not native-window, IME,
 screenreader, real-runner/worker, filesystem/storage, approved-design or GPU/
 physical adoption evidence. Native keyboard/IME/accessibility composition,
 full scene/camera/object tree, production dataset/plot varieties and original
@@ -143,7 +154,9 @@ existing optional private tool-prefix variables. Each run owns its Xvfb seat,
 compositor work directory, bus, host and peer. No existing desktop is controlled.
 `full` exercises actual keyboard validation/Apply, native editable-text setting,
 original-model changes, Zoom/Pan/Fit, context/view replacement, 2x source backing,
-plot/viewport Tab navigation and Close. The independent peer runs the original
+plot/viewport/inspector Tab navigation and Close. The independent peer checks
+original object metadata after real keyboard and AT-SPI button activation,
+including retention on invalid Apply and reset on publication. It runs the original
 experiment separately and requires substantial actual screen-pixel coverage of
 its original bob at the expected position. Whole client PPMs are retained.
 

@@ -139,3 +139,34 @@ NexaCloud's original application locally has no root Git revision and retains
 ongoing uncommitted development; no pin/source/application change is made there.
 Existing NexaCloud reference-scene evidence remains attributed to its original
 revisions. All103 requirements and remaining ordered packets persist.
+
+## Inspector checkpoint, 2026-11-17
+
+Consumer `c26d4a13a957173c8bffde8f91e2f11353ee5bbb` uses installed NexaUI
+`b53513b390dbf135050a858fbdfd434edc04ad08` and the same 27 inputs from Physim
+`01ccc27a94ca611c9e9cdd8ccde0da426aee2378`. The app-owned inspector reads the
+published scene order, names or shape names, IDs and parent IDs. The existing
+button and label APIs provide keyboard navigation and AT-SPI access. The
+view dispatches selection after lease completion. Invalid Apply retains the
+selection. Successful Apply and view replacement start at the object count.
+
+Five installed CTests and four private Wayland cases each passed in static
+Release, shared Release and ASan/UBSan/LSan on Alpine with Clang 22.1.3.
+The headless check covers all twelve entries, wraparound, live-lease refusal
+and model and plot preservation. The independent AT-SPI peer advances from
+the viewport with Tab, activates with Enter and the native press action,
+then reads the original IDs and parent relationships on the label. It checks
+selection retention on rejected parameters and reset on publication. Existing
+numeric IME cancellation, replacement and close cases ran in every profile.
+
+The inspected native capture is byte-identical across the three profiles.
+Each capture differs from its initial frame by 934 RGB pixels in the summary
+row and zero RGB pixels in the 376×384 scene rectangle. The local archive
+`nexaui-physim-inspector358.tar.gz` contains exact source, commands, logs,
+CTest XML and before/after captures. Readback verified SHA-256
+`a79725459271d519bd36a9e47814f1b9d79270d579a93a96420158a27eeb9a61`.
+Local receipt `physim-inspector358-final.json` lists each member hash.
+
+R11 remains partial. Production Physim adoption and scheduling, spatial
+picking and camera controls, a browsable object tree, spoken screenreader
+output and GPU/physical acceptance still need evidence.
