@@ -91,8 +91,9 @@ viewport. Yaw runs from −180° to 180°, pitch from −75° to 75°, and zoom 
 standard accessibility APIs. The camera orbits the midpoint of the reference
 pendulum. Drawing and picking share the orthographic projection. A camera
 change during a capture discards the pending pick. **Reset camera** restores
-the front view at 100%. Pane changes and Apply preserve the camera. A new
-view and the published-model export start with the front view.
+the front view at 100%. Pane changes and Apply preserve the camera. **Export
+view** requests a render of the current camera together with the current
+plot range. A new view starts with the front view.
 
 The app-owned CPU renderer projects the original scene's line, sphere, arrow,
 label and group objects into a bounded16MiB image. Original object order,
@@ -123,18 +124,21 @@ explicitly supplied create-only PPM output.
 
 ## Exporting a published view
 
-Use `physim_export_render` with a successful model snapshot, the current
-original plot range, the font collection, and explicit logical dimensions
-and scale. Pass a zero-initialized `physim_export_image`. The result owns
+Use `physim_view_export` with a live view and explicit logical dimensions
+and scale to take the current camera, published model and plot range.
+Use `physim_export_render` with a model snapshot, plot range and font
+collection to request the front pose. Pass a zero-initialized
+`physim_export_image` to either entry point. The result owns
 packed RGBA8 pixels with each scaled extent rounded up. For example,
 641×401 at 1.25× produces 802×502 pixels. Release the result with
 `physim_export_release`.
 
-The export builds the same scene and plot in a separate context from the
-published parameters. It can run on the UI owner thread while an interactive
-frame has a live render lease. It borrows no window, live input, focus,
-unsaved field drafts or presentation state. Caller-owned image encoding,
-color management and printing remain outside this adapter.
+The export builds the scene and plot in a separate context from the published
+parameters and chosen camera. It can run on the UI owner thread while an
+interactive frame has a live render lease. Only the model, plot range and
+camera contribute application state to the output. Image encoding is up to
+the caller. The native fixture writes `physim-camera-export.ppm` in its private
+work directory at 641×401 and 1.25×, and refuses to overwrite an existing file.
 
 ## Checked and open scope
 
@@ -155,6 +159,8 @@ checks all twelve rows at minimum window size, parent IDs, navigation, stable
 identity and focus return on collapse and close.
 The camera case checks all three slider values, a cancelled pick through a
 camera change, live-lease refusal and pixel equality after reset.
+The export case checks camera and plot preservation, the tilted image and its
+independence from a live viewport lease and the lifetime of the source view.
 
 These seven CTests are installed/headless C17 consumer checks, not native-window, IME,
 screenreader, real-runner/worker, filesystem/storage, approved-design or GPU/
@@ -194,6 +200,8 @@ and reset on publication. The same peer verifies the actual tree item role,
 parent relationships, selection, keyboard navigation and AT-SPI collapse.
 It also exercises the camera sliders with native keys, clicks the sphere at its
 independently predicted position in the tilted view and verifies the front reset.
+It requests a fractional-scale export through AT-SPI and reads the expected
+sphere pixels from the output file.
 It runs the original
 experiment separately and requires substantial actual screen-pixel coverage of
 its original bob at the expected position. Whole client PPMs are retained.

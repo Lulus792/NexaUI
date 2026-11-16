@@ -40,3 +40,40 @@ The lossless local image is `physim-export346.png`.
 This advances R12 for the installed Physim CPU view. Exporting other Aetheri
 views, native compositor screenshot capture, printing, color management and
 engine-specific encoding still have separate acceptance work.
+
+## Current camera export, 2026-11-17
+
+Consumer `e110397cee6ffc45c97e18792274665c47e94cff` uses installed NexaUI
+`b53513b390dbf135050a858fbdfd434edc04ad08` and the same 27 pinned Physim
+inputs. `physim_view_export` takes the published model, original plot range
+and current camera from the view on its owner thread. The existing
+`physim_export_render` still provides a front-pose entry point for callers
+with just the model and plot. Both use the same separate render context.
+The caller owns packed RGBA8 and chooses the encoder.
+
+The installed test renders 641×401 at 1.25× into 802×502, verifies plot-region
+RGB equality and scene changes, and exports while an interactive command
+stream retains its viewport lease. It rerenders that stream and compares
+every pixel, checks the model and plot bytes, and then reads the owned export
+after destroying the interactive view. A compiled counterexample substitutes
+the front camera and fails the scene change assertion.
+
+The independent Wayland/AT-SPI peer changes yaw, pitch and zoom, then
+activates **Export view**. The native host writes a create-only PPM in the
+private fixture directory. The peer reads the file and finds 186 original
+sphere pixels at the independently computed tilted position. A second request
+to the occupied path preserves the file and the native workflow continues.
+At the same pose and dimensions, the installed and native exports have
+identical scene pixels. Their plot ranges differ because the workflows
+intentionally request different ranges.
+
+All 21 installed CTests and twelve private Wayland cases passed across static
+Release, shared Release and ASan/UBSan/LSan on Alpine with Clang 22.1.3. Each
+export workflow produced byte-identical RGB across profiles. The archive
+`nexaui-physim-camera-export381.tar.gz` binds exact source, logs, images and
+the rejected counterexample. Readback verified SHA-256
+`fe7899178dbf7d7aaa4f853b41a17c3679a601125a67cf95e3f323fb904f7c70`.
+Local receipt `physim-camera-export381-final.json` lists every member hash.
+
+Production Physim integration, other Aetheri surfaces, compositor screenshot
+capture, printing and color management remain open.
