@@ -37,6 +37,8 @@ typedef struct test_server {
     uint32_t surrounding_cursor, surrounding_anchor;
     atomic_int surrounding_count;
     int field_commit_sent;
+    atomic_int burst_phase;
+    uint32_t burst_serial;
 } test_server;
 
 static void resource_destroy(struct wl_client *client,
@@ -261,6 +263,23 @@ static void text_commit_state(struct wl_client *client,
     (void)client;
     CHECK(server->enabled);
     server->serial = serial;
+    int burst=atomic_load(&server->burst_phase);
+    if (burst) {
+        if (burst==1 && !strcmp(server->surrounding,"1")) {
+            server->burst_serial=serial;
+            zwp_text_input_v1_send_commit_string(resource,serial,"2");
+            atomic_store(&server->burst_phase,2);
+        } else if (burst==2 && !strcmp(server->surrounding,"12")) {
+            /* The IME has not yet observed the application's resulting state.
+               Its next real commit still names the earlier known serial. */
+            zwp_text_input_v1_send_commit_string(resource,server->burst_serial,".");
+            atomic_store(&server->burst_phase,3);
+        } else if (burst==3 && !strcmp(server->surrounding,"12.")) {
+            zwp_text_input_v1_send_commit_string(resource,serial,"5");
+            atomic_store(&server->burst_phase,4);
+        }
+        return;
+    }
     int transaction=atomic_exchange(&server->transaction_case,0);
     if (transaction) {
         if (transaction!=4) zwp_text_input_v1_send_delete_surrounding_text(resource,transaction==5?-3:-1,1);
@@ -448,9 +467,51 @@ static void transaction_cases(test_server *server,nx_window *window) {
     puts("Wayland v1 IME boundaries:7 wire cases passed");
 }
 
+static int burst_frame(nx_context *context,nx_window *window,nx_numeric_field *field,
+    const nx_numeric_field_desc *desc) {
+    size_t routed=0;nx_interaction_state interaction;int valid=0;
+    return nx_window_route_events(window,context,&routed)==NX_OK&&nx_begin_frame(context,160,60,0)==NX_OK&&
+        nx_numeric_field_widget(context,desc,field,&interaction,&valid)==NX_OK&&nx_end_frame(context)==NX_OK;
+}
+#define BURST_CHECK(x) do { if(!(x)) { fprintf(stderr,"v1 burst line %d: %s\n",__LINE__,#x);goto done; } } while(0)
+static int burst_cases(test_server *server,nx_window *window) {
+    int ok=0;uint8_t font_bytes[512];font_fixture(font_bytes);
+    nx_font *font=NULL;nx_font_collection *fonts=NULL;nx_context *context=NULL;nx_numeric_field *number=NULL;
+    BURST_CHECK(nx_font_open(font_bytes,sizeof(font_bytes),NULL,&font)==NX_OK);
+    BURST_CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK&&nx_font_collection_add(fonts,font)==NX_OK);
+    BURST_CHECK(nx_numeric_field_create(1,1024,&number)==NX_OK&&nx_numeric_field_set_ime_window(number,window)==NX_OK);
+    BURST_CHECK(nx_context_create(NULL,&context)==NX_OK);
+    nx_numeric_field_desc desc={.id=82,.bounds={0,0,120,28},.name={"Number",6},.fonts=fonts,
+        .pixels_per_em=16,.glyph_cache_bytes=4096,.minimum=0,.maximum=20};
+    atomic_store(&server->burst_phase,1);
+    BURST_CHECK(burst_frame(context,window,number,&desc)&&nx_focus_set(context,82)==NX_OK);
+    BURST_CHECK(burst_frame(context,window,number,&desc));
+    BURST_CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    BURST_CHECK(burst_frame(context,window,number,&desc));
+    nx_utf8_span draft;double value=0;
+    BURST_CHECK(nx_numeric_field_text(number,&draft)==NX_OK&&draft.length==2&&!memcmp(draft.data,"12",2));
+    BURST_CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    BURST_CHECK(atomic_load(&server->burst_phase)==3);
+    BURST_CHECK(burst_frame(context,window,number,&desc));
+    BURST_CHECK(nx_numeric_field_text(number,&draft)==NX_OK);
+    fprintf(stdout,"V1_BURST draft=%.*s\n",(int)draft.length,draft.data);
+    BURST_CHECK(draft.length==3&&!memcmp(draft.data,"12.",3));
+    BURST_CHECK(nx_numeric_field_value(number,&value)==NX_OK&&value==1);
+    BURST_CHECK(wl_display_roundtrip(nx_window_wayland_display(window))>=0);
+    BURST_CHECK(burst_frame(context,window,number,&desc));
+    BURST_CHECK(nx_numeric_field_text(number,&draft)==NX_OK&&draft.length==4&&!memcmp(draft.data,"12.5",4));
+    int valid=0;BURST_CHECK(nx_numeric_field_commit(number,0,20,&valid)==NX_OK&&valid);
+    BURST_CHECK(nx_numeric_field_value(number,&value)==NX_OK&&value==12.5);ok=1;
+done:
+    if(nx_window_set_ime_enabled(window,0)!=NX_OK)ok=0;
+    if(wl_display_roundtrip(nx_window_wayland_display(window))<0)ok=0;
+    nx_context_destroy(context);nx_numeric_field_destroy(number);nx_font_collection_destroy(fonts);nx_font_close(font);
+    return ok;
+}
 int main(int argc,char **argv) {
     int transactions=argc==2 && !strcmp(argv[1],"--transactions");
-    CHECK(argc==1 || transactions);
+    int burst=argc==2 && !strcmp(argv[1],"--burst"),result=0;
+    CHECK(argc==1 || transactions || burst);
     test_server server = {0};
     char runtime[] = "/tmp/nexaui-wayland-v1-XXXXXX";
     CHECK(mkdtemp(runtime));
@@ -484,6 +545,7 @@ int main(int argc,char **argv) {
     nx_window *window = NULL;
     CHECK(nx_window_create(&desc, &window) == NX_OK && window);
     CHECK(wl_display_roundtrip(nx_window_wayland_display(window)) >= 0);
+    if (burst) { result=burst_cases(&server,window)?0:1;goto window_done; }
     if (transactions) { transaction_cases(&server,window);goto window_done; }
     CHECK(nx_window_set_ime_rect(window, (nx_rect){12, 34, 2, 18}) == NX_OK);
     CHECK(nx_window_set_ime_enabled(window, 1) == NX_OK);
@@ -845,5 +907,5 @@ window_done:
     wl_display_destroy(server.display);
     CHECK(unlink(socket_path) == 0 || access(socket_path, F_OK) != 0);
     CHECK(rmdir(runtime) == 0);
-    return 0;
+    return result;
 }
