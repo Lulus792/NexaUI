@@ -97,10 +97,66 @@ whole-frame equality after view recreation, model preservation and2x backing.
 The failure case checks live leases, bounded geometry and twelve actual
 context-allocation failures, then retries with a fresh context.
 
-These are installed/headless C17 consumer checks, not native-window, IME,
+These four CTests are installed/headless C17 consumer checks, not native-window, IME,
 screenreader, real-runner/worker, filesystem/storage, approved-design or GPU/
 physical adoption evidence. Native keyboard/IME/accessibility composition,
 full scene/camera/object tree, production dataset/plot varieties and original
-application integration remain explicit next steps. Existing NexaUI native
+application integration remain explicit gates. The optional fixture below adds
+scoped native window/IME/AT-SPI evidence. Existing NexaUI native
 widget evidence remains regression context, not proof that this app passed it.
 Physim and NexaCloud can keep developing independently with their current UI.
+
+## Optional ordinary Wayland window and independent native peer
+
+Configure `-DNEXAUI_PHYSIM_BUILD_NATIVE_FIXTURE=ON` to additionally build
+`physim_native_host` and `physim_atspi_peer`. The host uses the existing public
+window, software presenter, event routing and Numeric IME APIs. It links no X11
+presentation library. The peer links only original Physim, libatspi/X11 and
+their OS dependencies, without NexaUI. X11 provides the private Xvfb carrier and
+independent screen capture; presentation remains ordinary Wayland. Default OFF
+builds neither native executable nor discover X11/libatspi.
+
+```sh
+python3 examples/39_physim_consumer/run_native.py \
+  --build-dir /tmp/new-physim-view --font /path/to/local-font.ttf \
+  --registry /path/to/at-spi2-registryd --work-dir /tmp/new-native-physim \
+  --case full
+```
+
+The runner reuses the repository's private Weston/AT-SPI infrastructure and its
+existing optional private tool-prefix variables. Each run owns its Xvfb seat,
+compositor work directory, bus, host and peer. No existing desktop is controlled.
+`full` exercises actual keyboard validation/Apply, native editable-text setting,
+original-model changes, Zoom/Pan/Fit, context/view replacement, 2x source backing,
+plot/viewport Tab navigation and Close. The independent peer runs the original
+experiment separately and requires substantial actual screen-pixel coverage of
+its original bob at the expected position. Whole client PPMs are retained.
+
+The visible Replace view control is handled by the host after lease completion;
+F6 is a fixture shortcut and F7 toggles 1x/2x backing. Shortcuts use fresh,
+unmodified, unconsumed native downs. IMEs may own function keys, so the peer uses
+the independent Replace action during composition. Escape remains available to
+the editor/text system. Close is keyboard/assistive operable. Source2x backing
+on this1x virtual output is not physical mixed-output DPI acceptance.
+
+`ime-cancel`, `ime-replace` and `ime-close` select real private Weston Simple-IME
+with compose:ralt. They create preedit through actual seat keys, then move focus,
+replace the view or close while composition exists. Cancel/replacement cases
+select the fresh field through native AT-SPI Text and type `2.5` through real
+IME commits before Apply. Protocol traces retain preedit, commit, surrounding
+selection, candidate rectangles and deactivation. Model parameters stay retained
+until explicit Apply. Closing during preedit retains generation1 and retires IME.
+The test numeric parameters are nonsensitive; trace files are fixture evidence.
+
+For replacement, the host builds a fresh view/context, retires old IME, discards
+the staging frame after completing its lease, publishes the replacement's native
+semantics, and only then destroys the old view/context. The last ordinary window
+keeps its assistive connection. Old native field objects become Defunct and refuse
+focus/edit, even when the replacement reuses their numeric IDs. The published
+physics and original plot range remain in their app owner. Native semantics detach
+and IME withdraws before final view/context/window/font teardown. BUSY/SUSPENDED
+software streams are completed/discarded and rebuilt, never reused after release.
+
+These are controlled native consumer tasks, not the production Physim runner,
+approved final UI, full scene/object accessibility, chosen user IME, actual
+screenreader speech, Windows/macOS/GPU/physical or performance acceptance.

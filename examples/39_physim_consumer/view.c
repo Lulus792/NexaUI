@@ -1,5 +1,6 @@
 #include "view.h"
 #include <math.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 struct physim_view {
@@ -12,7 +13,7 @@ struct physim_view {
     uint8_t *pixels;
     uint32_t width,height;
     double backing;
-    int leased;
+    int leased,apply_rejected;
     nx_plot_state plot_state;
     nx_series_envelope scratch[1024];
 };
@@ -100,12 +101,18 @@ static nx_result text(physim_view *v,nx_context *context,uint64_t id,const char 
     if(r==NX_OK)r=nx_label(context,id,1,bounds,layout,(nx_point){bounds.x,bounds.y},(nx_color){.08f,.1f,.15f,1},65536);
     nx_text_layout_destroy(layout);return r;
 }
-static nx_result button(physim_view *v,nx_context *context,unsigned id,const char *s,float x,unsigned *action) {
+nx_result physim_view_set_ime_window(physim_view *v,nx_window *window) {
+    if(!v)return NX_ERROR_ARGUMENT;if(v->leased)return NX_ERROR_STATE;
+    nx_result r=nx_numeric_field_set_ime_window(v->length,window);
+    if(r==NX_OK)r=nx_numeric_field_set_ime_window(v->angle,window);
+    return r;
+}
+static nx_result button(physim_view *v,nx_context *context,unsigned id,const char *s,nx_rect bounds,unsigned *action) {
     nx_text_layout *layout=NULL;
-    nx_result r=nx_text_layout_create(v->fonts,s,strlen(s),NX_BIDI_AUTO,14,92,&layout);
+    nx_result r=nx_text_layout_create(v->fonts,s,strlen(s),NX_BIDI_AUTO,14,bounds.width-12,&layout);
     if(r==NX_OK) {
-        nx_control_desc desc={.id=id,.parent_id=1,.bounds={x,108,104,32},.name=span(s),
-            .label_layout=layout,.label_origin={x+6,116},.glyph_cache_bytes=65536};
+        nx_control_desc desc={.id=id,.parent_id=1,.bounds=bounds,.name=span(s),
+            .label_layout=layout,.label_origin={bounds.x+6,bounds.y+8},.glyph_cache_bytes=65536};
         nx_interaction_state state;r=nx_button(context,&desc,&state);
         if(r==NX_OK&&state.clicked)*action=id;
     }
@@ -132,8 +139,13 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     if(r==NX_OK)r=nx_numeric_field_widget(context,&field,v->length,&state,&valid);
     field.id=11;field.bounds.x=240;field.name=span("Initial angle (rad)");field.minimum=v->model->angle.minimum;field.maximum=v->model->angle.maximum;
     if(r==NX_OK)r=nx_numeric_field_widget(context,&field,v->angle,&state,&valid);
+    if(r==NX_OK)r=button(v,context,17,"Replace view",(nx_rect){464,64,160,32},action);
     static const char *names[]={"Apply model","Zoom +","Pan right","Fit data","Close"};
-    for(unsigned i=0;r==NX_OK&&i<5;++i)r=button(v,context,12u+i,names[i],16+112*(float)i,action);
+    for(unsigned i=0;r==NX_OK&&i<5;++i)r=button(v,context,12u+i,names[i],(nx_rect){16+112*(float)i,108,104,32},action);
+    char status[128];
+    if(v->apply_rejected)snprintf(status,sizeof(status),"Invalid parameters; model generation %llu retained.",(unsigned long long)v->model->generation);
+    else snprintf(status,sizeof(status),"Model generation %llu; length %.6g m.",(unsigned long long)v->model->generation,v->model->length.value);
+    if(r==NX_OK)r=text(v,context,5,status,(nx_rect){16,142,width-32,16},12);
     nx_plot_desc plot={.id=20,.parent_id=1,.bounds={16,160,width*.5f-24,height-176},.name=span("Original angle channel (rad)"),
         .series={PHYSIM_SAMPLE_COUNT,v->model,sample},.scratch=v->scratch,.scratch_capacity=1024,.fonts=v->fonts,
         .pixels_per_em=13,.glyph_cache_bytes=65536};
@@ -157,16 +169,18 @@ nx_result physim_view_dispatch(physim_view *v,unsigned action,int *valid) {
         int length_valid=0,angle_valid=0;
         nx_result r=nx_numeric_field_commit(v->length,v->model->length.minimum,v->model->length.maximum,&length_valid);
         if(r==NX_OK)r=nx_numeric_field_commit(v->angle,v->model->angle.minimum,v->model->angle.maximum,&angle_valid);
-        if(r!=NX_OK||!length_valid||!angle_valid)return r;
+        if(r!=NX_OK)return r;
+        if(!length_valid||!angle_valid) { v->apply_rejected=1;return NX_OK; }
         double length=0,angle=0;
         if((r=nx_numeric_field_value(v->length,&length))!=NX_OK||(r=nx_numeric_field_value(v->angle,&angle))!=NX_OK)return r;
         r=physim_model_run(length,angle,v->model->generation+1u,v->model);
-        if(r==NX_OK)*valid=1;return r;
+        if(r==NX_OK) { *valid=1;v->apply_rejected=0; }return r;
     }
     if(action==13)*valid=ps_plot_view_zoom(v->plot,2,.5,.5);
     else if(action==14)*valid=ps_plot_view_pan(v->plot,.25,0);
     else if(action==15) { ps_plot_view_reset(v->plot);*valid=1; }
     else if(action==16)*valid=1;
+    else if(action==17)return NX_ERROR_UNSUPPORTED; /* Owner rebuilds the view. */
     else return NX_ERROR_ARGUMENT;
     return *valid?NX_OK:NX_ERROR_STATE;
 }

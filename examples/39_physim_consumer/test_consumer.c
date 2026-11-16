@@ -136,6 +136,7 @@ static int failure_test(const char *path) {
     *before=*model;
     CHECK(physim_view_frame(view,context,WIDTH,HEIGHT,1,&action)==NX_OK);
     CHECK(physim_view_destroy(&view)==NX_ERROR_STATE&&view&&physim_view_dispatch(view,12,&valid)==NX_ERROR_STATE&&!valid);
+    CHECK(physim_view_set_ime_window(view,NULL)==NX_ERROR_STATE);
     CHECK(physim_view_frame(view,context,WIDTH,HEIGHT,1,&action)==NX_ERROR_STATE&&!memcmp(before,model,sizeof(*model)));
     const nx_command *commands=NULL;size_t count=0;
     CHECK(nx_frame_commands(context,&commands,&count)==NX_OK&&nx_headless_render(commands,count,pixels,WIDTH,HEIGHT,WIDTH*4u,(nx_color){1,1,1,1})==NX_OK&&physim_view_complete(view)==NX_OK);

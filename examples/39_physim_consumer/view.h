@@ -8,8 +8,13 @@ typedef struct physim_view physim_view;
    One owner thread; no callbacks may mutate/destroy these borrowed objects. */
 nx_result physim_view_create(physim_snapshot *model, ps_plot_view *plot,
     const nx_font_collection *fonts, physim_view **out);
+/* Optional native numeric IME binding. Window must outlive this view and its
+   caller context. Call on their owner thread outside any live render lease.
+   On a setter failure retire the view before releasing either window. */
+nx_result physim_view_set_ime_window(physim_view *view, nx_window *window);
 /* Owns begin/end_frame. Returns action IDs 12 Apply, 13 Zoom, 14 Pan, 15 Fit,
-   16 Close. Caller dispatches these only after rendering/complete. All borrowed
+   16 Close, 17 Replace view. Caller handles Close/Replace and dispatches model/
+   plot actions only after rendering/complete. All borrowed
    commands/pixels must finish before complete, next frame or destruction.
    Bounded reference layout: logical width>=640 and height>=400. */
 nx_result physim_view_frame(physim_view *view, nx_context *context,
