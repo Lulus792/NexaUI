@@ -97,6 +97,12 @@ field is destroyed or the callbacks are removed. Other native IME
 implementations and interactive acceptance need their own checks.
 See the [native command report](../quality/macos-input-commands-report.md).
 
+Creation and programmatic value replacement generate an ASCII decimal draft.
+The formatter can shorten the displayed spelling when the numeric parser
+recovers the same Double value, including its zero sign. The usual fixed or
+scientific notation is retained. User edits continue through the existing
+parser and draft validation.
+
 An application can confirm the already processed numeric draft independently of
 keyboard delivery with `nx_numeric_field_commit(field, minimum, maximum,
 &valid)`. Use the same bounds as the field descriptor, after processing its

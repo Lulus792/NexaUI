@@ -24,6 +24,8 @@ consumer `a14cfda4d8c85fa6bb07cbbce773c5412d7192fe` produces identical
 at the center tick, non-background pixels fall from 20 to zero. A visual
 check confirms the full zero label inside the gutter. Numeric draft
 precision in the reference view remains open.
+The [later numeric field change](numeric-draft-format-report.md) shortens
+the angle draft with its own source and export evidence.
 
 The first strict SDK build turned a pre-existing Clang 22 warning in
 `tests/reference/headless_scalar.c` into an error. The accepted run uses
