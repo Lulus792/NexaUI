@@ -38,9 +38,14 @@ two axes and a theme-colored trace. A supplied font collection plus finite
 `pixels_per_em` in [1,16384] and positive `glyph_cache_bytes` adds numeric tick labels; without fonts,
 the lines and ticks remain. Colors come from the active NexaUI theme,
 including dark, light and high-contrast presets. The trace and cursor are
-clipped to the inner area. Tick labels use `%.4g` formatting and currently
-follow the process numeric locale; applications needing exact localized units
-or label precision will need a later axis-label formatter.
+clipped to the inner area. Tick labels use `%.4g` formatting in the process
+numeric locale. On an axis that crosses zero, an interior tick within one
+relative machine epsilon of zero at the endpoint scale is labelled zero.
+The original axis mapping, endpoint values and data remain intact.
+Labels that cannot fit on one line in their gutter are omitted. Edge
+positions are constrained to the widget, and the label ink is clipped to
+the plot bounds. Applications needing exact localized units or a different
+precision will need a caller-supplied formatter.
 
 The plot is a named custom semantic node with a short description. Pointer
 hover or capture sets a vertical cursor in the plot area. When focused,

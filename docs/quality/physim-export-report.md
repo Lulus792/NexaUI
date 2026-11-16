@@ -28,6 +28,8 @@ The image was visually inspected. The reference plot still shows a clipped
 near-zero tick in scientific notation, and the numeric draft displays long
 floating-point precision. Both need presentation review before using the
 reference view as a production export layout.
+The [later SDK correction](plot-tick-label-report.md) resolves the plot tick
+with a separate source and image receipt.
 
 The [evidence manifest](physim-export-evidence.json) binds profile logs,
 complete RGB images and the earlier failed build. Local archive
