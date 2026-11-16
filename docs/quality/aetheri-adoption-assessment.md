@@ -1,5 +1,15 @@
 # Aetheri adoption: initial source assessment
 
+Open consecutive Wayland-v1 commit defect for B03/R11/T05/I02/A01/A06/P05/Q02/Q08.
+Native Physim prototype `795812b` uses unchanged SDK `368cd38`. Its16 CTests
+pass, but formal native312 has9 passes, one ASan input-loss failure and two
+unexecuted cases. The period in real IME input2.5 can be lost, leaving25.
+Controlled regression `eb575d1` reproduces loss in Release/Shared/Sanitizer;
+six original v1/transaction modes still pass. No fix or full native acceptance
+is claimed. Main remains `014449f`; this work-branch checkpoint is not ready
+for main promotion. All103 IDs/priorities and remaining packets persist.
+[Failure evidence and required correction](wayland-v1-burst-gap.md)
+
 Original Physim model/plot/numeric/viewport seam for B03/R05/R10/R11/T05/L12/I01/P05/Q02/Q08.
 Consumer `7329212` runs27 unchanged Physim inputs from `01ccc27` against installed
 SDK `368cd38`. Twelve CTests pass across static/shared/sanitized Linux profiles;

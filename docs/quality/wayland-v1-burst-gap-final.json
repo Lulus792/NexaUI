@@ -1,0 +1,36 @@
+{
+  "consumer_revision": "795812b4f09f469677c2c3e33a763ed9986623f2",
+  "regression_revision": "eb575d116c5a8fabe1e11876511e8cea127e8372",
+  "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+  "receipt_sha256": "90bccf30bea4242ae2bb64329e7399627d6a7ed646e714babe2fdc7c2f997059",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-wayland-v1-gap317.tar.gz",
+    "bytes": 18211272,
+    "sha256": "a3f617f51ff490a7979e1d43f1d93ca22684256779b6f58048399a79043a55b7",
+    "verified_members": 477
+  },
+  "verified_members": 477,
+  "ctests": 16,
+  "native_passed": 9,
+  "native_failed": 1,
+  "native_unexecuted": [
+    {
+      "profile": "asan",
+      "case": "ime-replace"
+    },
+    {
+      "profile": "asan",
+      "case": "ime-close"
+    }
+  ],
+  "deterministic_burst_failed_profiles": [
+    "release",
+    "shared",
+    "asan"
+  ],
+  "original_v1_modes_passed": 6,
+  "observed_live_fixture_executables": [],
+  "catalogue_sha256": "77bb93a1cb572e757b1a1f3a1bb3a67e0b0408ad1a0c7b52f589076547a3a53c",
+  "catalogue_ids": 103,
+  "acceptance": "FAIL: unresolved consecutive v1 commit input loss; main promotion withheld"
+}
