@@ -72,10 +72,11 @@ close refusal and a real worker completing after view/context replacement.
 They also acquire the exchange again before end_frame and retire the producer
 allocation before rendering, checking the two distinct lifetime contracts.
 
-These are installed consumer/headless-render and native-thread checks. Native
-window presentation, content input/escape routing, IME/candidates, engine
-accessibility subtrees, engine crash recovery and reviewed GPU interop still
-need integration. A selected maintained engine and its real browser/document/
+These four cases are installed consumer/headless-render and native-thread checks.
+The optional fixture below adds ordinary native composition and host focus.
+Content input/guest escape routing, IME/candidates, engine accessibility subtrees,
+engine crash recovery and reviewed GPU interop still need integration.
+A selected maintained engine and its real browser/document/
 guest workflows remain external engineering gates. Guest pixels cannot serve
 as host admission or permission UI. No application pin or 1.0 release changes.
 
@@ -120,3 +121,6 @@ by releasing only its own worker gate during cleanup.
 These checks cover ordinary native composition and host focus, not engine input
 forwarding, guest capture/escape or stuck-key release, IME/candidates, engine
 accessibility subtrees, GPU import, physical output or final product design.
+The [native source-bound report](../../docs/quality/external-content-native-report.md)
+records all profiles, actual pixel captures, close/disposal counts and rejected
+generation/display variants, including the earlier ineffective control.

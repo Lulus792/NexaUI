@@ -1,0 +1,3136 @@
+{
+  "candidate": "2ef9a56791c3dec63e542e66429ff2b7a43abba2",
+  "sdk_revision": "368cd38292498bd538964ba514ff02e0e9924358",
+  "sdk_version": "0.1.33",
+  "consumer_inputs": [
+    {
+      "path": "examples/38_external_content/CMakeLists.txt",
+      "sha256": "642315881cb50b3e199ea7ab3aab90e1b133f6e5c7b5cf64f24d8f09b3ed7542"
+    },
+    {
+      "path": "examples/38_external_content/README.md",
+      "sha256": "8e276d09a99a901f0dbda460058e7799cb65b72b4359a9e0adbf114a137fb9f3"
+    },
+    {
+      "path": "examples/38_external_content/surface.h",
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "path": "examples/38_external_content/surface.c",
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "path": "examples/38_external_content/test_surface.c",
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "path": "examples/38_external_content/native_host.c",
+      "sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7"
+    },
+    {
+      "path": "examples/38_external_content/native_worker.h",
+      "sha256": "c98c1685b955e788a57317e8c45def77ad6e50bb9e73f23c37820c4e13ae51d3"
+    },
+    {
+      "path": "examples/38_external_content/atspi_peer.c",
+      "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+    },
+    {
+      "path": "examples/38_external_content/run_native.py",
+      "sha256": "d338fcf09740d5f9d169021e86875658f233cc9a51ed710585120fa900a25493"
+    },
+    {
+      "path": "tests/run_weston_native.py",
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "path": "tests/run_atspi_native.py",
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    }
+  ],
+  "profiles": [
+    {
+      "profile": "release",
+      "cases": [
+        "content_surface_flow",
+        "content_surface_malformed",
+        "content_surface_lifetime",
+        "content_surface_worker"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/surface.c",
+            "bytes": 6373,
+            "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/release/CMakeFiles/content_surface.dir/surface.c.o",
+            "bytes": 4240,
+            "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface.dir/surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c",
+            "bytes": 15397,
+            "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/release/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+            "bytes": 27704,
+            "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface_test.dir/test_surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/native_host.c",
+            "bytes": 12171,
+            "sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/release/CMakeFiles/content_native_host.dir/native_host.c.o",
+            "bytes": 20944,
+            "sha256": "1d56ac6efc89e8bc6346d80cb218f5f2be37908045c058091ecc1d8905ef880f"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_native_host.dir/native_host.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/native_host.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/atspi_peer.c",
+            "bytes": 12061,
+            "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/release/CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o",
+            "bytes": 26512,
+            "sha256": "2979b63efe474809876fb735e49719038a73e7da7983370623192f1996947158"
+          },
+          "command": "/usr/bin/clang -isystem /usr/include/at-spi-2.0 -isystem /usr/include/dbus-1.0 -isystem /usr/lib/dbus-1.0/include -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -pthread -o CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/atspi_peer.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-content270/release/libcontent_surface.a",
+          "bytes": 4512,
+          "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+        },
+        {
+          "path": "/tmp/nexaui-content270/release/content_surface_test",
+          "bytes": 850328,
+          "sha256": "84e1767cdeac0404a3e5bde2f7a6f6354626924a1b4bd81aaf4b4d5e59b09949"
+        },
+        {
+          "path": "/tmp/nexaui-content270/release/compile_commands.json",
+          "bytes": 2496,
+          "sha256": "c5107566a684d50fc810ae8bd1b6205a38425987fe354152dbdc1241e69ab6d8"
+        },
+        {
+          "path": "/tmp/nexaui-content270/release/CMakeCache.txt",
+          "bytes": 46780,
+          "sha256": "7308b07a24fa750e658a4f7c18f065d66ca73cef4c288853571367beb383fb08"
+        },
+        {
+          "path": "/tmp/nexaui-content270/release/tests.xml",
+          "bytes": 1221,
+          "sha256": "2ad7b2ea828204cdd5825559e889493f567840346b5ea08887ba7245f3338008"
+        },
+        {
+          "path": "/tmp/nexaui-content270/release/content_native_host",
+          "bytes": 842600,
+          "sha256": "9f166fb03ae21ab622543753c09bb894e9ed0abf916e11216d4b5121a346de40"
+        },
+        {
+          "path": "/tmp/nexaui-content270/release/content_atspi_peer",
+          "bytes": 37168,
+          "sha256": "88c8507d0fab4e2f4730c16d9b607415a64ab150007392943a44c51780722d7d"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+        "bytes": 1185356,
+        "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+      },
+      "dynamic": "\nDynamic section at offset 0xc0a60 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x8776f\n 0x0000000000000019 (INIT_ARRAY)         0xbf500\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xbf508\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xde0\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1636 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc0c70\n 0x0000000000000002 (PLTRELSZ)           2184 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4e48\n 0x0000000000000007 (RELA)               0x1548\n 0x0000000000000008 (RELASZ)             14592 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x1528\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x1444\n 0x000000006ffffff9 (RELACOUNT)          574\n 0x0000000000000000 (NULL)               0x0\n",
+      "host_dynamic": "\nDynamic section at offset 0xbea20 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x86faf\n 0x0000000000000019 (INIT_ARRAY)         0xbd4c0\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xbd4c8\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xeb8\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1761 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xbec30\n 0x0000000000000002 (PLTRELSZ)           2400 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x5100\n 0x0000000000000007 (RELA)               0x16b0\n 0x0000000000000008 (RELASZ)             14928 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x1690\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x159a\n 0x000000006ffffff9 (RELACOUNT)          588\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x6bf8 contains 28 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libX11.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x43b1\n 0x0000000000000019 (INIT_ARRAY)         0x6be8\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6bf0\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x928\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1032 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6df8\n 0x0000000000000002 (PLTRELSZ)           1320 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xe20\n 0x0000000000000007 (RELA)               0xd30\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n",
+      "native": [
+        {
+          "case": "full",
+          "frames": 58,
+          "publications": 5,
+          "discarded": 0,
+          "disposals": 5,
+          "images": [
+            {
+              "profile": "release",
+              "case": "full",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-full/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "release",
+              "case": "full",
+              "tag": "rejected",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-full/content-rejected.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "release",
+              "case": "full",
+              "tag": "fresh",
+              "width": 448,
+              "height": 208,
+              "rgb": "1753c5",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-full/content-fresh.ppm",
+                "bytes": 279567,
+                "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+              }
+            },
+            {
+              "profile": "release",
+              "case": "full",
+              "tag": "bad",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-full/content-bad.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "release",
+              "case": "full",
+              "tag": "recovered",
+              "width": 448,
+              "height": 208,
+              "rgb": "47a31f",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-full/content-recovered.ppm",
+                "bytes": 279567,
+                "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+              }
+            },
+            {
+              "profile": "release",
+              "case": "full",
+              "tag": "scaled",
+              "width": 448,
+              "height": 208,
+              "rgb": "bf3f89",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-full/content-scaled.ppm",
+                "bytes": 279567,
+                "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-release-full.log",
+            "bytes": 1093,
+            "sha256": "45f6ee7ffee05555eb29e50e81d045d336a311c45d3a19d3521f5b2e23404401"
+          }
+        },
+        {
+          "case": "pending-close",
+          "frames": 9,
+          "publications": 0,
+          "discarded": 1,
+          "disposals": 0,
+          "images": [
+            {
+              "profile": "release",
+              "case": "pending-close",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-pending-close/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-release-pending-close.log",
+            "bytes": 380,
+            "sha256": "675e3127607fab8fc99ff0a5bdb5523ec96f1da12caf87183d690fd18be853a8"
+          }
+        },
+        {
+          "case": "rejected-close",
+          "frames": 24,
+          "publications": 1,
+          "discarded": 0,
+          "disposals": 1,
+          "images": [
+            {
+              "profile": "release",
+              "case": "rejected-close",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-rejected-close/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "release",
+              "case": "rejected-close",
+              "tag": "rejected",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-release-rejected-close/content-rejected.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-release-rejected-close.log",
+            "bytes": 528,
+            "sha256": "24d785bd4d7fb3d7f9095ddc623b7a81d2ef2341571d651c8f2cfb637a78b8f6"
+          }
+        }
+      ]
+    },
+    {
+      "profile": "shared",
+      "cases": [
+        "content_surface_flow",
+        "content_surface_malformed",
+        "content_surface_lifetime",
+        "content_surface_worker"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/surface.c",
+            "bytes": 6373,
+            "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_surface.dir/surface.c.o",
+            "bytes": 4240,
+            "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface.dir/surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c",
+            "bytes": 15397,
+            "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+            "bytes": 27704,
+            "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface_test.dir/test_surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/native_host.c",
+            "bytes": 12171,
+            "sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_native_host.dir/native_host.c.o",
+            "bytes": 20944,
+            "sha256": "1d56ac6efc89e8bc6346d80cb218f5f2be37908045c058091ecc1d8905ef880f"
+          },
+          "command": "/usr/bin/clang -DNEXAUI_SHARED -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/shared-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_native_host.dir/native_host.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/native_host.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/atspi_peer.c",
+            "bytes": 12061,
+            "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o",
+            "bytes": 26512,
+            "sha256": "2979b63efe474809876fb735e49719038a73e7da7983370623192f1996947158"
+          },
+          "command": "/usr/bin/clang -isystem /usr/include/at-spi-2.0 -isystem /usr/include/dbus-1.0 -isystem /usr/lib/dbus-1.0/include -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -pthread -o CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/atspi_peer.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-content270/shared/libcontent_surface.a",
+          "bytes": 4512,
+          "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+        },
+        {
+          "path": "/tmp/nexaui-content270/shared/content_surface_test",
+          "bytes": 32624,
+          "sha256": "6fe01b2493e2cbdfcbf61f41ebf0e246c415179bddfc2926accc710a8b544e8b"
+        },
+        {
+          "path": "/tmp/nexaui-content270/shared/compile_commands.json",
+          "bytes": 2533,
+          "sha256": "192b6c4a2746b909bfe3ad43788976337950ba4177c657d6930633f959440051"
+        },
+        {
+          "path": "/tmp/nexaui-content270/shared/CMakeCache.txt",
+          "bytes": 46774,
+          "sha256": "1550c6249cfed4d2d254861496d379290d172acdb349f5103c4ccbe73fffc812"
+        },
+        {
+          "path": "/tmp/nexaui-content270/shared/tests.xml",
+          "bytes": 1221,
+          "sha256": "aecc926cf49c458d776ba235b67cd3872456627afd3ebce6640eeb8400f7483d"
+        },
+        {
+          "path": "/tmp/nexaui-content270/shared/content_native_host",
+          "bytes": 34208,
+          "sha256": "ae07de1085b6b104ae8a1793ad687d330d318636951f78ed8561dd75b2b7ef13"
+        },
+        {
+          "path": "/tmp/nexaui-content270/shared/content_atspi_peer",
+          "bytes": 37168,
+          "sha256": "88c8507d0fab4e2f4730c16d9b607415a64ab150007392943a44c51780722d7d"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/shared-prefix/lib/libnexaui.so.0.1.33",
+        "bytes": 934464,
+        "sha256": "fa3d43cb8d50f171ee3e008e8dd723081149208557b8ecd5cf243b7a56d9ab31"
+      },
+      "dynamic": "\nDynamic section at offset 0x5cd8 contains 26 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000001d (RUNPATH)            Library runpath: [/tmp/nexaui-ime-handoff202/shared-prefix/lib]\n 0x000000000000000c (INIT)               0x1000\n 0x000000000000000d (FINI)               0x3fdf\n 0x0000000000000019 (INIT_ARRAY)         0x6c20\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6c28\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x6e8\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              729 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6eb8\n 0x0000000000000002 (PLTRELSZ)           768 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xad0\n 0x0000000000000007 (RELA)               0x9c8\n 0x0000000000000008 (RELASZ)             264 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          5\n 0x0000000000000000 (NULL)               0x0\n",
+      "host_dynamic": "\nDynamic section at offset 0x5bb8 contains 26 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libnexaui.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000001d (RUNPATH)            Library runpath: [/tmp/nexaui-ime-handoff202/shared-prefix/lib]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x49cf\n 0x0000000000000019 (INIT_ARRAY)         0x6b00\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6b08\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0xa48\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1327 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6d98\n 0x0000000000000002 (PLTRELSZ)           1632 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x11d0\n 0x0000000000000007 (RELA)               0xf78\n 0x0000000000000008 (RELASZ)             600 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          19\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x6bf8 contains 28 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libX11.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x2000\n 0x000000000000000d (FINI)               0x43b1\n 0x0000000000000019 (INIT_ARRAY)         0x6be8\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x6bf0\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x2e8\n 0x0000000000000005 (STRTAB)             0x928\n 0x0000000000000006 (SYMTAB)             0x310\n 0x000000000000000a (STRSZ)              1032 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x6df8\n 0x0000000000000002 (PLTRELSZ)           1320 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0xe20\n 0x0000000000000007 (RELA)               0xd30\n 0x0000000000000008 (RELASZ)             240 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffff9 (RELACOUNT)          3\n 0x0000000000000000 (NULL)               0x0\n",
+      "native": [
+        {
+          "case": "full",
+          "frames": 56,
+          "publications": 5,
+          "discarded": 0,
+          "disposals": 5,
+          "images": [
+            {
+              "profile": "shared",
+              "case": "full",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-full/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "shared",
+              "case": "full",
+              "tag": "rejected",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-full/content-rejected.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "shared",
+              "case": "full",
+              "tag": "fresh",
+              "width": 448,
+              "height": 208,
+              "rgb": "1753c5",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-full/content-fresh.ppm",
+                "bytes": 279567,
+                "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+              }
+            },
+            {
+              "profile": "shared",
+              "case": "full",
+              "tag": "bad",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-full/content-bad.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "shared",
+              "case": "full",
+              "tag": "recovered",
+              "width": 448,
+              "height": 208,
+              "rgb": "47a31f",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-full/content-recovered.ppm",
+                "bytes": 279567,
+                "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+              }
+            },
+            {
+              "profile": "shared",
+              "case": "full",
+              "tag": "scaled",
+              "width": 448,
+              "height": 208,
+              "rgb": "bf3f89",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-full/content-scaled.ppm",
+                "bytes": 279567,
+                "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-shared-full.log",
+            "bytes": 1093,
+            "sha256": "4c0165009c5092883b295238b875c5dd2bd7ae6ee1d0400d60309a98f93bd458"
+          }
+        },
+        {
+          "case": "pending-close",
+          "frames": 10,
+          "publications": 0,
+          "discarded": 1,
+          "disposals": 0,
+          "images": [
+            {
+              "profile": "shared",
+              "case": "pending-close",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-pending-close/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-shared-pending-close.log",
+            "bytes": 381,
+            "sha256": "49f4be9d6bc5c449b69b0d79e39a06d52169fd2ee8d75e8e3d214ec5989e6d05"
+          }
+        },
+        {
+          "case": "rejected-close",
+          "frames": 26,
+          "publications": 1,
+          "discarded": 0,
+          "disposals": 1,
+          "images": [
+            {
+              "profile": "shared",
+              "case": "rejected-close",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-rejected-close/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "shared",
+              "case": "rejected-close",
+              "tag": "rejected",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-shared-rejected-close/content-rejected.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-shared-rejected-close.log",
+            "bytes": 528,
+            "sha256": "e8b5fa9325fc3d339abede457959aaa50ae6d7bb7e200861b4b106a7f2ea3f60"
+          }
+        }
+      ]
+    },
+    {
+      "profile": "asan",
+      "cases": [
+        "content_surface_flow",
+        "content_surface_malformed",
+        "content_surface_lifetime",
+        "content_surface_worker"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/surface.c",
+            "bytes": 6373,
+            "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_surface.dir/surface.c.o",
+            "bytes": 56688,
+            "sha256": "3eb72cf6c725ce9676402ab66c785f51bed0545b1146ffeface5f0282d2bf118"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/content_surface.dir/surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c",
+            "bytes": 15397,
+            "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+            "bytes": 137032,
+            "sha256": "46c147ed1091cb94696575dd45635ff3fca20b9a175c72a2af5ef50b660a0072"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/content_surface_test.dir/test_surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/native_host.c",
+            "bytes": 12171,
+            "sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_native_host.dir/native_host.c.o",
+            "bytes": 123608,
+            "sha256": "e7ad740242cc6dcee066c8a1798f58bc67df5bfa561d6f6d53e424f42317df9e"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/asan-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -o CMakeFiles/content_native_host.dir/native_host.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/native_host.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/atspi_peer.c",
+            "bytes": 12061,
+            "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o",
+            "bytes": 156448,
+            "sha256": "31d2112df7bbe27e5ed5bdae51bbd0f467ec0c3a5942f1aa84a05afa4f7488b3"
+          },
+          "command": "/usr/bin/clang -isystem /usr/include/at-spi-2.0 -isystem /usr/include/dbus-1.0 -isystem /usr/lib/dbus-1.0/include -isystem /usr/include/libmount -isystem /usr/include/blkid -isystem /usr/include/glib-2.0 -isystem /usr/lib/glib-2.0/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -fsanitize=address,undefined -fno-omit-frame-pointer -g -O1 -std=c17 -pthread -o CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/atspi_peer.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-content270/asan/libcontent_surface.a",
+          "bytes": 56992,
+          "sha256": "eba97d75cba4f0e974c1c8ab5255e3c9bf8c2ee3083342cda03b7eb45655d533"
+        },
+        {
+          "path": "/tmp/nexaui-content270/asan/content_surface_test",
+          "bytes": 10448800,
+          "sha256": "c6f73b8cbdacd650298860b67587213299bc59e24dc5a676ccba52eafa585566"
+        },
+        {
+          "path": "/tmp/nexaui-content270/asan/compile_commands.json",
+          "bytes": 2651,
+          "sha256": "50e7d5e1780eaecd3184db19db8881db022dee0d6286657fe79f0b46f0530dae"
+        },
+        {
+          "path": "/tmp/nexaui-content270/asan/CMakeCache.txt",
+          "bytes": 46813,
+          "sha256": "873c9cf4eb69e4e6643d85f045895278d0d2fb18534cfc336293c13ec27ec8ef"
+        },
+        {
+          "path": "/tmp/nexaui-content270/asan/tests.xml",
+          "bytes": 1218,
+          "sha256": "5656ecd524b7d9fe54b69cb1f10029891b69bfc06801da97e1e73be78fdd6169"
+        },
+        {
+          "path": "/tmp/nexaui-content270/asan/content_native_host",
+          "bytes": 10438528,
+          "sha256": "f2dd42be401a167008a0e7064472266f88da5469ee6bcd2937658e1dca62770f"
+        },
+        {
+          "path": "/tmp/nexaui-content270/asan/content_atspi_peer",
+          "bytes": 2927328,
+          "sha256": "1a0815cbc3880cc55b72d5f2a084e3022fe6ae61b8a0be2dfc12871ad3296830"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/asan-prefix/lib/libnexaui.a",
+        "bytes": 11569530,
+        "sha256": "cefbf73fb7b7a8ce644d193f3280be5dc98f4bbf0e4ac608b097f663b9539d67"
+      },
+      "dynamic": "\nDynamic section at offset 0x5759e0 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x179000\n 0x000000000000000d (FINI)               0x4dfe8b\n 0x0000000000000019 (INIT_ARRAY)         0x573118\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x573130\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x14a98\n 0x0000000000000006 (SYMTAB)             0x52d0\n 0x000000000000000a (STRSZ)              59781 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x575c00\n 0x0000000000000002 (PLTRELSZ)           1320 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x1784b8\n 0x0000000000000007 (RELA)               0x24918\n 0x0000000000000008 (RELASZ)             1391520 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x248c8\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x2341e\n 0x000000006ffffff9 (RELACOUNT)          57903\n 0x0000000000000000 (NULL)               0x0\n",
+      "host_dynamic": "\nDynamic section at offset 0x5739c0 contains 30 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x179000\n 0x000000000000000d (FINI)               0x4df61b\n 0x0000000000000019 (INIT_ARRAY)         0x572198\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x5721b0\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x14b10\n 0x0000000000000006 (SYMTAB)             0x52d0\n 0x000000000000000a (STRSZ)              59887 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x574be0\n 0x0000000000000002 (PLTRELSZ)           1440 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x178990\n 0x0000000000000007 (RELA)               0x24a00\n 0x0000000000000008 (RELASZ)             1392528 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x249b0\n 0x000000006fffffff (VERNEEDNUM)         2\n 0x000000006ffffff0 (VERSYM)             0x23500\n 0x000000006ffffff9 (RELACOUNT)          57945\n 0x0000000000000000 (NULL)               0x0\n",
+      "peer_dynamic": "\nDynamic section at offset 0x136ac0 contains 32 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libX11.so.6]\n 0x0000000000000001 (NEEDED)             Shared library: [libatspi.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgobject-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libglib-2.0.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libgcc_s.so.1]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x29000\n 0x000000000000000d (FINI)               0xfcc30\n 0x0000000000000019 (INIT_ARRAY)         0x136378\n 0x000000000000001b (INIT_ARRAYSZ)       24 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0x136390\n 0x000000000000001c (FINI_ARRAYSZ)       16 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0x147b8\n 0x0000000000000006 (SYMTAB)             0x52c0\n 0x000000000000000a (STRSZ)              59364 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0x136d00\n 0x0000000000000002 (PLTRELSZ)           888 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x28200\n 0x0000000000000007 (RELA)               0x24438\n 0x0000000000000008 (RELASZ)             15816 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x24408\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x22f9c\n 0x000000006ffffff9 (RELACOUNT)          609\n 0x0000000000000000 (NULL)               0x0\n",
+      "native": [
+        {
+          "case": "full",
+          "frames": 54,
+          "publications": 5,
+          "discarded": 0,
+          "disposals": 5,
+          "images": [
+            {
+              "profile": "asan",
+              "case": "full",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-full/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "asan",
+              "case": "full",
+              "tag": "rejected",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-full/content-rejected.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "asan",
+              "case": "full",
+              "tag": "fresh",
+              "width": 448,
+              "height": 208,
+              "rgb": "1753c5",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-full/content-fresh.ppm",
+                "bytes": 279567,
+                "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+              }
+            },
+            {
+              "profile": "asan",
+              "case": "full",
+              "tag": "bad",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-full/content-bad.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "asan",
+              "case": "full",
+              "tag": "recovered",
+              "width": 448,
+              "height": 208,
+              "rgb": "47a31f",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-full/content-recovered.ppm",
+                "bytes": 279567,
+                "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+              }
+            },
+            {
+              "profile": "asan",
+              "case": "full",
+              "tag": "scaled",
+              "width": 448,
+              "height": 208,
+              "rgb": "bf3f89",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-full/content-scaled.ppm",
+                "bytes": 279567,
+                "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-asan-full.log",
+            "bytes": 1093,
+            "sha256": "30698428f79d318754a555e7f4ed713fd2d9cda6f0d69b67a7e73c36d08405fc"
+          }
+        },
+        {
+          "case": "pending-close",
+          "frames": 7,
+          "publications": 0,
+          "discarded": 1,
+          "disposals": 0,
+          "images": [
+            {
+              "profile": "asan",
+              "case": "pending-close",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-pending-close/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-asan-pending-close.log",
+            "bytes": 380,
+            "sha256": "7a5ccc9b79869bb3b8d981da521ecaf4956e7598dcdb08d3acb5104c04a75a1b"
+          }
+        },
+        {
+          "case": "rejected-close",
+          "frames": 24,
+          "publications": 1,
+          "discarded": 0,
+          "disposals": 1,
+          "images": [
+            {
+              "profile": "asan",
+              "case": "rejected-close",
+              "tag": "pending",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-rejected-close/content-pending.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            },
+            {
+              "profile": "asan",
+              "case": "rejected-close",
+              "tag": "rejected",
+              "width": 448,
+              "height": 208,
+              "rgb": "e3e7ef",
+              "image": {
+                "path": "/tmp/nexaui-content270/native271-asan-rejected-close/content-rejected.ppm",
+                "bytes": 279567,
+                "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+              }
+            }
+          ],
+          "log": {
+            "path": "/mnt/d/NexaUI/out/content271-asan-rejected-close.log",
+            "bytes": 528,
+            "sha256": "24d785bd4d7fb3d7f9095ddc623b7a81d2ef2341571d651c8f2cfb637a78b8f6"
+          }
+        }
+      ]
+    },
+    {
+      "profile": "default",
+      "cases": [
+        "content_surface_flow",
+        "content_surface_malformed",
+        "content_surface_lifetime",
+        "content_surface_worker"
+      ],
+      "compiled": [
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/surface.c",
+            "bytes": 6373,
+            "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/default/CMakeFiles/content_surface.dir/surface.c.o",
+            "bytes": 4240,
+            "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface.dir/surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/surface.c"
+        },
+        {
+          "source": {
+            "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c",
+            "bytes": 15397,
+            "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+          },
+          "object": {
+            "path": "/tmp/nexaui-content270/default/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+            "bytes": 27704,
+            "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+          },
+          "command": "/usr/bin/clang -I/tmp/nexaui-content270/consumer/examples/38_external_content/. -isystem /tmp/nexaui-ime-handoff202/release-prefix/include -Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror -O3 -DNDEBUG -std=c17 -o CMakeFiles/content_surface_test.dir/test_surface.c.o -c /tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c"
+        }
+      ],
+      "artifacts": [
+        {
+          "path": "/tmp/nexaui-content270/default/libcontent_surface.a",
+          "bytes": 4512,
+          "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+        },
+        {
+          "path": "/tmp/nexaui-content270/default/content_surface_test",
+          "bytes": 850328,
+          "sha256": "84e1767cdeac0404a3e5bde2f7a6f6354626924a1b4bd81aaf4b4d5e59b09949"
+        },
+        {
+          "path": "/tmp/nexaui-content270/default/compile_commands.json",
+          "bytes": 1189,
+          "sha256": "ff3f4603dc73302a45ad8422304d308e125a848d4add2c250168a913688f2952"
+        },
+        {
+          "path": "/tmp/nexaui-content270/default/CMakeCache.txt",
+          "bytes": 19674,
+          "sha256": "8a239a6fb9cd139eb1f7c48b9e3eb152a57fc799ddf0655694bd61033b290cae"
+        },
+        {
+          "path": "/tmp/nexaui-content270/default/tests.xml",
+          "bytes": 1221,
+          "sha256": "a1a85812ea38cb1959b5eb76cdcb0ef2e730e945e630063a69fa1ca1fbf968ef"
+        }
+      ],
+      "sdk_library": {
+        "kind": "library",
+        "path": "/tmp/nexaui-ime-handoff202/release-prefix/lib/libnexaui.a",
+        "bytes": 1185356,
+        "sha256": "4d259bbd8c2d9421c74ecc6c7c30be4cc79ecd2d765cd8160dd831139527a8f1"
+      },
+      "dynamic": "\nDynamic section at offset 0xc0a60 contains 29 entries:\n  Tag        Type                         Name/Value\n 0x0000000000000001 (NEEDED)             Shared library: [libwayland-client.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libxkbcommon.so.0]\n 0x0000000000000001 (NEEDED)             Shared library: [libc.musl-x86_64.so.1]\n 0x000000000000000c (INIT)               0x6000\n 0x000000000000000d (FINI)               0x8776f\n 0x0000000000000019 (INIT_ARRAY)         0xbf500\n 0x000000000000001b (INIT_ARRAYSZ)       8 (bytes)\n 0x000000000000001a (FINI_ARRAY)         0xbf508\n 0x000000000000001c (FINI_ARRAYSZ)       8 (bytes)\n 0x000000006ffffef5 (GNU_HASH)           0x320\n 0x0000000000000005 (STRTAB)             0xde0\n 0x0000000000000006 (SYMTAB)             0x348\n 0x000000000000000a (STRSZ)              1636 (bytes)\n 0x000000000000000b (SYMENT)             24 (bytes)\n 0x0000000000000015 (DEBUG)              0x0\n 0x0000000000000003 (PLTGOT)             0xc0c70\n 0x0000000000000002 (PLTRELSZ)           2184 (bytes)\n 0x0000000000000014 (PLTREL)             RELA\n 0x0000000000000017 (JMPREL)             0x4e48\n 0x0000000000000007 (RELA)               0x1548\n 0x0000000000000008 (RELASZ)             14592 (bytes)\n 0x0000000000000009 (RELAENT)            24 (bytes)\n 0x000000000000001e (FLAGS)              BIND_NOW\n 0x000000006ffffffb (FLAGS_1)            Flags: NOW PIE\n 0x000000006ffffffe (VERNEED)            0x1528\n 0x000000006fffffff (VERNEEDNUM)         1\n 0x000000006ffffff0 (VERSYM)             0x1444\n 0x000000006ffffff9 (RELACOUNT)          574\n 0x0000000000000000 (NULL)               0x0\n",
+      "host_dynamic": null,
+      "peer_dynamic": null,
+      "native": []
+    }
+  ],
+  "ctests": 16,
+  "native_tasks": 9,
+  "body_captures": [
+    {
+      "profile": "release",
+      "case": "full",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-full/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "full",
+      "tag": "rejected",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-full/content-rejected.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "full",
+      "tag": "fresh",
+      "width": 448,
+      "height": 208,
+      "rgb": "1753c5",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-full/content-fresh.ppm",
+        "bytes": 279567,
+        "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "full",
+      "tag": "bad",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-full/content-bad.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "full",
+      "tag": "recovered",
+      "width": 448,
+      "height": 208,
+      "rgb": "47a31f",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-full/content-recovered.ppm",
+        "bytes": 279567,
+        "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "full",
+      "tag": "scaled",
+      "width": 448,
+      "height": 208,
+      "rgb": "bf3f89",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-full/content-scaled.ppm",
+        "bytes": 279567,
+        "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "pending-close",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-pending-close/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "rejected-close",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-rejected-close/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "release",
+      "case": "rejected-close",
+      "tag": "rejected",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-release-rejected-close/content-rejected.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "full",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-full/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "full",
+      "tag": "rejected",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-full/content-rejected.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "full",
+      "tag": "fresh",
+      "width": 448,
+      "height": 208,
+      "rgb": "1753c5",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-full/content-fresh.ppm",
+        "bytes": 279567,
+        "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "full",
+      "tag": "bad",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-full/content-bad.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "full",
+      "tag": "recovered",
+      "width": 448,
+      "height": 208,
+      "rgb": "47a31f",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-full/content-recovered.ppm",
+        "bytes": 279567,
+        "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "full",
+      "tag": "scaled",
+      "width": 448,
+      "height": 208,
+      "rgb": "bf3f89",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-full/content-scaled.ppm",
+        "bytes": 279567,
+        "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "pending-close",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-pending-close/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "rejected-close",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-rejected-close/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "shared",
+      "case": "rejected-close",
+      "tag": "rejected",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-shared-rejected-close/content-rejected.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "full",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-full/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "full",
+      "tag": "rejected",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-full/content-rejected.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "full",
+      "tag": "fresh",
+      "width": 448,
+      "height": 208,
+      "rgb": "1753c5",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-full/content-fresh.ppm",
+        "bytes": 279567,
+        "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "full",
+      "tag": "bad",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-full/content-bad.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "full",
+      "tag": "recovered",
+      "width": 448,
+      "height": 208,
+      "rgb": "47a31f",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-full/content-recovered.ppm",
+        "bytes": 279567,
+        "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "full",
+      "tag": "scaled",
+      "width": 448,
+      "height": 208,
+      "rgb": "bf3f89",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-full/content-scaled.ppm",
+        "bytes": 279567,
+        "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "pending-close",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-pending-close/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "rejected-close",
+      "tag": "pending",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-rejected-close/content-pending.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    },
+    {
+      "profile": "asan",
+      "case": "rejected-close",
+      "tag": "rejected",
+      "width": 448,
+      "height": 208,
+      "rgb": "e3e7ef",
+      "image": {
+        "path": "/tmp/nexaui-content270/native271-asan-rejected-close/content-rejected.ppm",
+        "bytes": 279567,
+        "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+      }
+    }
+  ],
+  "body_capture_count": 27,
+  "first_negative": {
+    "candidate": "2ef9a56791c3dec63e542e66429ff2b7a43abba2",
+    "mutations": [
+      {
+        "variant": "stale-generation",
+        "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/surface.c",
+        "before_sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b",
+        "after_sha256": "43fd308be03e353d8843d359706eab49f1962f73a925823612caa4b9839a2631"
+      },
+      {
+        "variant": "missing-submit",
+        "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/native_host.c",
+        "before_sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7",
+        "after_sha256": "9e5745fe2f4c2b877afaca0fc1ce119e86f7c606496ee76b99ea491e1b9226fe"
+      }
+    ],
+    "commands": [
+      {
+        "variant": "stale-generation",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content",
+          "-B",
+          "/tmp/nexaui-content272/stale-generation/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DNEXAUI_CONTENT_BUILD_NATIVE_FIXTURE=ON",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 31.253225727,
+        "log": "content272-stale-generation-configure.log",
+        "sha256": "7b8cab8dc925d35f6eac989f12d8f5090c05fe4e6210144a386c352ca56b5235"
+      },
+      {
+        "variant": "stale-generation",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-content272/stale-generation/build",
+          "--parallel",
+          "2",
+          "--target",
+          "content_native_host",
+          "content_atspi_peer"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.6701363570000041,
+        "log": "content272-stale-generation-build.log",
+        "sha256": "01a907eb1a0abad89447179079a12c7b44929442f955956661c1fb49960cf65e"
+      },
+      {
+        "variant": "stale-generation",
+        "phase": "native",
+        "command": [
+          "python3",
+          "/tmp/nexaui-content270/consumer/examples/38_external_content/run_native.py",
+          "--build-dir",
+          "/tmp/nexaui-content272/stale-generation/build",
+          "--font",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "--registry",
+          "/usr/libexec/at-spi2-registryd",
+          "--work-dir",
+          "/tmp/nexaui-content272/stale-generation/native",
+          "--case",
+          "full"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 7.240305377000006,
+        "log": "content272-stale-generation-native.log",
+        "sha256": "10856da0cffe59270f4d1e66237edd6ef5893c3e6e2a634e10cb6bacd9e1abd0"
+      },
+      {
+        "variant": "missing-submit",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content",
+          "-B",
+          "/tmp/nexaui-content272/missing-submit/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DNEXAUI_CONTENT_BUILD_NATIVE_FIXTURE=ON",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 29.443617016000005,
+        "log": "content272-missing-submit-configure.log",
+        "sha256": "1bb9b8b38eeef8c11b6e0d750768c3b10511d0db6a737e3addbf583b2addfbdf"
+      },
+      {
+        "variant": "missing-submit",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-content272/missing-submit/build",
+          "--parallel",
+          "2",
+          "--target",
+          "content_native_host",
+          "content_atspi_peer"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.5186180580000013,
+        "log": "content272-missing-submit-build.log",
+        "sha256": "01a907eb1a0abad89447179079a12c7b44929442f955956661c1fb49960cf65e"
+      },
+      {
+        "variant": "missing-submit",
+        "phase": "native",
+        "command": [
+          "python3",
+          "/tmp/nexaui-content270/consumer/examples/38_external_content/run_native.py",
+          "--build-dir",
+          "/tmp/nexaui-content272/missing-submit/build",
+          "--font",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "--registry",
+          "/usr/libexec/at-spi2-registryd",
+          "--work-dir",
+          "/tmp/nexaui-content272/missing-submit/native",
+          "--case",
+          "full"
+        ],
+        "exit": 0,
+        "expected_exit": 1,
+        "seconds": 2.075678842000002,
+        "log": "content272-missing-submit-native.log",
+        "sha256": "4c0165009c5092883b295238b875c5dd2bd7ae6ee1d0400d60309a98f93bd458"
+      }
+    ]
+  },
+  "negative": {
+    "candidate": "2ef9a56791c3dec63e542e66429ff2b7a43abba2",
+    "mutations": [
+      {
+        "variant": "missing-submit",
+        "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/native_host.c",
+        "before_sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7",
+        "after_sha256": "3349bf33eb6db4dba962fdb7455612265a8566e5f6d8f908069dc6ae7ef86bda"
+      }
+    ],
+    "commands": [
+      {
+        "variant": "missing-submit",
+        "phase": "configure",
+        "command": [
+          "cmake",
+          "-S",
+          "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content",
+          "-B",
+          "/tmp/nexaui-content273/missing-submit/build",
+          "-G",
+          "Ninja",
+          "-DCMAKE_C_COMPILER=clang",
+          "-DCMAKE_BUILD_TYPE=Release",
+          "-DCMAKE_C_FLAGS=-Wall -Wextra -Wpedantic -Wconversion -Wshadow -Werror",
+          "-DCMAKE_PREFIX_PATH=/tmp/nexaui-ime-handoff202/release-prefix",
+          "-DNEXAUI_CONTENT_BUILD_NATIVE_FIXTURE=ON",
+          "-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 30.550376268,
+        "log": "content273-missing-submit-configure.log",
+        "sha256": "935518f9a983309d46ab3481f4408b970649a56515603ea5920b4c167228f574"
+      },
+      {
+        "variant": "missing-submit",
+        "phase": "build",
+        "command": [
+          "cmake",
+          "--build",
+          "/tmp/nexaui-content273/missing-submit/build",
+          "--parallel",
+          "2",
+          "--target",
+          "content_native_host",
+          "content_atspi_peer"
+        ],
+        "exit": 0,
+        "expected_exit": 0,
+        "seconds": 0.6190898830000009,
+        "log": "content273-missing-submit-build.log",
+        "sha256": "01a907eb1a0abad89447179079a12c7b44929442f955956661c1fb49960cf65e"
+      },
+      {
+        "variant": "missing-submit",
+        "phase": "native",
+        "command": [
+          "python3",
+          "/tmp/nexaui-content270/consumer/examples/38_external_content/run_native.py",
+          "--build-dir",
+          "/tmp/nexaui-content273/missing-submit/build",
+          "--font",
+          "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+          "--registry",
+          "/usr/libexec/at-spi2-registryd",
+          "--work-dir",
+          "/tmp/nexaui-content273/missing-submit/native",
+          "--case",
+          "full"
+        ],
+        "exit": 1,
+        "expected_exit": 1,
+        "seconds": 4.0295101540000005,
+        "log": "content273-missing-submit-native.log",
+        "sha256": "93a3983ce048b1e0ce6720ad3b4576199756387277e44c293a0af4edc300ef51"
+      }
+    ]
+  },
+  "environment": {
+    "kernel": "6.18.33.2-microsoft-standard-WSL2",
+    "compiler": "Alpine clang version 22.1.3\nTarget: x86_64-alpine-linux-musl\nThread model: posix\nInstalledDir: /usr/lib/llvm22/bin\nConfiguration file: /etc/clang22/x86_64-alpine-linux-musl.cfg\n",
+    "pkg_versions": "1.8.13\n2.60.5\n2.88.1\n1.25.0\n",
+    "borrowed_font": {
+      "path": "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+      "bytes": 1045720,
+      "sha256": "b3658eadae55e682b5f69eb64c439c1ecc8f196c0bb8d4756d145d13bc86476a"
+    },
+    "tools": [
+      {
+        "path": "/usr/bin/xdotool",
+        "bytes": 69640,
+        "sha256": "a4f26df1148f8fd1714e6788d27ab88800cbd86c6361280f9bae30145cafa08f"
+      },
+      {
+        "path": "/usr/bin/Xvfb",
+        "bytes": 1453256,
+        "sha256": "e8dfb0857f740ad5812497bc42bee8ed163c023537903552d009b08a0dc1be79"
+      },
+      {
+        "path": "/usr/libexec/at-spi2-registryd",
+        "bytes": 76312,
+        "sha256": "ea49a3ee2fb5333f610f32cf55bf9d24c7bb798a60cedad5621de223927b12da"
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/atspi-multiselection-v3/private-weston.sh",
+        "bytes": 251,
+        "sha256": "d82169d8b60a003faffd205aab38d39fdf47d87404a12bbb9eea122785b12ab7"
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/private-weston-14/root/usr/bin/weston",
+        "bytes": 14080,
+        "sha256": "9803344d5ed2c07c4976524b948d895eba120fb822a73f4db7c6fa018538934f"
+      },
+      {
+        "path": "/mnt/d/NexaUI/out/private-weston-14/root/usr/lib/weston/desktop-shell.so",
+        "bytes": 63504,
+        "sha256": "dfdf1ca4436c38d8039f915368a1a8b5614b6306efdd2ac23fdde7b71f4fcc2f"
+      }
+    ],
+    "sanitizers": {
+      "ASAN_OPTIONS": "detect_leaks=1:halt_on_error=1",
+      "UBSAN_OPTIONS": "halt_on_error=1:print_stacktrace=1"
+    }
+  },
+  "preview": {
+    "path": "/mnt/d/NexaUI/out/content274-native.png",
+    "bytes": 5499,
+    "sha256": "f2990bdf77d0f1b26f1b5764776fe8759c2b933716a03ebf1cbc251a46bf257f",
+    "source": {
+      "path": "/tmp/nexaui-content270/native271-release-full/content-fresh-window.ppm",
+      "bytes": 518415,
+      "sha256": "67dd7cee1a850d3bd42fa9e47446e250c82ffa5f92bfb74c5831436d70c39326"
+    },
+    "rgb_sha256": "669bb99a16beb46ce13e0f79f791279c305352204d0e93e64ad77378ecebfb03"
+  },
+  "sdk_source_unchanged": true,
+  "sdk_receipt": {
+    "path": "/mnt/d/NexaUI/out/ime-handoff206-final.json",
+    "bytes": 117581,
+    "sha256": "755444049b7934cee07cfab87e31b8d18847670f129311b36d49535397cf5ec2"
+  },
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-content-native274.tar.gz",
+    "bytes": 11130619,
+    "sha256": "c1bec5d73eaa30d1fc300479e7222ebebb4a5ab1f2479a50ae3c9855f59a6d19",
+    "verified_members": 256
+  },
+  "manifest": [
+    {
+      "member": "consumer/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 1867,
+      "sha256": "642315881cb50b3e199ea7ab3aab90e1b133f6e5c7b5cf64f24d8f09b3ed7542"
+    },
+    {
+      "member": "consumer/examples/38_external_content/README.md",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/README.md",
+      "bytes": 7298,
+      "sha256": "8e276d09a99a901f0dbda460058e7799cb65b72b4359a9e0adbf114a137fb9f3"
+    },
+    {
+      "member": "consumer/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "consumer/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/surface.c",
+      "bytes": 6373,
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "member": "consumer/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "consumer/examples/38_external_content/native_host.c",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/native_host.c",
+      "bytes": 12171,
+      "sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7"
+    },
+    {
+      "member": "consumer/examples/38_external_content/native_worker.h",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/native_worker.h",
+      "bytes": 6371,
+      "sha256": "c98c1685b955e788a57317e8c45def77ad6e50bb9e73f23c37820c4e13ae51d3"
+    },
+    {
+      "member": "consumer/examples/38_external_content/atspi_peer.c",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/atspi_peer.c",
+      "bytes": 12061,
+      "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+    },
+    {
+      "member": "consumer/examples/38_external_content/run_native.py",
+      "path": "/tmp/nexaui-content270/consumer/examples/38_external_content/run_native.py",
+      "bytes": 1886,
+      "sha256": "d338fcf09740d5f9d169021e86875658f233cc9a51ed710585120fa900a25493"
+    },
+    {
+      "member": "consumer/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-content270/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "consumer/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-content270/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "logs/content270-release-configure.log",
+      "path": "/mnt/d/NexaUI/out/content270-release-configure.log",
+      "bytes": 1227,
+      "sha256": "8398380973c9f8fbfaec9f047d7566eea9df55e34d59078e432755dfbe60b1ff"
+    },
+    {
+      "member": "logs/content270-release-build.log",
+      "path": "/mnt/d/NexaUI/out/content270-release-build.log",
+      "bytes": 485,
+      "sha256": "19a6a1fec2014396af0c1f2e350e3989ac9270c40bb22320e39d6434ff887c57"
+    },
+    {
+      "member": "logs/content270-release-test.log",
+      "path": "/mnt/d/NexaUI/out/content270-release-test.log",
+      "bytes": 1981,
+      "sha256": "40d016f12162e55a333c10e3fc0ac1363ba591c97c44efb0def82f527bd7007e"
+    },
+    {
+      "member": "release/objects/surface.c.o",
+      "path": "/tmp/nexaui-content270/release/CMakeFiles/content_surface.dir/surface.c.o",
+      "bytes": 4240,
+      "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+    },
+    {
+      "member": "release/objects/test_surface.c.o",
+      "path": "/tmp/nexaui-content270/release/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+      "bytes": 27704,
+      "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+    },
+    {
+      "member": "release/objects/native_host.c.o",
+      "path": "/tmp/nexaui-content270/release/CMakeFiles/content_native_host.dir/native_host.c.o",
+      "bytes": 20944,
+      "sha256": "1d56ac6efc89e8bc6346d80cb218f5f2be37908045c058091ecc1d8905ef880f"
+    },
+    {
+      "member": "release/objects/atspi_peer.c.o",
+      "path": "/tmp/nexaui-content270/release/CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o",
+      "bytes": 26512,
+      "sha256": "2979b63efe474809876fb735e49719038a73e7da7983370623192f1996947158"
+    },
+    {
+      "member": "release/libcontent_surface.a",
+      "path": "/tmp/nexaui-content270/release/libcontent_surface.a",
+      "bytes": 4512,
+      "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+    },
+    {
+      "member": "release/content_surface_test",
+      "path": "/tmp/nexaui-content270/release/content_surface_test",
+      "bytes": 850328,
+      "sha256": "84e1767cdeac0404a3e5bde2f7a6f6354626924a1b4bd81aaf4b4d5e59b09949"
+    },
+    {
+      "member": "release/compile_commands.json",
+      "path": "/tmp/nexaui-content270/release/compile_commands.json",
+      "bytes": 2496,
+      "sha256": "c5107566a684d50fc810ae8bd1b6205a38425987fe354152dbdc1241e69ab6d8"
+    },
+    {
+      "member": "release/CMakeCache.txt",
+      "path": "/tmp/nexaui-content270/release/CMakeCache.txt",
+      "bytes": 46780,
+      "sha256": "7308b07a24fa750e658a4f7c18f065d66ca73cef4c288853571367beb383fb08"
+    },
+    {
+      "member": "release/tests.xml",
+      "path": "/tmp/nexaui-content270/release/tests.xml",
+      "bytes": 1221,
+      "sha256": "2ad7b2ea828204cdd5825559e889493f567840346b5ea08887ba7245f3338008"
+    },
+    {
+      "member": "release/content_native_host",
+      "path": "/tmp/nexaui-content270/release/content_native_host",
+      "bytes": 842600,
+      "sha256": "9f166fb03ae21ab622543753c09bb894e9ed0abf916e11216d4b5121a346de40"
+    },
+    {
+      "member": "release/content_atspi_peer",
+      "path": "/tmp/nexaui-content270/release/content_atspi_peer",
+      "bytes": 37168,
+      "sha256": "88c8507d0fab4e2f4730c16d9b607415a64ab150007392943a44c51780722d7d"
+    },
+    {
+      "member": "logs/content271-release-full.log",
+      "path": "/mnt/d/NexaUI/out/content271-release-full.log",
+      "bytes": 1093,
+      "sha256": "45f6ee7ffee05555eb29e50e81d045d336a311c45d3a19d3521f5b2e23404401"
+    },
+    {
+      "member": "release/native-full/content-bad.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-bad.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "release/native-full/content-fresh-full.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-fresh-full.ppm",
+      "bytes": 5760017,
+      "sha256": "c4d66c2227b46f36cbab9e532d69fdfeac8d58245ce3d9fb551f97924bc0fc48"
+    },
+    {
+      "member": "release/native-full/content-fresh-window.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-fresh-window.ppm",
+      "bytes": 518415,
+      "sha256": "67dd7cee1a850d3bd42fa9e47446e250c82ffa5f92bfb74c5831436d70c39326"
+    },
+    {
+      "member": "release/native-full/content-fresh.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-fresh.ppm",
+      "bytes": 279567,
+      "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+    },
+    {
+      "member": "release/native-full/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "release/native-full/content-recovered.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-recovered.ppm",
+      "bytes": 279567,
+      "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+    },
+    {
+      "member": "release/native-full/content-rejected.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "release/native-full/content-scaled.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-full/content-scaled.ppm",
+      "bytes": 279567,
+      "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+    },
+    {
+      "member": "release/native-full/result.json",
+      "path": "/tmp/nexaui-content270/native271-release-full/result.json",
+      "bytes": 980,
+      "sha256": "5bf2529e6e10f33b67016332e090b275b88b3cc84b709286fceee5069661bf0d"
+    },
+    {
+      "member": "release/native-full/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-release-full/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "release/native-full/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-release-full/weston.stderr",
+      "bytes": 2829,
+      "sha256": "dbb0507316ae4e86ad0ea804a84176068592d43e1ac1b04c8dff5675bae4b412"
+    },
+    {
+      "member": "release/native-full/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-release-full/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content271-release-pending-close.log",
+      "path": "/mnt/d/NexaUI/out/content271-release-pending-close.log",
+      "bytes": 380,
+      "sha256": "675e3127607fab8fc99ff0a5bdb5523ec96f1da12caf87183d690fd18be853a8"
+    },
+    {
+      "member": "release/native-pending-close/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-pending-close/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "release/native-pending-close/result.json",
+      "path": "/tmp/nexaui-content270/native271-release-pending-close/result.json",
+      "bytes": 983,
+      "sha256": "9b8c27a01f9685a3f5378a5fb75d44ad3ef6e9c26805bd77bb853468c26fb50e"
+    },
+    {
+      "member": "release/native-pending-close/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-release-pending-close/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "release/native-pending-close/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-release-pending-close/weston.stderr",
+      "bytes": 2847,
+      "sha256": "4f397f889a2c47581506824a4e000e15714235e1cf06932e62e75dce7ce5295c"
+    },
+    {
+      "member": "release/native-pending-close/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-release-pending-close/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content271-release-rejected-close.log",
+      "path": "/mnt/d/NexaUI/out/content271-release-rejected-close.log",
+      "bytes": 528,
+      "sha256": "24d785bd4d7fb3d7f9095ddc623b7a81d2ef2341571d651c8f2cfb637a78b8f6"
+    },
+    {
+      "member": "release/native-rejected-close/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-rejected-close/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "release/native-rejected-close/content-rejected.ppm",
+      "path": "/tmp/nexaui-content270/native271-release-rejected-close/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "release/native-rejected-close/result.json",
+      "path": "/tmp/nexaui-content270/native271-release-rejected-close/result.json",
+      "bytes": 991,
+      "sha256": "9864d723f3d6bf4a404babb3eb2c2c28ef9cacf4f677995f23f1a26ee16da714"
+    },
+    {
+      "member": "release/native-rejected-close/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-release-rejected-close/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "release/native-rejected-close/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-release-rejected-close/weston.stderr",
+      "bytes": 2849,
+      "sha256": "74ce7493da7c9d9f129caed71408054601cfd0ad5a2b8eee171932d95747db57"
+    },
+    {
+      "member": "release/native-rejected-close/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-release-rejected-close/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content270-shared-configure.log",
+      "path": "/mnt/d/NexaUI/out/content270-shared-configure.log",
+      "bytes": 1226,
+      "sha256": "1e1705e343f27c365b034612d54359720b8e0c1458d3ee5fd9f8dd7a91540f20"
+    },
+    {
+      "member": "logs/content270-shared-build.log",
+      "path": "/mnt/d/NexaUI/out/content270-shared-build.log",
+      "bytes": 485,
+      "sha256": "19a6a1fec2014396af0c1f2e350e3989ac9270c40bb22320e39d6434ff887c57"
+    },
+    {
+      "member": "logs/content270-shared-test.log",
+      "path": "/mnt/d/NexaUI/out/content270-shared-test.log",
+      "bytes": 1970,
+      "sha256": "f2f84d341c27a8666be32f34c6ed9d40bf1404bd7a86b992323ef424c6bf8f31"
+    },
+    {
+      "member": "shared/objects/surface.c.o",
+      "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_surface.dir/surface.c.o",
+      "bytes": 4240,
+      "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+    },
+    {
+      "member": "shared/objects/test_surface.c.o",
+      "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+      "bytes": 27704,
+      "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+    },
+    {
+      "member": "shared/objects/native_host.c.o",
+      "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_native_host.dir/native_host.c.o",
+      "bytes": 20944,
+      "sha256": "1d56ac6efc89e8bc6346d80cb218f5f2be37908045c058091ecc1d8905ef880f"
+    },
+    {
+      "member": "shared/objects/atspi_peer.c.o",
+      "path": "/tmp/nexaui-content270/shared/CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o",
+      "bytes": 26512,
+      "sha256": "2979b63efe474809876fb735e49719038a73e7da7983370623192f1996947158"
+    },
+    {
+      "member": "shared/libcontent_surface.a",
+      "path": "/tmp/nexaui-content270/shared/libcontent_surface.a",
+      "bytes": 4512,
+      "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+    },
+    {
+      "member": "shared/content_surface_test",
+      "path": "/tmp/nexaui-content270/shared/content_surface_test",
+      "bytes": 32624,
+      "sha256": "6fe01b2493e2cbdfcbf61f41ebf0e246c415179bddfc2926accc710a8b544e8b"
+    },
+    {
+      "member": "shared/compile_commands.json",
+      "path": "/tmp/nexaui-content270/shared/compile_commands.json",
+      "bytes": 2533,
+      "sha256": "192b6c4a2746b909bfe3ad43788976337950ba4177c657d6930633f959440051"
+    },
+    {
+      "member": "shared/CMakeCache.txt",
+      "path": "/tmp/nexaui-content270/shared/CMakeCache.txt",
+      "bytes": 46774,
+      "sha256": "1550c6249cfed4d2d254861496d379290d172acdb349f5103c4ccbe73fffc812"
+    },
+    {
+      "member": "shared/tests.xml",
+      "path": "/tmp/nexaui-content270/shared/tests.xml",
+      "bytes": 1221,
+      "sha256": "aecc926cf49c458d776ba235b67cd3872456627afd3ebce6640eeb8400f7483d"
+    },
+    {
+      "member": "shared/content_native_host",
+      "path": "/tmp/nexaui-content270/shared/content_native_host",
+      "bytes": 34208,
+      "sha256": "ae07de1085b6b104ae8a1793ad687d330d318636951f78ed8561dd75b2b7ef13"
+    },
+    {
+      "member": "shared/content_atspi_peer",
+      "path": "/tmp/nexaui-content270/shared/content_atspi_peer",
+      "bytes": 37168,
+      "sha256": "88c8507d0fab4e2f4730c16d9b607415a64ab150007392943a44c51780722d7d"
+    },
+    {
+      "member": "logs/content271-shared-full.log",
+      "path": "/mnt/d/NexaUI/out/content271-shared-full.log",
+      "bytes": 1093,
+      "sha256": "4c0165009c5092883b295238b875c5dd2bd7ae6ee1d0400d60309a98f93bd458"
+    },
+    {
+      "member": "shared/native-full/content-bad.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-bad.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "shared/native-full/content-fresh-full.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-fresh-full.ppm",
+      "bytes": 5760017,
+      "sha256": "c4d66c2227b46f36cbab9e532d69fdfeac8d58245ce3d9fb551f97924bc0fc48"
+    },
+    {
+      "member": "shared/native-full/content-fresh-window.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-fresh-window.ppm",
+      "bytes": 518415,
+      "sha256": "67dd7cee1a850d3bd42fa9e47446e250c82ffa5f92bfb74c5831436d70c39326"
+    },
+    {
+      "member": "shared/native-full/content-fresh.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-fresh.ppm",
+      "bytes": 279567,
+      "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+    },
+    {
+      "member": "shared/native-full/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "shared/native-full/content-recovered.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-recovered.ppm",
+      "bytes": 279567,
+      "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+    },
+    {
+      "member": "shared/native-full/content-rejected.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "shared/native-full/content-scaled.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-full/content-scaled.ppm",
+      "bytes": 279567,
+      "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+    },
+    {
+      "member": "shared/native-full/result.json",
+      "path": "/tmp/nexaui-content270/native271-shared-full/result.json",
+      "bytes": 980,
+      "sha256": "7b51d0e160632f1a99822f4fa47ebd53fedd59420143c9b45fe8c5aeebfd5894"
+    },
+    {
+      "member": "shared/native-full/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-shared-full/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "shared/native-full/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-shared-full/weston.stderr",
+      "bytes": 2827,
+      "sha256": "0f252ccf5e08a445e6e12a244b4a5af4a1b4d175bf0cb4d0def6cbfcbc62f7ef"
+    },
+    {
+      "member": "shared/native-full/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-shared-full/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content271-shared-pending-close.log",
+      "path": "/mnt/d/NexaUI/out/content271-shared-pending-close.log",
+      "bytes": 381,
+      "sha256": "49f4be9d6bc5c449b69b0d79e39a06d52169fd2ee8d75e8e3d214ec5989e6d05"
+    },
+    {
+      "member": "shared/native-pending-close/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-pending-close/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "shared/native-pending-close/result.json",
+      "path": "/tmp/nexaui-content270/native271-shared-pending-close/result.json",
+      "bytes": 989,
+      "sha256": "acee3e292de30aa0b9f2c0cceaad9b3b48b5c34d0e70dedbd892e2624560da47"
+    },
+    {
+      "member": "shared/native-pending-close/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-shared-pending-close/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "shared/native-pending-close/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-shared-pending-close/weston.stderr",
+      "bytes": 2845,
+      "sha256": "6e2f04c319954d392009e9aa81442b505c545b830a245dd29c4946e4853977ce"
+    },
+    {
+      "member": "shared/native-pending-close/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-shared-pending-close/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content271-shared-rejected-close.log",
+      "path": "/mnt/d/NexaUI/out/content271-shared-rejected-close.log",
+      "bytes": 528,
+      "sha256": "e8b5fa9325fc3d339abede457959aaa50ae6d7bb7e200861b4b106a7f2ea3f60"
+    },
+    {
+      "member": "shared/native-rejected-close/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-rejected-close/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "shared/native-rejected-close/content-rejected.ppm",
+      "path": "/tmp/nexaui-content270/native271-shared-rejected-close/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "shared/native-rejected-close/result.json",
+      "path": "/tmp/nexaui-content270/native271-shared-rejected-close/result.json",
+      "bytes": 990,
+      "sha256": "874affae8ac9f43b0430cec7d4ed1708f48fe1af0288db892df0bdfd52a59bc9"
+    },
+    {
+      "member": "shared/native-rejected-close/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-shared-rejected-close/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "shared/native-rejected-close/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-shared-rejected-close/weston.stderr",
+      "bytes": 2847,
+      "sha256": "ed3f6ef07dfb2ce8abcb5c7db54c419339d3861d792bc5dce8c45eeeb337185f"
+    },
+    {
+      "member": "shared/native-rejected-close/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-shared-rejected-close/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content270-asan-configure.log",
+      "path": "/mnt/d/NexaUI/out/content270-asan-configure.log",
+      "bytes": 1224,
+      "sha256": "fecb837306cd4c8ba511d9a5dd74e72167a26365ab6590fa6a9f3c439b7a2670"
+    },
+    {
+      "member": "logs/content270-asan-build.log",
+      "path": "/mnt/d/NexaUI/out/content270-asan-build.log",
+      "bytes": 485,
+      "sha256": "19a6a1fec2014396af0c1f2e350e3989ac9270c40bb22320e39d6434ff887c57"
+    },
+    {
+      "member": "logs/content270-asan-test.log",
+      "path": "/mnt/d/NexaUI/out/content270-asan-test.log",
+      "bytes": 1948,
+      "sha256": "d4f7ca63b0cf69dacc7db7a79584d26e0289d49895bdaa2bc429f9fe8ee3b61b"
+    },
+    {
+      "member": "asan/objects/surface.c.o",
+      "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_surface.dir/surface.c.o",
+      "bytes": 56688,
+      "sha256": "3eb72cf6c725ce9676402ab66c785f51bed0545b1146ffeface5f0282d2bf118"
+    },
+    {
+      "member": "asan/objects/test_surface.c.o",
+      "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+      "bytes": 137032,
+      "sha256": "46c147ed1091cb94696575dd45635ff3fca20b9a175c72a2af5ef50b660a0072"
+    },
+    {
+      "member": "asan/objects/native_host.c.o",
+      "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_native_host.dir/native_host.c.o",
+      "bytes": 123608,
+      "sha256": "e7ad740242cc6dcee066c8a1798f58bc67df5bfa561d6f6d53e424f42317df9e"
+    },
+    {
+      "member": "asan/objects/atspi_peer.c.o",
+      "path": "/tmp/nexaui-content270/asan/CMakeFiles/content_atspi_peer.dir/atspi_peer.c.o",
+      "bytes": 156448,
+      "sha256": "31d2112df7bbe27e5ed5bdae51bbd0f467ec0c3a5942f1aa84a05afa4f7488b3"
+    },
+    {
+      "member": "asan/libcontent_surface.a",
+      "path": "/tmp/nexaui-content270/asan/libcontent_surface.a",
+      "bytes": 56992,
+      "sha256": "eba97d75cba4f0e974c1c8ab5255e3c9bf8c2ee3083342cda03b7eb45655d533"
+    },
+    {
+      "member": "asan/content_surface_test",
+      "path": "/tmp/nexaui-content270/asan/content_surface_test",
+      "bytes": 10448800,
+      "sha256": "c6f73b8cbdacd650298860b67587213299bc59e24dc5a676ccba52eafa585566"
+    },
+    {
+      "member": "asan/compile_commands.json",
+      "path": "/tmp/nexaui-content270/asan/compile_commands.json",
+      "bytes": 2651,
+      "sha256": "50e7d5e1780eaecd3184db19db8881db022dee0d6286657fe79f0b46f0530dae"
+    },
+    {
+      "member": "asan/CMakeCache.txt",
+      "path": "/tmp/nexaui-content270/asan/CMakeCache.txt",
+      "bytes": 46813,
+      "sha256": "873c9cf4eb69e4e6643d85f045895278d0d2fb18534cfc336293c13ec27ec8ef"
+    },
+    {
+      "member": "asan/tests.xml",
+      "path": "/tmp/nexaui-content270/asan/tests.xml",
+      "bytes": 1218,
+      "sha256": "5656ecd524b7d9fe54b69cb1f10029891b69bfc06801da97e1e73be78fdd6169"
+    },
+    {
+      "member": "asan/content_native_host",
+      "path": "/tmp/nexaui-content270/asan/content_native_host",
+      "bytes": 10438528,
+      "sha256": "f2dd42be401a167008a0e7064472266f88da5469ee6bcd2937658e1dca62770f"
+    },
+    {
+      "member": "asan/content_atspi_peer",
+      "path": "/tmp/nexaui-content270/asan/content_atspi_peer",
+      "bytes": 2927328,
+      "sha256": "1a0815cbc3880cc55b72d5f2a084e3022fe6ae61b8a0be2dfc12871ad3296830"
+    },
+    {
+      "member": "logs/content271-asan-full.log",
+      "path": "/mnt/d/NexaUI/out/content271-asan-full.log",
+      "bytes": 1093,
+      "sha256": "30698428f79d318754a555e7f4ed713fd2d9cda6f0d69b67a7e73c36d08405fc"
+    },
+    {
+      "member": "asan/native-full/content-bad.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-bad.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "asan/native-full/content-fresh-full.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-fresh-full.ppm",
+      "bytes": 5760017,
+      "sha256": "c4d66c2227b46f36cbab9e532d69fdfeac8d58245ce3d9fb551f97924bc0fc48"
+    },
+    {
+      "member": "asan/native-full/content-fresh-window.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-fresh-window.ppm",
+      "bytes": 518415,
+      "sha256": "67dd7cee1a850d3bd42fa9e47446e250c82ffa5f92bfb74c5831436d70c39326"
+    },
+    {
+      "member": "asan/native-full/content-fresh.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-fresh.ppm",
+      "bytes": 279567,
+      "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+    },
+    {
+      "member": "asan/native-full/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "asan/native-full/content-recovered.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-recovered.ppm",
+      "bytes": 279567,
+      "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+    },
+    {
+      "member": "asan/native-full/content-rejected.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "asan/native-full/content-scaled.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-full/content-scaled.ppm",
+      "bytes": 279567,
+      "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+    },
+    {
+      "member": "asan/native-full/result.json",
+      "path": "/tmp/nexaui-content270/native271-asan-full/result.json",
+      "bytes": 974,
+      "sha256": "bda518a9353154d1006bde79970c17b5c3f31c5717bf752591ad7b58cf49ef46"
+    },
+    {
+      "member": "asan/native-full/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-asan-full/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "asan/native-full/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-asan-full/weston.stderr",
+      "bytes": 2823,
+      "sha256": "bf505907e7989d26ac14fda3039a9a49f78a7f25f8dca7750380f4527a84c405"
+    },
+    {
+      "member": "asan/native-full/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-asan-full/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content271-asan-pending-close.log",
+      "path": "/mnt/d/NexaUI/out/content271-asan-pending-close.log",
+      "bytes": 380,
+      "sha256": "7a5ccc9b79869bb3b8d981da521ecaf4956e7598dcdb08d3acb5104c04a75a1b"
+    },
+    {
+      "member": "asan/native-pending-close/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-pending-close/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "asan/native-pending-close/result.json",
+      "path": "/tmp/nexaui-content270/native271-asan-pending-close/result.json",
+      "bytes": 983,
+      "sha256": "a146e5240f89347243fe53b3526b52e16457bbb71a4e6f1547e5289affc330a2"
+    },
+    {
+      "member": "asan/native-pending-close/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-asan-pending-close/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "asan/native-pending-close/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-asan-pending-close/weston.stderr",
+      "bytes": 2841,
+      "sha256": "de6c841fe8768546688a9f943cb88b169382cd986add3e335e4bd0bb9e93408d"
+    },
+    {
+      "member": "asan/native-pending-close/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-asan-pending-close/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content271-asan-rejected-close.log",
+      "path": "/mnt/d/NexaUI/out/content271-asan-rejected-close.log",
+      "bytes": 528,
+      "sha256": "24d785bd4d7fb3d7f9095ddc623b7a81d2ef2341571d651c8f2cfb637a78b8f6"
+    },
+    {
+      "member": "asan/native-rejected-close/content-pending.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-rejected-close/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "asan/native-rejected-close/content-rejected.ppm",
+      "path": "/tmp/nexaui-content270/native271-asan-rejected-close/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "asan/native-rejected-close/result.json",
+      "path": "/tmp/nexaui-content270/native271-asan-rejected-close/result.json",
+      "bytes": 984,
+      "sha256": "eacda00c8503ea593d1ae14234339194f066e547379466c04dab974a6a124ea2"
+    },
+    {
+      "member": "asan/native-rejected-close/weston.ini",
+      "path": "/tmp/nexaui-content270/native271-asan-rejected-close/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "asan/native-rejected-close/weston.stderr",
+      "path": "/tmp/nexaui-content270/native271-asan-rejected-close/weston.stderr",
+      "bytes": 2843,
+      "sha256": "42ad9c9bdeb4e5181194473d1412203bb4b8448d3d52f6a9571917e7a4f23b30"
+    },
+    {
+      "member": "asan/native-rejected-close/weston.stdout",
+      "path": "/tmp/nexaui-content270/native271-asan-rejected-close/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content270-default-configure.log",
+      "path": "/mnt/d/NexaUI/out/content270-default-configure.log",
+      "bytes": 823,
+      "sha256": "b6c933bf1c289ac2dd1a2f3ddf948a04a66fc9180d2e3507ec5c95569f9dab39"
+    },
+    {
+      "member": "logs/content270-default-build.log",
+      "path": "/mnt/d/NexaUI/out/content270-default-build.log",
+      "bytes": 244,
+      "sha256": "4885eb1333989a03cb5d8acd8830579daa418b9dc16fb97faaf1937911bf79c4"
+    },
+    {
+      "member": "logs/content270-default-test.log",
+      "path": "/mnt/d/NexaUI/out/content270-default-test.log",
+      "bytes": 1981,
+      "sha256": "f2a496ed278c19ff268790a400f185ad436ac3ca8e8712c0eeccab7e3a5667f3"
+    },
+    {
+      "member": "default/objects/surface.c.o",
+      "path": "/tmp/nexaui-content270/default/CMakeFiles/content_surface.dir/surface.c.o",
+      "bytes": 4240,
+      "sha256": "1f43c23d93d40b9d8a8d00d885877046e733600577bbc213e49c81eecf0067fd"
+    },
+    {
+      "member": "default/objects/test_surface.c.o",
+      "path": "/tmp/nexaui-content270/default/CMakeFiles/content_surface_test.dir/test_surface.c.o",
+      "bytes": 27704,
+      "sha256": "379c97d86c9d9c08007d9f7a7375b10ac233d91361bc6340a6b755970fcc357d"
+    },
+    {
+      "member": "default/libcontent_surface.a",
+      "path": "/tmp/nexaui-content270/default/libcontent_surface.a",
+      "bytes": 4512,
+      "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+    },
+    {
+      "member": "default/content_surface_test",
+      "path": "/tmp/nexaui-content270/default/content_surface_test",
+      "bytes": 850328,
+      "sha256": "84e1767cdeac0404a3e5bde2f7a6f6354626924a1b4bd81aaf4b4d5e59b09949"
+    },
+    {
+      "member": "default/compile_commands.json",
+      "path": "/tmp/nexaui-content270/default/compile_commands.json",
+      "bytes": 1189,
+      "sha256": "ff3f4603dc73302a45ad8422304d308e125a848d4add2c250168a913688f2952"
+    },
+    {
+      "member": "default/CMakeCache.txt",
+      "path": "/tmp/nexaui-content270/default/CMakeCache.txt",
+      "bytes": 19674,
+      "sha256": "8a239a6fb9cd139eb1f7c48b9e3eb152a57fc799ddf0655694bd61033b290cae"
+    },
+    {
+      "member": "default/tests.xml",
+      "path": "/tmp/nexaui-content270/default/tests.xml",
+      "bytes": 1221,
+      "sha256": "a1a85812ea38cb1959b5eb76cdcb0ef2e730e945e630063a69fa1ca1fbf968ef"
+    },
+    {
+      "member": "logs/content272-stale-generation-configure.log",
+      "path": "/mnt/d/NexaUI/out/content272-stale-generation-configure.log",
+      "bytes": 1242,
+      "sha256": "7b8cab8dc925d35f6eac989f12d8f5090c05fe4e6210144a386c352ca56b5235"
+    },
+    {
+      "member": "logs/content272-stale-generation-build.log",
+      "path": "/mnt/d/NexaUI/out/content272-stale-generation-build.log",
+      "bytes": 360,
+      "sha256": "01a907eb1a0abad89447179079a12c7b44929442f955956661c1fb49960cf65e"
+    },
+    {
+      "member": "logs/content272-stale-generation-native.log",
+      "path": "/mnt/d/NexaUI/out/content272-stale-generation-native.log",
+      "bytes": 3341,
+      "sha256": "10856da0cffe59270f4d1e66237edd6ef5893c3e6e2a634e10cb6bacd9e1abd0"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 1867,
+      "sha256": "642315881cb50b3e199ea7ab3aab90e1b133f6e5c7b5cf64f24d8f09b3ed7542"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/README.md",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/README.md",
+      "bytes": 7298,
+      "sha256": "8e276d09a99a901f0dbda460058e7799cb65b72b4359a9e0adbf114a137fb9f3"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/surface.c",
+      "bytes": 6321,
+      "sha256": "43fd308be03e353d8843d359706eab49f1962f73a925823612caa4b9839a2631"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/native_host.c",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/native_host.c",
+      "bytes": 12171,
+      "sha256": "a7f8dc61cdfe69e0fbc58f8f85f98bc3280cf18d40b5a934d4852ac7c2514bb7"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/native_worker.h",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/native_worker.h",
+      "bytes": 6371,
+      "sha256": "c98c1685b955e788a57317e8c45def77ad6e50bb9e73f23c37820c4e13ae51d3"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/atspi_peer.c",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/atspi_peer.c",
+      "bytes": 12061,
+      "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/examples/38_external_content/run_native.py",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/examples/38_external_content/run_native.py",
+      "bytes": 1886,
+      "sha256": "d338fcf09740d5f9d169021e86875658f233cc9a51ed710585120fa900a25493"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "negative272/stale-generation/consumer/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-content272/stale-generation/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "negative272/stale-generation/libcontent_surface.a",
+      "path": "/tmp/nexaui-content272/stale-generation/build/libcontent_surface.a",
+      "bytes": 4496,
+      "sha256": "4e44186228835d197e0bf01ddb4587fb0c13418a9f8b33e8f088b76fcd9f7711"
+    },
+    {
+      "member": "negative272/stale-generation/content_native_host",
+      "path": "/tmp/nexaui-content272/stale-generation/build/content_native_host",
+      "bytes": 842600,
+      "sha256": "1cafafd7ec2eb1c66b265116063bdde81dd6bd9b89a9d5aa1317b841bb9a6279"
+    },
+    {
+      "member": "negative272/stale-generation/content_atspi_peer",
+      "path": "/tmp/nexaui-content272/stale-generation/build/content_atspi_peer",
+      "bytes": 37168,
+      "sha256": "88c8507d0fab4e2f4730c16d9b607415a64ab150007392943a44c51780722d7d"
+    },
+    {
+      "member": "negative272/stale-generation/compile_commands.json",
+      "path": "/tmp/nexaui-content272/stale-generation/build/compile_commands.json",
+      "bytes": 2803,
+      "sha256": "4acd73437d13de8f31e0d1aadcf018134d6a976705876c3f94a12d874a2b3b10"
+    },
+    {
+      "member": "negative272/stale-generation/CMakeCache.txt",
+      "path": "/tmp/nexaui-content272/stale-generation/build/CMakeCache.txt",
+      "bytes": 46870,
+      "sha256": "87e71e85c88b76a795af1b17a197089f956f3396e28289df6916bc1550b91495"
+    },
+    {
+      "member": "negative272/stale-generation/native/content-pending.ppm",
+      "path": "/tmp/nexaui-content272/stale-generation/native/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "negative272/stale-generation/native/result.json",
+      "path": "/tmp/nexaui-content272/stale-generation/native/result.json",
+      "bytes": 1018,
+      "sha256": "e2a7e3204e5f8a0616ca020718c9112b6827f3af7cb888392b7b1e91312185ad"
+    },
+    {
+      "member": "negative272/stale-generation/native/weston.ini",
+      "path": "/tmp/nexaui-content272/stale-generation/native/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "negative272/stale-generation/native/weston.stderr",
+      "path": "/tmp/nexaui-content272/stale-generation/native/weston.stderr",
+      "bytes": 2831,
+      "sha256": "67e522f24279937b1a6309ab8b312bce9e0111bd7cceb9de8a5eb5b03bd3621d"
+    },
+    {
+      "member": "negative272/stale-generation/native/weston.stdout",
+      "path": "/tmp/nexaui-content272/stale-generation/native/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content272-missing-submit-configure.log",
+      "path": "/mnt/d/NexaUI/out/content272-missing-submit-configure.log",
+      "bytes": 1240,
+      "sha256": "1bb9b8b38eeef8c11b6e0d750768c3b10511d0db6a737e3addbf583b2addfbdf"
+    },
+    {
+      "member": "logs/content272-missing-submit-build.log",
+      "path": "/mnt/d/NexaUI/out/content272-missing-submit-build.log",
+      "bytes": 360,
+      "sha256": "01a907eb1a0abad89447179079a12c7b44929442f955956661c1fb49960cf65e"
+    },
+    {
+      "member": "logs/content272-missing-submit-native.log",
+      "path": "/mnt/d/NexaUI/out/content272-missing-submit-native.log",
+      "bytes": 1093,
+      "sha256": "4c0165009c5092883b295238b875c5dd2bd7ae6ee1d0400d60309a98f93bd458"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 1867,
+      "sha256": "642315881cb50b3e199ea7ab3aab90e1b133f6e5c7b5cf64f24d8f09b3ed7542"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/README.md",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/README.md",
+      "bytes": 7298,
+      "sha256": "8e276d09a99a901f0dbda460058e7799cb65b72b4359a9e0adbf114a137fb9f3"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/surface.c",
+      "bytes": 6373,
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/native_host.c",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/native_host.c",
+      "bytes": 12196,
+      "sha256": "9e5745fe2f4c2b877afaca0fc1ce119e86f7c606496ee76b99ea491e1b9226fe"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/native_worker.h",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/native_worker.h",
+      "bytes": 6371,
+      "sha256": "c98c1685b955e788a57317e8c45def77ad6e50bb9e73f23c37820c4e13ae51d3"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/atspi_peer.c",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/atspi_peer.c",
+      "bytes": 12061,
+      "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/examples/38_external_content/run_native.py",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/examples/38_external_content/run_native.py",
+      "bytes": 1886,
+      "sha256": "d338fcf09740d5f9d169021e86875658f233cc9a51ed710585120fa900a25493"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "negative272/missing-submit/consumer/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-content272/missing-submit/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "negative272/missing-submit/libcontent_surface.a",
+      "path": "/tmp/nexaui-content272/missing-submit/build/libcontent_surface.a",
+      "bytes": 4512,
+      "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+    },
+    {
+      "member": "negative272/missing-submit/content_native_host",
+      "path": "/tmp/nexaui-content272/missing-submit/build/content_native_host",
+      "bytes": 842600,
+      "sha256": "25a36b1f8856a4e9a8becc885016ab63a9978219c2de8e5e4c6a25c4c08d45c2"
+    },
+    {
+      "member": "negative272/missing-submit/content_atspi_peer",
+      "path": "/tmp/nexaui-content272/missing-submit/build/content_atspi_peer",
+      "bytes": 37168,
+      "sha256": "88c8507d0fab4e2f4730c16d9b607415a64ab150007392943a44c51780722d7d"
+    },
+    {
+      "member": "negative272/missing-submit/compile_commands.json",
+      "path": "/tmp/nexaui-content272/missing-submit/build/compile_commands.json",
+      "bytes": 2765,
+      "sha256": "9f8b43e933504a10d9f5fe2209b0e17ec72de07d98a629f9061d7b8669a129ad"
+    },
+    {
+      "member": "negative272/missing-submit/CMakeCache.txt",
+      "path": "/tmp/nexaui-content272/missing-submit/build/CMakeCache.txt",
+      "bytes": 46858,
+      "sha256": "dfac55a2f605d9a73526a7fd383a128dac398e5e7b5ec49b59304d80e3216dfc"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-bad.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-bad.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-fresh-full.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-fresh-full.ppm",
+      "bytes": 5760017,
+      "sha256": "c4d66c2227b46f36cbab9e532d69fdfeac8d58245ce3d9fb551f97924bc0fc48"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-fresh-window.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-fresh-window.ppm",
+      "bytes": 518415,
+      "sha256": "67dd7cee1a850d3bd42fa9e47446e250c82ffa5f92bfb74c5831436d70c39326"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-fresh.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-fresh.ppm",
+      "bytes": 279567,
+      "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-pending.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-recovered.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-recovered.ppm",
+      "bytes": 279567,
+      "sha256": "749d15b2f02dae2d90d8133fda95a1158d9ac5998bd18a040816386e2028537b"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-rejected.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "negative272/missing-submit/native/content-scaled.ppm",
+      "path": "/tmp/nexaui-content272/missing-submit/native/content-scaled.ppm",
+      "bytes": 279567,
+      "sha256": "812a052091f6a27ba6cb1f582d5bf4c7eba837e3fcf15fdc5b120daa39f907cf"
+    },
+    {
+      "member": "negative272/missing-submit/native/result.json",
+      "path": "/tmp/nexaui-content272/missing-submit/native/result.json",
+      "bytes": 1007,
+      "sha256": "9aaa49736f408e5004580845465c97eef9346ca93c44d7f5890aec8f39a0204e"
+    },
+    {
+      "member": "negative272/missing-submit/native/weston.ini",
+      "path": "/tmp/nexaui-content272/missing-submit/native/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "negative272/missing-submit/native/weston.stderr",
+      "path": "/tmp/nexaui-content272/missing-submit/native/weston.stderr",
+      "bytes": 2827,
+      "sha256": "dcf45a5eb049f543b867499c595c8ca717de2c17bd19c685dcfe7bf00bf068eb"
+    },
+    {
+      "member": "negative272/missing-submit/native/weston.stdout",
+      "path": "/tmp/nexaui-content272/missing-submit/native/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "logs/content273-missing-submit-configure.log",
+      "path": "/mnt/d/NexaUI/out/content273-missing-submit-configure.log",
+      "bytes": 1240,
+      "sha256": "935518f9a983309d46ab3481f4408b970649a56515603ea5920b4c167228f574"
+    },
+    {
+      "member": "logs/content273-missing-submit-build.log",
+      "path": "/mnt/d/NexaUI/out/content273-missing-submit-build.log",
+      "bytes": 360,
+      "sha256": "01a907eb1a0abad89447179079a12c7b44929442f955956661c1fb49960cf65e"
+    },
+    {
+      "member": "logs/content273-missing-submit-native.log",
+      "path": "/mnt/d/NexaUI/out/content273-missing-submit-native.log",
+      "bytes": 3468,
+      "sha256": "93a3983ce048b1e0ce6720ad3b4576199756387277e44c293a0af4edc300ef51"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 1867,
+      "sha256": "642315881cb50b3e199ea7ab3aab90e1b133f6e5c7b5cf64f24d8f09b3ed7542"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/README.md",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/README.md",
+      "bytes": 7298,
+      "sha256": "8e276d09a99a901f0dbda460058e7799cb65b72b4359a9e0adbf114a137fb9f3"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/surface.c",
+      "bytes": 6373,
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/native_host.c",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/native_host.c",
+      "bytes": 12213,
+      "sha256": "3349bf33eb6db4dba962fdb7455612265a8566e5f6d8f908069dc6ae7ef86bda"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/native_worker.h",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/native_worker.h",
+      "bytes": 6371,
+      "sha256": "c98c1685b955e788a57317e8c45def77ad6e50bb9e73f23c37820c4e13ae51d3"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/atspi_peer.c",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/atspi_peer.c",
+      "bytes": 12061,
+      "sha256": "f539439caf9a295d8591471330025b88b6c7df09168280fba8d65571327633de"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/examples/38_external_content/run_native.py",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/examples/38_external_content/run_native.py",
+      "bytes": 1886,
+      "sha256": "d338fcf09740d5f9d169021e86875658f233cc9a51ed710585120fa900a25493"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "negative273/missing-submit/consumer/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-content273/missing-submit/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "negative273/missing-submit/libcontent_surface.a",
+      "path": "/tmp/nexaui-content273/missing-submit/build/libcontent_surface.a",
+      "bytes": 4512,
+      "sha256": "a69cd7ffae23941e6bb07b8e3e9b5b3518f6c414581dcde922970f440a72cbb5"
+    },
+    {
+      "member": "negative273/missing-submit/content_native_host",
+      "path": "/tmp/nexaui-content273/missing-submit/build/content_native_host",
+      "bytes": 842600,
+      "sha256": "56d41d4c2e8c4139696a2342b6da5764e204342dbc1a89e2d7b60d4c313dfdf4"
+    },
+    {
+      "member": "negative273/missing-submit/content_atspi_peer",
+      "path": "/tmp/nexaui-content273/missing-submit/build/content_atspi_peer",
+      "bytes": 37168,
+      "sha256": "88c8507d0fab4e2f4730c16d9b607415a64ab150007392943a44c51780722d7d"
+    },
+    {
+      "member": "negative273/missing-submit/compile_commands.json",
+      "path": "/tmp/nexaui-content273/missing-submit/build/compile_commands.json",
+      "bytes": 2765,
+      "sha256": "15829d10ccb39f55b51db6cb5fba4cfe9be81305f87b4d6ff22a2a9f7f91e928"
+    },
+    {
+      "member": "negative273/missing-submit/CMakeCache.txt",
+      "path": "/tmp/nexaui-content273/missing-submit/build/CMakeCache.txt",
+      "bytes": 46858,
+      "sha256": "7a4097ffb59f04416438fc7aaec079a593b7ebd14e562a890a08ea414329e46e"
+    },
+    {
+      "member": "negative273/missing-submit/native/content-fresh-full.ppm",
+      "path": "/tmp/nexaui-content273/missing-submit/native/content-fresh-full.ppm",
+      "bytes": 5760017,
+      "sha256": "c4d66c2227b46f36cbab9e532d69fdfeac8d58245ce3d9fb551f97924bc0fc48"
+    },
+    {
+      "member": "negative273/missing-submit/native/content-fresh-window.ppm",
+      "path": "/tmp/nexaui-content273/missing-submit/native/content-fresh-window.ppm",
+      "bytes": 518415,
+      "sha256": "67dd7cee1a850d3bd42fa9e47446e250c82ffa5f92bfb74c5831436d70c39326"
+    },
+    {
+      "member": "negative273/missing-submit/native/content-fresh.ppm",
+      "path": "/tmp/nexaui-content273/missing-submit/native/content-fresh.ppm",
+      "bytes": 279567,
+      "sha256": "557ddf316a19e25f59e24b9fda3b33a1013b0f8f6c2282cc2e5168b8b2533afd"
+    },
+    {
+      "member": "negative273/missing-submit/native/content-pending.ppm",
+      "path": "/tmp/nexaui-content273/missing-submit/native/content-pending.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "negative273/missing-submit/native/content-rejected.ppm",
+      "path": "/tmp/nexaui-content273/missing-submit/native/content-rejected.ppm",
+      "bytes": 279567,
+      "sha256": "b789d81827ddbe7e229c110249481de11f75c02aa5171996d6240c28429504f2"
+    },
+    {
+      "member": "negative273/missing-submit/native/result.json",
+      "path": "/tmp/nexaui-content273/missing-submit/native/result.json",
+      "bytes": 1013,
+      "sha256": "e91484397d74b739dfe156f72f8fc083b1bbf8ddbf123f87adad3e0c5515997d"
+    },
+    {
+      "member": "negative273/missing-submit/native/weston.ini",
+      "path": "/tmp/nexaui-content273/missing-submit/native/weston.ini",
+      "bytes": 212,
+      "sha256": "a22b43efecf22fb92bdc75a8118ea2c5ff6879de445b4be38d9e91908ce2e890"
+    },
+    {
+      "member": "negative273/missing-submit/native/weston.stderr",
+      "path": "/tmp/nexaui-content273/missing-submit/native/weston.stderr",
+      "bytes": 2827,
+      "sha256": "98b73a6be5d4006110f06ad38d8b70ab8ce746af8e7f4e059cd13baa4ab046c6"
+    },
+    {
+      "member": "negative273/missing-submit/native/weston.stdout",
+      "path": "/tmp/nexaui-content273/missing-submit/native/weston.stdout",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/CMakeLists.txt",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/CMakeLists.txt",
+      "bytes": 1867,
+      "sha256": "642315881cb50b3e199ea7ab3aab90e1b133f6e5c7b5cf64f24d8f09b3ed7542"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/README.md",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/README.md",
+      "bytes": 5168,
+      "sha256": "20b19754b627e64d4333ff1d71d30c1b0bf1cdb761639d46ef914b2c34b4e559"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/surface.h",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/surface.h",
+      "bytes": 2215,
+      "sha256": "8e1b91f63ab00cc251bcf4bb79d3d4941bb0eb04d5dacf8962081265d9355950"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/surface.c",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/surface.c",
+      "bytes": 6373,
+      "sha256": "de6cc72556d2f05d3b048e63350b6e17e40e5ff9869c82df0188e4a0475bcf4b"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/test_surface.c",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/test_surface.c",
+      "bytes": 15397,
+      "sha256": "16c27346c40eb25584fa7d0f37f176a75a274faceb657620eb2b28e6b256b6a8"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/native_host.c",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/native_host.c",
+      "bytes": 11437,
+      "sha256": "97996adf941370849c60ec4098b1a36191350433c1617e89c2a3ee8ef014774e"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/native_worker.h",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/native_worker.h",
+      "bytes": 6371,
+      "sha256": "c98c1685b955e788a57317e8c45def77ad6e50bb9e73f23c37820c4e13ae51d3"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/atspi_peer.c",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/atspi_peer.c",
+      "bytes": 11388,
+      "sha256": "b537dee607913a1fc5500b119b1f087de0bc03084ab4eff41be1bafcfd6d73c0"
+    },
+    {
+      "member": "pilot267/examples/38_external_content/run_native.py",
+      "path": "/tmp/nexaui-content267/consumer/examples/38_external_content/run_native.py",
+      "bytes": 1886,
+      "sha256": "d338fcf09740d5f9d169021e86875658f233cc9a51ed710585120fa900a25493"
+    },
+    {
+      "member": "pilot267/tests/run_weston_native.py",
+      "path": "/tmp/nexaui-content267/consumer/tests/run_weston_native.py",
+      "bytes": 8259,
+      "sha256": "5e55abadb36e49a3540bd7b48bd765cb2ed0488604b1600824e9af446bd02a21"
+    },
+    {
+      "member": "pilot267/tests/run_atspi_native.py",
+      "path": "/tmp/nexaui-content267/consumer/tests/run_atspi_native.py",
+      "bytes": 6284,
+      "sha256": "8cc8b4ff8b156fa8ff0d74783a930ce609f9e6e87b897ba5d416f277ba2d1a29"
+    },
+    {
+      "member": "pilot267/content267-configure.log",
+      "path": "/mnt/d/NexaUI/out/content267-configure.log",
+      "bytes": 1227,
+      "sha256": "c39eb44cf25353178fdd4ef87bc9fef9301da4bd44ea50e47be4afc295abd965"
+    },
+    {
+      "member": "pilot267/content267-build.log",
+      "path": "/mnt/d/NexaUI/out/content267-build.log",
+      "bytes": 485,
+      "sha256": "061b0034f71c1e6a9c678c1a4ccb4d2655036f256c528621049158d75c59fb17"
+    },
+    {
+      "member": "pilot267/content267-test.log",
+      "path": "/mnt/d/NexaUI/out/content267-test.log",
+      "bytes": 1981,
+      "sha256": "75715d856d0393507262d056c5ed72414639c5e2e0c5d393249d39eeb18b14ff"
+    },
+    {
+      "member": "pilot268/content268-full.log",
+      "path": "/mnt/d/NexaUI/out/content268-full.log",
+      "bytes": 631,
+      "sha256": "3e78af2b0e6b8ecdfa724bf8f763b432b5f9c09f9745cee92153cb88a30da907"
+    },
+    {
+      "member": "pilot268/content268-pending-close.log",
+      "path": "/mnt/d/NexaUI/out/content268-pending-close.log",
+      "bytes": 303,
+      "sha256": "3aac97b3df352ab8e1edca0b738663507fdd8f6c346eaf3b38d2c40fa70e280b"
+    },
+    {
+      "member": "pilot268/content268-rejected-close.log",
+      "path": "/mnt/d/NexaUI/out/content268-rejected-close.log",
+      "bytes": 374,
+      "sha256": "7be5e21eb075dc47bdedfb6d2273c674c1ba66b38fb84088eaff1005a7675d56"
+    },
+    {
+      "member": "helpers/check_content267.py",
+      "path": "/mnt/d/NexaUI/out/check_content267.py",
+      "bytes": 2067,
+      "sha256": "487b17c7f8f7101da88b5204c61310962546eb2cd7ae72233ceeeb206373b5f7"
+    },
+    {
+      "member": "helpers/run_content268_native.py",
+      "path": "/mnt/d/NexaUI/out/run_content268_native.py",
+      "bytes": 1308,
+      "sha256": "e27f7a9143443b6e195ee1e103242faa9ce54651255f6890a3033e83107c1edf"
+    },
+    {
+      "member": "helpers/preview_content269.py",
+      "path": "/mnt/d/NexaUI/out/preview_content269.py",
+      "bytes": 777,
+      "sha256": "f2952334f8ab64c4668611eb0f7c5ad5b566f2406909c5016d7c629870c3bb5b"
+    },
+    {
+      "member": "helpers/build_content270.py",
+      "path": "/mnt/d/NexaUI/out/build_content270.py",
+      "bytes": 3108,
+      "sha256": "129d06ea83f5b0dff4c2dd66eb5671289f7067b0fd5fd19ec74ae39acc3cae0f"
+    },
+    {
+      "member": "helpers/run_content271_native.py",
+      "path": "/mnt/d/NexaUI/out/run_content271_native.py",
+      "bytes": 1524,
+      "sha256": "288d13f94f95725e6a0da4a2c2835b6a53544711bc3a3e0b30075d7e56faf6b0"
+    },
+    {
+      "member": "helpers/negative_content272.py",
+      "path": "/mnt/d/NexaUI/out/negative_content272.py",
+      "bytes": 3466,
+      "sha256": "6ccaed5e32dce3248a0b1953a94101c57730d255a77c46b38197b781dac9d52e"
+    },
+    {
+      "member": "helpers/negative_content273.py",
+      "path": "/mnt/d/NexaUI/out/negative_content273.py",
+      "bytes": 3467,
+      "sha256": "072c5c083afa0d67732d8edb715e6f99b5ebad6e511524b94a39eef807f26bcd"
+    },
+    {
+      "member": "helpers/verify_content274.py",
+      "path": "/mnt/d/NexaUI/out/verify_content274.py",
+      "bytes": 13063,
+      "sha256": "720d0e51aa233e3ae183f408a38694c019e800121dc73466aeb9600c7cd7aee7"
+    },
+    {
+      "member": "helpers/content267-local.json",
+      "path": "/mnt/d/NexaUI/out/content267-local.json",
+      "bytes": 3392,
+      "sha256": "3251596e3ea383387d48c7f986844d750d656a2c103f3ef537a06c7b751a056a"
+    },
+    {
+      "member": "helpers/content268-native.json",
+      "path": "/mnt/d/NexaUI/out/content268-native.json",
+      "bytes": 1932,
+      "sha256": "bb9320513ecfeec2ab61171626c4b7076f0c2d17c64c1cfe367e2a0c650916aa"
+    },
+    {
+      "member": "helpers/content270-local.json",
+      "path": "/mnt/d/NexaUI/out/content270-local.json",
+      "bytes": 9545,
+      "sha256": "4ba568c41402fe2213f0af8a19b94a6f5ccf6e0a733f0c0a3986d45591099cc4"
+    },
+    {
+      "member": "helpers/content271-native.json",
+      "path": "/mnt/d/NexaUI/out/content271-native.json",
+      "bytes": 6115,
+      "sha256": "02603daf938d51181d95afe5b5ae57c7914867edeb690e2831fd927a0c050d45"
+    },
+    {
+      "member": "helpers/content272-negative.json",
+      "path": "/mnt/d/NexaUI/out/content272-negative.json",
+      "bytes": 5085,
+      "sha256": "22ebb5755952901c2f37476ada071a8a4f10efcf242a483268e85c420f1fa7fb"
+    },
+    {
+      "member": "helpers/content273-negative.json",
+      "path": "/mnt/d/NexaUI/out/content273-negative.json",
+      "bytes": 2581,
+      "sha256": "55eb52e74b0282f1752f37087075fe919bd76d16e3fc70be730a02248fa4fa69"
+    },
+    {
+      "member": "preview/native-window.png",
+      "path": "/mnt/d/NexaUI/out/content274-native.png",
+      "bytes": 5499,
+      "sha256": "f2990bdf77d0f1b26f1b5764776fe8759c2b933716a03ebf1cbc251a46bf257f"
+    }
+  ],
+  "remaining": [
+    "Maintained engine/input/guest capture+escape/stuck-key release/IME/accessibility subtree",
+    "Actual Aetheri compositor and production engine/app adoption",
+    "Windows/macOS/native GPU and physical/human/performance acceptance",
+    "Full 103-ID catalogue and remaining delivery packets"
+  ]
+}

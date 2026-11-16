@@ -1,0 +1,30 @@
+{
+  "candidate": "2ef9a56791c3dec63e542e66429ff2b7a43abba2",
+  "receipt_sha256": "37bd8fbe90f0d11f6b66a75a2bd809f15484b2cb4db91e911077ef4ec7cb234d",
+  "archive": {
+    "path": "/mnt/d/NexaUI/out/nexaui-content-native274.tar.gz",
+    "bytes": 11130619,
+    "sha256": "c1bec5d73eaa30d1fc300479e7222ebebb4a5ab1f2479a50ae3c9855f59a6d19",
+    "verified_members": 256
+  },
+  "verified_members": 256,
+  "ctests": 16,
+  "native_tasks": 9,
+  "body_capture_count": 27,
+  "preview": {
+    "path": "/mnt/d/NexaUI/out/content274-native.png",
+    "bytes": 5499,
+    "sha256": "f2990bdf77d0f1b26f1b5764776fe8759c2b933716a03ebf1cbc251a46bf257f",
+    "source": {
+      "path": "/tmp/nexaui-content270/native271-release-full/content-fresh-window.ppm",
+      "bytes": 518415,
+      "sha256": "67dd7cee1a850d3bd42fa9e47446e250c82ffa5f92bfb74c5831436d70c39326"
+    },
+    "rgb_sha256": "669bb99a16beb46ce13e0f79f791279c305352204d0e93e64ad77378ecebfb03"
+  },
+  "png_rgb_roundtrip": true,
+  "observed_live_fixture_executables": [],
+  "catalogue_sha256": "9c932872caeba8007bf05b86f7c167b493260709b23c54d709222a5f19539e65",
+  "catalogue_ids": 103,
+  "scope": "Ordinary Wayland/software/AT-SPI composition with independent private-carrier pixels; engine input/IME/capture remain open"
+}

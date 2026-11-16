@@ -95,6 +95,11 @@ are separately source-bound. That SDK CI run does not build this new consumer.
 
 ## Remaining packet7 acceptance
 
+This section records `5fa854d`. The
+[native follow-up](external-content-native-report.md) adds ordinary-window,
+worker-fd, host-focus and independent displayed-pixel evidence at `2ef9a56`.
+Selected-engine, guest-input, IME and engine-accessibility gates remain open.
+
 This advances the CPU image/lifetime boundary for R06/R10/D08/P05/Q02/Q08.
 It does not establish a maintained browser/PDF/guest engine, native content
 presentation, input/host escape, stuck-key release, IME/candidate geometry,

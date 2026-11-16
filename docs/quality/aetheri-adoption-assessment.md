@@ -1,5 +1,15 @@
 # Aetheri adoption: initial source assessment
 
+Native CPU content for B03/W10/R06/R10/I07/I08/A01/A06/D08/P05/Q02/Q08.
+Consumer `2ef9a56` retains SDK `368cd38` and the original staging adapter.
+Sixteen CTests and nine native workflows pass; 27 independent carrier captures
+check complete content rectangles. Generation and result-conditioned display
+defects fail; the earlier ineffective phase-conditioned control is retained.
+R06/D08/I08 now record scoped native CPU/focus support. Selected-engine guest
+input/capture/escape/IME/accessibility/GPU, actual Aetheri and physical/human/
+performance gates remain open. All 103 IDs/priorities and remaining packets persist.
+[Evidence](external-content-native-report.md)
+
 External CPU content handoff for R06/R10/D08/P05/Q02/Q08, starting packet7.
 Consumer `5fa854d` retains SDK `368cd38` and reuses snapshot/viewport contracts.
 Twelve installed CTests pass across static/shared/sanitized profiles, with full
