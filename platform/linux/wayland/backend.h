@@ -58,6 +58,9 @@ nx_result nx_wayland_window_get_ime_preedit_for(nx_wayland_window *window,
 nx_result nx_wayland_window_set_ime_surrounding_text(nx_wayland_window *window,
     uint64_t target, uint64_t revision, const char *bytes, size_t length,
     size_t cursor, size_t anchor);
+#if defined(__GNUC__) || defined(__clang__)
+__attribute__((visibility("hidden")))
+#endif
 void nx_wayland_window_ime_applied(nx_wayland_window *window, uint64_t target,
     uint64_t source_revision, uint64_t before_revision, uint64_t after_revision);
 nx_result nx_wayland_window_next_event(nx_wayland_window *window,
