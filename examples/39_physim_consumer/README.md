@@ -85,12 +85,21 @@ nearest visible ancestor. **Show plot** restores the plot pane and returns
 focus to its toggle if a row held focus. A successful Apply clears selection
 and expands the hierarchy for the newly published model.
 
+**Camera** opens three keyboard- and pointer-operable sliders beside the
+viewport. Yaw runs from −180° to 180°, pitch from −75° to 75°, and zoom from
+50% to 200%. The sliders expose their current values and ranges through the
+standard accessibility APIs. The camera orbits the midpoint of the reference
+pendulum. Drawing and picking share the orthographic projection. A camera
+change during a capture discards the pending pick. **Reset camera** restores
+the front view at 100%. Pane changes and Apply preserve the camera. A new
+view and the published-model export start with the front view.
+
 The app-owned CPU renderer projects the original scene's line, sphere, arrow,
 label and group objects into a bounded16MiB image. Original object order,
 positions, colors, labels and group identities remain in the snapshot. The
-labelled orthographic reference projection supports picking of its three
-geometry types. Physim's production 3D renderer, camera model, and validation
-with screen readers and other platforms remain open. Unsupported
+labelled orthographic reference projection supports orbit, zoom and picking of
+its three geometry types. Physim's production 3D renderer and validation with
+screen readers and other platforms remain open. Unsupported
 scene shapes return an explicit error. Original scene text/line sizes scale
 with viewport backing. No GPU texture import is implemented.
 
@@ -144,8 +153,10 @@ The failure case checks live leases, bounded geometry and twelve actual
 context-allocation failures, then retries with a fresh context. The tree case
 checks all twelve rows at minimum window size, parent IDs, navigation, stable
 identity and focus return on collapse and close.
+The camera case checks all three slider values, a cancelled pick through a
+camera change, live-lease refusal and pixel equality after reset.
 
-These six CTests are installed/headless C17 consumer checks, not native-window, IME,
+These seven CTests are installed/headless C17 consumer checks, not native-window, IME,
 screenreader, real-runner/worker, filesystem/storage, approved-design or GPU/
 physical adoption evidence. Native keyboard/IME/accessibility composition,
 full scene/camera/object tree, production dataset/plot varieties and original
@@ -181,6 +192,8 @@ original object metadata after real keyboard and AT-SPI button activation and
 on native clicks at both backing scales. It checks retention on invalid Apply
 and reset on publication. The same peer verifies the actual tree item role,
 parent relationships, selection, keyboard navigation and AT-SPI collapse.
+It also exercises the camera sliders with native keys, clicks the sphere at its
+independently predicted position in the tilted view and verifies the front reset.
 It runs the original
 experiment separately and requires substantial actual screen-pixel coverage of
 its original bob at the expected position. Whole client PPMs are retained.

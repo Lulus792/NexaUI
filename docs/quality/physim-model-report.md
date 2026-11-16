@@ -241,3 +241,40 @@ CTest XML and images. Readback verified SHA-256
 Local receipt `physim-tree370-final.json` lists each member hash.
 Production Physim integration, camera controls, native line and arrow hit
 coverage, spoken screenreader output and GPU/physical acceptance remain open.
+
+## Camera checkpoint, 2026-11-17
+
+Consumer `fa71db47ee9cd160fb74098eb8d67f99d0be6ea7` uses installed NexaUI
+`b53513b390dbf135050a858fbdfd434edc04ad08` and the same 27 original Physim
+inputs. The camera pane uses `nx_slider` for yaw, pitch and zoom and exposes
+their current values through the numeric semantics interface. The app uses
+Physim's vector operations and its renderer's right-handed yaw/pitch basis
+with a midpoint-centred orthographic projection. That projection maps both
+drawing and hit testing. Picking rejects a capture that spans a pose change.
+Reset dispatches after lease completion. New and exported views use the front
+pose at 100% zoom. The reference draws in original scene order.
+
+The installed camera test checks a queued semantic value, keyboard slider
+input, geometry changes, pick cancellation on camera change, reset refusal
+during a borrow and pixel equality after an admitted reset. The independent
+Wayland/AT-SPI peer uses real keys to set yaw 60°, pitch 30° and zoom 125%.
+It computes the original model's sphere position, checks pixels and clicks the
+visible sphere at its projected position. It verifies the inspector selected
+the sphere, resets the camera by keyboard and confirms focus return after
+closing the pane. The capture fixture moves the cursor inside the client and
+outside the comparison rectangle, then lets the compositor repaint before
+taking the reset image. The pilot captures retain the cursor artifact seen
+before that correction.
+
+All 21 installed CTests and twelve private Wayland cases passed on Alpine
+with Clang 22.1.3 across static Release, shared Release and ASan/UBSan/LSan.
+In each native 2× backing capture, the tilted view changes 4,690 scene RGB
+pixels and the reset restores every scene pixel. The native 1× front region
+also matches the previous checkpoint. Archive `nexaui-physim-camera377.tar.gz`
+records source, commands, logs and captures. Readback verified SHA-256
+`6d25d0381ef4efce3f810ff3c3de13d1ec01b8c8d9d7fd25009e6c201828e88e`.
+Local receipt `physim-camera377-final.json` lists each member hash.
+
+Open scope includes Physim's production renderer and integration, perspective
+and depth, live-camera export, native line and arrow hit coverage, spoken
+screenreader output and GPU/physical acceptance.
