@@ -1,0 +1,114 @@
+{
+  "revision": "01ccc27a94ca611c9e9cdd8ccde0da426aee2378",
+  "description": "Original Physim pendulum module, numeric/core/scene support and app plot model; no SDL/Nuklear UI",
+  "inputs": [
+    {
+      "path": "LICENSE",
+      "sha256": "66b6a25069bd502cd9ca73c68065c86bbf4f7d8c82a0e36ad0185b7473fe6015"
+    },
+    {
+      "path": "app/plot_view.c",
+      "sha256": "507f52080cc97dd92a3fc827a130bca12192f5104cc0a050ebea1de06e58a12f"
+    },
+    {
+      "path": "app/plot_view.h",
+      "sha256": "60207a43569e8f6ccab3bb1a4d0f9ca84aea186f81b90211a11c25f6ad173e10"
+    },
+    {
+      "path": "examples/documentation/pendulum_main.c",
+      "sha256": "131c0ae37c46354d094d93462d6461a00eedf5c0368decbdd4d4e9c8432e66ca"
+    },
+    {
+      "path": "include/physim/core.h",
+      "sha256": "04fd6d004b7c03e275e2fadb9cfad718b68a24e0580936b2c4d16bd9828f61ff"
+    },
+    {
+      "path": "include/physim/data.h",
+      "sha256": "cca3bf71d7773aee7f77e643a384f2c7f141d583502c5a85d259416bcb66d7ed"
+    },
+    {
+      "path": "include/physim/detail/build_origin.h",
+      "sha256": "370cd9881e8a6e2e8dc6018d31019b424283e8b5c4c356daaa102c448eec1793"
+    },
+    {
+      "path": "include/physim/diagnostic.h",
+      "sha256": "2a40420009aa207ed4d5f8d52a175dcb8b713ed8c1bf01daca79c9fa5f205182"
+    },
+    {
+      "path": "include/physim/experiment.h",
+      "sha256": "130a12fcbd76886b7541a8eeb16acd0c07a772d5004f2b997efe16aacd008fa7"
+    },
+    {
+      "path": "include/physim/log.h",
+      "sha256": "f03e7ec4c7972a82229814350edcb82ab76d2188c6e737cb974b24c9352d7c9d"
+    },
+    {
+      "path": "include/physim/math.h",
+      "sha256": "8be1b56e21ac2807f2f60f5c73cd259be2df60826a5b074042aeb5f56cf45c39"
+    },
+    {
+      "path": "include/physim/numerics.h",
+      "sha256": "9e13b85c13290aff5f0184002e21167b4cb29eef7378c797cae6bd201dac776b"
+    },
+    {
+      "path": "include/physim/snapshot.h",
+      "sha256": "f780febde829776b39c337445b838803062125979158ec5da61a71e9c322d3cd"
+    },
+    {
+      "path": "include/physim/units.h",
+      "sha256": "5a1cf4c9d6a791d348303b31a4aafbf14bbd2cc706bb80f880fba375cbc53089"
+    },
+    {
+      "path": "src/core.c",
+      "sha256": "16dcc1eb5d003b81fc009235165d948b02b5d1cdecae2c77c0a5afd5aa05db17"
+    },
+    {
+      "path": "src/curve_numeric.h",
+      "sha256": "a8821de6e5f524d5f688c93ab057e49088aede5f1ece66c0124f4e822859952b"
+    },
+    {
+      "path": "src/linear_numeric.h",
+      "sha256": "6905b3f8eb9857f23cfe846245adc095d38624e259cbbc2746ec1ae07242b7e4"
+    },
+    {
+      "path": "src/math.c",
+      "sha256": "67eb70bde15d3dcdbfc1a041ccef5c0318d54f8bdb049d6aa359134d2b71af15"
+    },
+    {
+      "path": "src/number_parse.h",
+      "sha256": "9d899815302e9fc125c437d57286152bd12aca290dc2021c43c8b0840473bfb1"
+    },
+    {
+      "path": "src/numerics.c",
+      "sha256": "44fb30fc9cc6e693ca56f3321edf4eac028d4abeeaa4b216fa42e5f9daeede42"
+    },
+    {
+      "path": "src/ode_numeric.h",
+      "sha256": "d0adba6005cfcf963740122d646dc795bc151687073a4131876886a3c13fb15e"
+    },
+    {
+      "path": "src/scalar_numeric.h",
+      "sha256": "8d7f5fbeb5be33fad03e24ef186e2c6422ae0f844ec4dbd48bc88ec1d133d3f3"
+    },
+    {
+      "path": "src/scene.c",
+      "sha256": "71f3ee7e11b08ec7c417557fb95557f66b1c1a68c014173863bf31e4c42babf6"
+    },
+    {
+      "path": "src/text_validation.h",
+      "sha256": "9d064793a58c2c25076f3ea36879c70eb11c09df86b55df928efc21b74ce83a5"
+    },
+    {
+      "path": "src/transform_numeric.h",
+      "sha256": "e7b9b948eb2307bf3de2fb9ed06a01d7a9609da60d99cb0a08ddd6389ff0f9c0"
+    },
+    {
+      "path": "src/units.c",
+      "sha256": "fcde4134dc771122a14ab1a96ff85c6d8dc285bc6c4246413057d1b18fe15928"
+    },
+    {
+      "path": "tests/test_plot_view.c",
+      "sha256": "63f8b6d6d17a24fcd006aab29b1cbfb5c7951783a3f80d9cd93005ff22fd5cac"
+    }
+  ]
+}
