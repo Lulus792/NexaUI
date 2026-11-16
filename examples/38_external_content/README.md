@@ -74,8 +74,9 @@ allocation before rendering, checking the two distinct lifetime contracts.
 
 These four cases are installed consumer/headless-render and native-thread checks.
 The optional fixture below adds ordinary native composition and host focus.
-Content input/guest escape routing, IME/candidates, engine accessibility subtrees,
-engine crash recovery and reviewed GPU interop still need integration.
+The input adapter below adds a bounded normalized-key/absolute-pointer channel.
+IME/candidates, engine accessibility subtrees, selected-engine input/crash
+recovery and reviewed GPU interop still need integration.
 A selected maintained engine and its real browser/document/
 guest workflows remain external engineering gates. Guest pixels cannot serve
 as host admission or permission UI. No application pin or 1.0 release changes.
@@ -118,9 +119,78 @@ metadata, and is stopped/joined before exchange destruction. Closing a tab does
 not stop or replay its producer. The fixture closes its window with a held job
 by releasing only its own worker gate during cleanup.
 
-These checks cover ordinary native composition and host focus, not engine input
-forwarding, guest capture/escape or stuck-key release, IME/candidates, engine
+These frame cases cover ordinary native composition and host focus, not engine input
+forwarding, IME/candidates, engine
 accessibility subtrees, GPU import, physical output or final product design.
 The [native source-bound report](../../docs/quality/external-content-native-report.md)
 records all profiles, actual pixel captures, close/disposal counts and rejected
 generation/display variants, including the earlier ineffective control.
+
+## Explicit content input and host release
+
+`input.h`/`input.c` are an app-owned example adapter over existing `nx_event`
+values, separate from pixel staging. They add no installed SDK API, window
+grab, worker or engine dependency. Create one gate with a nonzero session
+generation, a configured escape key/modifier mask and an atomic batch sink.
+The fixture uses **Ctrl+Shift+F12**, displayed before activation; product and
+platform shortcut selection remains the application's responsibility.
+
+Feed every normalized native event once, in order, including while inactive.
+Queue only the returned host-event copy when `route_host` is true. This copy
+removes modifiers still draining from a released content session. Do not route
+the original event again. The native fixture drains `nx_window_next_event`,
+queues host events with `nx_context_queue_event`, then uses
+`nx_window_route_events` for pending native accessibility actions. This retains
+the ordinary native-events-before-AX ordering. After each host frame/action,
+synchronize actual content focus, availability and geometry with `set_target`
+before polling more input. A failed enqueue is terminal for this fixture;
+there is no fabricated successful route or retry of an already consumed event.
+
+Activation requires explicit host intent, content and native-window focus,
+an available target and all observed keys/buttons released. It sends FocusIn
+with source-pixel dimensions. A queued Enter down cannot activate content and
+leak its later up into the receiver. Focus regain or a newly arrived frame
+never activates automatically. Dimensions are capped at 2^24 so integer pixel
+coordinates remain exact in `nx_event` floats. Pointer coordinates are scaled
+from logical half-open bounds, floored and clamped to source pixels. Wheel
+deltas keep NexaUI's abstract scroll units. Leaving bounds releases input;
+this absolute-pointer example does not promise relative mouse/OS capture.
+
+Only fresh normalized key/button edges, pointer movement and wheel events
+reach the sink. Duplicate downs, repeats, consumed-key downs and unpaired ups
+do not create receiver actions. Native text/IME events are consumed while
+active, so a physical key and its native text do not enter the guest twice.
+This fixture does not enable native IME. It is **not** a text-input or full
+guest-keyboard implementation: engine scancodes/keymaps, left/right modifiers,
+IME/preedit/candidate geometry and unsupported keys/touch need a reviewed engine
+contract. Unsupported physical keys/touch revoke with an explicit error.
+
+Escape, host-focus loss, native focus loss, pointer cancellation, target
+unavailability, geometry change and explicit release/close send one batch of
+all locally admitted key/button ups followed by FocusOut under the old
+generation. Later real ups/repeats drain without becoming host activations or
+duplicate receiver releases. Native focus loss clears physical observations
+because ups may never arrive; post-focus repeats cannot invent guest presses.
+Historical pixels may remain visible after input disconnect, with a truthful
+label and a disabled Enter control. They do not imply a live source.
+
+The callback must admit the entire batch or none, copy/apply it before return,
+and never retain or reenter a mutating call. **NX_OK proves only local admission,
+not remote application or remote reset.** A callback failure deactivates and
+fences the gate, preserving its uncertain accepted-hold ledger and error. No
+automatic reset retry, replay or recapture occurs. Close frees even on release
+failure and returns the uncertainty to the owner. Rebind requires an inactive
+gate, a strictly newer generation and the owner's independent retirement/reset
+of the old backend; it is an explicit assertion, never a remote acknowledgement.
+Rebind preserves draining physical input and requires a new host target/intent.
+The object uses one bounded allocation and one owner thread throughout.
+
+The five input CTests use a separate atomic receiver model and check actual
+admitted events, stuck holds, scaling, escape isolation, host draining, all
+revocation causes, identities, invalid/unsupported inputs, reentrancy and sink
+failure. The optional `--case input` additionally runs the complete frame case,
+then real seat keys/buttons, 2x coordinates, the configured escape, native focus
+loss and accessible Disconnect. Its receiver is explicitly a local test model,
+not a VM/backend. Native Windows/macOS, real engines, guest applied/reset
+acknowledgements, text/IME, sharing/reset authorities, engine accessibility and
+physical/human acceptance remain open.

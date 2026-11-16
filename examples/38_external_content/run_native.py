@@ -13,7 +13,7 @@ def main():
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
-    parser.add_argument('--case', choices=('full', 'pending-close', 'rejected-close'), default='full')
+    parser.add_argument('--case', choices=('full', 'input', 'pending-close', 'rejected-close'), default='full')
     args = parser.parse_args()
     for key in ('build_dir', 'font', 'registry'):
         setattr(args, key, getattr(args, key).resolve(strict=True))

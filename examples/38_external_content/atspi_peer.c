@@ -100,6 +100,16 @@ static int drive(const char *command,const char *value) {
     do{ended=waitpid(child,&status,0);}while(ended<0&&errno==EINTR);
     return ended==child&&WIFEXITED(status)&&!WEXITSTATUS(status);
 }
+static int content_left=0,content_top=0;
+static int point_at(const char *window,int dx,int dy) {
+    const char *driver=getenv("NEXAUI_CONTENT_TEST_XDOTOOL");if(!driver)return 0;
+    char x[32],y[32];snprintf(x,sizeof(x),"%d",content_left+dx);snprintf(y,sizeof(y),"%d",content_top+dy);
+    pid_t child=fork();if(!child){execl(driver,driver,"mousemove","--window",window,x,y,(char *)NULL);_exit(127);}
+    if(child<0)return 0;int status=0;pid_t ended;
+    do{ended=waitpid(child,&status,0);}while(ended<0&&errno==EINTR);
+    return ended==child&&WIFEXITED(status)&&!WEXITSTATUS(status);
+}
+static int point_content(const char *window) { return point_at(window,60,60); }
 static int save_ppm(XImage *image,int left,int top,int width,int height,const char *name) {
     const char *prefix=getenv("NEXAUI_CONTENT_CAPTURE_PREFIX");if(!prefix)return 0;
     char path[4096];int size=snprintf(path,sizeof(path),"%s%s.ppm",prefix,name);
@@ -125,6 +135,7 @@ static int capture(Display *display,Window window,unsigned long rgb,const char *
         }
         int match=count==448u*208u&&max_x-min_x+1==448&&max_y-min_y+1==208;
         if(match){
+            content_left=min_x;content_top=min_y;
             int saved=save_ppm(image,min_x,min_y,448,208,name);
             if(saved&&!strcmp(name,"fresh"))saved=save_ppm(image,0,0,info.width,info.height,"fresh-full");
             if(saved&&!strcmp(name,"fresh")) {
@@ -138,6 +149,53 @@ static int capture(Display *display,Window window,unsigned long rgb,const char *
         XDestroyImage(image);pump();
     }
     fprintf(stderr,"Content screen rectangle mismatch: %s\n",name);return 0;
+}
+static int host_marker(FILE *log,const char *marker);
+static int input_chrome(Display *display,const char *window,const char *name) {
+    XWindowAttributes info;Window id=(Window)strtoul(window,NULL,10);
+    if(!XGetWindowAttributes(display,id,&info)||content_left<16||content_top<136||
+        content_left-16+480>info.width||content_top-136+360>info.height) return 0;
+    XImage *image=XGetImage(display,id,0,0,(unsigned)info.width,(unsigned)info.height,AllPlanes,ZPixmap);
+    if(!image)return 0;
+    int saved=save_ppm(image,content_left-16,content_top-136,480,360,name);
+    XDestroyImage(image);return saved;
+}
+#define INPUT_VERIFY(x) do { if(!(x)) { fprintf(stderr,"input peer line %d: %s\n",__LINE__,#x); return 0; } } while(0)
+static int input_workflow(AtspiAccessible *app,Display *display,const char *window,FILE *log) {
+    INPUT_VERIFY(observe(app,"Physical input fixture; exit: Ctrl+Shift+F12",0));
+    if(!focus(app,"Enter content")||!drive("key","Return")||
+        !observe(app,"Input active: Ctrl+Shift+F12 exits.",0)||!observe(app,"Fixture frame",1)||
+        !input_chrome(display,window,"input-active-window")||
+        !point_content(window)||!drive("keydown","a")||!drive("keydown","Tab")||!drive("mousedown","1")||
+        !host_marker(log,"keys=2 buttons=1 down=2 up=0 pdown=1 pup=0 enter=1 exit=0 text=0 x=120 y=120")||
+        !drive("keydown","ctrl")||!drive("keydown","shift")||!drive("key","F12")||
+        !observe(app,"Input released.",0)||!observe(app,"Close",1)||
+        !host_marker(log,"keys=0 buttons=0 down=4 up=4 pdown=1 pup=1 enter=1 exit=1 text=0")) return 0;
+    if(!drive("keyup","a")||!drive("keyup","Tab")||!drive("keyup","ctrl")||!drive("keyup","shift")||!drive("mouseup","1")) return 0;
+    if(!focus(app,"Enter content")||!drive("key","Return")||!observe(app,"Input active: Ctrl+Shift+F12 exits.",0)||
+        !point_content(window)||!drive("keydown","b")||!drive("mousedown","1")||
+        !host_marker(log,"keys=1 buttons=1 down=5 up=4 pdown=2 pup=1 enter=2 exit=1 text=0 x=120 y=120")) return 0;
+    char root[32];snprintf(root,sizeof(root),"%lu",(unsigned long)DefaultRootWindow(display));
+    if(!drive("windowfocus",root)||!observe(app,"Input focus lost.",0)||
+        !host_marker(log,"keys=0 buttons=0 down=5 up=5 pdown=2 pup=2 enter=2 exit=2 text=0")||
+        !drive("keyup","b")||!drive("mouseup","1")||!drive("windowfocus",window)||
+        !observe(app,"Input focus lost.",0)) { fprintf(stderr,"input peer native focus-loss stage failed\n");return 0; }
+    /* Restoring X carrier focus does not activate a Wayland surface. A real
+       click on the host Enter button reactivates it through Weston policy. */
+    INPUT_VERIFY(point_at(window,40,-72)&&drive("click","1"));
+    INPUT_VERIFY(observe(app,"Input active: Ctrl+Shift+F12 exits.",0));
+    INPUT_VERIFY(point_content(window)&&drive("keydown","c")&&drive("mousedown","1"));
+    INPUT_VERIFY(host_marker(log,"keys=1 buttons=1 down=6 up=5 pdown=3 pup=2 enter=3 exit=2 text=0 x=120 y=120"));
+    INPUT_VERIFY(press(app,"Disconnect")&&observe(app,"Input disconnected; pixels retained.",0));
+    INPUT_VERIFY(host_marker(log,"keys=0 buttons=0 down=6 up=6 pdown=3 pup=3 enter=3 exit=3 text=0"));
+    INPUT_VERIFY(drive("keyup","c")&&drive("mouseup","1"));
+    AtspiAccessible *enter=find(app,"Enter content",0);
+    int disabled=enter&&!state(enter,ATSPI_STATE_ENABLED)&&!state(enter,ATSPI_STATE_SENSITIVE);
+    if(enter)g_object_unref(enter);
+    if(!disabled||press(app,"Enter content")||!observe(app,"Input disconnected; pixels retained.",0)) return 0;
+    INPUT_VERIFY(input_chrome(display,window,"input-disconnected-window"));
+    printf("INPUT_PEER physical keys, 2x absolute pointer, host escape, native focus loss and disconnect passed\n");
+    return 1;
 }
 static int host_marker(FILE *log,const char *marker) {
     char text[16384];
@@ -153,7 +211,7 @@ int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
-        (strcmp(test_case,"full")&&strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
+        (strcmp(test_case,"full")&&strcmp(test_case,"input")&&strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
     AtspiComponent *old_component=NULL;Display *display=NULL;FILE *host_log=NULL;
@@ -191,6 +249,7 @@ int main(int argc,char **argv) {
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     CHECK(capture(display,outer,0xbf3f89u,"scaled"));
+    if(!strcmp(test_case,"input")) CHECK(input_workflow(app,display,id,host_log));
     CHECK(focus(app,"Close")&&drive("key","Return"));
 closed: ;
     int status=0;pid_t ended=0;

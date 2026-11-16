@@ -2,6 +2,14 @@
 #include "native_worker.h"
 #include <nexaui/software.h>
 #include <stdio.h>
+#include "native_input.h"
+
+enum input_phase { INPUT_IDLE, INPUT_PENDING, INPUT_ACTIVE, INPUT_RELEASED, INPUT_FOCUS_LOST, INPUT_DISCONNECTED };
+static const char *input_name(enum input_phase phase) {
+    static const char *names[]={"Scaled frame ready.","Release keys to enter content.",
+        "Input active: Ctrl+Shift+F12 exits.","Input released.","Input focus lost.","Input disconnected; pixels retained."};
+    return names[(unsigned)phase];
+}
 
 enum phase { PREPARING, WAITING, REPLACED, RELEASED, OLD_REJECTED, FRESH_PENDING, READY,
              BAD_PENDING, BAD_REJECTED, RECOVERY_PENDING, RECOVERED, SCALED_WAIT, SCALED_PENDING,
@@ -46,20 +54,34 @@ static nx_result button(nx_context *context, const nx_font_collection *fonts, ui
     }
     nx_text_layout_destroy(layout); return result;
 }
+static nx_result input_hint(nx_context *context,const nx_font_collection *fonts) {
+    const char *text="Physical input fixture; exit: Ctrl+Shift+F12";
+    nx_text_layout *layout=NULL;
+    nx_result result=nx_text_layout_create(fonts,text,strlen(text),NX_BIDI_AUTO,11,448,&layout);
+    if(result==NX_OK) result=nx_label(context,3,1,(nx_rect){16,122,448,14},layout,
+        (nx_point){16,122},(nx_color){0.05f,0.07f,0.1f,1},65536);
+    nx_text_layout_destroy(layout);return result;
+}
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
-    nx_result *content_result, int *leased) {
+    nx_result *content_result, int *leased, int input_case, enum input_phase input_phase) {
     *action = 0; *leased = 0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
     nx_semantic_desc root = {.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
         .name={"External CPU content fixture",28}};
-    if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts, phase_name(phase), info.width) != NX_OK ||
-        button(context,fonts,10,"Replace tab",16,48,112,phase==WAITING,action)!=NX_OK ||
-        button(context,fonts,11,"Release old",136,48,112,phase==REPLACED,action)!=NX_OK ||
-        button(context,fonts,12,"Publish frame",256,48,128,phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT,action)!=NX_OK ||
+    int input_controls=input_case&&phase==SCALED_READY;
+    if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts,
+        input_controls?input_name(input_phase):phase_name(phase), info.width) != NX_OK ||
+        button(context,fonts,input_controls?16u:10u,input_controls?"Enter content":"Replace tab",16,48,112,
+            input_controls?input_phase!=INPUT_DISCONNECTED:phase==WAITING,action)!=NX_OK ||
+        button(context,fonts,input_controls?17u:11u,input_controls?"Release input":"Release old",136,48,112,
+            input_controls?input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING:phase==REPLACED,action)!=NX_OK ||
+        button(context,fonts,input_controls?18u:12u,input_controls?"Disconnect":"Publish frame",256,48,128,
+            input_controls?input_phase!=INPUT_DISCONNECTED:phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT,action)!=NX_OK ||
         button(context,fonts,13,"Bad frame",16,88,112,phase==READY,action)!=NX_OK ||
         button(context,fonts,14,"Scale 2x",136,88,112,phase==RECOVERED,action)!=NX_OK ||
         button(context,fonts,15,"Close",256,88,128,1,action)!=NX_OK) return 0;
+    if(input_controls&&input_hint(context,fonts)!=NX_OK) return 0;
     nx_viewport_desc desc = {.id=100,.parent_id=1,.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
         .name={"Fixture frame",13},.scale=scale};
     nx_interaction_state interaction;
@@ -81,11 +103,13 @@ int main(void) {
     const char *path=getenv("NEXAUI_CONTENT_TEST_FONT"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if (!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!path||!test_case||
-        (strcmp(test_case,"full")&&strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
+        (strcmp(test_case,"full")&&strcmp(test_case,"input")&&strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
     int result=1,leased=0,worker_ready=0;
     nx_snapshot_exchange *exchange=NULL; content_surface *surface=NULL;
     nx_window *window=NULL; nx_software_view *software=NULL; nx_context *context=NULL;
     nx_font *font=NULL; nx_font_collection *fonts=NULL;
+    content_input *input=NULL; native_input_receiver receiver={.generation=1};
+    int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
     size_t bytes=0; uint8_t *data=read_font(path,&bytes);
     enum phase phase=PREPARING,last_phase=FAILED;
@@ -98,10 +122,42 @@ int main(void) {
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
         nx_software_view_open(window,&software)!=NX_OK||native_worker_open(&worker,exchange)) goto done;
     worker_ready=1;
+    if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     for (;;) {
         uint32_t ready=0; size_t routed=0; nx_window_info info;
         if (nx_window_poll_with_fd_events(window,need_frame?0:200,worker.wake[0],NX_WINDOW_FD_READABLE,&ready)!=NX_OK||
-            nx_window_get_info(window,&info)!=NX_OK||nx_window_route_events(window,context,&routed)!=NX_OK) goto done;
+            nx_window_get_info(window,&info)!=NX_OK) goto done;
+        if(input) {
+            /* Drain native events first; pending native AX actions still use
+               route_events below, in their ordinary native-then-AX order. */
+            for(;;) {
+                nx_event event,host; int available=0,route=0;
+                if(nx_window_next_event(window,&event,&available)!=NX_OK) goto done;
+                if(!available) break;
+                ++routed;
+                if(event.type==NX_EVENT_FOCUS||event.type==NX_EVENT_KEY_DOWN||event.type==NX_EVENT_KEY_UP||event.type==NX_EVENT_POINTER_CANCEL) {
+                    printf("INPUT_NATIVE type=%d key=%d focus=%d repeat=%d\n",(int)event.type,(int)event.key,event.focused,event.repeat);fflush(stdout);
+                }
+                content_input_status before,after;
+                if(content_input_get_status(input,&before)!=NX_OK||
+                    content_input_event(input,&event,&host,&route)!=NX_OK||
+                    content_input_get_status(input,&after)!=NX_OK) goto done;
+                if(route&&nx_context_queue_event(context,&host)!=NX_OK) goto done;
+                if(before.active&&!after.active) {
+                    input_phase=event.type==NX_EVENT_FOCUS&&!event.focused?INPUT_FOCUS_LOST:INPUT_RELEASED;
+                    if(nx_focus_set(context,15)!=NX_OK) goto done;
+                    need_frame=1;
+                }
+                /* Some backends deliver pointer cancellation before FocusOut.
+                   Preserve the actual focus-loss reason after that release. */
+                if(event.type==NX_EVENT_FOCUS&&!event.focused&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED) {
+                    input_phase=INPUT_FOCUS_LOST;need_frame=1;
+                }
+            }
+        }
+        size_t ax_routed=0;
+        if(nx_window_route_events(window,context,&ax_routed)!=NX_OK) goto done;
+        routed+=ax_routed;
         if (ready) {
             char wake[64]; ssize_t count;
             do { count=read(worker.wake[0],wake,sizeof(wake)); } while (count>0||(count<0&&errno==EINTR));
@@ -114,7 +170,7 @@ int main(void) {
         if (!need_frame&&!routed&&!ready) continue;
         need_frame=0;
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
-        if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,&content_result,&leased)) goto done;
+        if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,&content_result,&leased,input_case,input_phase)) goto done;
         if (phase!=last_phase) need_frame=1;
         last_phase=drawn;
         if (nx_key_pressed(context,NX_KEY_ESCAPE)) { result=0; break; }
@@ -155,6 +211,7 @@ int main(void) {
         if (action==15) { result=0; break; }
         if (action==10&&phase==WAITING) {
             if (content_surface_destroy(&surface)!=NX_OK||content_surface_create(exchange,2,4u*1024u*1024u,NULL,&surface)!=NX_OK) goto done;
+            if(input) { if(content_input_rebind(input,2)!=NX_OK) goto done; receiver.generation=2; }
             phase=REPLACED; need_frame=1;
         } else if (action==11&&phase==REPLACED) { native_release(&worker); phase=RELEASED; need_frame=1; }
         else if (action==12&&(phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT)) {
@@ -165,8 +222,38 @@ int main(void) {
             if (!native_schedule(&worker,(native_job){status.request,2,2,0})) goto done;
             phase=BAD_PENDING; need_frame=1;
         } else if (action==14&&phase==RECOVERED) { scale=2; phase=SCALED_WAIT; need_frame=1; }
+        if(input) {
+            if(action==16&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_ACTIVE) {
+                input_phase=INPUT_PENDING;
+                if(nx_focus_set(context,100)!=NX_OK) goto done;
+                need_frame=1;
+            } else if(action==17&&(input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING)) {
+                if(content_input_release(input)!=NX_OK||nx_focus_set(context,15)!=NX_OK) goto done;
+                input_phase=INPUT_RELEASED;need_frame=1;
+            } else if(action==18&&input_phase!=INPUT_DISCONNECTED) {
+                if(content_input_release(input)!=NX_OK||nx_focus_set(context,15)!=NX_OK) goto done;
+                input_phase=INPUT_DISCONNECTED;need_frame=1;
+            }
+            content_input_target target={.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
+                .width=status.request.width,.height=status.request.height,
+                .available=phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED,
+                .focused=nx_focus_id(context)==100};
+            content_input_status before,after;
+            if(content_input_get_status(input,&before)!=NX_OK||content_input_set_target(input,&target)!=NX_OK||
+                content_input_get_status(input,&after)!=NX_OK) goto done;
+            if(before.active&&!after.active) { input_phase=INPUT_RELEASED;need_frame=1; }
+            if(input_phase==INPUT_PENDING) {
+                nx_result armed=content_input_arm(input);
+                printf("INPUT_ARM result=%d focus=%llu window=%d keys=%zu buttons=%u draining=%zu/%u\n",(int)armed,
+                    (unsigned long long)nx_focus_id(context),after.window_focused,after.physical_keys,after.physical_buttons,
+                    after.draining_keys,after.draining_buttons);fflush(stdout);
+                if(armed==NX_OK) { input_phase=INPUT_ACTIVE;need_frame=1; }
+                else if(armed!=NX_ERROR_STATE) goto done;
+            }
+        }
     }
 done:
+    if(content_input_close(&input)!=NX_OK) result=1;
     if (leased&&content_surface_complete(surface)!=NX_OK) result=1;
     if (window&&nx_window_publish_semantics(window,NULL)!=NX_OK) result=1;
     if (software&&nx_software_view_close(&software)!=NX_OK) result=1;
@@ -176,11 +263,19 @@ done:
     if (exchange&&nx_snapshot_exchange_destroy(exchange)!=NX_OK) result=1;
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
-    unsigned expected=!strcmp(test_case,"full")?5u:!strcmp(test_case,"rejected-close")?1u:0u;
+    unsigned expected=(!strcmp(test_case,"full")||input_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
     unsigned discarded=!strcmp(test_case,"pending-close")?1u:0u;
     if (!worker_ready||worker.publications!=expected||worker.discarded!=discarded||
-        atomic_load(&worker.disposals)!=expected||(!strcmp(test_case,"full")&&phase!=SCALED_READY)||
+        atomic_load(&worker.disposals)!=expected||((!strcmp(test_case,"full")||input_case)&&phase!=SCALED_READY)||
         (!strcmp(test_case,"rejected-close")&&phase!=OLD_REJECTED)||(!strcmp(test_case,"pending-close")&&phase!=WAITING)) result=1;
+    if(input_case) {
+        if(receiver.downs!=6||receiver.ups!=6||receiver.pointer_downs!=3||receiver.pointer_ups!=3||
+            receiver.enters!=3||receiver.exits!=3||receiver.texts||receiver.buttons||native_input_keys(&receiver)||
+            receiver.focused||input_phase!=INPUT_DISCONNECTED) result=1;
+        printf("INPUT_EXIT result=%d down=%u up=%u pdown=%u pup=%u enter=%u exit=%u text=%u keys=%u buttons=%u\n",
+            result,receiver.downs,receiver.ups,receiver.pointer_downs,receiver.pointer_ups,receiver.enters,receiver.exits,
+            receiver.texts,native_input_keys(&receiver),receiver.buttons);
+    }
     printf("CONTENT_EXIT result=%d publications=%u discarded=%u disposals=%u frames=%u\n",
         result,worker.publications,worker.discarded,atomic_load(&worker.disposals),frames);
     return result;
