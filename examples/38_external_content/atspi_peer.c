@@ -224,7 +224,9 @@ int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
-        (strcmp(test_case,"full")&&strcmp(test_case,"input")&&strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
+        (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"input")&&
+        strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
+    int png_case=!strcmp(test_case,"png");
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
     AtspiComponent *old_component=NULL;Display *display=NULL;FILE *host_log=NULL;
@@ -250,11 +252,18 @@ int main(int argc,char **argv) {
     CHECK((retired=find(app,"Fixture frame",0))&&dimensions(retired));
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
     CHECK(capture(display,outer,0x1753c5u,"fresh"));
-    CHECK(press(app,"Bad frame")&&observe(app,"Frame format unavailable.",0));
-    CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
-    CHECK(capture(display,outer,0xe3e7efu,"bad"));
+    CHECK(press(app,"Bad frame"));
+    if(png_case) {
+        CHECK(observe(app,"PNG decoding failed; image retained.",0));
+        CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
+        CHECK(capture(display,outer,0x1753c5u,"bad-retained"));
+    } else {
+        CHECK(observe(app,"Frame format unavailable.",0));
+        CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
+        CHECK(capture(display,outer,0xe3e7efu,"bad"));
+    }
     CHECK(press(app,"Publish frame")&&observe(app,"Frame recovered.",0));
-    CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
+    if(!png_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
     CHECK((fresh=find(app,"Fixture frame",0))&&dimensions(fresh));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
     CHECK(capture(display,outer,0x1753c5u,"recovered"));

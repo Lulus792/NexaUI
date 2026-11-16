@@ -8,25 +8,30 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#ifdef CONTENT_NATIVE_PNG
+#include "png_frame.h"
+#include <stdio.h>
+#endif
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
 typedef struct native_job { content_request request; uint64_t sequence; unsigned kind; int held; } native_job;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
+    const char *png_dir;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
     pthread_t thread;
     int mutex_ready, condition_ready, started, wake[2];
     int stop, pending, working, prepared, allowed;
     native_job job;
-    unsigned publications, discarded;
+    unsigned completed, publications, discarded;
     nx_result result;
     _Atomic unsigned disposals;
 } native_worker;
 typedef struct native_worker_state {
     int working, pending, prepared;
-    unsigned publications;
+    unsigned completed;
     nx_result result;
 } native_worker_state;
 
@@ -45,6 +50,14 @@ static void native_wake(native_worker *worker) {
         pthread_mutex_unlock(&worker->mutex);
     }
 }
+static void native_damage(native_job job, content_frame_header *header) {
+    if (job.kind != 3 || job.request.width < 4u || job.request.height < 4u) return;
+    header->damage_base = 1;
+    header->damage_x = job.request.width / 2u;
+    header->damage_y = job.request.height / 2u;
+    header->damage_width = job.request.width / 4u;
+    header->damage_height = job.request.height / 4u;
+}
 static void *native_pixels(native_job job, size_t *bytes) {
     if (!job.request.width || !job.request.height || job.request.width > NX_VIEWPORT_MAX_DIMENSION ||
         job.request.height > NX_VIEWPORT_MAX_DIMENSION) return NULL;
@@ -55,14 +68,7 @@ static void *native_pixels(native_job job, size_t *bytes) {
     if (!data) return NULL;
     content_frame_header header = {.request = job.request, .sequence = job.sequence,
         .format = job.kind == 2 ? NX_BITMAP_A8 : NX_BITMAP_RGBA8, .stride = (uint32_t)stride};
-    if (job.kind == 3 && job.request.width >= 4u && job.request.height >= 4u) {
-        /* Restore after the rejected frame. The last valid frame was blue. */
-        header.damage_base = 1;
-        header.damage_x = job.request.width / 2u;
-        header.damage_y = job.request.height / 2u;
-        header.damage_width = job.request.width / 4u;
-        header.damage_height = job.request.height / 4u;
-    }
+    native_damage(job, &header);
     memcpy(data, &header, sizeof(header));
     static const uint8_t colors[5][3] = {{211,79,31},{23,83,197},{127,127,127},{71,163,31},{191,63,137}};
     if (job.kind > 4) { free(data); return NULL; }
@@ -80,6 +86,41 @@ static void *native_pixels(native_job job, size_t *bytes) {
     }
     return data;
 }
+
+#ifdef CONTENT_NATIVE_PNG
+static nx_result native_png(const char *directory, native_job job, void **data, size_t *bytes) {
+    char path[4096];
+    int written = snprintf(path, sizeof(path), "%s/%u.png", directory, job.kind);
+    if (written < 0 || (size_t)written >= sizeof(path)) return NX_ERROR_LIMIT;
+    FILE *file = fopen(path, "rb");
+    if (!file) return NX_ERROR_PLATFORM;
+    uint8_t *encoded = NULL;
+    nx_result result = NX_ERROR_PLATFORM;
+    if (!fseek(file, 0, SEEK_END)) {
+        long length = ftell(file);
+        if (length > 0 && (unsigned long)length > CONTENT_PNG_ENCODED_LIMIT) result = NX_ERROR_LIMIT;
+        else if (length > 0 && !fseek(file, 0, SEEK_SET)) {
+            encoded = malloc((size_t)length);
+            if (!encoded) result = NX_ERROR_MEMORY;
+            else if (fread(encoded, 1, (size_t)length, file) == (size_t)length)
+                result = content_png_frame(encoded, (size_t)length, job.request, job.sequence, data, bytes);
+        }
+    }
+    free(encoded);
+    fclose(file);
+    if (result == NX_OK) {
+        content_frame_header header;
+        memcpy(&header, *data, sizeof(header));
+        /* The recovery PNG changes only the declared quarter rectangle at
+           exact multiples of the fixture size. Other sizes send full frames. */
+        if (job.request.width % 112u == 0 && job.request.height % 52u == 0 &&
+            job.request.width / 112u == job.request.height / 52u)
+            native_damage(job, &header);
+        memcpy(*data, &header, sizeof(header));
+    }
+    return result;
+}
+#endif
 static void *native_worker_entry(void *user) {
     native_worker *worker = user;
     for (;;) {
@@ -90,7 +131,16 @@ static void *native_worker_entry(void *user) {
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
         size_t bytes = 0;
-        void *data = native_pixels(job, &bytes);
+        void *data = NULL;
+        nx_result result;
+#ifdef CONTENT_NATIVE_PNG
+        if (worker->png_dir) result = native_png(worker->png_dir, job, &data, &bytes);
+        else
+#endif
+        {
+            data = native_pixels(job, &bytes);
+            result = data ? NX_OK : NX_ERROR_MEMORY;
+        }
         pthread_mutex_lock(&worker->mutex);
         worker->prepared = 1;
         pthread_mutex_unlock(&worker->mutex);
@@ -102,11 +152,12 @@ static void *native_worker_entry(void *user) {
         if (stop && data) ++worker->discarded;
         pthread_mutex_unlock(&worker->mutex);
         if (stop) { free(data); break; }
-        nx_result result = data ? nx_snapshot_exchange_publish(worker->exchange, data, bytes,
-            native_dispose, &worker->disposals) : NX_ERROR_MEMORY;
+        if (result == NX_OK) result = nx_snapshot_exchange_publish(worker->exchange, data, bytes,
+            native_dispose, &worker->disposals);
         if (result != NX_OK) free(data);
         pthread_mutex_lock(&worker->mutex);
-        worker->prepared = 0; worker->working = 0; ++worker->publications; worker->result = result;
+        worker->prepared = 0; worker->working = 0; ++worker->completed; worker->result = result;
+        if (result == NX_OK) ++worker->publications;
         pthread_mutex_unlock(&worker->mutex);
         native_wake(worker);
     }
@@ -131,9 +182,9 @@ static int native_worker_close(native_worker *worker) {
     if (worker->mutex_ready) { if (pthread_mutex_destroy(&worker->mutex)) result = -1; worker->mutex_ready = 0; }
     return result;
 }
-static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange) {
+static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange, const char *png_dir) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
-    atomic_init(&worker->disposals, 0); worker->exchange = exchange;
+    atomic_init(&worker->disposals, 0); worker->exchange = exchange; worker->png_dir = png_dir;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;
@@ -145,7 +196,7 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
 }
 static native_worker_state native_state(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
-    native_worker_state state = {worker->working, worker->pending, worker->prepared, worker->publications, worker->result};
+    native_worker_state state = {worker->working, worker->pending, worker->prepared, worker->completed, worker->result};
     pthread_mutex_unlock(&worker->mutex);
     return state;
 }
