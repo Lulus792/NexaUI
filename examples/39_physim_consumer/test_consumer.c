@@ -89,6 +89,56 @@ static int semantic_name(const nx_context *context,uint64_t id,const char *name)
     return nx_semantics_find(context,id,&index)==NX_OK&&nx_semantics_get(context,index,&node)==NX_OK&&
         node.name.length==strlen(name)&&!memcmp(node.name.data,name,node.name.length);
 }
+
+static int same_scene(const uint8_t *left,const uint8_t *right) {
+    for(size_t y=160;y<HEIGHT-16u;++y) {
+        const size_t offset=(y*WIDTH+408u)*4u;
+        if(memcmp(left+offset,right+offset,376u*4u))return 0;
+    }
+    return 1;
+}
+
+static int camera_test(const char *path,const char *image) {
+    int ok=0,valid=0;
+    unsigned action=0;
+    nx_context *context=NULL;
+    physim_view *view=NULL;
+    font_data font={0};
+    ps_plot_view plot={0};
+    physim_snapshot *model=malloc(sizeof(*model)),*before=malloc(sizeof(*before));
+    size_t bytes=(size_t)WIDTH*HEIGHT*4u;
+    uint8_t *pixels=malloc(bytes),*front=malloc(bytes);
+    CHECK(model&&before&&pixels&&front&&open_font(path,&font));
+    CHECK(physim_model_run(1.5,.45,1,model)==NX_OK&&nx_context_create(NULL,&context)==NX_OK);
+    CHECK(physim_view_create(model,&plot,font.fonts,&view)==NX_OK);
+    *before=*model;
+    CHECK(physim_view_dispatch(view,PHYSIM_TOGGLE_CAMERA,&valid)==NX_OK&&valid);
+    CHECK(physim_view_dispatch(view,PHYSIM_INSPECT_NEXT,&valid)==NX_OK&&valid);
+    CHECK(render(view,context,1,&action,front)==NX_OK&&!action);
+    CHECK(semantic_name(context,32,"Camera yaw 0°")&&semantic_name(context,33,"Camera pitch 0°"));
+    CHECK(semantic_name(context,34,"Zoom 100%"));
+    CHECK(pointer(context,NX_EVENT_POINTER_DOWN,414,166)&&render(view,context,1,&action,pixels)==NX_OK&&!action);
+    nx_numeric_value_snapshot yaw;
+    CHECK(nx_semantics_get_numeric_value(context,29,&yaw)==NX_OK);
+    CHECK(nx_semantics_request_numeric_value(context,29,&yaw,60)==NX_OK);
+    CHECK(render(view,context,1,&action,pixels)==NX_OK&&!action&&semantic_name(context,32,"Camera yaw 60°"));
+    CHECK(pointer(context,NX_EVENT_POINTER_UP,414,166)&&render(view,context,1,&action,pixels)==NX_OK&&!action);
+    CHECK(semantic_name(context,23,"1/12 Line #1, parent #100"));
+    CHECK(nx_focus_set(context,30)==NX_OK&&key(context,NX_KEY_RIGHT,0)&&render(view,context,1,&action,pixels)==NX_OK);
+    CHECK(semantic_name(context,33,"Camera pitch 15°"));
+    CHECK(nx_focus_set(context,31)==NX_OK&&key(context,NX_KEY_RIGHT,0)&&render(view,context,1,&action,pixels)==NX_OK);
+    CHECK(semantic_name(context,34,"Zoom 125%")&&!same_scene(front,pixels)&&save(image,pixels));
+    CHECK(physim_view_frame(view,context,WIDTH,HEIGHT,1,&action)==NX_OK&&!action);
+    CHECK(physim_view_dispatch(view,PHYSIM_RESET_CAMERA,&valid)==NX_ERROR_STATE&&!valid);
+    CHECK(physim_view_complete(view)==NX_OK&&physim_view_dispatch(view,PHYSIM_RESET_CAMERA,&valid)==NX_OK&&valid);
+    CHECK(render(view,context,1,&action,pixels)==NX_OK&&same_scene(front,pixels));
+    CHECK(!memcmp(before,model,sizeof(*model))&&!ps_plot_view_changed(&plot));
+    ok=1;
+done:
+    if(view) { (void)physim_view_complete(view);physim_view_destroy(&view); }
+    nx_context_destroy(context);close_font(&font);free(model);free(before);free(pixels);free(front);
+    return ok;
+}
 static int named_row(const nx_context *context,const char *name,nx_semantic_view *row) {
     size_t count=0;
     if(nx_semantics_count(context,&count)!=NX_OK)return 0;
@@ -354,6 +404,7 @@ int main(int argc,char **argv) {
     else if(!strcmp(argv[1],"failure"))ok=failure_test(argv[2]);
     else if(!strcmp(argv[1],"export"))ok=export_test(argv[2],argv[3]);
     else if(!strcmp(argv[1],"tree"))ok=tree_test(argv[2]);
+    else if(!strcmp(argv[1],"camera"))ok=camera_test(argv[2],argv[3]);
     else return 2;
     if(ok)printf("Original Physim consumer %s passed\n",argv[1]);return ok?0:1;
 }

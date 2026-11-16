@@ -136,14 +136,25 @@ static int drive(const char *command,const char *value) {
     return ended==pid&&WIFEXITED(status)&&!WEXITSTATUS(status);
 }
 typedef struct screen_point { int x,y; } screen_point;
-static int click_at(const char *window,screen_point point) {
+static int pointer_at(const char *window,screen_point point,int click) {
     const char *driver=getenv("NEXAUI_PHYSIM_XDOTOOL");if(!driver)return 0;
     char x[16],y[16];snprintf(x,sizeof(x),"%d",point.x);snprintf(y,sizeof(y),"%d",point.y);
     pid_t pid=fork();
-    if(!pid) { execl(driver,driver,"mousemove","--window",window,x,y,"click","1",(char *)NULL);_exit(127); }
+    if(!pid) {
+        if(click)execl(driver,driver,"mousemove","--window",window,x,y,"click","1",(char *)NULL);
+        else execl(driver,driver,"mousemove","--window",window,x,y,(char *)NULL);
+        _exit(127);
+    }
     if(pid<0)return 0;int status=0;pid_t ended;
     do{ended=waitpid(pid,&status,0);}while(ended<0&&errno==EINTR);
     return ended==pid&&WIFEXITED(status)&&!WEXITSTATUS(status);
+}
+static int click_at(const char *window,screen_point point) { return pointer_at(window,point,1); }
+static int park_at(const char *window,screen_point point) {
+    if(!pointer_at(window,point,0))return 0;
+    /* XTest delivery does not wait for the nested compositor to repaint. */
+    for(unsigned tick=0;tick<8;++tick)pump();
+    return 1;
 }
 static int original_bob(double length,double *x,double *y,double *radius) {
     const ps_experiment_api *api=ps_get_experiment();ps_context *c=calloc(1,sizeof(*c));if(!c)return 0;
@@ -171,7 +182,9 @@ static int save_ppm(XImage *image,int x,int y,int width,int height,const char *t
 static int bob_color(XImage *image,int x,int y) {
     return (XGetPixel(image,x,y)&0xffffffu)==0x53dec2u;
 }
-static int capture_position(Display *display,Window window,double length,const char *tag,screen_point *target) {
+typedef struct image_pose { double xx,yx,yy,zoom; } image_pose;
+static int capture_projected(Display *display,Window window,double length,const char *tag,screen_point *target,
+    image_pose pose) {
     double bob_x=0,bob_y=0,radius=0;if(!original_bob(length,&bob_x,&bob_y,&radius))return 0;
     for(unsigned attempt=0;attempt<80;++attempt) {
         XWindowAttributes info;if(!XGetWindowAttributes(display,window,&info)||info.width!=1600||info.height!=1200)return 0;
@@ -184,8 +197,11 @@ static int capture_position(Display *display,Window window,double length,const c
         int yes=right-left+1==376&&bottom-top+1==384&&left>=408&&top>=160&&left-408+800<=1600&&top-160+560<=1200;
         unsigned colored=0;
         if(yes) {
-            double projection=384.0/(length*1.8);
-            int x=(int)((double)left+188+bob_x*projection),y=(int)((double)top+384*.16-bob_y*projection),r=(int)(radius*projection);
+            double base=384.0/(length*1.8),projection=base*pose.zoom;
+            double centre=(double)top+384*.16+length*.5*base;
+            int x=(int)((double)left+188+bob_x*pose.xx*projection);
+            int y=(int)(centre-(bob_x*pose.yx+(bob_y+length*.5)*pose.yy)*projection);
+            int r=(int)(radius*projection);
             yes=r>0&&x-r>=left&&x+r<=right&&y-r>=top&&y+r<=bottom;
             int found=0;
             if(yes)for(int dy=-r;dy<=r;++dy)for(int dx=-r;dx<=r;++dx) {
@@ -206,6 +222,9 @@ static int capture_position(Display *display,Window window,double length,const c
         XDestroyImage(image);pump();
     }
     fprintf(stderr,"Physim native pixel mismatch: %s\n",tag);return 0;
+}
+static int capture_position(Display *display,Window window,double length,const char *tag,screen_point *target) {
+    return capture_projected(display,window,length,tag,target,(image_pose){1,0,1,1});
 }
 static int capture(Display *display,Window window,double length,const char *tag) {
     return capture_position(display,window,length,tag,NULL);
@@ -293,6 +312,26 @@ int main(int argc,char **argv) {
         CHECK(click_at(id,bob)&&row_state(app,"Sphere #3",ATSPI_STATE_SELECTED)&&observe(app,"3/12 Sphere #3, parent #101",0));
         CHECK(focus(app,"Sphere #3")&&press(app,"Show plot")&&observe(app,"Scene tree",1));
         puts("PHYSIM_TREE original hierarchy verified: keyboard, assistive collapse, shared selection and focus return");
+        CHECK(focus(app,"Camera")&&drive("key","Return")&&observe(app,"Show plot",1));
+        /* Leave the cursor inside the client and outside the scene. An X11
+           output may retain its last composited cursor when the seat leaves. */
+        screen_point away={bob.x-240,bob.y};
+        CHECK(park_at(id,away)&&capture(display,outer,2.5,"camera-front"));
+        CHECK(focus(app,"Camera yaw"));
+        for(unsigned step=0;step<4;++step)CHECK(drive("key","Right"));
+        CHECK(observe(app,"Camera yaw 60°",0)&&focus(app,"Camera pitch"));
+        for(unsigned step=0;step<2;++step)CHECK(drive("key","Right"));
+        CHECK(observe(app,"Camera pitch 30°",0)&&focus(app,"Camera zoom")&&drive("key","Right"));
+        CHECK(observe(app,"Zoom 125%",0));
+        image_pose tilted={.5,-sqrt(3.0)/4,sqrt(3.0)/2,1.25};
+        CHECK(capture_projected(display,outer,2.5,"camera",&bob,tilted));
+        CHECK(press(app,"Inspect next")&&observe(app,"4/12 Arrow #4, parent #3",0));
+        CHECK(click_at(id,bob)&&observe(app,"3/12 Sphere #3, parent #101",0));
+        CHECK(focus(app,"Reset camera")&&drive("key","Return")&&observe(app,"Camera yaw 0°",0));
+        CHECK(observe(app,"Camera pitch 0°",0)&&observe(app,"Zoom 100%",0)&&park_at(id,away));
+        CHECK(capture(display,outer,2.5,"camera-reset"));
+        CHECK(focus(app,"Camera zoom")&&press(app,"Show plot")&&observe(app,"Camera",1));
+        puts("PHYSIM_CAMERA native sliders, tilted picking and front reset verified");
         CHECK(focus(app,"Original angle channel (rad)")&&drive("key","Tab")&&observe(app,"Original Physim pendulum scene",1));
         CHECK(drive("key","Tab")&&observe(app,"Inspect next",1));
         CHECK(drive("key","Tab")&&observe(app,"Length (m)",1)&&drive("key","shift+Tab")&&observe(app,"Inspect next",1));

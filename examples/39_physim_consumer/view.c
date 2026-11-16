@@ -4,10 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
-enum { PHYSIM_SCENE_TREE = 26 };
+enum { PHYSIM_SCENE_TREE = 26, PHYSIM_CAMERA_YAW = 29, PHYSIM_CAMERA_PITCH, PHYSIM_CAMERA_ZOOM };
 #define PHYSIM_TREE_OBJECT (UINT64_C(1) << 40)
 #define PHYSIM_TREE_ANONYMOUS (UINT64_C(1) << 41)
 #define PHYSIM_TREE_EXPANDER (UINT64_C(1) << 42)
+
+typedef enum physim_pane { PANE_PLOT, PANE_TREE, PANE_CAMERA } physim_pane;
+typedef struct physim_camera { double yaw,pitch,zoom; } physim_camera;
+static const physim_camera front_camera={0,0,1};
 
 struct physim_view {
     physim_snapshot *model;
@@ -21,7 +25,8 @@ struct physim_view {
     double backing;
     int leased,apply_rejected;
     uint32_t inspected;
-    int tree_open;
+    physim_pane pane;
+    physim_camera camera,pick_camera;
     int collapsed[PS_MAX_OBJECTS];
     uint64_t pick_generation;
     float pick_width,pick_height;
@@ -44,11 +49,23 @@ static nx_color color(uint32_t rgba) {
     return (nx_color){(float)((rgba>>24)&255u)/255.0f,(float)((rgba>>16)&255u)/255.0f,
         (float)((rgba>>8)&255u)/255.0f,(float)(rgba&255u)/255.0f};
 }
-static double projection_scale(const physim_view *v) {
-    return (double)v->height/(v->model->length.value*1.8);
+typedef struct scene_projection {
+    ps_vec3 right,up;
+    double origin_x,origin_y,scale;
+} scene_projection;
+static scene_projection projection_for(const physim_view *v) {
+    double yaw=v->camera.yaw*(PS_PI/180),pitch=v->camera.pitch*(PS_PI/180);
+    double sy=sin(yaw),cy=cos(yaw),sp=sin(pitch),cp=cos(pitch);
+    /* Same right-handed yaw/pitch basis as Physim's graphics camera. */
+    ps_vec3 right=ps_v3(cy,0,-sy),up=ps_vcross(ps_v3(sy*cp,sp,cy*cp),right);
+    ps_vec3 pivot=ps_v3(0,-v->model->length.value*.5,0);
+    double base=(double)v->height/(v->model->length.value*1.8),scale=base*v->camera.zoom;
+    return (scene_projection){right,up,(double)v->width*.5-ps_vdot(pivot,right)*scale,
+        (double)v->height*.16+(ps_vdot(pivot,up)*v->camera.zoom-pivot.y)*base,scale};
 }
-static nx_point project(const physim_view *v,ps_vec3 point,double scale) {
-    return (nx_point){(float)((double)v->width*.5+point.x*scale),(float)((double)v->height*.16-point.y*scale)};
+static nx_point project(scene_projection projection,ps_vec3 point) {
+    return (nx_point){(float)(projection.origin_x+ps_vdot(point,projection.right)*projection.scale),
+        (float)(projection.origin_y-ps_vdot(point,projection.up)*projection.scale)};
 }
 static int arrow_head(nx_point a,nx_point b,double backing,nx_point *left,nx_point *right) {
     float dx=b.x-a.x,dy=b.y-a.y,length=hypotf(dx,dy);
@@ -73,14 +90,14 @@ static int stroke_hit(nx_point a,nx_point b,nx_point point,float radius) {
 }
 static uint32_t pick_scene(const physim_view *v,nx_rect bounds,float x,float y) {
     nx_point point={(x-bounds.x)*(float)v->width/bounds.width,(y-bounds.y)*(float)v->height/bounds.height};
-    double scale=projection_scale(v);
+    scene_projection projection=projection_for(v);
     for(uint32_t i=v->model->scene.count;i>0;--i) {
         const ps_object *object=&v->model->scene.objects[i-1u];
         if(!(object->color&255u))continue;
-        nx_point a=project(v,object->a,scale);
-        if(object->shape==PS_SPHERE&&hypotf(point.x-a.x,point.y-a.y)<=(float)(object->radius*scale))return i;
+        nx_point a=project(projection,object->a);
+        if(object->shape==PS_SPHERE&&hypotf(point.x-a.x,point.y-a.y)<=(float)(object->radius*projection.scale))return i;
         if(object->shape==PS_LINE||object->shape==PS_ARROW) {
-            nx_point b=project(v,object->b,scale),left,right;
+            nx_point b=project(projection,object->b),left,right;
             if(stroke_hit(a,b,point,(float)v->backing))return i;
             if(object->shape==PS_ARROW&&arrow_head(a,b,v->backing,&left,&right)&&triangle_hit(b,left,right,point))return i;
         }
@@ -91,11 +108,13 @@ static void stage_pick(physim_view *v,nx_rect bounds,const nx_interaction_state 
     /* NexaUI routes capture against the preceding layout. Discard presses
        spanning a change to the projected image or its mapping. */
     if(v->pick_generation!=v->model->generation||v->pick_width!=bounds.width||
-        v->pick_height!=bounds.height||v->pick_scale!=v->backing) {
+        v->pick_height!=bounds.height||v->pick_scale!=v->backing||
+        v->pick_camera.yaw!=v->camera.yaw||v->pick_camera.pitch!=v->camera.pitch||v->pick_camera.zoom!=v->camera.zoom) {
         v->pick_generation=v->model->generation;
         v->pick_width=bounds.width;
         v->pick_height=bounds.height;
         v->pick_scale=v->backing;
+        v->pick_camera=v->camera;
         v->pick_armed=0;
         return;
     }
@@ -113,17 +132,17 @@ static nx_result render_scene(void *user,nx_bitmap_view *out) {
     physim_view *v=user;
     if(v->leased||!v->pixels) return NX_ERROR_STATE;
     if(nx_begin_frame(v->canvas,(float)v->width,(float)v->height,0)!=NX_OK) return NX_ERROR_STATE;
-    double scale=projection_scale(v);
+    scene_projection projection=projection_for(v);
     for(uint32_t i=0;i<v->model->scene.count;++i) {
         const ps_object *object=&v->model->scene.objects[i];
-        nx_point a=project(v,object->a,scale),b=project(v,object->b,scale);nx_result r=NX_OK;
+        nx_point a=project(projection,object->a),b=project(projection,object->b);nx_result r=NX_OK;
         if(object->shape==PS_LINE||object->shape==PS_ARROW) {
             r=nx_draw_line(v->canvas,a,b,(float)(2*v->backing),color(object->color));
             nx_point left,right;
             if(r==NX_OK&&object->shape==PS_ARROW&&arrow_head(a,b,v->backing,&left,&right))
                 r=nx_fill_triangle(v->canvas,b,left,right,color(object->color));
         } else if(object->shape==PS_SPHERE) {
-            float radius=(float)(object->radius*scale);
+            float radius=(float)(object->radius*projection.scale);
             r=nx_fill_round_rect(v->canvas,(nx_rect){a.x-radius,a.y-radius,2*radius,2*radius},radius,color(object->color));
         } else if(object->shape==PS_LABEL) {
             nx_text_layout *layout=NULL;
@@ -156,6 +175,7 @@ nx_result physim_view_create(physim_snapshot *model,ps_plot_view *plot,const nx_
     if(!model||!plot||!fonts||!model->generation||!model->length.defined||!model->angle.defined)return NX_ERROR_ARGUMENT;
     physim_view *v=calloc(1,sizeof(*v));if(!v)return NX_ERROR_MEMORY;
     v->model=model;v->plot=plot;v->fonts=fonts;
+    v->camera=front_camera;
     nx_result r=nx_numeric_field_create(model->length.value,8192,&v->length);
     if(r==NX_OK)r=nx_numeric_field_create(model->angle.value,8192,&v->angle);
     if(r==NX_OK)r=nx_context_create(NULL,&v->canvas);
@@ -295,6 +315,32 @@ static nx_result button(physim_view *v,nx_context *context,unsigned id,const cha
     }
     nx_text_layout_destroy(layout);return r;
 }
+static nx_result camera_controls(physim_view *v,nx_context *context,nx_rect bounds,
+    physim_camera *camera,unsigned *action) {
+    struct camera_control { unsigned id; const char *name; double *value,minimum,maximum,step; };
+    const struct camera_control controls[]={
+        {PHYSIM_CAMERA_YAW,"Camera yaw",&camera->yaw,-180,180,15},
+        {PHYSIM_CAMERA_PITCH,"Camera pitch",&camera->pitch,-75,75,15},
+        {PHYSIM_CAMERA_ZOOM,"Camera zoom",&camera->zoom,.5,2,.25}
+    };
+    for(unsigned i=0;i<3;++i) {
+        const struct camera_control *control=&controls[i];
+        float y=bounds.y+(float)i*54;
+        nx_value_control_desc desc={.control={.id=control->id,.parent_id=1,
+            .bounds={bounds.x,y+20,bounds.width,26},.name=span(control->name)},
+            .minimum=control->minimum,.maximum=control->maximum,.step=control->step};
+        nx_interaction_state state;
+        nx_result r=nx_slider(context,&desc,control->value,&state);
+        if(r!=NX_OK)return r;
+        char label[64];
+        if(control->id==PHYSIM_CAMERA_ZOOM)
+            snprintf(label,sizeof(label),"Zoom %.0f%%",*control->value*100);
+        else snprintf(label,sizeof(label),"%s %.0f°",control->name,*control->value);
+        r=text(v,context,32u+i,label,(nx_rect){bounds.x,y,bounds.width,18},13);
+        if(r!=NX_OK)return r;
+    }
+    return button(v,context,PHYSIM_RESET_CAMERA,"Reset camera",(nx_rect){bounds.x,bounds.y+166,134,32},action);
+}
 static nx_result sample(void *user,size_t index,nx_series_point *point) {
     const physim_snapshot *model=user;
     if(index>=PHYSIM_SAMPLE_COUNT||!point)return NX_ERROR_ARGUMENT;
@@ -311,7 +357,7 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     nx_result r=nx_begin_frame(context,width,height,0);
     nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,width,height},.name=span("Original Physim pendulum reference")};
     if(r==NX_OK)r=nx_semantics_add(context,&root,NULL);
-    if(r==NX_OK)r=text(v,context,2,"Original Physim pendulum",(nx_rect){16,12,width-294,26},18);
+    if(r==NX_OK)r=text(v,context,2,"Original Physim pendulum",(nx_rect){16,12,width-414,26},18);
     if(r==NX_OK)r=text(v,context,3,"Length (m)",(nx_rect){16,42,200,18},14);
     if(r==NX_OK)r=text(v,context,4,"Initial angle (rad)",(nx_rect){240,42,200,18},14);
     nx_numeric_field_desc field={.id=10,.parent_id=1,.bounds={16,64,200,32},.name=span("Length (m)"),
@@ -327,10 +373,15 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     if(v->apply_rejected)snprintf(status,sizeof(status),"Invalid parameters; model generation %llu retained.",(unsigned long long)v->model->generation);
     else snprintf(status,sizeof(status),"Model generation %llu; length %.6g m.",(unsigned long long)v->model->generation,v->model->length.value);
     if(r==NX_OK)r=text(v,context,5,status,(nx_rect){16,142,width*.5f-24,16},12);
+    if(r==NX_OK)r=button(v,context,PHYSIM_TOGGLE_CAMERA,
+        v->pane==PANE_CAMERA?"Show plot":"Camera",(nx_rect){width-388,8,116,32},action);
     if(r==NX_OK&&v->model->scene.count)r=button(v,context,PHYSIM_TOGGLE_TREE,
-        v->tree_open?"Show plot":"Scene tree",(nx_rect){width-264,8,116,32},action);
-    if(r==NX_OK&&!v->tree_open&&(nx_focus_id(context)&PHYSIM_TREE_OBJECT))
+        v->pane==PANE_TREE?"Show plot":"Scene tree",(nx_rect){width-264,8,116,32},action);
+    uint64_t focus=nx_focus_id(context);
+    if(r==NX_OK&&v->pane!=PANE_TREE&&(focus&PHYSIM_TREE_OBJECT))
         r=nx_focus_set(context,PHYSIM_TOGGLE_TREE);
+    if(r==NX_OK&&v->pane!=PANE_CAMERA&&focus>=PHYSIM_RESET_CAMERA&&focus<=PHYSIM_CAMERA_ZOOM)
+        r=nx_focus_set(context,PHYSIM_TOGGLE_CAMERA);
     nx_plot_desc plot={.id=20,.parent_id=1,.bounds={16,160,width*.5f-24,height-176},.name=span("Original angle channel (rad)"),
         .series={PHYSIM_SAMPLE_COUNT,v->model,sample},.scratch=v->scratch,.scratch_capacity=1024,.fonts=v->fonts,
         .pixels_per_em=13,.glyph_cache_bytes=65536};
@@ -339,22 +390,29 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     plot.y_min=ps_plot_axis_value(-1.6,1.6,v->plot->low[1]);plot.y_max=ps_plot_axis_value(-1.6,1.6,v->plot->high[1]);
     scene_tree_frame tree;
     uint32_t inspected=v->inspected;
-    if(r==NX_OK)r=v->tree_open?scene_tree(v,context,plot.bounds,&tree,&inspected):nx_plot(context,&plot,&v->plot_state);
+    physim_camera previous_camera=v->camera,camera=previous_camera;
+    if(r==NX_OK) {
+        if(v->pane==PANE_TREE)r=scene_tree(v,context,plot.bounds,&tree,&inspected);
+        else if(v->pane==PANE_CAMERA)r=camera_controls(v,context,plot.bounds,&camera,action);
+        else r=nx_plot(context,&plot,&v->plot_state);
+    }
     if(r==NX_OK)r=inspector(v,context,width,inspected);
     nx_viewport_desc viewport={.id=21,.parent_id=1,.bounds={width*.5f+8,160,width*.5f-24,height-176},
         .name=span("Original Physim pendulum scene"),.scale=scale};
     v->backing=scale;
+    v->camera=camera;
     if(r==NX_OK)r=nx_viewport(context,v->surface,&viewport,&state);
     if(r==NX_OK&&v->model->scene.count)
         r=button(v,context,PHYSIM_INSPECT_NEXT,"Inspect next",(nx_rect){width-140,8,124,32},action);
     if(r==NX_OK)r=nx_end_frame(context);
     if(r==NX_OK) {
-        if(v->tree_open) {
+        if(v->pane==PANE_TREE) {
             memcpy(v->collapsed,tree.collapsed,sizeof(v->collapsed));
             v->inspected=inspected;
         }
         stage_pick(v,viewport.bounds,&state,action);
     }
+    else v->camera=previous_camera;
     return r;
 }
 nx_result physim_view_complete(physim_view *v) { return v?nx_viewport_surface_complete(v->surface):NX_ERROR_ARGUMENT; }
@@ -395,8 +453,17 @@ nx_result physim_view_dispatch(physim_view *v,unsigned action,int *valid) {
         *valid=1;
     }
     else if(action==PHYSIM_TOGGLE_TREE&&v->model->scene.count) {
-        v->tree_open=!v->tree_open;
-        if(v->tree_open)reveal_inspected(v);
+        v->pane=v->pane==PANE_TREE?PANE_PLOT:PANE_TREE;
+        if(v->pane==PANE_TREE)reveal_inspected(v);
+        *valid=1;
+    }
+    else if(action==PHYSIM_TOGGLE_CAMERA) {
+        v->pane=v->pane==PANE_CAMERA?PANE_PLOT:PANE_CAMERA;
+        *valid=1;
+    }
+    else if(action==PHYSIM_RESET_CAMERA) {
+        v->camera=front_camera;
+        v->pick_pending=0;
         *valid=1;
     }
     else return NX_ERROR_ARGUMENT;

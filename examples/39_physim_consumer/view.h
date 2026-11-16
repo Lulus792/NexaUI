@@ -2,7 +2,10 @@
 #define EXAMPLE_PHYSIM_VIEW_H
 #include "model.h"
 typedef struct physim_view physim_view;
-enum { PHYSIM_INSPECT_NEXT = 22, PHYSIM_INSPECT_PICK = 24, PHYSIM_TOGGLE_TREE = 25 };
+enum {
+    PHYSIM_INSPECT_NEXT = 22, PHYSIM_INSPECT_PICK = 24, PHYSIM_TOGGLE_TREE = 25,
+    PHYSIM_TOGGLE_CAMERA = 27, PHYSIM_RESET_CAMERA = 28
+};
 /* App-owned reference presentation, not Physim's approved application design.
    Borrow model, original plot view and fonts until destroy. The model must be
    an immutable successful physim_model_run result; only apply may replace it.
@@ -14,8 +17,8 @@ nx_result physim_view_create(physim_snapshot *model, ps_plot_view *plot,
    On a setter failure retire the view before releasing either window. */
 nx_result physim_view_set_ime_window(physim_view *view, nx_window *window);
 /* Owns begin/end_frame. Returns action IDs 12 Apply, 13 Zoom, 14 Pan, 15 Fit,
-   16 Close, 17 Replace view, 22 Inspect next, 24 Viewport pick, 25 Toggle tree.
-   Caller handles
+   16 Close, 17 Replace view, 22 Inspect next, 24 Viewport pick, 25 Toggle tree,
+   27 Toggle camera pane, 28 Reset camera. Caller handles
    Close/Replace and dispatches other actions only after rendering/complete.
    Dispatch a viewport pick before the next frame. All borrowed
    commands/pixels must finish before complete, next frame or destruction.
