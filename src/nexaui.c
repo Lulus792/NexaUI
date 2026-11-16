@@ -1079,7 +1079,7 @@ static int nx_valid_event(const nx_event *event) {
     case NX_EVENT_WINDOW_STATE:
         return !(event->window_state & ~(NX_WINDOW_STATE_MINIMIZED |
             NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN |
-            NX_WINDOW_STATE_ACTIVE));
+            NX_WINDOW_STATE_ACTIVE | NX_WINDOW_STATE_SUSPENDED));
     default:
         return 0;
     }

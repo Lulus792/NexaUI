@@ -84,6 +84,7 @@ int main(int argc, char **argv) {
     int test_continuous=verify_keyboard && getenv("NEXAUI_TEST_CONTINUOUS")!=NULL;
     int idle_hidden=argc==3 && !strcmp(argv[2],"--idle-probe-hidden");
     int idle_probe=idle_hidden || (argc==3 && !strcmp(argv[2],"--idle-probe"));
+    int verify_suspend=argc==3 && !strcmp(argv[2],"--verify-suspend");
     int simulate_unknown=argc==3 && !strcmp(argv[2],"--simulate-unknown");
     int verify_reopen=argc==3 && !strcmp(argv[2],"--verify-reopen");
     int marker_fd=STDOUT_FILENO;
@@ -99,13 +100,17 @@ int main(int argc, char **argv) {
     int german=(argc==3 && !strcmp(argv[2],"--de")) || german_error ||
         ((verify_ax || verify_keyboard) && getenv("NEXAUI_SETTINGS_TEST_GERMAN"));
     int fail_first=simulate_error || (verify_ax && getenv("NEXAUI_SETTINGS_TEST_APPLY_ERROR"));
-    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !simulate_error && !simulate_unknown && !verify_reopen && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--idle-probe-hidden|--simulate-error|--simulate-unknown]\n",stderr); return 2; }
+    if (argc!=2 && !smoke && !verify_ax && !verify_keyboard && !verify_ime && !idle_probe && !verify_suspend && !simulate_error && !simulate_unknown && !verify_reopen && !german) { fputs("usage: nexaui_settings FONT_FILE [--de|--smoke|--idle-probe|--idle-probe-hidden|--simulate-error|--simulate-unknown]\n",stderr); return 2; }
     size_t font_size=0; unsigned char *font=read_font(argv[1],&font_size);
     nx_window *window=NULL; settings_scene *scene=NULL; settings_session *session=NULL; settings_renderer *renderer=NULL;
     int opened=0, okay=0, keyboard_ready=0, ax_test_ready=0, ime_stage=0, ime_focus_reported=0, status_visible=0, pending_close_seen=0; unsigned presented=0, loops=0, polls=0, settled_focuses=0, idle_long_waits=0;
     double start=-1, cpu_start=-1, elapsed=0, cpu_elapsed=0;
     unsigned render_attempts=0, suspended_attempts=0;
     double next_ax_retry=0; int dirty=1, drawable=1, ax_unavailable=0, renderer_waiting=0;
+    int suspended=0;
+#ifdef NX_WINDOW_STATE_SUSPENDED
+    int observes_suspension=0;
+#endif
     apply_worker worker={0}; worker.read_fd=-1;
     worker.test_gate_fd=-1;
     const char *test_gate=verify_keyboard?getenv("NEXAUI_SETTINGS_TEST_APPLY_GATE_FD"):NULL;
@@ -120,7 +125,12 @@ int main(int argc, char **argv) {
     if (verify_keyboard_small) { desc.width=verify_keyboard_minimum?128:240; desc.height=150; }
     if (!font || nx_window_create(&desc,&window)!=NX_OK ||
         !settings_create(font,font_size,window,&scene)) goto cleanup;
-    nx_result renderer_open_result=idle_hidden ? settings_renderer_open_software(window,&renderer) :
+#ifdef NX_WINDOW_STATE_SUSPENDED
+    nx_window_status initial_status;
+    if (nx_window_get_status(window,&initial_status)!=NX_OK) goto cleanup;
+    observes_suspension=(initial_status.known & NX_WINDOW_STATE_SUSPENDED)!=0;
+#endif
+    nx_result renderer_open_result=(idle_hidden || verify_suspend) ? settings_renderer_open_software(window,&renderer) :
         settings_renderer_open(window,&renderer);
     if (renderer_open_result!=NX_OK) {
         fprintf(stderr,"Could not initialize a Settings renderer: %d\n",(int)renderer_open_result);
@@ -157,7 +167,8 @@ int main(int argc, char **argv) {
             continue;
         }
         if (test_continuous) dirty=1;
-        uint32_t timeout=(dirty && drawable && !renderer_waiting) || smoke ? 16u : ax_unavailable ? 1000u : UINT32_MAX;
+        uint32_t timeout=(dirty && drawable && !renderer_waiting) || smoke ? 16u :
+            ax_unavailable && !suspended ? 1000u : UINT32_MAX;
         if (idle_probe) {
             double current=seconds(CLOCK_MONOTONIC);
             if(current<0) {okay=0;break;}
@@ -204,6 +215,19 @@ int main(int argc, char **argv) {
             dirty=1;
         previous=info;
         drawable=info.width>=128 && info.height>=120;
+#ifdef NX_WINDOW_STATE_SUSPENDED
+        if (observes_suspension && (routed || polls==1)) {
+            nx_window_status window_status;
+            if (nx_window_get_status(window,&window_status)!=NX_OK) { okay=0; break; }
+            suspended=(window_status.known & window_status.state & NX_WINDOW_STATE_SUSPENDED)!=0;
+        }
+#endif
+        if (suspended) {
+            /* Preserve pending scene work. A same-size resume configure
+               queues a wake for the owner of this renderer. */
+            drawable=0;
+            dirty=1;
+        }
         if (!drawable) continue;
         /* A timer or an unrelated return from poll cannot make a Wayland
            software surface drawable. Keep the dirty frame pending until an

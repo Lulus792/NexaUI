@@ -768,7 +768,10 @@ static void nx_wayland_registry_global(void *data, struct wl_registry *registry,
              !window->wm_base)
         window->wm_base = wl_registry_bind(registry, name,
             &xdg_wm_base_interface,
-#ifdef XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION
+#if defined(XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION)
+            version < XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION ?
+            version : XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION);
+#elif defined(XDG_TOPLEVEL_WM_CAPABILITIES_SINCE_VERSION)
             version < 5 ? version : 5);
 #else
             1);
@@ -2354,6 +2357,11 @@ static void nx_wayland_toplevel_configure(void *data,
         if (state == XDG_TOPLEVEL_STATE_MAXIMIZED) window->pending_state |= NX_WINDOW_STATE_MAXIMIZED;
         if (state == XDG_TOPLEVEL_STATE_FULLSCREEN) window->pending_state |= NX_WINDOW_STATE_FULLSCREEN;
         if (state == XDG_TOPLEVEL_STATE_ACTIVATED) window->pending_state |= NX_WINDOW_STATE_ACTIVE;
+#ifdef XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION
+        if (state == XDG_TOPLEVEL_STATE_SUSPENDED &&
+            xdg_toplevel_get_version(toplevel) >= XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION)
+            window->pending_state |= NX_WINDOW_STATE_SUSPENDED;
+#endif
     }
 }
 
@@ -2935,6 +2943,10 @@ nx_result nx_wayland_window_get_status(nx_wayland_window *window, nx_window_stat
     if (result != NX_OK) return result;
     out->state = window->state;
     out->known = NX_WINDOW_STATE_MAXIMIZED | NX_WINDOW_STATE_FULLSCREEN | NX_WINDOW_STATE_ACTIVE;
+#ifdef XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION
+    if (xdg_toplevel_get_version(window->toplevel) >= XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION)
+        out->known |= NX_WINDOW_STATE_SUSPENDED;
+#endif
     out->client_chrome = !!(window->flags & NX_WINDOW_CLIENT_CHROME);
     out->capabilities = NX_WINDOW_CAP_CLIENT_CHROME | NX_WINDOW_CAP_RESTORE | NX_WINDOW_CAP_FULLSCREEN;
     if (window->seat && window->pointer) out->capabilities |= NX_WINDOW_CAP_MOVE | NX_WINDOW_CAP_RESIZE;

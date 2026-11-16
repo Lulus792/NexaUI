@@ -123,6 +123,12 @@ if(NEXAUI_BUILD_TESTS)
             set_tests_properties(nexaui_settings_keyboard_clipboard_focus nexaui_settings_keyboard_clipboard_model nexaui_settings_keyboard_clipboard_selection nexaui_settings_keyboard_clipboard_timeout nexaui_settings_keyboard_clipboard_command nexaui_settings_keyboard_clipboard_abandoned nexaui_settings_keyboard_clipboard_ime nexaui_settings_keyboard_clipboard_revert nexaui_settings_keyboard_clipboard_repeat nexaui_settings_keyboard_clipboard_window_focus PROPERTIES TIMEOUT 20)
         endif()
         if(TARGET nexaui_settings)
+            if(TARGET nexaui_wayland_management_tests)
+                add_test(NAME nexaui_settings_wayland_resume
+                    COMMAND nexaui_wayland_management_tests --settings-suspend
+                        $<TARGET_FILE:nexaui_settings> "${_settings_font}")
+                set_tests_properties(nexaui_settings_wayland_resume PROPERTIES TIMEOUT 20 SKIP_RETURN_CODE 77)
+            endif()
             if(Python3_Interpreter_FOUND)
                 add_test(NAME nexaui_settings_wayland_idle_retry
                     COMMAND ${CMAKE_COMMAND} -E env

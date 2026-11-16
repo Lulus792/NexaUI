@@ -6,30 +6,56 @@
 #include "xdg-decoration-unstable-v1-server-protocol.h"
 #include <wayland-server.h>
 #include <pthread.h>
+#include <signal.h>
+#include <spawn.h>
 #include <stdatomic.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/wait.h>
+#include <time.h>
 #include <unistd.h>
 #define CHECK(e) do { if (!(e)) { fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#e); abort(); } } while (0)
 typedef struct server {
     struct wl_display *display;
     struct wl_resource *surface,*xdg,*top,*seat,*pointer,*decoration;
     int configured,reject,bounds_case;
+    int suspended;
+    int settings_case;
+    uint32_t suspend_serial,resume_serial;
+    struct wl_event_source *resume_timer;
+    int suspend_ack,resume_ack,premature_buffers;
+    atomic_int settings_frames;
     uint32_t serial,state;
     atomic_int command,moves,resizes,minimizes,decorations,attaches,acks;
     atomic_int buffer_width,buffer_height,app_requests,app_matches,reject_fullscreen;
     atomic_int after_close,after_close_resizes;
 } server;
 static void destroy(struct wl_client *c,struct wl_resource *r) { (void)c; wl_resource_destroy(r); }
-static void configure(server *s) {
+static void configure_toplevel(server *s) {
     struct wl_array a; wl_array_init(&a);
     uint32_t *v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_ACTIVATED;
     if (s->state&1u) { v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_MAXIMIZED; }
     if (s->state&2u) { v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_FULLSCREEN; }
+#ifdef XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION
+    if (s->suspended && wl_resource_get_version(s->top)>=XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION) {
+        v=wl_array_add(&a,sizeof(*v)); CHECK(v); *v=XDG_TOPLEVEL_STATE_SUSPENDED;
+    }
+#endif
     int width = s->state ? 480 : (!s->configured && s->bounds_case == 3 ? 300 : 0);
     xdg_toplevel_send_configure(s->top,width,s->state ? 240 : 0,&a); wl_array_release(&a);
+}
+static void configure(server *s) {
+    configure_toplevel(s);
     xdg_surface_send_configure(s->xdg,++s->serial);
+}
+
+static int resume_settings(void *data) {
+    server *s=data;
+    s->suspended=0;
+    configure(s);
+    s->resume_serial=s->serial;
+    return 0;
 }
 static void caps(server *s,int enabled) {
     struct wl_array a; wl_array_init(&a);
@@ -67,6 +93,9 @@ static void commit(struct wl_client *c,struct wl_resource *r) {
         xdg_surface_send_configure(s->xdg,++s->serial); break;
     }
     case 11: configure(s); break; /* Same-size configure with a renderer lease. */
+    case 12: s->suspended=1; configure_toplevel(s); break;
+    case 13: xdg_surface_send_configure(s->xdg,++s->serial); break;
+    case 14: s->suspended=0; configure(s); break;
     }
 }
 static void attach(struct wl_client *c,struct wl_resource *r,struct wl_resource *buffer,int32_t x,int32_t y) {
@@ -77,6 +106,18 @@ static void attach(struct wl_client *c,struct wl_resource *r,struct wl_resource 
         atomic_store(&s->buffer_width,wl_shm_buffer_get_width(shm));
         atomic_store(&s->buffer_height,wl_shm_buffer_get_height(shm));
         atomic_fetch_add(&s->attaches,1); wl_buffer_send_release(buffer);
+        if (s->settings_case && wl_shm_buffer_get_format(shm)==WL_SHM_FORMAT_ARGB8888) {
+            int frames=atomic_fetch_add(&s->settings_frames,1)+1;
+            if (frames==1) {
+                s->suspended=1;
+                configure(s);
+                s->suspend_serial=s->serial;
+            } else if (s->suspend_ack && !s->resume_ack) {
+                ++s->premature_buffers;
+            } else if (s->resume_ack) {
+                xdg_toplevel_send_close(s->top);
+            }
+        }
     }
 }
 static void damage(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) { (void)c;(void)r;(void)x;(void)y;(void)w;(void)h; }
@@ -126,8 +167,23 @@ static void top(struct wl_client *c,struct wl_resource *r,uint32_t id) {
     server *s=wl_resource_get_user_data(r); s->top=wl_resource_create(c,&xdg_toplevel_interface,wl_resource_get_version(r),id); CHECK(s->top);
     wl_resource_set_implementation(s->top,&top_impl,s,NULL);
 }
-static void geometry(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) { (void)c;(void)r; CHECK(x==0 && y==0 && ((w==240 && h==120) || (w==480 && h==240) || (w==300 && h==150) || (w==160 && h==90) || (w==240 && h==90) || (w==300 && h==90))); }
-static void ack(struct wl_client *c,struct wl_resource *r,uint32_t serial) { (void)c; server *s=wl_resource_get_user_data(r); CHECK(serial>0 && serial<=s->serial); atomic_fetch_add(&s->acks,1); }
+static void geometry(struct wl_client *c,struct wl_resource *r,int32_t x,int32_t y,int32_t w,int32_t h) {
+    (void)c; server *s=wl_resource_get_user_data(r);
+    CHECK(x==0 && y==0);
+    if (s->settings_case) CHECK(w==640 && h==360);
+    else CHECK((w==240 && h==120) || (w==480 && h==240) || (w==300 && h==150) ||
+        (w==160 && h==90) || (w==240 && h==90) || (w==300 && h==90));
+}
+static void ack(struct wl_client *c,struct wl_resource *r,uint32_t serial) {
+    (void)c; server *s=wl_resource_get_user_data(r);
+    CHECK(serial>0 && serial<=s->serial); atomic_fetch_add(&s->acks,1);
+    if (s->settings_case && serial==s->suspend_serial) {
+        CHECK(!s->suspend_ack);
+        s->suspend_ack=1;
+        CHECK(!wl_event_source_timer_update(s->resume_timer,400));
+    }
+    if (s->settings_case && serial==s->resume_serial) s->resume_ack=1;
+}
 static const struct xdg_surface_interface xdg_impl={.destroy=destroy,.get_toplevel=top,.set_window_geometry=geometry,.ack_configure=ack};
 static void xdg(struct wl_client *c,struct wl_resource *r,uint32_t id,struct wl_resource *surface) {
     server *s=wl_resource_get_user_data(r); CHECK(surface==s->surface); s->xdg=wl_resource_create(c,&xdg_surface_interface,wl_resource_get_version(r),id); CHECK(s->xdg);
@@ -332,9 +388,147 @@ static void test_bounds(int which) {
     wl_display_terminate(s.display); CHECK(!pthread_join(thread,NULL)); wl_display_destroy_clients(s.display); wl_display_destroy(s.display);
     CHECK(!unlink(path) || access(path,F_OK)!=0); CHECK(!rmdir(runtime));
 }
-int main(void) {
+#ifdef XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION
+static void check_surface_state(nx_window *window,nx_context *context,
+    uint32_t state,int expect_event) {
+    nx_window_status status;
+    CHECK(nx_window_get_status(window,&status)==NX_OK);
+    CHECK((status.known & NX_WINDOW_STATE_SUSPENDED) && !(status.known & NX_WINDOW_STATE_MINIMIZED));
+    CHECK(status.state==state);
+    nx_window_info info;
+    nx_pixel_size pixels;
+    CHECK(nx_window_get_info(window,&info)==NX_OK && info.width==240 && info.height==120);
+    CHECK(nx_window_get_pixel_size(window,&pixels)==NX_OK && pixels.width==240 && pixels.height==120);
+    size_t routed=0,count=0;
+    const nx_event *events=NULL;
+    CHECK(nx_window_route_events(window,context,&routed)==NX_OK);
+    CHECK(nx_begin_frame(context,240,120,0)==NX_OK);
+    CHECK(nx_frame_events(context,&events,&count)==NX_OK);
+    int state_events=0,wake=0;
+    for (size_t i=0;i<count;++i) {
+        if (events[i].type==NX_EVENT_WAKE) ++wake;
+        if (events[i].type==NX_EVENT_WINDOW_STATE) {
+            CHECK(events[i].window_state==state); ++state_events;
+        }
+    }
+    CHECK(state_events==expect_event && wake==expect_event);
+    CHECK(nx_end_frame(context)==NX_OK);
+}
+
+static void test_suspended(void) {
+    server s={0};
+    char runtime[]="/tmp/nexaui-window-suspended-XXXXXX";
+    CHECK(mkdtemp(runtime));
+    CHECK(!setenv("XDG_RUNTIME_DIR",runtime,1) && !setenv("NEXAUI_PLATFORM","wayland",1));
+    s.display=wl_display_create();
+    CHECK(s.display && wl_display_init_shm(s.display)==0);
+    CHECK(wl_global_create(s.display,&wl_compositor_interface,4,&s,bind_compositor));
+    CHECK(wl_global_create(s.display,&xdg_wm_base_interface,
+        XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION,&s,bind_wm));
+    const char *socket=wl_display_add_socket_auto(s.display);
+    CHECK(socket && !setenv("WAYLAND_DISPLAY",socket,1));
+    char path[256];
+    CHECK(snprintf(path,sizeof(path),"%s/%s",runtime,socket)>0);
+    pthread_t thread;
+    CHECK(!pthread_create(&thread,NULL,run,&s));
+    nx_window_desc desc={.title_utf8="Suspended test",.width=240,.height=120,
+        .flags=NX_WINDOW_STATE_EVENTS};
+    nx_window *window=NULL;
+    nx_context *context=NULL;
+    nx_software_view *view=NULL;
+    size_t routed=0;
+    CHECK(nx_window_create(&desc,&window)==NX_OK);
+    CHECK(nx_context_create(NULL,&context)==NX_OK);
+    CHECK(nx_software_view_open(window,&view)==NX_OK);
+    CHECK(nx_window_route_events(window,context,&routed)==NX_OK);
+    CHECK(nx_begin_frame(context,240,120,0)==NX_OK && nx_end_frame(context)==NX_OK);
+    send(&s,window,12);
+    check_surface_state(window,context,NX_WINDOW_STATE_ACTIVE,0);
+    send(&s,window,13);
+    check_surface_state(window,context,NX_WINDOW_STATE_ACTIVE|NX_WINDOW_STATE_SUSPENDED,1);
+    send(&s,window,14);
+    check_surface_state(window,context,NX_WINDOW_STATE_ACTIVE,1);
+    nx_software_view_outcome outcome;
+    CHECK(nx_software_view_render(view,NULL,0,(nx_color){0,0,0,1},&outcome)==NX_OK &&
+          outcome==NX_SOFTWARE_VIEW_READY);
+    CHECK(nx_software_view_close(&view)==NX_OK);
+    nx_context_destroy(context);
+    nx_window_destroy(window);
+    wl_display_terminate(s.display);
+    CHECK(!pthread_join(thread,NULL));
+    wl_display_destroy_clients(s.display);
+    wl_display_destroy(s.display);
+    CHECK(!unlink(path) || access(path,F_OK)!=0);
+    CHECK(!rmdir(runtime));
+    puts("Wayland v6 suspension and same-size resume reach the renderer owner.");
+}
+
+extern char **environ;
+
+static int test_settings_resume(const char *executable,const char *font) {
+    server s={.settings_case=1};
+    char runtime[]="/tmp/nexaui-settings-suspended-XXXXXX";
+    CHECK(mkdtemp(runtime));
+    CHECK(!setenv("XDG_RUNTIME_DIR",runtime,1) && !setenv("NEXAUI_PLATFORM","wayland",1));
+    CHECK(!unsetenv("WAYLAND_SOCKET"));
+    CHECK(!setenv("AT_SPI_BUS_ADDRESS","unix:path=/nonexistent/nexaui-atspi-bus",1));
+    CHECK(!setenv("DBUS_SESSION_BUS_ADDRESS","unix:path=/nonexistent/nexaui-session-bus",1));
+    s.display=wl_display_create();
+    CHECK(s.display && wl_display_init_shm(s.display)==0);
+    CHECK(wl_global_create(s.display,&wl_compositor_interface,4,&s,bind_compositor));
+    CHECK(wl_global_create(s.display,&xdg_wm_base_interface,
+        XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION,&s,bind_wm));
+    s.resume_timer=wl_event_loop_add_timer(wl_display_get_event_loop(s.display),resume_settings,&s);
+    CHECK(s.resume_timer);
+    const char *socket=wl_display_add_socket_auto(s.display);
+    CHECK(socket && !setenv("WAYLAND_DISPLAY",socket,1));
+    char path[256];
+    CHECK(snprintf(path,sizeof(path),"%s/%s",runtime,socket)>0);
+    pthread_t thread;
+    CHECK(!pthread_create(&thread,NULL,run,&s));
+    char *const args[]={(char *)executable,(char *)font,(char *)"--verify-suspend",NULL};
+    pid_t child;
+    CHECK(!posix_spawn(&child,executable,NULL,NULL,args,environ));
+    int status=0;
+    pid_t ended=0;
+    const struct timespec pause={0,10000000};
+    for (unsigned i=0;i<1000 && !ended;++i) {
+        ended=waitpid(child,&status,WNOHANG);
+        if (!ended) nanosleep(&pause,NULL);
+    }
+    int child_ok=ended==child && WIFEXITED(status) && !WEXITSTATUS(status);
+    if (!ended) {
+        CHECK(!kill(child,SIGKILL));
+        CHECK(waitpid(child,&status,0)==child);
+    }
+    wl_display_terminate(s.display);
+    CHECK(!pthread_join(thread,NULL));
+    CHECK(!wl_event_source_remove(s.resume_timer));
+    wl_display_destroy_clients(s.display);
+    wl_display_destroy(s.display);
+    CHECK(!unlink(path) || access(path,F_OK)!=0);
+    CHECK(!rmdir(runtime));
+    int frames=atomic_load(&s.settings_frames);
+    printf("Settings Wayland v6 child_ok=%d suspend_ack=%d resume_ack=%d frames=%d suspended_frames=%d\n",
+        child_ok,s.suspend_ack,s.resume_ack,frames,s.premature_buffers);
+    return !(child_ok && s.suspend_ack && s.resume_ack && frames==2 && !s.premature_buffers);
+}
+#endif
+
+int main(int argc,char **argv) {
+    if (argc==4 && !strcmp(argv[1],"--settings-suspend")) {
+#ifdef XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION
+        return test_settings_resume(argv[2],argv[3]);
+#else
+        return 77;
+#endif
+    }
+    CHECK(argc==1);
     test(0,0); test(1,0); test(1,1);
     for(int i=1;i<=5;++i) test_bounds(i);
+#ifdef XDG_TOPLEVEL_STATE_SUSPENDED_SINCE_VERSION
+    test_suspended();
+#endif
     puts("Wayland: real protocol configure/capabilities, decoration acceptance/refusal/cleanup, seat/zero-serial move and eight resize directions, release/leave/removal guards passed; no physical acceptance.");
     return 0;
 }

@@ -401,6 +401,7 @@ typedef struct nx_interaction_state {
 #define NX_WINDOW_STATE_MAXIMIZED 2u
 #define NX_WINDOW_STATE_FULLSCREEN 4u
 #define NX_WINDOW_STATE_ACTIVE 8u
+#define NX_WINDOW_STATE_SUSPENDED 16u /* Compositor reports repaint suspension. */
 
 #define NX_WINDOW_CAP_CLIENT_CHROME 1u
 #define NX_WINDOW_CAP_MINIMIZE 2u
@@ -567,7 +568,11 @@ NX_API nx_result nx_window_get_pixel_size(nx_window *window, nx_pixel_size *out_
    Requests may be asynchronous or declined by the window manager: NX_OK means
    submission, not confirmation. State events/get_status report observations.
    Wayland cannot observe minimized state or request unminimization; RESTORE
-   there only unmaximizes/unfullscreens. RESTORE_MINIMIZED identifies backends
+   there only unmaximizes/unfullscreens. With xdg-shell v6 or newer the
+   SUSPENDED bit reports compositor repaint suspension at configure boundaries.
+   Treat it as observable only when present in known. It does not change the
+   window extent or indicate the reason for suspension.
+   RESTORE_MINIMIZED identifies backends
    that can also restore an iconic window. Status output is zero on failure;
    management rejects windows already marked should_close. Existing struct
    sizes are unchanged. X11 decoration is a WM hint and can be declined. */
