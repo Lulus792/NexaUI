@@ -2,6 +2,8 @@
 
 ## 0.1.33 — Development snapshot
 
+- Report xdg-shell v6 repaint suspension through window status and optional state events. Settings defers drawing during suspension and resumes on the compositor's next configure.
+
 - Preserve consecutive Wayland v1 IME insertions in built-in text and numeric fields when the preceding edit came from the same input sequence. External value or selection changes, stale preedit and stale deletion ranges still invalidate older replies.
 
 - Reconcile a fresh Wayland key press after an IME transition consumed its prior release. Tab focus navigation resumes after cancelling composition; forwarded releases and ordinary local repeat retain their existing behavior.

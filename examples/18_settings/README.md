@@ -166,6 +166,10 @@ rebuilding its pending frame. An unavailable accessibility bus retains its
 one-second registration retry without forcing a new software frame. Vulkan
 retains its retry policy for transient swapchain conditions. See the
 [Settings idle report](../../docs/quality/settings-software-idle-report.md).
+When the installed SDK and compositor support xdg-shell v6 suspension, the
+runner defers its pending frame until a resume configure. The
+[`wayland_resume` fixture](../../docs/quality/wayland-suspended-settings-report.md)
+checks this with a same-size resume and a native close.
 Private Weston virtual-keyboard tests using the default screen keyboard
 exercise text, Tab, checkbox, Apply, model confirmation and clean exit. The
 small-window test waits for each focused control's published bounds to fit the

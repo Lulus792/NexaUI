@@ -1,0 +1,121 @@
+{
+  "revision": "1d8ba46b53f5030ce420da3eb28498fe330bbeb5",
+  "ctests": 30,
+  "profiles": [
+    {
+      "profile": "release",
+      "source_archive_sha256": "bd3bedf845a15b91cc2770a3a0fa7f327053a5d9aa146a4dfa73325cf198950c",
+      "receipt": "settings-resume340-root.json",
+      "tests": [
+        "nexaui_wayland_software",
+        "nexaui_wayland_management",
+        "nexaui_settings_renderer",
+        "nexaui_settings_scene",
+        "nexaui_settings_wayland_resume",
+        "nexaui_settings_wayland_idle_retry",
+        "nexaui_settings_wayland_idle_hidden",
+        "nexaui_settings_wayland_idle",
+        "nexaui_settings_wayland_keyboard",
+        "nexaui_settings_wayland_keyboard_controls"
+      ],
+      "resume": "Settings Wayland v6 child_ok=1 suspend_ack=1 resume_ack=1 frames=2 suspended_frames=0"
+    },
+    {
+      "profile": "shared",
+      "source_archive_sha256": "bd3bedf845a15b91cc2770a3a0fa7f327053a5d9aa146a4dfa73325cf198950c",
+      "receipt": "settings-resume341-shared-root.json",
+      "tests": [
+        "nexaui_wayland_software",
+        "nexaui_wayland_management",
+        "nexaui_settings_renderer",
+        "nexaui_settings_scene",
+        "nexaui_settings_wayland_resume",
+        "nexaui_settings_wayland_idle_retry",
+        "nexaui_settings_wayland_idle_hidden",
+        "nexaui_settings_wayland_idle",
+        "nexaui_settings_wayland_keyboard",
+        "nexaui_settings_wayland_keyboard_controls"
+      ],
+      "resume": "Settings Wayland v6 child_ok=1 suspend_ack=1 resume_ack=1 frames=2 suspended_frames=0"
+    },
+    {
+      "profile": "asan",
+      "source_archive_sha256": "bd3bedf845a15b91cc2770a3a0fa7f327053a5d9aa146a4dfa73325cf198950c",
+      "receipt": "settings-resume341-asan-root.json",
+      "tests": [
+        "nexaui_wayland_software",
+        "nexaui_wayland_management",
+        "nexaui_settings_renderer",
+        "nexaui_settings_scene",
+        "nexaui_settings_wayland_resume",
+        "nexaui_settings_wayland_idle_retry",
+        "nexaui_settings_wayland_idle_hidden",
+        "nexaui_settings_wayland_idle",
+        "nexaui_settings_wayland_keyboard",
+        "nexaui_settings_wayland_keyboard_controls"
+      ],
+      "resume": "Settings Wayland v6 child_ok=1 suspend_ack=1 resume_ack=1 frames=2 suspended_frames=0"
+    }
+  ],
+  "installed_run": {
+    "name": "installed-run",
+    "command": [
+      "/tmp/nexaui-settings-resume340/build/nexaui_wayland_management_tests",
+      "--settings-suspend",
+      "/tmp/nexaui-settings-resume342/installed/nexaui_settings",
+      "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf"
+    ],
+    "exit": 0,
+    "log": "settings-resume342-installed-run.log",
+    "sha256": "b8cf027ec411b6370b87bd75c3bf464b310367667d54dc6420154155f729c486"
+  },
+  "counterexample": {
+    "name": "baseline",
+    "command": [
+      "/tmp/nexaui-settings-resume340/build/nexaui_wayland_management_tests",
+      "--settings-suspend",
+      "/tmp/nexaui-settings-resume342/build/nexaui_settings",
+      "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf"
+    ],
+    "exit": 1,
+    "log": "settings-resume342-baseline.log",
+    "sha256": "fb8eab244bec57c06b57c91b9e34a740e93492111f390395a6e447225290cd39"
+  },
+  "archive": "nexaui-settings-resume343.tar.gz",
+  "bytes": 16601870,
+  "sha256": "ed25bdd66efbfd036d141e5ca202d9818956e72c308f19001df49315c77960b7",
+  "members": {
+    "logs/settings-resume340-root.json": "a4e550bf347474bd4e6b41facd94cf9cf49eb198bb0e5838bc58287ade0698dd",
+    "logs/settings-resume340-configure.log": "45ac7c408ddf31a45d4df170d3de63e287c4c99db5973a351ccf4ebe36e8c4e6",
+    "logs/settings-resume340-build.log": "67f31ed35997fc07c78fd23505411df46f58cbfd0dff225a7b60511a74c8186e",
+    "logs/settings-resume340-test.log": "a9180e04c119d8e75c15166faa64df9370a51610369f75e8334a8bc99f2db8b6",
+    "release/tests.xml": "0626ec7180e86bf10edb4eb607ed97595895bc42bbc407d0505454a7400ed42d",
+    "release/native-result.json": "dce5dd20dce8ae788e7e2a62a1051585e6ee877490399a859269b721b7f6f7d0",
+    "source.tgz": "bd3bedf845a15b91cc2770a3a0fa7f327053a5d9aa146a4dfa73325cf198950c",
+    "logs/settings-resume341-shared-root.json": "f789c7786891f8a8d77a5b52d6799f1115ab901d5bc5c1f0659f2942d7073a87",
+    "logs/settings-resume341-shared-configure.log": "1a634d7ab03a6563e01edb585afc0f16966369e6200fdb8df50ba153b44208d9",
+    "logs/settings-resume341-shared-build.log": "d6f6c09cde137e74f92ff89de7f47ad96113187b6d63e23bc3b1064ab0deae50",
+    "logs/settings-resume341-shared-test.log": "69cbd3621ac662f3f89c450ce980b4b0b1365daff2788e9987cb2e947d1c4c5d",
+    "shared/tests.xml": "b5e475bb87fbe443e64f08596beafe5d53a5cb458a51e2c0f3730e19e02551d5",
+    "shared/native-result.json": "07851a8d0abb8bb1f31abf8d86b87fad0847731849222b67c70cd3899896960b",
+    "logs/settings-resume341-asan-root.json": "0af917594f7c87eafcca97ba89ff617e8ddaee3aad0ba67fe9c3490923563825",
+    "logs/settings-resume341-asan-configure.log": "6d0fda7f2ff7f9f0adfc917217396b7e3d9255f4ceddd0443acc2c814d543ff2",
+    "logs/settings-resume341-asan-build.log": "a88c1978efe2a9ad1d917da8bc4b52c896f25166e3f3d3a9e4d1a45dcf8ac7b8",
+    "logs/settings-resume341-asan-test.log": "20370642d87bc8ddd7751cee94980e06f6e801d7f87fb12ee6ba04b2d00b55a9",
+    "asan/tests.xml": "1dcb1210c609f4c8fa454e3517a93f02d4ff836fb6f5c9b35d34a18842a0bc11",
+    "asan/native-result.json": "7db69fd1bfbcc2d0d8d68d3c348e792b838836449c2f009d3c7a244a716f7dd4",
+    "logs/settings-resume342-counterexample.json": "b3a9732794e1946f33415acd06c2ef78f76a334b5d1212d38faf6d53918c0ba3",
+    "logs/settings-resume342-install.log": "c8885c5b0c3043face8884294938644c1c086a837057855241c25e29955a1e63",
+    "logs/settings-resume342-configure.log": "fc2e15c5330caa427982602d835897f79d29422eed3980c62a57abc0b4702e1e",
+    "logs/settings-resume342-build.log": "5d0f22af0f9e5ae7613d112ccbc13636c4f2fb2333ecd0bd200f737b5e959d88",
+    "logs/settings-resume342-baseline.log": "fb8eab244bec57c06b57c91b9e34a740e93492111f390395a6e447225290cd39",
+    "logs/settings-resume342-installed-configure.log": "b0704b1a7d999bf5016c3dd66c7052c074b2cfd9054cdb2b55c1d0ef5ee2f89e",
+    "logs/settings-resume342-installed-build.log": "bf360e0208ebdb9d9336d478fff4641245b4811a1591e49da7002d10ac28ef55",
+    "logs/settings-resume342-installed-run.log": "b8cf027ec411b6370b87bd75c3bf464b310367667d54dc6420154155f729c486",
+    "runner/run_settings_resume340.py": "a2250935478106ef15699542f376145e8bcd1cfb728e3c033e45158cace202da",
+    "runner/run_settings_resume341.py": "880087c61d3295f934e2bf54e52803b1a71f0934dec8ffffb8f31813b0e4ac47",
+    "runner/check_settings_resume342.py": "f9265626e697312dea804a8c4a5c70735e9138c61f4abfc86fd94167d92b3e1f",
+    "runner/audit_settings_resume343.py": "3feee14cf76575872d4c5900565aba800c900a047bc1c20c3c29d35071da93ef",
+    "protocol/xdg-shell.xml": "5084e76386f6c3959bee957a784c57de204be0de3f57533ce07b4be0617b171a"
+  }
+}

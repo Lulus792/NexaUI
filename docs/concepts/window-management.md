@@ -18,6 +18,16 @@ state. In particular Wayland has no minimized-state notification or direct
 unminimize request; restore only unmaximizes/unfullscreens there. Windows/X11/
 AppKit capabilities and confirmed behavior need separate native evidence.
 
+With xdg-shell v6 or newer, Wayland exposes
+`NX_WINDOW_STATE_SUSPENDED` in `known` and reports the observed value in
+`state`. The adapter applies it at `xdg_surface.configure` alongside the
+other toplevel data. The bit describes repaint suspension. The window keeps
+its logical and pixel extents, and its minimized state remains unknown.
+Event-driven owners can retain a dirty frame during suspension and retry
+on the resume configure. Opt into `NX_WINDOW_STATE_EVENTS` if you also
+need normalized state notifications. Older protocol versions and headers
+leave the observation unavailable.
+
 Move/resize uses the last still-held native left-button press belonging to the
 window. Protocol serials and retained native event ownership stay inside the
 adapter. Releasing/cancelling the press invalidates it. The accepted gesture
