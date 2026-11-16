@@ -1,6 +1,15 @@
 # Aetheri adoption: initial source assessment
 
-Open consecutive Wayland-v1 commit defect for B03/R11/T05/I02/A01/A06/P05/Q02/Q08.
+Wayland v1 consecutive insertions for B03/R11/T05/I02/A01/A06/P05/Q02/Q08.
+SDK candidate `b881dd2` passes 84 selected SDK CTests, twelve installed
+Physim CTests and twelve native Physim cases across static Release,
+shared Release and ASan/UBSan/LSan. Built-in text and numeric editors
+keep plain commits that follow proven IME edits. External value and caret
+changes, stale preedit and stale byte ranges retain their guards.
+App-owned editor contracts and production and human acceptance remain open.
+[Candidate, scope and evidence](wayland-v1-burst-fix.md)
+
+Historical consecutive Wayland-v1 commit defect for B03/R11/T05/I02/A01/A06/P05/Q02/Q08.
 Native Physim prototype `795812b` uses unchanged SDK `368cd38`. Its16 CTests
 pass, but formal native312 has9 passes, one ASan input-loss failure and two
 unexecuted cases. The period in real IME input2.5 can be lost, leaving25.

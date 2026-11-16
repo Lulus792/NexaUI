@@ -1,5 +1,8 @@
 # Open Wayland-v1 consecutive-commit input loss
 
+This report describes the original failing candidate. See the
+[follow-up and current candidate](wayland-v1-burst-fix.md).
+
 **Unresolved SDK defect; no native Physim acceptance or fix is claimed.**
 Published main remains `014449f6682b97bc9b0d559c669aa1c8477f2b60`.
 Native consumer `795812b4f09f469677c2c3e33a763ed9986623f2` and deterministic

@@ -2,6 +2,8 @@
 
 ## 0.1.33 — Development snapshot
 
+- Preserve consecutive Wayland v1 IME insertions in built-in text and numeric fields when the preceding edit came from the same input sequence. External value or selection changes, stale preedit and stale deletion ranges still invalidate older replies.
+
 - Reconcile a fresh Wayland key press after an IME transition consumed its prior release. Tab focus navigation resumes after cancelling composition; forwarded releases and ordinary local repeat retain their existing behavior.
 - Overwrite a retired Wayland password preedit when a v3 reply replaces or clears it before `done`, including invalid replacement input. Existing composition visibility, cancellation and public ABI remain unchanged.
 - Overwrite retired keyboard and text-system records in native input queues and UI contexts. Borrowed frame events keep their documented lifetime through the next successful `nx_begin_frame` or context destruction.
