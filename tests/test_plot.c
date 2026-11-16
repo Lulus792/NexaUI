@@ -1,4 +1,5 @@
 #include "nexaui/nexaui.h"
+#include "fixture_font.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -239,12 +240,66 @@ static int test_resize_and_empty(void) {
     return 0;
 }
 
+static int render_ticks(nx_context *ctx,const nx_font_collection *fonts,
+    nx_rect bounds,double low,double high,double em,uint8_t *pixels) {
+    nx_series_envelope scratch[WIDTH];
+    nx_plot_desc desc={.id=1,.bounds=bounds,.name={"Tick plot",9},
+        .x_min=0,.x_max=2,.y_min=low,.y_max=high,.scratch=scratch,
+        .series={0,NULL,sample},.scratch_capacity=WIDTH,.fonts=fonts,
+        .pixels_per_em=em,.glyph_cache_bytes=65536};
+    nx_plot_state state={0};
+    return nx_begin_frame(ctx,WIDTH,HEIGHT,0)==NX_OK &&
+        nx_plot(ctx,&desc,&state)==NX_OK && nx_end_frame(ctx)==NX_OK && render(ctx,pixels);
+}
+
+static int tick_labels(void) {
+    int result=1;
+    uint8_t font_bytes[512],zero[WIDTH*HEIGHT*4u],approximate[sizeof(zero)];
+    nx_font *font=NULL;
+    nx_font_collection *fonts=NULL;
+    nx_context *ctx=NULL;
+    const nx_rect bounds={18,12,182,116};
+    font_fixture(font_bytes);
+#define TICK_CHECK(condition) do { if (!(condition)) { \
+    fprintf(stderr,"%s:%d: %s\n",__FILE__,__LINE__,#condition); goto done; \
+} } while (0)
+    TICK_CHECK(nx_font_open(font_bytes,sizeof(font_bytes),NULL,&font)==NX_OK);
+    TICK_CHECK(nx_font_collection_create(NULL,&fonts)==NX_OK);
+    TICK_CHECK(nx_font_collection_add(fonts,font)==NX_OK);
+    TICK_CHECK(nx_context_create(NULL,&ctx)==NX_OK);
+    TICK_CHECK(render_ticks(ctx,fonts,bounds,-.8,.8,13,zero));
+    TICK_CHECK(render_ticks(ctx,fonts,bounds,-.8,.8000000000000002,13,approximate));
+    TICK_CHECK(!memcmp(zero,approximate,sizeof(zero)));
+
+    /* Two genuinely small intervals share the same empty geometry. Their
+       labels still distinguish their values. */
+    TICK_CHECK(render_ticks(ctx,fonts,bounds,1e-10,5e-10,8,zero));
+    TICK_CHECK(render_ticks(ctx,fonts,bounds,2e-10,6e-10,8,approximate));
+    TICK_CHECK(memcmp(zero,approximate,sizeof(zero))!=0);
+
+    /* A long label with a font too large for the gutters cannot paint
+       outside the widget. The software canvas deliberately has margins. */
+    TICK_CHECK(render_ticks(ctx,fonts,bounds,1e-100,5e-100,28,zero));
+    for (unsigned y=0;y<HEIGHT;++y) for (unsigned x=0;x<WIDTH;++x) {
+        if (x>=18 && x<200 && y>=12 && y<128) continue;
+        const uint8_t *pixel=zero+((size_t)y*WIDTH+x)*4u;
+        TICK_CHECK(pixel[0]==0 && pixel[1]==0 && pixel[2]==0 && pixel[3]==255);
+    }
+    result=0;
+done:
+    nx_context_destroy(ctx);
+    nx_font_collection_destroy(fonts);
+    nx_font_close(font);
+    return result;
+#undef TICK_CHECK
+}
+
 int main(int argc, char **argv) {
     int update = argc == 2 && strcmp(argv[1], "--update-baselines") == 0;
     if (run_theme(NX_THEME_DARK, "plot_dark", update) ||
         run_theme(NX_THEME_LIGHT, "plot_light", update) ||
         run_theme(NX_THEME_HIGH_CONTRAST, "plot_high_contrast", update) ||
-        test_allocation_rollback() || test_resize_and_empty())
+        test_allocation_rollback() || test_resize_and_empty() || tick_labels())
         return 1;
     return 0;
 }

@@ -9400,6 +9400,19 @@ static nx_point nx_plot_map(nx_rect area, const nx_plot_desc *desc,
                       area.y + (float)((1.0 - y) * area.height)};
 }
 
+static double nx_plot_tick_value(double first, double last, unsigned tick) {
+    if (tick == 0u) return first == 0.0 ? 0.0 : first;
+    if (tick == 4u) return last == 0.0 ? 0.0 : last;
+    double value = first + ((double)tick / 4.0) * (last - first);
+    /* Opposite endpoints can cancel to a tiny residual at an interior
+       tick. Scale the tolerance by their magnitude, not an absolute unit. */
+    if ((first < 0.0 && last > 0.0) || (first > 0.0 && last < 0.0)) {
+        double magnitude = fmax(fabs(first), fabs(last));
+        if (fabs(value) / magnitude <= DBL_EPSILON) return 0.0;
+    }
+    return value == 0.0 ? 0.0 : value;
+}
+
 static nx_result nx_plot_tick_label(nx_context *ctx,
                                      const nx_plot_desc *desc, nx_rect area,
                                      double value, float anchor_x,
@@ -9414,11 +9427,19 @@ static nx_result nx_plot_tick_label(nx_context *ctx,
     if (result != NX_OK) return result;
     float width = (float)nx_text_layout_width(layout);
     float height = (float)nx_text_layout_height(layout);
-    nx_point origin = x_axis ?
-        (nx_point){anchor_x - width * 0.5f, anchor_y + 5.0f} :
-        (nx_point){area.x - width - 6.0f, anchor_y - height * 0.5f};
-    result = nx_draw_text_layout(ctx, layout, origin, color,
-                                 desc->glyph_cache_bytes);
+    const nx_rect bounds = desc->bounds;
+    float left = bounds.x + 2.0f, right = bounds.x + bounds.width - 2.0f;
+    float top = bounds.y + 2.0f, bottom = bounds.y + bounds.height - 2.0f;
+    nx_point origin = x_axis
+        ? (nx_point){fmaxf(left, fminf(right - width, anchor_x - width * 0.5f)), anchor_y + 5.0f}
+        : (nx_point){area.x - width - 6.0f, fmaxf(top, fminf(bottom - height, anchor_y - height * 0.5f))};
+    /* An abbreviated exponent can change the apparent value. Omit the
+       label when its full single-line layout does not fit its gutter. */
+    if (nx_text_layout_line_count(layout) == 1u &&
+        origin.x >= left && origin.x + width <= right &&
+        origin.y >= top && origin.y + height <= bottom)
+        result = nx_draw_text_layout(ctx, layout, origin, color,
+                                     desc->glyph_cache_bytes);
     nx_text_layout_destroy(layout);
     return result;
 }
@@ -9563,18 +9584,22 @@ static nx_result nx_plot_paint(nx_context *ctx, const nx_plot_desc *desc,
                                           area.y + area.height},
                                1.5f, text)) != NX_OK) return result;
     if (desc->fonts) {
+        result = nx_push_clip(ctx, desc->bounds);
+        if (result != NX_OK) return result;
         for (unsigned tick = 0; tick <= 4u; ++tick) {
             double fraction = (double)tick / 4.0;
             result = nx_plot_tick_label(ctx, desc, area,
-                desc->x_min + fraction * (desc->x_max - desc->x_min),
+                nx_plot_tick_value(desc->x_min, desc->x_max, tick),
                 area.x + area.width * (float)fraction,
                 area.y + area.height, 1, text);
             if (result != NX_OK) return result;
             result = nx_plot_tick_label(ctx, desc, area,
-                desc->y_max - fraction * (desc->y_max - desc->y_min),
+                nx_plot_tick_value(desc->y_max, desc->y_min, tick),
                 area.x, area.y + area.height * (float)fraction, 0, text);
             if (result != NX_OK) return result;
         }
+        result = nx_pop_clip(ctx);
+        if (result != NX_OK) return result;
     }
     result = nx_push_clip(ctx, area);
     if (result != NX_OK) return result;
