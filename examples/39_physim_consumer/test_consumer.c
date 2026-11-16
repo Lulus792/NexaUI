@@ -89,6 +89,69 @@ static int semantic_name(const nx_context *context,uint64_t id,const char *name)
     return nx_semantics_find(context,id,&index)==NX_OK&&nx_semantics_get(context,index,&node)==NX_OK&&
         node.name.length==strlen(name)&&!memcmp(node.name.data,name,node.name.length);
 }
+static int named_row(const nx_context *context,const char *name,nx_semantic_view *row) {
+    size_t count=0;
+    if(nx_semantics_count(context,&count)!=NX_OK)return 0;
+    for(uint32_t i=0;i<count;++i) {
+        if(nx_semantics_get(context,i,row)!=NX_OK)return 0;
+        if(row->role==NX_ROLE_TREE_ITEM&&row->name.length==strlen(name)&&
+            !memcmp(row->name.data,name,row->name.length))return 1;
+    }
+    return 0;
+}
+
+static int tree_test(const char *path) {
+    int ok=0,valid=0;
+    unsigned action=0;
+    nx_context *context=NULL;
+    physim_view *view=NULL;
+    font_data font={0};
+    ps_plot_view plot={0};
+    physim_snapshot *model=malloc(sizeof(*model)),*before=malloc(sizeof(*before));
+    CHECK(model&&before&&open_font(path,&font));
+    CHECK(physim_model_run(1.5,.45,1,model)==NX_OK&&nx_context_create(NULL,&context)==NX_OK);
+    CHECK(physim_view_create(model,&plot,font.fonts,&view)==NX_OK);
+    *before=*model;
+    CHECK(physim_view_dispatch(view,PHYSIM_TOGGLE_TREE,&valid)==NX_OK&&valid);
+    CHECK(physim_view_frame(view,context,640,400,1,&action)==NX_OK&&!action);
+    CHECK(physim_view_complete(view)==NX_OK);
+    size_t count=0;
+    unsigned rows=0;
+    CHECK(nx_semantics_count(context,&count)==NX_OK);
+    for(uint32_t i=0;i<count;++i) {
+        nx_semantic_view row;
+        CHECK(nx_semantics_get(context,i,&row)==NX_OK);
+        if(row.role==NX_ROLE_TREE_ITEM) {
+            ++rows;
+            CHECK(row.bounds.y>=160&&row.bounds.y+row.bounds.height<=384.01f);
+        }
+    }
+    nx_semantic_view root,group,bob,arrow;
+    CHECK(rows==12&&named_row(context,"Pendel #100",&root)&&named_row(context,"Bewegte Masse #101",&group));
+    CHECK(named_row(context,"Sphere #3",&bob)&&named_row(context,"Arrow #4",&arrow));
+    CHECK(group.parent_id==root.id&&bob.parent_id==group.id&&arrow.parent_id==bob.id);
+    CHECK(nx_focus_set(context,group.id)==NX_OK&&key(context,NX_KEY_RIGHT,0));
+    CHECK(physim_view_frame(view,context,640,400,1,&action)==NX_OK&&!action&&nx_focus_id(context)==bob.id);
+    CHECK(physim_view_complete(view)==NX_OK&&key(context,NX_KEY_ENTER,0));
+    CHECK(physim_view_frame(view,context,640,400,1,&action)==NX_OK&&!action&&physim_view_complete(view)==NX_OK);
+    CHECK(semantic_name(context,23,"3/12 Sphere #3, parent #101"));
+    const uint64_t bob_id=bob.id;
+    CHECK(nx_semantics_request_action(context,group.id,NX_ACTION_COLLAPSE)==NX_OK);
+    CHECK(physim_view_frame(view,context,640,400,2,&action)==NX_OK&&!action&&physim_view_complete(view)==NX_OK);
+    CHECK(nx_focus_id(context)==group.id&&!named_row(context,"Sphere #3",&bob));
+    CHECK(semantic_name(context,23,"3/12 Sphere #3, parent #101")&&key(context,NX_KEY_RIGHT,0));
+    CHECK(physim_view_frame(view,context,640,400,2,&action)==NX_OK&&!action&&physim_view_complete(view)==NX_OK);
+    CHECK(named_row(context,"Sphere #3",&bob)&&bob.id==bob_id&&(bob.state&NX_SEM_SELECTED));
+    CHECK(nx_focus_set(context,bob.id)==NX_OK&&physim_view_dispatch(view,PHYSIM_TOGGLE_TREE,&valid)==NX_OK&&valid);
+    CHECK(physim_view_frame(view,context,640,400,1,&action)==NX_OK&&!action&&physim_view_complete(view)==NX_OK);
+    CHECK(nx_focus_id(context)==PHYSIM_TOGGLE_TREE&&!named_row(context,"Sphere #3",&bob));
+    CHECK(!memcmp(before,model,sizeof(*model))&&!ps_plot_view_changed(&plot));
+    ok=1;
+done:
+    if(view) { (void)physim_view_complete(view);physim_view_destroy(&view); }
+    nx_context_destroy(context);close_font(&font);free(model);free(before);
+    return ok;
+}
 static int view_test(const char *path,const char *image) {
     int ok=0,valid=0;unsigned action=0;nx_context *context=NULL;physim_view *view=NULL;font_data font={0};ps_plot_view plot={0},reference;
     physim_snapshot *model=malloc(sizeof(*model)),*before=malloc(sizeof(*before));
@@ -290,6 +353,7 @@ int main(int argc,char **argv) {
     else if(!strcmp(argv[1],"view"))ok=view_test(argv[2],argv[3]);
     else if(!strcmp(argv[1],"failure"))ok=failure_test(argv[2]);
     else if(!strcmp(argv[1],"export"))ok=export_test(argv[2],argv[3]);
+    else if(!strcmp(argv[1],"tree"))ok=tree_test(argv[2]);
     else return 2;
     if(ok)printf("Original Physim consumer %s passed\n",argv[1]);return ok?0:1;
 }

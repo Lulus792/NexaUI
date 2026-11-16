@@ -57,14 +57,30 @@ static int focus(AtspiAccessible *app,const char *name) {
     if(error)g_error_free(error);if(c)g_object_unref(c);if(node)g_object_unref(node);
     return yes&&observe(app,name,1);
 }
-static int press(AtspiAccessible *app,const char *name) {
+static int do_action(AtspiAccessible *app,const char *name,const char *action) {
     AtspiAccessible *node=find(app,name,0);AtspiAction *a=node?atspi_accessible_get_action_iface(node):NULL;
     GError *error=NULL;int yes=0,count=a?atspi_action_get_n_actions(a,&error):0;
     for(int i=0;!error&&i<count&&i<16;++i) {
-        char *s=atspi_action_get_action_name(a,i,&error);int match=s&&!strcmp(s,"click");g_free(s);
+        char *s=atspi_action_get_action_name(a,i,&error);int match=s&&!strcmp(s,action);g_free(s);
         if(match&&!error) { yes=atspi_action_do_action(a,i,&error)&&!error;break; }
     }
     if(error)g_error_free(error);if(a)g_object_unref(a);if(node)g_object_unref(node);return yes;
+}
+static int press(AtspiAccessible *app,const char *name) { return do_action(app,name,"click"); }
+static int row_state(AtspiAccessible *app,const char *name,AtspiStateType flag) {
+    for(unsigned i=0;i<200;++i) {
+        AtspiAccessible *node=find(app,name,0);
+        int yes=node&&atspi_accessible_get_role(node,NULL)==ATSPI_ROLE_TREE_ITEM&&state(node,flag);
+        if(node)g_object_unref(node);if(yes)return 1;pump();
+    }
+    return 0;
+}
+static int row_parent(AtspiAccessible *app,const char *name,const char *expected) {
+    AtspiAccessible *node=find(app,name,0),*parent=node?atspi_accessible_get_parent(node,NULL):NULL;
+    char *actual=parent?atspi_accessible_get_name(parent,NULL):NULL;
+    int yes=actual&&!strcmp(actual,expected);
+    g_free(actual);if(parent)g_object_unref(parent);if(node)g_object_unref(node);
+    return yes;
 }
 static int edit(AtspiAccessible *node,const char *value) {
     AtspiEditableText *e=node?atspi_accessible_get_editable_text_iface(node):NULL;GError *error=NULL;
@@ -261,6 +277,22 @@ int main(int argc,char **argv) {
         CHECK(focus(app,"Fit data")&&drive("key","Return")&&marker(log,"PHYSIM_ACTION id=15 valid=1 generation=2 length=2.5 low=0 high=1"));
         CHECK(drive("key","F7")&&marker(log,"PHYSIM_SURFACE generation=2 width=752 height=768 backing=2")&&capture_position(display,outer,2.5,"backing2",&bob));
         CHECK(click_at(id,bob)&&observe(app,"3/12 Sphere #3, parent #101",0));
+        CHECK(focus(app,"Scene tree")&&drive("key","Return")&&observe(app,"Show plot",1));
+        CHECK(drive("key","Tab")&&observe(app,"Pendel #100",1)&&row_state(app,"Pendel #100",ATSPI_STATE_EXPANDED));
+        CHECK(row_parent(app,"Bewegte Masse #101","Pendel #100")&&row_parent(app,"Sphere #3","Bewegte Masse #101"));
+        CHECK(row_state(app,"Sphere #3",ATSPI_STATE_SELECTED));
+        CHECK(drive("key","Left")&&row_state(app,"Pendel #100",ATSPI_STATE_COLLAPSED));
+        AtspiAccessible *hidden=find(app,"Sphere #3",0);
+        int absent=hidden==NULL;if(hidden)g_object_unref(hidden);CHECK(absent);
+        CHECK(drive("key","Right")&&row_state(app,"Pendel #100",ATSPI_STATE_EXPANDED));
+        CHECK(focus(app,"Bewegte Masse #101")&&drive("key","Right")&&observe(app,"Sphere #3",1));
+        CHECK(drive("key","Down")&&observe(app,"Arrow #4",1)&&drive("key","Return"));
+        CHECK(row_state(app,"Arrow #4",ATSPI_STATE_SELECTED)&&observe(app,"4/12 Arrow #4, parent #3",0));
+        CHECK(do_action(app,"Bewegte Masse #101","collapse")&&row_state(app,"Bewegte Masse #101",ATSPI_STATE_COLLAPSED));
+        CHECK(observe(app,"Bewegte Masse #101",1)&&observe(app,"4/12 Arrow #4, parent #3",0));
+        CHECK(click_at(id,bob)&&row_state(app,"Sphere #3",ATSPI_STATE_SELECTED)&&observe(app,"3/12 Sphere #3, parent #101",0));
+        CHECK(focus(app,"Sphere #3")&&press(app,"Show plot")&&observe(app,"Scene tree",1));
+        puts("PHYSIM_TREE original hierarchy verified: keyboard, assistive collapse, shared selection and focus return");
         CHECK(focus(app,"Original angle channel (rad)")&&drive("key","Tab")&&observe(app,"Original Physim pendulum scene",1));
         CHECK(drive("key","Tab")&&observe(app,"Inspect next",1));
         CHECK(drive("key","Tab")&&observe(app,"Length (m)",1)&&drive("key","shift+Tab")&&observe(app,"Inspect next",1));

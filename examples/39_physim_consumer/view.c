@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+enum { PHYSIM_SCENE_TREE = 26 };
+#define PHYSIM_TREE_OBJECT (UINT64_C(1) << 40)
+#define PHYSIM_TREE_ANONYMOUS (UINT64_C(1) << 41)
+#define PHYSIM_TREE_EXPANDER (UINT64_C(1) << 42)
+
 struct physim_view {
     physim_snapshot *model;
     ps_plot_view *plot;
@@ -15,6 +21,8 @@ struct physim_view {
     double backing;
     int leased,apply_rejected;
     uint32_t inspected;
+    int tree_open;
+    int collapsed[PS_MAX_OBJECTS];
     uint64_t pick_generation;
     float pick_width,pick_height;
     double pick_scale;
@@ -163,26 +171,112 @@ static nx_result text(physim_view *v,nx_context *context,uint64_t id,const char 
     if(r==NX_OK)r=nx_label(context,id,1,bounds,layout,(nx_point){bounds.x,bounds.y},(nx_color){.08f,.1f,.15f,1},65536);
     nx_text_layout_destroy(layout);return r;
 }
-static nx_result inspector(physim_view *v,nx_context *context,float width) {
+static const char *object_name(const ps_object *object) {
+    static const char *const names[]={
+        [PS_SPHERE]="Sphere", [PS_LINE]="Line", [PS_ARROW]="Arrow",
+        [PS_LABEL]="Label", [PS_GROUP]="Group"
+    };
+    const char *shape=object->shape<sizeof(names)/sizeof(names[0])?names[object->shape]:NULL;
+    return object->text[0]?object->text:shape?shape:"Object";
+}
+
+static nx_result inspector(physim_view *v,nx_context *context,float width,uint32_t inspected) {
     const ps_scene *scene=&v->model->scene;
     char summary[192];
-    if (!v->inspected) {
+    if (!inspected) {
         snprintf(summary,sizeof(summary),"Scene objects (%u)",(unsigned)scene->count);
     } else {
-        const ps_object *object=&scene->objects[v->inspected-1u];
-        static const char *const shape_names[]={
-            [PS_SPHERE]="Sphere", [PS_LINE]="Line", [PS_ARROW]="Arrow",
-            [PS_LABEL]="Label", [PS_GROUP]="Group"
-        };
-        const char *shape=object->shape<sizeof(shape_names)/sizeof(shape_names[0])
-            ?shape_names[object->shape]:NULL;
-        const char *name=object->text[0]?object->text:shape?shape:"Object";
+        const ps_object *object=&scene->objects[inspected-1u];
         char parent[32]="root";
         if (object->parent_id) snprintf(parent,sizeof(parent),"#%u",(unsigned)object->parent_id);
-        snprintf(summary,sizeof(summary),"%u/%u %s #%u, parent %s",(unsigned)v->inspected,
-            (unsigned)scene->count,name,(unsigned)object->id,parent);
+        snprintf(summary,sizeof(summary),"%u/%u %s #%u, parent %s",(unsigned)inspected,
+            (unsigned)scene->count,object_name(object),(unsigned)object->id,parent);
     }
     return text(v,context,23,summary,(nx_rect){width*.5f+8,142,width*.5f-24,16},12);
+}
+
+static uint64_t object_row(const ps_scene *scene,uint32_t index) {
+    uint32_t id=scene->objects[index].id;
+    return PHYSIM_TREE_OBJECT|(id?(uint64_t)id:PHYSIM_TREE_ANONYMOUS|index);
+}
+
+typedef struct scene_tree_frame {
+    const ps_scene *scene;
+    const nx_font_collection *fonts;
+    nx_context *context;
+    nx_rect bounds;
+    float row_height;
+    int parent[PS_MAX_OBJECTS],branch[PS_MAX_OBJECTS],visible[PS_MAX_OBJECTS];
+    int collapsed[PS_MAX_OBJECTS];
+    uint64_t selected;
+} scene_tree_frame;
+
+static nx_result tree_children(scene_tree_frame *tree,int parent,uint64_t parent_id,unsigned depth) {
+    for(uint32_t i=0;i<tree->scene->count;++i) {
+        if(tree->parent[i]!=parent)continue;
+        const ps_object *object=&tree->scene->objects[i];
+        uint64_t id=object_row(tree->scene,i);
+        float indent=fminf((float)depth*14,tree->bounds.width*.4f);
+        nx_rect row={tree->bounds.x+indent,tree->bounds.y,tree->bounds.width-indent,tree->row_height};
+        char name[96];
+        snprintf(name,sizeof(name),"%s #%u",object_name(object),(unsigned)object->id);
+        nx_text_layout *layout=NULL;
+        nx_result r=nx_text_layout_create(tree->fonts,name,strlen(name),NX_BIDI_AUTO,12,row.width-26,&layout);
+        if(r!=NX_OK)return r;
+        nx_tree_item_desc item={.control={.id=id,.parent_id=parent_id,.bounds=row,.name=span(name),
+            .label_layout=layout,.label_origin={row.x+22,row.y+2},.glyph_cache_bytes=65536}};
+        int expanded=!tree->collapsed[i];
+        if(tree->branch[i]) {
+            item.has_children=1;
+            item.expander_id=id|PHYSIM_TREE_EXPANDER;
+            item.expander_bounds=(nx_rect){row.x,row.y,20,row.height};
+        }
+        nx_interaction_state state;
+        r=nx_tree_item(tree->context,&item,item.has_children?&expanded:NULL,&tree->selected,&state);
+        nx_text_layout_destroy(layout);
+        if(r!=NX_OK)return r;
+        tree->visible[i]=1;
+        tree->bounds.y+=tree->row_height;
+        tree->collapsed[i]=!expanded;
+        if(item.has_children&&expanded) {
+            r=tree_children(tree,(int)i,id,depth+1u);
+            if(r!=NX_OK)return r;
+        }
+    }
+    return NX_OK;
+}
+
+static nx_result scene_tree(physim_view *v,nx_context *context,nx_rect bounds,scene_tree_frame *tree,
+    uint32_t *inspected) {
+    const ps_scene *scene=&v->model->scene;
+    *tree=(scene_tree_frame){.scene=scene,.fonts=v->fonts,.context=context,.bounds=bounds,
+        .row_height=fminf(26,bounds.height/(float)scene->count),
+        .selected=*inspected?object_row(scene,*inspected-1u):0};
+    memcpy(tree->collapsed,v->collapsed,sizeof(tree->collapsed));
+    for(uint32_t i=0;i<scene->count;++i) {
+        tree->parent[i]=ps_scene_parent_index(scene,i);
+        if(tree->parent[i]>=0)tree->branch[tree->parent[i]]=1;
+    }
+    nx_container_desc desc={.id=PHYSIM_SCENE_TREE,.parent_id=1,.bounds=bounds,.name=span("Physim scene objects")};
+    nx_result r=nx_tree(context,&desc);
+    if(r==NX_OK)r=tree_children(tree,-1,PHYSIM_SCENE_TREE,0);
+    uint64_t focused=nx_focus_id(context);
+    for(uint32_t i=0;r==NX_OK&&i<scene->count;++i) {
+        uint64_t id=object_row(scene,i);
+        if(tree->selected==id)*inspected=i+1u;
+        if(tree->visible[i]||(focused!=id&&focused!=(id|PHYSIM_TREE_EXPANDER)))continue;
+        int ancestor=tree->parent[i];
+        while(ancestor>=0&&!tree->visible[ancestor])ancestor=tree->parent[ancestor];
+        if(ancestor>=0)r=nx_focus_set(context,object_row(scene,(uint32_t)ancestor));
+    }
+    return r;
+}
+
+static void reveal_inspected(physim_view *v) {
+    if(!v->inspected)return;
+    const ps_scene *scene=&v->model->scene;
+    for(int parent=ps_scene_parent_index(scene,v->inspected-1u);parent>=0;
+        parent=ps_scene_parent_index(scene,(uint32_t)parent))v->collapsed[parent]=0;
 }
 nx_result physim_view_set_ime_window(physim_view *v,nx_window *window) {
     if(!v)return NX_ERROR_ARGUMENT;if(v->leased)return NX_ERROR_STATE;
@@ -217,7 +311,7 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     nx_result r=nx_begin_frame(context,width,height,0);
     nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,width,height},.name=span("Original Physim pendulum reference")};
     if(r==NX_OK)r=nx_semantics_add(context,&root,NULL);
-    if(r==NX_OK)r=text(v,context,2,"Original Physim pendulum",(nx_rect){16,12,width-164,26},18);
+    if(r==NX_OK)r=text(v,context,2,"Original Physim pendulum",(nx_rect){16,12,width-294,26},18);
     if(r==NX_OK)r=text(v,context,3,"Length (m)",(nx_rect){16,42,200,18},14);
     if(r==NX_OK)r=text(v,context,4,"Initial angle (rad)",(nx_rect){240,42,200,18},14);
     nx_numeric_field_desc field={.id=10,.parent_id=1,.bounds={16,64,200,32},.name=span("Length (m)"),
@@ -233,14 +327,20 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     if(v->apply_rejected)snprintf(status,sizeof(status),"Invalid parameters; model generation %llu retained.",(unsigned long long)v->model->generation);
     else snprintf(status,sizeof(status),"Model generation %llu; length %.6g m.",(unsigned long long)v->model->generation,v->model->length.value);
     if(r==NX_OK)r=text(v,context,5,status,(nx_rect){16,142,width*.5f-24,16},12);
-    if(r==NX_OK)r=inspector(v,context,width);
+    if(r==NX_OK&&v->model->scene.count)r=button(v,context,PHYSIM_TOGGLE_TREE,
+        v->tree_open?"Show plot":"Scene tree",(nx_rect){width-264,8,116,32},action);
+    if(r==NX_OK&&!v->tree_open&&(nx_focus_id(context)&PHYSIM_TREE_OBJECT))
+        r=nx_focus_set(context,PHYSIM_TOGGLE_TREE);
     nx_plot_desc plot={.id=20,.parent_id=1,.bounds={16,160,width*.5f-24,height-176},.name=span("Original angle channel (rad)"),
         .series={PHYSIM_SAMPLE_COUNT,v->model,sample},.scratch=v->scratch,.scratch_capacity=1024,.fonts=v->fonts,
         .pixels_per_em=13,.glyph_cache_bytes=65536};
     plot.x_min=ps_plot_axis_value(0,v->model->samples[PHYSIM_SAMPLE_COUNT-1u].time,v->plot->low[0]);
     plot.x_max=ps_plot_axis_value(0,v->model->samples[PHYSIM_SAMPLE_COUNT-1u].time,v->plot->high[0]);
     plot.y_min=ps_plot_axis_value(-1.6,1.6,v->plot->low[1]);plot.y_max=ps_plot_axis_value(-1.6,1.6,v->plot->high[1]);
-    if(r==NX_OK)r=nx_plot(context,&plot,&v->plot_state);
+    scene_tree_frame tree;
+    uint32_t inspected=v->inspected;
+    if(r==NX_OK)r=v->tree_open?scene_tree(v,context,plot.bounds,&tree,&inspected):nx_plot(context,&plot,&v->plot_state);
+    if(r==NX_OK)r=inspector(v,context,width,inspected);
     nx_viewport_desc viewport={.id=21,.parent_id=1,.bounds={width*.5f+8,160,width*.5f-24,height-176},
         .name=span("Original Physim pendulum scene"),.scale=scale};
     v->backing=scale;
@@ -248,7 +348,13 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     if(r==NX_OK&&v->model->scene.count)
         r=button(v,context,PHYSIM_INSPECT_NEXT,"Inspect next",(nx_rect){width-140,8,124,32},action);
     if(r==NX_OK)r=nx_end_frame(context);
-    if(r==NX_OK)stage_pick(v,viewport.bounds,&state,action);
+    if(r==NX_OK) {
+        if(v->tree_open) {
+            memcpy(v->collapsed,tree.collapsed,sizeof(v->collapsed));
+            v->inspected=inspected;
+        }
+        stage_pick(v,viewport.bounds,&state,action);
+    }
     return r;
 }
 nx_result physim_view_complete(physim_view *v) { return v?nx_viewport_surface_complete(v->surface):NX_ERROR_ARGUMENT; }
@@ -265,7 +371,11 @@ nx_result physim_view_dispatch(physim_view *v,unsigned action,int *valid) {
         double length=0,angle=0;
         if((r=nx_numeric_field_value(v->length,&length))!=NX_OK||(r=nx_numeric_field_value(v->angle,&angle))!=NX_OK)return r;
         r=physim_model_run(length,angle,v->model->generation+1u,v->model);
-        if(r==NX_OK) { *valid=1;v->apply_rejected=0;v->inspected=0;v->pick_pending=0; }return r;
+        if(r==NX_OK) {
+            *valid=1;v->apply_rejected=0;v->inspected=0;v->pick_pending=0;
+            memset(v->collapsed,0,sizeof(v->collapsed));
+        }
+        return r;
     }
     if(action==13)*valid=ps_plot_view_zoom(v->plot,2,.5,.5);
     else if(action==14)*valid=ps_plot_view_pan(v->plot,.25,0);
@@ -274,12 +384,19 @@ nx_result physim_view_dispatch(physim_view *v,unsigned action,int *valid) {
     else if(action==17)return NX_ERROR_UNSUPPORTED; /* Owner rebuilds the view. */
     else if(action==PHYSIM_INSPECT_NEXT&&v->model->scene.count) {
         v->inspected=v->inspected%v->model->scene.count+1u;
+        reveal_inspected(v);
         *valid=1;
     }
     else if(action==PHYSIM_INSPECT_PICK) {
         if(!v->pick_pending)return NX_ERROR_STATE;
         v->inspected=v->pick_index;
+        reveal_inspected(v);
         v->pick_pending=0;
+        *valid=1;
+    }
+    else if(action==PHYSIM_TOGGLE_TREE&&v->model->scene.count) {
+        v->tree_open=!v->tree_open;
+        if(v->tree_open)reveal_inspected(v);
         *valid=1;
     }
     else return NX_ERROR_ARGUMENT;
