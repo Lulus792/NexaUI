@@ -53,13 +53,30 @@ static void *native_pixels(native_job job, size_t *bytes) {
     *bytes = sizeof(content_frame_header) + stride * job.request.height;
     uint8_t *data = malloc(*bytes);
     if (!data) return NULL;
-    content_frame_header header = {job.request, job.sequence,
-        job.kind == 2 ? NX_BITMAP_A8 : NX_BITMAP_RGBA8, (uint32_t)stride};
+    content_frame_header header = {.request = job.request, .sequence = job.sequence,
+        .format = job.kind == 2 ? NX_BITMAP_A8 : NX_BITMAP_RGBA8, .stride = (uint32_t)stride};
+    if (job.kind == 3 && job.request.width >= 4u && job.request.height >= 4u) {
+        /* Restore after the rejected frame. The last valid frame was blue. */
+        header.damage_base = 1;
+        header.damage_x = job.request.width / 2u;
+        header.damage_y = job.request.height / 2u;
+        header.damage_width = job.request.width / 4u;
+        header.damage_height = job.request.height / 4u;
+    }
     memcpy(data, &header, sizeof(header));
     static const uint8_t colors[5][3] = {{211,79,31},{23,83,197},{127,127,127},{71,163,31},{191,63,137}};
     if (job.kind > 4) { free(data); return NULL; }
     for (size_t i = sizeof(header); i < *bytes; i += 4u) {
-        memcpy(data + i, colors[job.kind], 3); data[i + 3u] = 255;
+        unsigned kind = job.kind;
+        if (header.damage_base) {
+            size_t x = ((i - sizeof(header)) % stride) / 4u;
+            size_t y = (i - sizeof(header)) / stride;
+            if (x < header.damage_x || x >= header.damage_x + header.damage_width ||
+                y < header.damage_y || y >= header.damage_y + header.damage_height)
+                kind = 1;
+        }
+        memcpy(data + i, colors[kind], 3);
+        data[i + 3u] = 255;
     }
     return data;
 }

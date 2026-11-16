@@ -197,10 +197,10 @@ int main(void) {
         content_surface_status status;
         if (content_surface_get_status(surface,&status)!=NX_OK) goto done;
         if (status.request.generation!=logged_generation||status.request.resize!=logged_resize||status.sequence!=logged_sequence) {
-            printf("CONTENT_STATE generation=%llu resize=%llu width=%u height=%u sequence=%llu copied=%llu\n",
+            printf("CONTENT_STATE generation=%llu resize=%llu width=%u height=%u sequence=%llu copied=%llu copy_bytes=%zu\n",
                 (unsigned long long)status.request.generation,(unsigned long long)status.request.resize,
                 status.request.width,status.request.height,(unsigned long long)status.sequence,
-                (unsigned long long)status.copied_frames);
+                (unsigned long long)status.copied_frames,status.last_copy_bytes);
             fflush(stdout);
             logged_generation=status.request.generation;logged_resize=status.request.resize;logged_sequence=status.sequence;
         }

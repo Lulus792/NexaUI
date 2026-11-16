@@ -124,6 +124,7 @@ static int save_ppm(XImage *image,int left,int top,int width,int height,const ch
     if(fclose(file))okay=0;return okay;
 }
 static int capture(Display *display,Window window,unsigned long rgb,const char *name) {
+    int recovered = !strcmp(name,"recovered");
     for(unsigned attempt=0;attempt<80;++attempt){
         XWindowAttributes info;if(!XGetWindowAttributes(display,window,&info)||info.width<1||info.height<1||info.width>2048||info.height>2048)return 0;
         XImage *image=XGetImage(display,window,0,0,(unsigned)info.width,(unsigned)info.height,AllPlanes,ZPixmap);
@@ -133,7 +134,19 @@ static int capture(Display *display,Window window,unsigned long rgb,const char *
         for(int y=0;y<info.height;++y)for(int x=0;x<info.width;++x)if((XGetPixel(image,x,y)&0xffffffu)==rgb){
             ++count;if(x<min_x)min_x=x;if(x>max_x)max_x=x;if(y<min_y)min_y=y;if(y>max_y)max_y=y;
         }
-        int match=count==448u*208u&&max_x-min_x+1==448&&max_y-min_y+1==208;
+        size_t patch = recovered ? 112u * 52u : 0;
+        int match=count==448u*208u-patch&&max_x-min_x+1==448&&max_y-min_y+1==208;
+        if (match && recovered) {
+            for (int y=0;match && y<208;++y) {
+                for (int x=0;x<448;++x) {
+                    unsigned long expected = x>=224 && x<336 && y>=104 && y<156 ? 0x47a31fu : rgb;
+                    if ((XGetPixel(image,min_x+x,min_y+y)&0xffffffu)!=expected) {
+                        match=0;
+                        break;
+                    }
+                }
+            }
+        }
         if(match){
             content_left=min_x;content_top=min_y;
             int saved=save_ppm(image,min_x,min_y,448,208,name);
@@ -243,7 +256,8 @@ int main(int argc,char **argv) {
     CHECK(press(app,"Publish frame")&&observe(app,"Frame recovered.",0));
     CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
     CHECK((fresh=find(app,"Fixture frame",0))&&dimensions(fresh));
-    CHECK(capture(display,outer,0x47a31fu,"recovered"));
+    CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
+    CHECK(capture(display,outer,0x1753c5u,"recovered"));
     CHECK(focus(app,"Fixture frame")&&drive("key","Tab")&&observe(app,"Scale 2x",1)&&drive("key","Return"));
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,"Scaled frame ready.",0));

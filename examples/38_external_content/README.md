@@ -43,6 +43,16 @@ only on `NX_OK`. A thread-safe disposer releases the allocation. Producer memory
 and outstanding work need their own app bounds; the surface budget does not
 limit arbitrary engine allocations before publication.
 
+With damage information, supply a nonempty bounding rectangle in physical
+source pixels and the strictly earlier sequence it describes. The entire
+allocation still contains the complete current image. Pixels outside that
+rectangle must match the stated base for the same generation and resize ID.
+Set all damage fields to zero when the producer cannot make that guarantee.
+The consumer copies only the rectangle if its staging buffer holds that exact
+base. A missed frame or a fresh staging buffer triggers a complete copy.
+Malformed rectangles are rejected before staging changes. This is a
+producer-to-staging copy optimization. Presentation submits a full frame.
+
 The acquire callback validates identity, sequence, dimensions, stride, format,
 payload length and budget. It copies a new accepted frame into bounded packed
 staging, then releases its snapshot borrow **before UI `nx_end_frame`**. The
@@ -73,6 +83,9 @@ They also acquire the exchange again before end_frame and retire the producer
 allocation before rendering, checking the two distinct lifetime contracts.
 
 These four cases are installed consumer/headless-render and native-thread checks.
+The damage case additionally compares complete output for matching and skipped
+bases. It checks that producer replacement while a render lease is live leaves
+the borrowed pixels intact.
 The optional fixture below adds ordinary native composition and host focus.
 The input adapter below adds a bounded normalized-key/absolute-pointer channel.
 IME/candidates, engine accessibility subtrees, selected-engine input/crash
@@ -106,7 +119,10 @@ The runner owns its Xvfb seat, compositor work directory and assistive bus.
 `--case rejected-close` closes after a late old-generation frame is rejected.
 The default `full` case replaces the tab, releases that late frame, admits fresh
 pixels, rejects an unsupported format, recovers and requests 2x content backing.
-This is still a deterministic producer, not a selected browser or guest engine.
+The recovery frame changes a rectangle over the last valid frame. The fixture
+checks the staged byte count and the independent peer compares every displayed
+pixel, including the unaffected area. This is still a deterministic producer,
+not a selected browser or guest engine.
 
 Native controls remain reachable by keyboard. The peer independently checks
 stale object/focus rejection and entering/leaving the viewport with Tab. It reads

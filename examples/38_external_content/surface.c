@@ -31,6 +31,7 @@ static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
     surface->pixels = replacement;
     surface->status.staging_bytes = bytes;
     surface->status.sequence = 0;
+    surface->status.last_copy_bytes = 0;
     ++surface->status.request.resize;
     surface->status.request.width = width;
     surface->status.request.height = height;
@@ -51,6 +52,16 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     size_t payload = (size_t)request->height * header.stride;
     if (payload > surface->max_bytes) return NX_ERROR_LIMIT;
     if (view->bytes - sizeof(header) != payload) return NX_ERROR_ARGUMENT;
+    if (header.damage_base) {
+        if (header.damage_base >= header.sequence ||
+            !header.damage_width || !header.damage_height ||
+            header.damage_x >= request->width || header.damage_y >= request->height ||
+            header.damage_width > request->width - header.damage_x ||
+            header.damage_height > request->height - header.damage_y)
+            return NX_ERROR_ARGUMENT;
+    } else if (header.damage_x || header.damage_y || header.damage_width || header.damage_height) {
+        return NX_ERROR_ARGUMENT;
+    }
     if (header.sequence < surface->status.sequence) return NX_ERROR_STATE;
     /* A sequence denotes one immutable frame. Repeated observations reuse
        its staged pixels; a producer must increase it for changed content. */
@@ -58,9 +69,18 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     if (surface->status.copied_frames == UINT64_MAX) return NX_ERROR_LIMIT;
     const uint8_t *pixels = (const uint8_t *)view->data + sizeof(header);
     size_t row = (size_t)request->width * 4u;
-    for (uint32_t y = 0; y < request->height; ++y)
-        memcpy(surface->pixels + (size_t)y * row, pixels + (size_t)y * header.stride, row);
+    /* Publication can replace an unseen snapshot. A mismatched base requires
+       the complete current image even when its rectangle is valid. */
+    int partial = header.damage_base && header.damage_base == surface->status.sequence;
+    uint32_t first_y = partial ? header.damage_y : 0;
+    uint32_t rows = partial ? header.damage_height : request->height;
+    size_t offset = partial ? (size_t)header.damage_x * 4u : 0;
+    size_t copy_bytes = partial ? (size_t)header.damage_width * 4u : row;
+    for (uint32_t y = first_y; y < first_y + rows; ++y)
+        memcpy(surface->pixels + (size_t)y * row + offset,
+               pixels + (size_t)y * header.stride + offset, copy_bytes);
     surface->status.sequence = header.sequence;
+    surface->status.last_copy_bytes = copy_bytes * rows;
     ++surface->status.copied_frames;
     return NX_OK;
 }

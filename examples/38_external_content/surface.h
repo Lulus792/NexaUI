@@ -14,11 +14,17 @@ typedef struct content_frame_header {
     content_request request;
     uint64_t sequence;
     uint32_t format, stride;
+    /* Optional changed rectangle in physical source pixels. Outside it, the
+       full image must match the stated base in this same request. Set all
+       five fields to zero when the producer has no damage information. */
+    uint64_t damage_base;
+    uint32_t damage_x, damage_y, damage_width, damage_height;
 } content_frame_header;
 typedef struct content_surface_status {
     content_request request;
     uint64_t sequence, copied_frames;
     size_t staging_bytes;
+    size_t last_copy_bytes; /* Bytes copied for sequence, excluding row padding. */
 } content_surface_status;
 
 #define CONTENT_FRAME_LIMIT (64u * 1024u * 1024u)

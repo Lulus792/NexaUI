@@ -43,7 +43,8 @@ static void *make_frame(content_request request, uint64_t sequence, uint32_t str
     uint8_t *data = malloc(*bytes);
     if (!data) return NULL;
     memset(data, 0xee, *bytes);
-    content_frame_header header = {request, sequence, NX_BITMAP_RGBA8, stride};
+    content_frame_header header = {
+        .request = request, .sequence = sequence, .format = NX_BITMAP_RGBA8, .stride = stride};
     memcpy(data, &header, sizeof(header));
     for (uint32_t y = 0; y < request.height; ++y)
         for (uint32_t x = 0; x < request.width; ++x)
@@ -89,18 +90,53 @@ static int raster(nx_context *context, uint8_t *pixels) {
     return nx_frame_commands(context, &commands, &count) == NX_OK &&
         nx_headless_render(commands, count, pixels, 64, 64, 64u * 4u, (nx_color){0, 0, 0, 1}) == NX_OK;
 }
-static int image_matches(nx_context *context, const nx_viewport_desc *desc, uint8_t value) {
-    uint8_t actual[64u * 64u * 4u], expected[64u * 64u * 4u], source[64u * 64u * 4u];
-    for (size_t i = 0; i < sizeof(source); i += 4u) color(source + i, value);
+static int image_matches_bitmap(nx_context *context, const nx_viewport_desc *desc,
+    nx_bitmap_view bitmap) {
+    uint8_t actual[64u * 64u * 4u], expected[64u * 64u * 4u];
     nx_context *reference = NULL;
     int okay = nx_context_create(NULL, &reference) == NX_OK;
-    nx_bitmap_view bitmap = {source, 64, 64, 64u * 4u, NX_BITMAP_RGBA8};
     okay = okay && nx_begin_frame(reference, 64, 64, 0) == NX_OK && host_button(reference) &&
         nx_draw_bitmap(reference, desc->bounds, bitmap, (nx_color){1, 1, 1, 1}) == NX_OK &&
         nx_end_frame(reference) == NX_OK && raster(context, actual) && raster(reference, expected) &&
         !memcmp(actual, expected, sizeof(actual));
     nx_context_destroy(reference);
     return okay;
+}
+static int image_matches(nx_context *context, const nx_viewport_desc *desc, uint8_t value) {
+    uint8_t source[64u * 64u * 4u];
+    for (size_t i = 0; i < sizeof(source); i += 4u) color(source + i, value);
+    nx_bitmap_view bitmap = {source, 64, 64, 64u * 4u, NX_BITMAP_RGBA8};
+    return image_matches_bitmap(context, desc, bitmap);
+}
+
+static int publish_corner(nx_snapshot_exchange *exchange, content_request request,
+    uint64_t sequence, uint64_t base, uint8_t background, uint8_t corner,
+    _Atomic unsigned *disposals) {
+    size_t bytes;
+    uint32_t stride = request.width * 4u + 12u;
+    uint8_t *data = make_frame(request, sequence, stride, background, &bytes);
+    if (!data) return 0;
+    content_frame_header *header = (content_frame_header *)data;
+    header->damage_base = base;
+    header->damage_x = request.width - 3u;
+    header->damage_y = request.height - 2u;
+    header->damage_width = 3;
+    header->damage_height = 2;
+    for (uint32_t y = header->damage_y; y < request.height; ++y)
+        for (uint32_t x = header->damage_x; x < request.width; ++x)
+            color(data + sizeof(*header) + (size_t)y * stride + (size_t)x * 4u, corner);
+    nx_result result = nx_snapshot_exchange_publish(exchange, data, bytes, dispose, disposals);
+    if (result != NX_OK) free(data);
+    return result == NX_OK;
+}
+
+static int image_matches_corner(nx_context *context, const nx_viewport_desc *desc,
+    uint8_t background, uint8_t corner) {
+    uint8_t expected[16u * 12u * 4u];
+    for (unsigned i = 0; i < 16u * 12u; ++i)
+        color(expected + i * 4u, (i >= 160u && i % 16u >= 13u) ? corner : background);
+    nx_bitmap_view bitmap = {expected, 16, 12, 64, NX_BITMAP_RGBA8};
+    return image_matches_bitmap(context, desc, bitmap);
 }
 static void pause_ms(void) {
 #ifdef _WIN32
@@ -204,8 +240,36 @@ int main(int argc, char **argv) {
         CHECK(content_surface_get_status(surface, &status) == NX_OK && status.request.resize == 4 && status.sequence == 1);
         desc.bounds.width = 16;
         CHECK(record(surface, exchange, context, &desc, NX_OK, &leased) && image_matches(context, &desc, 200));
+    } else if (!strcmp(argv[1], "damage")) {
+        CHECK(publish(exchange, request, 1, 30, &disposals));
+        CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
+        CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
+        CHECK(content_surface_get_status(surface, &status) == NX_OK && status.last_copy_bytes == 768);
+        size_t allocations = probe.calls;
+        CHECK(publish_corner(exchange, request, 2, 1, 30, 70, &disposals));
+        CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
+        CHECK(content_surface_get_status(surface, &status) == NX_OK &&
+            status.sequence == 2 && status.copied_frames == 2 &&
+            status.last_copy_bytes == 24 && probe.calls == allocations);
+        CHECK(image_matches_corner(context, &desc, 30, 70));
+        CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
+        CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
+        CHECK(content_surface_get_status(surface, &status) == NX_OK && status.copied_frames == 2);
+        /* Two producer publications overtake the renderer while its old
+           staging lease is live. The last rectangle refers to unseen frame 3. */
+        CHECK(publish(exchange, request, 3, 90, &disposals));
+        CHECK(publish_corner(exchange, request, 4, 3, 90, 120, &disposals));
+        CHECK(image_matches_corner(context, &desc, 30, 70));
+        CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
+        CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
+        CHECK(content_surface_get_status(surface, &status) == NX_OK &&
+            status.sequence == 4 && status.copied_frames == 3 &&
+            status.last_copy_bytes == 768 && probe.calls == allocations);
+        CHECK(image_matches_corner(context, &desc, 90, 120));
+        CHECK(atomic_load(&disposals) == 3);
+        printf("staging full=768 bytes, matching 3x2 patch=24 bytes, missed base=768 bytes\n");
     } else if (!strcmp(argv[1], "malformed")) {
-        for (unsigned variant = 0; variant < 9; ++variant) {
+        for (unsigned variant = 0; variant < 14; ++variant) {
             size_t bytes = 0;
             void *data = make_frame(request, 1, request.width * 4u, 90, &bytes);
             CHECK(data);
@@ -220,7 +284,16 @@ int main(int argc, char **argv) {
             case 5: header->format = NX_BITMAP_A8; wanted = NX_ERROR_UNSUPPORTED; break;
             case 6: header->stride = 0; break;
             case 7: header->stride = UINT32_MAX; wanted = NX_ERROR_LIMIT; break;
-            default: --bytes; break;
+            case 8: --bytes; break;
+            case 9: header->damage_width = 1; break;
+            case 10: header->damage_base = 1; header->damage_width = 1; header->damage_height = 1; break;
+            default:
+                header->sequence = 2; header->damage_base = 1;
+                header->damage_width = 1; header->damage_height = 1;
+                if (variant == 11) header->damage_x = request.width;
+                else if (variant == 12) header->damage_width = UINT32_MAX;
+                else header->damage_height = 0;
+                break;
             }
             nx_result published = nx_snapshot_exchange_publish(exchange, data, bytes, dispose, &disposals);
             if (published != NX_OK) free(data);
