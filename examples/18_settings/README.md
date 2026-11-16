@@ -160,10 +160,13 @@ height a whole multiline label may not fit in one viewport.
 The native runner redraws after routed input or size/scale changes rather than
 continuously after a successful presentation. A changed focus schedules one
 follow-up frame so that its control can be scrolled into view; a viewport-height
-change also rechecks the existing focus. It still polls at one-second
-intervals to retry unavailable accessibility registration and retries a
-suspended renderer more frequently. This is not a complete idle or recovery
-contract. Private Weston virtual-keyboard tests using the default screen keyboard
+change also rechecks the existing focus. A busy or suspended Wayland software
+surface waits for a native event, size/scale change or worker result before
+rebuilding its pending frame. An unavailable accessibility bus retains its
+one-second registration retry without forcing a new software frame. Vulkan
+retains its retry policy for transient swapchain conditions. See the
+[Settings idle report](../../docs/quality/settings-software-idle-report.md).
+Private Weston virtual-keyboard tests using the default screen keyboard
 exercise text, Tab, checkbox, Apply, model confirmation and clean exit. The
 small-window test waits for each focused control's published bounds to fit the
 viewport before releasing Tab and continuing. A separate test with

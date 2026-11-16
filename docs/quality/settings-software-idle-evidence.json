@@ -1,0 +1,374 @@
+{
+  "measurements": [
+    {
+      "candidate": "a65a140439b8e9e0d4be06b5833e1a58a43dff05",
+      "profile": "release",
+      "sdk": "b881dd2c0156bdfe1196f743adf4d9177b647985",
+      "source_record": "settings-idle336-release.json",
+      "record_sha256": "d41b82fed8a75e4b14556cfe2a7f932ed5a299715e39ba64cc64ba5a81647c0e",
+      "samples": [
+        {
+          "name": "visible-0",
+          "wall_seconds": 3.001491,
+          "cpu_seconds": 0.014422,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-0",
+          "wall_seconds": 2.999275,
+          "cpu_seconds": 0.217108,
+          "polls": 174,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 174,
+          "suspended": 174
+        },
+        {
+          "name": "visible-1",
+          "wall_seconds": 3.001671,
+          "cpu_seconds": 0.012091,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-1",
+          "wall_seconds": 3.000586,
+          "cpu_seconds": 0.225861,
+          "polls": 174,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 173,
+          "suspended": 173
+        },
+        {
+          "name": "visible-2",
+          "wall_seconds": 3.001553,
+          "cpu_seconds": 0.011919,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-2",
+          "wall_seconds": 3.000579,
+          "cpu_seconds": 0.266176,
+          "polls": 171,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 170,
+          "suspended": 170
+        }
+      ],
+      "comparison_overlay": true
+    },
+    {
+      "candidate": "ed5e86de31c8842be31de989ee3fa04ed5a17728",
+      "profile": "release",
+      "sdk": "b881dd2c0156bdfe1196f743adf4d9177b647985",
+      "source_record": "settings-idle337-release.json",
+      "record_sha256": "db6d0a53183f97148ebc10664487585ec87de678b0934de947597edfade1898b",
+      "samples": [
+        {
+          "name": "visible-0",
+          "wall_seconds": 3.001626,
+          "cpu_seconds": 0.008621,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-0",
+          "wall_seconds": 3.001849,
+          "cpu_seconds": 0.004413,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-1",
+          "wall_seconds": 3.001199,
+          "cpu_seconds": 0.008606,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-1",
+          "wall_seconds": 3.00126,
+          "cpu_seconds": 0.006908,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-2",
+          "wall_seconds": 3.00174,
+          "cpu_seconds": 0.010919,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-2",
+          "wall_seconds": 3.001858,
+          "cpu_seconds": 0.00457,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-atspi",
+          "wall_seconds": 3.002904,
+          "cpu_seconds": 0.009009,
+          "polls": 4,
+          "presents": 1,
+          "long_waits": 1,
+          "ax_unavailable": 0,
+          "renders": 1,
+          "suspended": 0
+        }
+      ],
+      "comparison_overlay": false
+    },
+    {
+      "candidate": "ed5e86de31c8842be31de989ee3fa04ed5a17728",
+      "profile": "shared",
+      "sdk": "b881dd2c0156bdfe1196f743adf4d9177b647985",
+      "source_record": "settings-idle337-shared.json",
+      "record_sha256": "c65bb489283a5e398b5337b2f44348855b9bbdfcc4965be8db1064dbbb756c88",
+      "samples": [
+        {
+          "name": "visible-0",
+          "wall_seconds": 3.001317,
+          "cpu_seconds": 0.008351,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-0",
+          "wall_seconds": 3.001215,
+          "cpu_seconds": 0.006895,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-1",
+          "wall_seconds": 3.000811,
+          "cpu_seconds": 0.007967,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-1",
+          "wall_seconds": 3.00139,
+          "cpu_seconds": 0.004395,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-2",
+          "wall_seconds": 3.001306,
+          "cpu_seconds": 0.00937,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-2",
+          "wall_seconds": 3.002015,
+          "cpu_seconds": 0.004666,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-atspi",
+          "wall_seconds": 3.003343,
+          "cpu_seconds": 0.008877,
+          "polls": 4,
+          "presents": 1,
+          "long_waits": 1,
+          "ax_unavailable": 0,
+          "renders": 1,
+          "suspended": 0
+        }
+      ],
+      "comparison_overlay": false
+    },
+    {
+      "candidate": "ed5e86de31c8842be31de989ee3fa04ed5a17728",
+      "profile": "asan",
+      "sdk": "b881dd2c0156bdfe1196f743adf4d9177b647985",
+      "source_record": "settings-idle337-asan.json",
+      "record_sha256": "7e0eddca4641e79d98aa2120cd1af268f9e0f33b2fb19dbecbdaf4e43bc8b5cd",
+      "samples": [
+        {
+          "name": "visible-0",
+          "wall_seconds": 3.001258,
+          "cpu_seconds": 0.022576,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-0",
+          "wall_seconds": 3.001292,
+          "cpu_seconds": 0.013215,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-1",
+          "wall_seconds": 3.001597,
+          "cpu_seconds": 0.02763,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-1",
+          "wall_seconds": 3.001276,
+          "cpu_seconds": 0.01299,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-2",
+          "wall_seconds": 3.00149,
+          "cpu_seconds": 0.029598,
+          "polls": 5,
+          "presents": 1,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 0
+        },
+        {
+          "name": "hidden-2",
+          "wall_seconds": 3.001112,
+          "cpu_seconds": 0.032912,
+          "polls": 4,
+          "presents": 0,
+          "long_waits": 0,
+          "ax_unavailable": 1,
+          "renders": 1,
+          "suspended": 1
+        },
+        {
+          "name": "visible-atspi",
+          "wall_seconds": 3.002004,
+          "cpu_seconds": 0.033744,
+          "polls": 4,
+          "presents": 1,
+          "long_waits": 1,
+          "ax_unavailable": 0,
+          "renders": 1,
+          "suspended": 0
+        }
+      ],
+      "comparison_overlay": false
+    }
+  ],
+  "root_ctests": [
+    "nexaui_settings_renderer",
+    "nexaui_settings_scene",
+    "nexaui_settings_wayland_idle_retry",
+    "nexaui_settings_wayland_idle_hidden",
+    "nexaui_settings_wayland_idle",
+    "nexaui_settings_wayland_keyboard",
+    "nexaui_settings_wayland_keyboard_controls"
+  ],
+  "root_junit_sha256": "4ee0f2701a45cb50a032ef1aa97e8caa8a26fe9f47d29ce405bb43d2b1f9e532",
+  "negative": {
+    "command": [
+      "xvfb-run",
+      "-a",
+      "-s",
+      "-screen 0 1600x1200x24",
+      "python3",
+      "/tmp/nexaui-settings-idle337-release/source/tests/run_weston_native.py",
+      "--work-dir",
+      "/tmp/nexaui-settings-idle336-release/negative339",
+      "--timeout",
+      "20",
+      "--",
+      "python3",
+      "/tmp/nexaui-settings-idle337-release/source/examples/18_settings/run_idle.py",
+      "/tmp/nexaui-settings-idle336-release/build/nexaui_settings",
+      "/mnt/d/NexaUI/out/editor-attributes53-borrowed-arial.ttf",
+      "--hidden-unavailable"
+    ],
+    "exit": 1,
+    "log": "settings-idle339-negative.log",
+    "sha256": "b06a0a1782fc5d1ec4b9e9a204f77e742bca9c7684c03e5d44d76f0cf8f43448"
+  }
+}
