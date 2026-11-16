@@ -339,7 +339,9 @@ static nx_result camera_controls(physim_view *v,nx_context *context,nx_rect boun
         r=text(v,context,32u+i,label,(nx_rect){bounds.x,y,bounds.width,18},13);
         if(r!=NX_OK)return r;
     }
-    return button(v,context,PHYSIM_RESET_CAMERA,"Reset camera",(nx_rect){bounds.x,bounds.y+166,134,32},action);
+    nx_result r=button(v,context,PHYSIM_RESET_CAMERA,"Reset camera",(nx_rect){bounds.x,bounds.y+166,134,32},action);
+    if(r==NX_OK)r=button(v,context,PHYSIM_EXPORT_VIEW,"Export view",(nx_rect){bounds.x+144,bounds.y+166,134,32},action);
+    return r;
 }
 static nx_result sample(void *user,size_t index,nx_series_point *point) {
     const physim_snapshot *model=user;
@@ -380,7 +382,8 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     uint64_t focus=nx_focus_id(context);
     if(r==NX_OK&&v->pane!=PANE_TREE&&(focus&PHYSIM_TREE_OBJECT))
         r=nx_focus_set(context,PHYSIM_TOGGLE_TREE);
-    if(r==NX_OK&&v->pane!=PANE_CAMERA&&focus>=PHYSIM_RESET_CAMERA&&focus<=PHYSIM_CAMERA_ZOOM)
+    if(r==NX_OK&&v->pane!=PANE_CAMERA&&((focus>=PHYSIM_RESET_CAMERA&&focus<=PHYSIM_CAMERA_ZOOM)||
+        focus==PHYSIM_EXPORT_VIEW))
         r=nx_focus_set(context,PHYSIM_TOGGLE_CAMERA);
     nx_plot_desc plot={.id=20,.parent_id=1,.bounds={16,160,width*.5f-24,height-176},.name=span("Original angle channel (rad)"),
         .series={PHYSIM_SAMPLE_COUNT,v->model,sample},.scratch=v->scratch,.scratch_capacity=1024,.fonts=v->fonts,
@@ -477,8 +480,8 @@ nx_result physim_view_destroy(physim_view **view) {
     free(v->pixels);free(v);*view=NULL;return NX_OK;
 }
 
-nx_result physim_export_render(const physim_snapshot *model, const ps_plot_view *plot,
-    const nx_font_collection *fonts, uint32_t width, uint32_t height, double scale,
+static nx_result export_render(const physim_snapshot *model,const ps_plot_view *plot,
+    const nx_font_collection *fonts,physim_camera camera,uint32_t width,uint32_t height,double scale,
     physim_export_image *out) {
     if (!model || !plot || !fonts || !out || out->pixels ||
         !valid_view_size(width,height,scale) || !ps_scene_valid(&model->scene))
@@ -499,7 +502,10 @@ nx_result physim_export_render(const physim_snapshot *model, const ps_plot_view 
     nx_context *context = NULL;
     physim_view *view = NULL;
     nx_result result = physim_view_create(snapshot,&range,fonts,&view);
-    if (result == NX_OK) result = nx_context_create(NULL,&context);
+    if (result == NX_OK) {
+        view->camera=camera;
+        result = nx_context_create(NULL,&context);
+    }
     if (result == NX_OK) result = nx_context_set_text_raster_scale(context,(float)scale);
     unsigned action = 0;
     if (result == NX_OK)
@@ -525,6 +531,17 @@ nx_result physim_export_render(const physim_snapshot *model, const ps_plot_view 
     if (result == NX_OK) *out = image;
     else free(image.pixels);
     return result;
+}
+
+nx_result physim_export_render(const physim_snapshot *model,const ps_plot_view *plot,
+    const nx_font_collection *fonts,uint32_t width,uint32_t height,double scale,physim_export_image *out) {
+    return export_render(model,plot,fonts,front_camera,width,height,scale,out);
+}
+
+nx_result physim_view_export(const physim_view *view,uint32_t width,uint32_t height,double scale,
+    physim_export_image *out) {
+    if(!view)return NX_ERROR_ARGUMENT;
+    return export_render(view->model,view->plot,view->fonts,view->camera,width,height,scale,out);
 }
 
 void physim_export_release(physim_export_image *image) {

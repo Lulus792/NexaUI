@@ -4,7 +4,7 @@
 typedef struct physim_view physim_view;
 enum {
     PHYSIM_INSPECT_NEXT = 22, PHYSIM_INSPECT_PICK = 24, PHYSIM_TOGGLE_TREE = 25,
-    PHYSIM_TOGGLE_CAMERA = 27, PHYSIM_RESET_CAMERA = 28
+    PHYSIM_TOGGLE_CAMERA = 27, PHYSIM_RESET_CAMERA = 28, PHYSIM_EXPORT_VIEW = 35
 };
 /* App-owned reference presentation, not Physim's approved application design.
    Borrow model, original plot view and fonts until destroy. The model must be
@@ -18,8 +18,8 @@ nx_result physim_view_create(physim_snapshot *model, ps_plot_view *plot,
 nx_result physim_view_set_ime_window(physim_view *view, nx_window *window);
 /* Owns begin/end_frame. Returns action IDs 12 Apply, 13 Zoom, 14 Pan, 15 Fit,
    16 Close, 17 Replace view, 22 Inspect next, 24 Viewport pick, 25 Toggle tree,
-   27 Toggle camera pane, 28 Reset camera. Caller handles
-   Close/Replace and dispatches other actions only after rendering/complete.
+   27 Toggle camera pane, 28 Reset camera, 35 Export view. Caller handles
+   Close/Replace/Export and dispatches other actions after rendering/complete.
    Dispatch a viewport pick before the next frame. All borrowed
    commands/pixels must finish before complete, next frame or destruction.
    Bounded reference layout: logical width>=640 and height>=400. */
@@ -40,7 +40,7 @@ typedef struct physim_export_image {
     size_t stride;
 } physim_export_image;
 
-/* Render an immutable published snapshot and a copy of the original plot range
+/* Render the front view of an immutable snapshot and the original plot range
    in a separate context. Use the same owner thread as the live view, if any.
    Logical size is 640..2048 by 400..1200, scale is finite in [0.5, 2].
    The packed RGBA8 dimensions round each scaled extent up. Zero-initialize
@@ -48,6 +48,12 @@ typedef struct physim_export_image {
    output must be released before reuse. The caller owns file encoding. */
 nx_result physim_export_render(const physim_snapshot *model, const ps_plot_view *plot,
     const nx_font_collection *fonts, uint32_t width, uint32_t height, double scale,
+    physim_export_image *out);
+/* The same output contract, with the view's current camera and published model
+   and plot range. Call on the owner thread, outside physim_view_frame itself.
+   A completed frame may still have an outstanding render lease. The output
+   owns its pixels independently of the interactive view. */
+nx_result physim_view_export(const physim_view *view,uint32_t width,uint32_t height,double scale,
     physim_export_image *out);
 void physim_export_release(physim_export_image *image);
 #endif

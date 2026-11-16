@@ -332,12 +332,12 @@ done:
 static int export_test(const char *path,const char *output) {
     const uint32_t width=641,height=401,physical_width=802,physical_height=502;
     const double scale=1.25;
-    int ok=0;
+    int ok=0,valid=0;
     unsigned action=0;
     font_data font={0};
     ps_plot_view plot={0},saved_plot;
     physim_snapshot *model=malloc(sizeof(*model)),*saved=malloc(sizeof(*saved));
-    physim_export_image image={0}, rejected={0};
+    physim_export_image image={0}, rejected={0}, tilted={0};
     physim_view *live=NULL,*reference=NULL;
     nx_context *live_context=NULL,*reference_context=NULL;
     const nx_command *commands=NULL;
@@ -382,7 +382,36 @@ static int export_test(const char *path,const char *output) {
     CHECK(physim_view_complete(reference)==NX_OK);
     CHECK(physim_export_render(model,&plot,font.fonts,width,height,.5,&rejected)==NX_OK);
     CHECK(rejected.width==321&&rejected.height==201&&rejected.stride==321u*4u);
-    CHECK(save_size(output,image.pixels,image.width,image.height));
+    CHECK(physim_view_dispatch(live,PHYSIM_TOGGLE_CAMERA,&valid)==NX_OK&&valid);
+    CHECK(render(live,live_context,1,&action,before)==NX_OK&&!action);
+    static const double pose[]={60,30,1.25};
+    for(uint32_t i=0;i<3;++i) {
+        nx_numeric_value_snapshot current;
+        CHECK(nx_semantics_get_numeric_value(live_context,29u+i,&current)==NX_OK);
+        CHECK(nx_semantics_request_numeric_value(live_context,29u+i,&current,pose[i])==NX_OK);
+    }
+    CHECK(physim_view_frame(live,live_context,WIDTH,HEIGHT,1,&action)==NX_OK&&!action);
+    CHECK(semantic_name(live_context,32,"Camera yaw 60°")&&semantic_name(live_context,33,"Camera pitch 30°")&&
+        semantic_name(live_context,34,"Zoom 125%"));
+    CHECK(nx_frame_commands(live_context,&commands,&count)==NX_OK);
+    CHECK(nx_headless_render(commands,count,before,WIDTH,HEIGHT,WIDTH*4u,(nx_color){1,1,1,1})==NX_OK);
+    CHECK(physim_view_export(live,width,height,scale,&tilted)==NX_OK);
+    CHECK(tilted.width==image.width&&tilted.height==image.height&&tilted.stride==image.stride);
+    CHECK(physim_view_export(NULL,width,height,scale,&tilted)==NX_ERROR_ARGUMENT);
+    size_t changed=0;
+    for(uint32_t y=200;y<482;++y) {
+        size_t row=(size_t)y*tilted.stride;
+        CHECK(!memcmp(tilted.pixels+row,image.pixels+row,398u*4u));
+        for(uint32_t x=411;x<781;++x) {
+            size_t pixel=row+(size_t)x*4u;
+            changed+=memcmp(tilted.pixels+pixel,image.pixels+pixel,4)!=0;
+        }
+    }
+    CHECK(changed>100);
+    CHECK(nx_headless_render(commands,count,after,WIDTH,HEIGHT,WIDTH*4u,(nx_color){1,1,1,1})==NX_OK);
+    CHECK(!memcmp(before,after,live_bytes)&&!memcmp(saved,model,sizeof(*model))&&!memcmp(&saved_plot,&plot,sizeof(plot)));
+    CHECK(physim_view_complete(live)==NX_OK&&physim_view_destroy(&live)==NX_OK);
+    CHECK(save_size(output,tilted.pixels,tilted.width,tilted.height));
     physim_export_release(&image);
     CHECK(!image.pixels&&!image.width&&!image.height&&!image.stride);
     ok=1;
@@ -393,6 +422,7 @@ done:
     nx_context_destroy(reference_context);
     physim_export_release(&image);
     physim_export_release(&rejected);
+    physim_export_release(&tilted);
     close_font(&font);
     free(model);free(saved);free(before);free(after);free(expected);
     return ok;

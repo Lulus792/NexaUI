@@ -24,6 +24,26 @@ static nx_result retire_ime(nx_window *window) {
     if(r==NX_OK) { puts("PHYSIM_IME_RETIRED length=0");fflush(stdout); }
     return r;
 }
+static int write_view_export(const physim_view *view,const char *path) {
+    physim_export_image image={0};
+    if(physim_view_export(view,641,401,1.25,&image)!=NX_OK)return 0;
+    FILE *file=fopen(path,"wbx");
+    int written=file&&fprintf(file,"P6\n%u %u\n255\n",(unsigned)image.width,(unsigned)image.height)>0;
+    for(uint32_t y=0;written&&y<image.height;++y) {
+        const uint8_t *row=image.pixels+(size_t)y*image.stride;
+        for(uint32_t x=0;written&&x<image.width;++x)written=fwrite(row+(size_t)x*4u,3,1,file)==1;
+    }
+    if(file) {
+        if(fclose(file)!=0)written=0;
+        if(!written)(void)remove(path);
+    }
+    if(written) {
+        printf("PHYSIM_EXPORT_CURRENT width=%u height=%u scale=1.25\n",(unsigned)image.width,(unsigned)image.height);
+        fflush(stdout);
+    }
+    physim_export_release(&image);
+    return written;
+}
 static nx_result replace_view(physim_snapshot *model,ps_plot_view *plot,const nx_font_collection *fonts,
     nx_window *window,const nx_window_info *info,double backing,physim_view **view,nx_context **context) {
     physim_view *next=NULL;nx_context *next_context=NULL;
@@ -47,8 +67,9 @@ static nx_result replace_view(physim_snapshot *model,ps_plot_view *plot,const nx
 int main(void) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*display=getenv("WAYLAND_DISPLAY");
     const char *path=getenv("NEXAUI_PHYSIM_FONT"),*test_case=getenv("NEXAUI_PHYSIM_CASE");
+    const char *export_path=getenv("NEXAUI_PHYSIM_EXPORT");
     if(!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||!path||!test_case||
-        !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||(strcmp(test_case,"full")&&strcmp(test_case,"ime-cancel")&&strcmp(test_case,"ime-replace")&&strcmp(test_case,"ime-close")))return 2;
+        !export_path||!getenv("NEXAUI_TEST_ATSPI_ADDRESS")||(strcmp(test_case,"full")&&strcmp(test_case,"ime-cancel")&&strcmp(test_case,"ime-replace")&&strcmp(test_case,"ime-close")))return 2;
     int result=1,leased=0,need_frame=1,first=1,preedit_active=0;unsigned frames=0,replacements=0,preedits=0,cancellations=0;
     double backing=1;uint64_t logged_generation=0;uint32_t logged_width=0,logged_height=0;
     physim_snapshot *model=malloc(sizeof(*model));ps_plot_view plot={0};physim_view *view=NULL;
@@ -104,6 +125,9 @@ int main(void) {
         }
         if(action==16) { result=0;break; }
         if(action==17)replace=1;
+        if(action==PHYSIM_EXPORT_VIEW&&!write_view_export(view,export_path)) {
+            puts("PHYSIM_EXPORT_FAILED");fflush(stdout);
+        }
         if((action&&action<=15)||action==PHYSIM_INSPECT_NEXT||action==PHYSIM_INSPECT_PICK||
             action==PHYSIM_TOGGLE_TREE||action==PHYSIM_TOGGLE_CAMERA||action==PHYSIM_RESET_CAMERA) {
             int valid=0;if(physim_view_dispatch(view,action,&valid)!=NX_OK)goto done;

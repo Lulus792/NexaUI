@@ -229,6 +229,39 @@ static int capture_position(Display *display,Window window,double length,const c
 static int capture(Display *display,Window window,double length,const char *tag) {
     return capture_position(display,window,length,tag,NULL);
 }
+static int export_matches_sphere(double length,image_pose pose) {
+    const char *path=getenv("NEXAUI_PHYSIM_EXPORT");
+    FILE *file=path?fopen(path,"rb"):NULL;
+    if(!file)return 0;
+    const size_t bytes=802u*502u*3u;
+    uint8_t *rgb=malloc(bytes);
+    char header[16];
+    int ok=rgb&&fread(header,1,15,file)==15&&!memcmp(header,"P6\n802 502\n255\n",15)&&
+        fread(rgb,1,bytes,file)==bytes&&fgetc(file)==EOF&&!ferror(file);
+    if(fclose(file)!=0)ok=0;
+    double world_x=0,world_y=0,radius=0;
+    if(ok)ok=original_bob(length,&world_x,&world_y,&radius);
+    if(ok) {
+        /* Logical viewport (328.5,160,296.5,225) at 1.25. The backing
+           rounds to 371x282 before the exported stream composites it. */
+        double base=282/(length*1.8),scale=base*pose.zoom;
+        int x=(int)(328.5*1.25+(371*.5+world_x*pose.xx*scale)*(296.5*1.25/371));
+        double centre=282*.16+length*.5*base;
+        int y=(int)(160*1.25+(centre-(world_x*pose.yx+(world_y+length*.5)*pose.yy)*scale)*(225*1.25/282));
+        int r=(int)(radius*scale);
+        unsigned colored=0;
+        ok=r>0&&x-r>=410&&x+r<782&&y-r>=200&&y+r<482;
+        if(ok)for(int dy=-r;dy<=r;++dy)for(int dx=-r;dx<=r;++dx) {
+            if(dx*dx+dy*dy>r*r)continue;
+            size_t index=((size_t)(y+dy)*802u+(size_t)(x+dx))*3u;
+            colored+=rgb[index]==0x53&&rgb[index+1]==0xde&&rgb[index+2]==0xc2;
+        }
+        ok=ok&&colored>(unsigned)(r*r);
+        if(ok)printf("PHYSIM_EXPORT_PIXELS 802x502 disk_pixels=%u\n",colored);
+    }
+    free(rgb);
+    return ok;
+}
 static int stale(AtspiAccessible *node,AtspiComponent *component) {
     GError *error=NULL;int accepted=atspi_component_grab_focus(component,&error);int refused=!accepted||error!=NULL;
     if(error)g_error_free(error);
@@ -325,6 +358,9 @@ int main(int argc,char **argv) {
         CHECK(observe(app,"Zoom 125%",0));
         image_pose tilted={.5,-sqrt(3.0)/4,sqrt(3.0)/2,1.25};
         CHECK(capture_projected(display,outer,2.5,"camera",&bob,tilted));
+        CHECK(press(app,"Export view")&&marker(log,"PHYSIM_EXPORT_CURRENT width=802 height=502 scale=1.25"));
+        CHECK(export_matches_sphere(2.5,tilted));
+        CHECK(press(app,"Export view")&&marker(log,"PHYSIM_EXPORT_FAILED")&&export_matches_sphere(2.5,tilted));
         CHECK(press(app,"Inspect next")&&observe(app,"4/12 Arrow #4, parent #3",0));
         CHECK(click_at(id,bob)&&observe(app,"3/12 Sphere #3, parent #101",0));
         CHECK(focus(app,"Reset camera")&&drive("key","Return")&&observe(app,"Camera yaw 0°",0));

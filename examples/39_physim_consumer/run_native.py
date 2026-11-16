@@ -27,6 +27,7 @@ def main():
     env = dict(os.environ, NEXAUI_PLATFORM='wayland', NEXAUI_TEST_PRIVATE_X11='1',
                NEXAUI_PHYSIM_FONT=str(args.font), NEXAUI_PHYSIM_CASE=args.case,
                NEXAUI_PHYSIM_XDOTOOL=driver, NEXAUI_PHYSIM_CAPTURE=str(args.work_dir / 'physim-'),
+               NEXAUI_PHYSIM_EXPORT=str(args.work_dir / 'physim-camera-export.ppm'),
                NEXAUI_PHYSIM_TRACE=str(args.work_dir / 'physim-native.stderr'))
     if args.case.startswith('ime-'):
         env.update(NEXAUI_WESTON_INPUT_METHOD='weston-simple-im', XKB_DEFAULT_OPTIONS='compose:ralt',
