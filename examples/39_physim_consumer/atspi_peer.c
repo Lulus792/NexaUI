@@ -119,6 +119,16 @@ static int drive(const char *command,const char *value) {
     do{ended=waitpid(pid,&status,0);}while(ended<0&&errno==EINTR);
     return ended==pid&&WIFEXITED(status)&&!WEXITSTATUS(status);
 }
+typedef struct screen_point { int x,y; } screen_point;
+static int click_at(const char *window,screen_point point) {
+    const char *driver=getenv("NEXAUI_PHYSIM_XDOTOOL");if(!driver)return 0;
+    char x[16],y[16];snprintf(x,sizeof(x),"%d",point.x);snprintf(y,sizeof(y),"%d",point.y);
+    pid_t pid=fork();
+    if(!pid) { execl(driver,driver,"mousemove","--window",window,x,y,"click","1",(char *)NULL);_exit(127); }
+    if(pid<0)return 0;int status=0;pid_t ended;
+    do{ended=waitpid(pid,&status,0);}while(ended<0&&errno==EINTR);
+    return ended==pid&&WIFEXITED(status)&&!WEXITSTATUS(status);
+}
 static int original_bob(double length,double *x,double *y,double *radius) {
     const ps_experiment_api *api=ps_get_experiment();ps_context *c=calloc(1,sizeof(*c));if(!c)return 0;
     c->struct_size=sizeof(*c);c->api_version=PS_API_VERSION;
@@ -142,7 +152,10 @@ static int save_ppm(XImage *image,int x,int y,int width,int height,const char *t
     }
     if(fclose(f))yes=0;return yes;
 }
-static int capture(Display *display,Window window,double length,const char *tag) {
+static int bob_color(XImage *image,int x,int y) {
+    return (XGetPixel(image,x,y)&0xffffffu)==0x53dec2u;
+}
+static int capture_position(Display *display,Window window,double length,const char *tag,screen_point *target) {
     double bob_x=0,bob_y=0,radius=0;if(!original_bob(length,&bob_x,&bob_y,&radius))return 0;
     for(unsigned attempt=0;attempt<80;++attempt) {
         XWindowAttributes info;if(!XGetWindowAttributes(display,window,&info)||info.width!=1600||info.height!=1200)return 0;
@@ -158,9 +171,17 @@ static int capture(Display *display,Window window,double length,const char *tag)
             double projection=384.0/(length*1.8);
             int x=(int)((double)left+188+bob_x*projection),y=(int)((double)top+384*.16-bob_y*projection),r=(int)(radius*projection);
             yes=r>0&&x-r>=left&&x+r<=right&&y-r>=top&&y+r<=bottom;
-            if(yes)for(int dy=-r;dy<=r;++dy)for(int dx=-r;dx<=r;++dx)
-                if(dx*dx+dy*dy<=r*r&&(XGetPixel(image,x+dx,y+dy)&0xffffffu)==0x53dec2u)++colored;
-            yes=yes&&colored>(unsigned)(r*r);
+            int found=0;
+            if(yes)for(int dy=-r;dy<=r;++dy)for(int dx=-r;dx<=r;++dx) {
+                int distance=dx*dx+dy*dy,px=x+dx,py=y+dy;
+                if(distance>r*r||!bob_color(image,px,py))continue;
+                ++colored;
+                if(target&&!found&&distance<=r*r/4&&bob_color(image,px-1,py)&&bob_color(image,px+1,py)&&
+                    bob_color(image,px,py-1)&&bob_color(image,px,py+1)) {
+                    *target=(screen_point){px,py};found=1;
+                }
+            }
+            yes=yes&&colored>(unsigned)(r*r)&&(!target||found);
         }
         if(yes) {
             yes=save_ppm(image,left-408,top-160,800,560,tag);XDestroyImage(image);
@@ -169,6 +190,9 @@ static int capture(Display *display,Window window,double length,const char *tag)
         XDestroyImage(image);pump();
     }
     fprintf(stderr,"Physim native pixel mismatch: %s\n",tag);return 0;
+}
+static int capture(Display *display,Window window,double length,const char *tag) {
+    return capture_position(display,window,length,tag,NULL);
 }
 static int stale(AtspiAccessible *node,AtspiComponent *component) {
     GError *error=NULL;int accepted=atspi_component_grab_focus(component,&error);int refused=!accepted||error!=NULL;
@@ -188,13 +212,17 @@ int main(int argc,char **argv) {
     CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);
     desktop=atspi_get_desktop(0);CHECK(desktop&&(app=application(desktop,child)));
     CHECK(drive("windowfocus",id)&&drive("park",NULL)&&observe(app,"Model generation 1; length 1.5 m.",0)&&focus(app,"Length (m)"));
-    CHECK(text_is(app,"Length (m)","1.5")&&capture(display,outer,1.5,"initial"));
+    screen_point bob={0};
+    CHECK(text_is(app,"Length (m)","1.5")&&capture_position(display,outer,1.5,"initial",&bob));
     if(!strcmp(test_case,"full")) {
         CHECK(focus(app,"Original Physim pendulum scene")&&drive("key","Tab")&&observe(app,"Inspect next",1));
         CHECK(drive("key","Return")&&observe(app,"1/12 Line #1, parent #100",0));
         CHECK(drive("key","Return")&&observe(app,"2/12 Sphere #2, parent #100",0));
-        CHECK(press(app,"Inspect next")&&observe(app,"3/12 Sphere #3, parent #101",0));
-        CHECK(capture(display,outer,1.5,"inspected"));
+        CHECK(click_at(id,bob)&&observe(app,"3/12 Sphere #3, parent #101",0));
+        CHECK(press(app,"Inspect next")&&observe(app,"4/12 Arrow #4, parent #3",0));
+        CHECK(click_at(id,bob)&&observe(app,"3/12 Sphere #3, parent #101",0));
+        CHECK(observe(app,"Original Physim pendulum scene",1)&&focus(app,"Inspect next"));
+        CHECK(drive("park",NULL)&&observe(app,"Inspect next",1)&&capture(display,outer,1.5,"inspected"));
         CHECK(focus(app,"Length (m)"));
         CHECK(drive("key","ctrl+a")&&drive("key","0")&&drive("key","Return")&&text_is(app,"Length (m)","0"));
         AtspiAccessible *field=find(app,"Length (m)",0);CHECK(field);int invalid=state(field,ATSPI_STATE_INVALID_ENTRY);g_object_unref(field);CHECK(invalid);
@@ -231,7 +259,8 @@ int main(int argc,char **argv) {
         CHECK(stale(old,old_component));
         CHECK(text_is(app,"Length (m)","2.5"));
         CHECK(focus(app,"Fit data")&&drive("key","Return")&&marker(log,"PHYSIM_ACTION id=15 valid=1 generation=2 length=2.5 low=0 high=1"));
-        CHECK(drive("key","F7")&&marker(log,"PHYSIM_SURFACE generation=2 width=752 height=768 backing=2")&&capture(display,outer,2.5,"backing2"));
+        CHECK(drive("key","F7")&&marker(log,"PHYSIM_SURFACE generation=2 width=752 height=768 backing=2")&&capture_position(display,outer,2.5,"backing2",&bob));
+        CHECK(click_at(id,bob)&&observe(app,"3/12 Sphere #3, parent #101",0));
         CHECK(focus(app,"Original angle channel (rad)")&&drive("key","Tab")&&observe(app,"Original Physim pendulum scene",1));
         CHECK(drive("key","Tab")&&observe(app,"Inspect next",1));
         CHECK(drive("key","Tab")&&observe(app,"Length (m)",1)&&drive("key","shift+Tab")&&observe(app,"Inspect next",1));

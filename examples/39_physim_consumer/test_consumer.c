@@ -65,6 +65,13 @@ static int key(nx_context *context,nx_key value,uint32_t modifiers) {
     nx_event e={.type=NX_EVENT_KEY_DOWN,.key=value,.modifiers=modifiers};
     if(nx_context_queue_event(context,&e)!=NX_OK)return 0;e.type=NX_EVENT_KEY_UP;return nx_context_queue_event(context,&e)==NX_OK;
 }
+static int pointer(nx_context *context,nx_event_type type,float x,float y) {
+    nx_event event={.type=type,.x=x,.y=y,.button=NX_BUTTON_LEFT};
+    return nx_context_queue_event(context,&event)==NX_OK;
+}
+static int click(nx_context *context,float x,float y) {
+    return pointer(context,NX_EVENT_POINTER_DOWN,x,y)&&pointer(context,NX_EVENT_POINTER_UP,x,y);
+}
 static int type(nx_context *context,const char *text) {
     for(;*text;++text) { nx_event e={.type=NX_EVENT_TEXT,.scalar=(unsigned char)*text};if(nx_context_queue_event(context,&e)!=NX_OK)return 0; }
     return 1;
@@ -107,6 +114,30 @@ static int view_test(const char *path,const char *image) {
     CHECK(colored>(unsigned)(radius*radius));
     CHECK(physim_view_destroy(&view)==NX_OK&&physim_view_create(model,&plot,font.fonts,&view)==NX_OK);
     CHECK(render(view,context,1,&action,pixels)==NX_OK&&!memcmp(previous,pixels,bytes));
+    float hit_x=(float)x+(float)radius*.5f,hit_y=(float)y+(float)radius*.25f;
+    CHECK(click(context,hit_x,hit_y));
+    CHECK(physim_view_frame(view,context,WIDTH,HEIGHT,1,&action)==NX_OK&&action==PHYSIM_INSPECT_PICK);
+    CHECK(physim_view_dispatch(view,action,&valid)==NX_ERROR_STATE&&!valid&&physim_view_complete(view)==NX_OK);
+    CHECK(physim_view_dispatch(view,action,&valid)==NX_OK&&valid);
+    CHECK(physim_view_dispatch(view,action,&valid)==NX_ERROR_STATE&&!valid);
+    CHECK(render(view,context,1,&action,pixels)==NX_OK&&semantic_name(context,23,"3/12 Sphere #3, parent #101"));
+    CHECK(pointer(context,NX_EVENT_POINTER_DOWN,hit_x,hit_y)&&render(view,context,1,&action,pixels)==NX_OK&&!action);
+    CHECK(render(view,context,2,&action,pixels)==NX_OK&&!action);
+    CHECK(pointer(context,NX_EVENT_POINTER_UP,414,166)&&render(view,context,2,&action,pixels)==NX_OK&&!action);
+    CHECK(semantic_name(context,23,"3/12 Sphere #3, parent #101"));
+    CHECK(pointer(context,NX_EVENT_POINTER_DOWN,hit_x,hit_y)&&pointer(context,NX_EVENT_POINTER_UP,400,166));
+    CHECK(render(view,context,2,&action,pixels)==NX_OK&&!action);
+    CHECK(pointer(context,NX_EVENT_POINTER_DOWN,hit_x,hit_y)&&pointer(context,NX_EVENT_POINTER_CANCEL,hit_x,hit_y));
+    CHECK(pointer(context,NX_EVENT_POINTER_UP,414,166)&&render(view,context,2,&action,pixels)==NX_OK&&!action);
+    CHECK(click(context,414,166)&&render(view,context,2,&action,pixels)==NX_OK&&action==PHYSIM_INSPECT_PICK);
+    CHECK(physim_view_dispatch(view,action,&valid)==NX_OK&&valid);
+    CHECK(render(view,context,2,&action,pixels)==NX_OK&&semantic_name(context,23,"Scene objects (12)"));
+    CHECK(click(context,hit_x,hit_y)&&render(view,context,2,&action,pixels)==NX_OK&&action==PHYSIM_INSPECT_PICK);
+    CHECK(physim_view_dispatch(view,action,&valid)==NX_OK&&valid);
+    CHECK(render(view,context,2,&action,pixels)==NX_OK&&semantic_name(context,23,"3/12 Sphere #3, parent #101"));
+    CHECK(click(context,414,166)&&render(view,context,2,&action,pixels)==NX_OK&&action==PHYSIM_INSPECT_PICK);
+    CHECK(physim_view_dispatch(view,action,&valid)==NX_OK&&valid);
+    CHECK(render(view,context,1,&action,pixels)==NX_OK&&semantic_name(context,23,"Scene objects (12)"));
     reference=plot;
     CHECK(nx_focus_set(context,13)==NX_OK&&key(context,NX_KEY_ENTER,0)&&render(view,context,1,&action,pixels)==NX_OK&&action==13);
     CHECK(physim_view_dispatch(view,action,&valid)==NX_OK&&valid&&ps_plot_view_zoom(&reference,2,.5,.5));

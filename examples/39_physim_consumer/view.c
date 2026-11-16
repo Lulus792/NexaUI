@@ -15,6 +15,11 @@ struct physim_view {
     double backing;
     int leased,apply_rejected;
     uint32_t inspected;
+    uint64_t pick_generation;
+    float pick_width,pick_height;
+    double pick_scale;
+    uint32_t pick_index;
+    int pick_armed,pick_pending;
     nx_plot_state plot_state;
     nx_series_envelope scratch[1024];
 };
@@ -31,28 +36,84 @@ static nx_color color(uint32_t rgba) {
     return (nx_color){(float)((rgba>>24)&255u)/255.0f,(float)((rgba>>16)&255u)/255.0f,
         (float)((rgba>>8)&255u)/255.0f,(float)(rgba&255u)/255.0f};
 }
-static nx_point project(const physim_view *v,ps_vec3 point) {
-    double scale=(double)v->height/(v->model->length.value*1.8);
+static double projection_scale(const physim_view *v) {
+    return (double)v->height/(v->model->length.value*1.8);
+}
+static nx_point project(const physim_view *v,ps_vec3 point,double scale) {
     return (nx_point){(float)((double)v->width*.5+point.x*scale),(float)((double)v->height*.16-point.y*scale)};
+}
+static int arrow_head(nx_point a,nx_point b,double backing,nx_point *left,nx_point *right) {
+    float dx=b.x-a.x,dy=b.y-a.y,length=hypotf(dx,dy);
+    if(!(length>0))return 0;
+    float size=fminf((float)(10*backing),length*.3f),ux=dx/length,uy=dy/length;
+    *left=(nx_point){b.x-size*ux-size*.5f*uy,b.y-size*uy+size*.5f*ux};
+    *right=(nx_point){b.x-size*ux+size*.5f*uy,b.y-size*uy-size*.5f*ux};
+    return 1;
+}
+static float edge(nx_point a,nx_point b,nx_point p) {
+    return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x);
+}
+static int triangle_hit(nx_point a,nx_point b,nx_point c,nx_point point) {
+    float x=edge(a,b,point),y=edge(b,c,point),z=edge(c,a,point);
+    return (x>=0&&y>=0&&z>=0)||(x<=0&&y<=0&&z<=0);
+}
+static int stroke_hit(nx_point a,nx_point b,nx_point point,float radius) {
+    float dx=b.x-a.x,dy=b.y-a.y,squared=dx*dx+dy*dy;
+    float along=squared>0?((point.x-a.x)*dx+(point.y-a.y)*dy)/squared:0;
+    along=fminf(1,fmaxf(0,along));
+    return hypotf(point.x-(a.x+along*dx),point.y-(a.y+along*dy))<=radius;
+}
+static uint32_t pick_scene(const physim_view *v,nx_rect bounds,float x,float y) {
+    nx_point point={(x-bounds.x)*(float)v->width/bounds.width,(y-bounds.y)*(float)v->height/bounds.height};
+    double scale=projection_scale(v);
+    for(uint32_t i=v->model->scene.count;i>0;--i) {
+        const ps_object *object=&v->model->scene.objects[i-1u];
+        if(!(object->color&255u))continue;
+        nx_point a=project(v,object->a,scale);
+        if(object->shape==PS_SPHERE&&hypotf(point.x-a.x,point.y-a.y)<=(float)(object->radius*scale))return i;
+        if(object->shape==PS_LINE||object->shape==PS_ARROW) {
+            nx_point b=project(v,object->b,scale),left,right;
+            if(stroke_hit(a,b,point,(float)v->backing))return i;
+            if(object->shape==PS_ARROW&&arrow_head(a,b,v->backing,&left,&right)&&triangle_hit(b,left,right,point))return i;
+        }
+    }
+    return 0;
+}
+static void stage_pick(physim_view *v,nx_rect bounds,const nx_interaction_state *state,unsigned *action) {
+    /* NexaUI routes capture against the preceding layout. Discard presses
+       spanning a change to the projected image or its mapping. */
+    if(v->pick_generation!=v->model->generation||v->pick_width!=bounds.width||
+        v->pick_height!=bounds.height||v->pick_scale!=v->backing) {
+        v->pick_generation=v->model->generation;
+        v->pick_width=bounds.width;
+        v->pick_height=bounds.height;
+        v->pick_scale=v->backing;
+        v->pick_armed=0;
+        return;
+    }
+    if(state->pointer_pressed)v->pick_armed=1;
+    if(!*action&&v->pick_armed&&state->pointer_released&&!state->held&&state->clicked&&
+        state->pointer_x>=bounds.x&&state->pointer_y>=bounds.y&&
+        state->pointer_x<bounds.x+bounds.width&&state->pointer_y<bounds.y+bounds.height) {
+        v->pick_index=pick_scene(v,bounds,state->pointer_x,state->pointer_y);
+        v->pick_pending=1;
+        *action=PHYSIM_INSPECT_PICK;
+    }
+    if(!state->held)v->pick_armed=0;
 }
 static nx_result render_scene(void *user,nx_bitmap_view *out) {
     physim_view *v=user;
     if(v->leased||!v->pixels) return NX_ERROR_STATE;
     if(nx_begin_frame(v->canvas,(float)v->width,(float)v->height,0)!=NX_OK) return NX_ERROR_STATE;
-    double scale=(double)v->height/(v->model->length.value*1.8);
+    double scale=projection_scale(v);
     for(uint32_t i=0;i<v->model->scene.count;++i) {
         const ps_object *object=&v->model->scene.objects[i];
-        nx_point a=project(v,object->a),b=project(v,object->b);nx_result r=NX_OK;
+        nx_point a=project(v,object->a,scale),b=project(v,object->b,scale);nx_result r=NX_OK;
         if(object->shape==PS_LINE||object->shape==PS_ARROW) {
             r=nx_draw_line(v->canvas,a,b,(float)(2*v->backing),color(object->color));
-            if(r==NX_OK&&object->shape==PS_ARROW) {
-                float dx=b.x-a.x,dy=b.y-a.y,length=hypotf(dx,dy);
-                if(length>0) {
-                    float size=fminf((float)(10*v->backing),length*.3f),ux=dx/length,uy=dy/length;
-                    r=nx_fill_triangle(v->canvas,b,(nx_point){b.x-size*ux-size*.5f*uy,b.y-size*uy+size*.5f*ux},
-                        (nx_point){b.x-size*ux+size*.5f*uy,b.y-size*uy-size*.5f*ux},color(object->color));
-                }
-            }
+            nx_point left,right;
+            if(r==NX_OK&&object->shape==PS_ARROW&&arrow_head(a,b,v->backing,&left,&right))
+                r=nx_fill_triangle(v->canvas,b,left,right,color(object->color));
         } else if(object->shape==PS_SPHERE) {
             float radius=(float)(object->radius*scale);
             r=nx_fill_round_rect(v->canvas,(nx_rect){a.x-radius,a.y-radius,2*radius,2*radius},radius,color(object->color));
@@ -152,6 +213,7 @@ static int valid_view_size(double width,double height,double scale) {
 nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float height,double scale,unsigned *action) {
     if(!v||!context||!action||!valid_view_size(width,height,scale))return NX_ERROR_ARGUMENT;
     *action=0;if(v->leased)return NX_ERROR_STATE;
+    v->pick_pending=0;
     nx_result r=nx_begin_frame(context,width,height,0);
     nx_semantic_desc root={.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,width,height},.name=span("Original Physim pendulum reference")};
     if(r==NX_OK)r=nx_semantics_add(context,&root,NULL);
@@ -186,6 +248,7 @@ nx_result physim_view_frame(physim_view *v,nx_context *context,float width,float
     if(r==NX_OK&&v->model->scene.count)
         r=button(v,context,PHYSIM_INSPECT_NEXT,"Inspect next",(nx_rect){width-140,8,124,32},action);
     if(r==NX_OK)r=nx_end_frame(context);
+    if(r==NX_OK)stage_pick(v,viewport.bounds,&state,action);
     return r;
 }
 nx_result physim_view_complete(physim_view *v) { return v?nx_viewport_surface_complete(v->surface):NX_ERROR_ARGUMENT; }
@@ -202,7 +265,7 @@ nx_result physim_view_dispatch(physim_view *v,unsigned action,int *valid) {
         double length=0,angle=0;
         if((r=nx_numeric_field_value(v->length,&length))!=NX_OK||(r=nx_numeric_field_value(v->angle,&angle))!=NX_OK)return r;
         r=physim_model_run(length,angle,v->model->generation+1u,v->model);
-        if(r==NX_OK) { *valid=1;v->apply_rejected=0;v->inspected=0; }return r;
+        if(r==NX_OK) { *valid=1;v->apply_rejected=0;v->inspected=0;v->pick_pending=0; }return r;
     }
     if(action==13)*valid=ps_plot_view_zoom(v->plot,2,.5,.5);
     else if(action==14)*valid=ps_plot_view_pan(v->plot,.25,0);
@@ -211,6 +274,12 @@ nx_result physim_view_dispatch(physim_view *v,unsigned action,int *valid) {
     else if(action==17)return NX_ERROR_UNSUPPORTED; /* Owner rebuilds the view. */
     else if(action==PHYSIM_INSPECT_NEXT&&v->model->scene.count) {
         v->inspected=v->inspected%v->model->scene.count+1u;
+        *valid=1;
+    }
+    else if(action==PHYSIM_INSPECT_PICK) {
+        if(!v->pick_pending)return NX_ERROR_STATE;
+        v->inspected=v->pick_index;
+        v->pick_pending=0;
         *valid=1;
     }
     else return NX_ERROR_ARGUMENT;

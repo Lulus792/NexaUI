@@ -104,7 +104,7 @@ int main(void) {
         }
         if(action==16) { result=0;break; }
         if(action==17)replace=1;
-        if((action&&action<=15)||action==PHYSIM_INSPECT_NEXT) {
+        if((action&&action<=15)||action==PHYSIM_INSPECT_NEXT||action==PHYSIM_INSPECT_PICK) {
             int valid=0;if(physim_view_dispatch(view,action,&valid)!=NX_OK)goto done;
             printf("PHYSIM_ACTION id=%u valid=%d generation=%llu length=%.17g low=%.17g high=%.17g\n",action,valid,
                 (unsigned long long)model->generation,model->length.value,plot.low[0],plot.high[0]);fflush(stdout);need_frame=1;
