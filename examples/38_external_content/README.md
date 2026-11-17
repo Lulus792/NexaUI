@@ -226,12 +226,30 @@ source pixels and output pixels each have a 4 MiB limit. Source dimensions
 are capped at 2048 per axis. These limits describe adapter-owned buffers.
 The decoder manages its own internal working memory.
 
-With both standalone options enabled, `run_native.py --case png` runs the
+With the PNG producer and native fixture enabled, `run_native.py --case png` runs the
 ordinary Wayland fixture with real locally generated PNG inputs. The runner
 adds a truncated PNG to exercise the decode-error path. The host reports the
 failure through its accessible status and leaves the last valid image
 visible. A valid follow-up frame restores progress. The fixture also tests a
 late frame across tab replacement and decoding for 2× backing.
+
+### PNG image viewer
+
+The PNG fixture exposes the decoded image's dimensions and clipped bounds
+as an AT-SPI image. The visible size label and the semantic image describe
+the same accepted frame. A decode failure keeps the displayed dimensions
+and image available until a valid replacement arrives.
+
+PNG and PDF share the zoom and pan controls, including arrow-key pan
+with the viewport focused and Ctrl+0 to fit. An axis that already fits
+stays centered. On a scrollable axis, the image edges limit pan.
+While zoomed, the PNG view samples the original decoded raster through
+the fitted rectangle and the viewport clip. The original is bounded by
+the same 4 MiB decode limit and is tied to the accepted frame's generation,
+resize and sequence. Fit image uses the fitted raster.
+
+Use `--case png --png-viewer` to check a landscape image, a truncated PNG,
+and a portrait with fine stripes and straight alpha at both backing sizes.
 
 ## Optional PDF producer on Linux
 

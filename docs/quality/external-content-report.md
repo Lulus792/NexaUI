@@ -683,3 +683,43 @@ The local receipt is `pdf-export440-final.json`.
 Product destination selection and print integration remain open. The
 fixture uses one host-supplied destination and a fixed output size. The
 offscreen interface takes caller-supplied dimensions and scale.
+
+## PNG image viewer checkpoint, 2026-11-18
+
+Consumer `8dff6bbef28bd02f85a80f3acd587b130767ae91` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. The PNG producer fits a single
+libpng decode into the existing viewport frame and hands its original
+pixels to the UI. The decoded raster is owned independently of the
+staged viewport. It can replace the draw bitmap during zoom only while
+generation, resize and sequence agree. The software presenter finishes
+borrowing both images before either owner retires its pixels.
+
+The common camera applies the fitted image bounds on each axis. It
+keeps a fitting axis centered, clamps panning on a scrollable axis and
+matches the image clip to the visible AT-SPI image rectangle. Its name
+and visible label include the admitted source dimensions. Failed decode
+leaves the last raster and dimensions visible.
+
+The native case starts with a 112 × 52 landscape, rejects a truncated PNG,
+then accepts a 208 × 416 portrait. The horizontal arrow leaves the zoomed
+portrait centered. The vertical arrow pans by 48 logical pixels. Changing
+backing from 448 × 208 to 896 × 416 preserves this pan. Ctrl+0 restores
+Fit image. The native peer observes an AT-SPI Image role with the source
+dimensions and window-relative portrait bounds at both zoom levels.
+
+Independent decoding and pixel comparison verify every interior pixel of
+five captures per profile, including the transparent margins and partial
+alpha over the viewport background. The zoomed image retains both stripe
+colors from the source. All six existing PNG viewport captures per main
+profile remain byte-identical to the preceding PNG cases.
+
+The installed SDK matrix passed 62 CTests and 52 private Wayland runs with
+Clang 22.1.3 on Alpine. A strict PNG-only static Release build adds 12
+CTests and one native portrait workflow without the PDF executables.
+Local archive `nexaui-png-viewer442.tar.gz` binds exact source, SDK receipt,
+PNG inputs, commands, logs and captures. Readback verified SHA-256
+`bf48d1f6d777f71602f1fbcfc5e98221b7243ff35e71cf05412c4b3913a812a9`.
+The local receipt is `png-viewer442-final.json`.
+
+Image collections and thumbnails, additional photo formats and metadata,
+and physical and human assistive acceptance remain open.
