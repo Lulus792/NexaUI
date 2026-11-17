@@ -87,12 +87,16 @@ def main():
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
     parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
     parser.add_argument('--pdf-link-reader', type=Path, help='Optional content_pdf_link_reader path')
+    parser.add_argument('--pdf-select', action='store_true', help='Exercise PDF text selection and copy')
+    parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for --pdf-select')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
         parser.error('--pdf-link-reader requires --case pdf')
+    if args.pdf_select and args.case != 'pdf':
+        parser.error('--pdf-select requires --case pdf')
     if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
@@ -108,6 +112,12 @@ def main():
                NEXAUI_CONTENT_TEST_FONT=str(args.font), NEXAUI_CONTENT_TEST_CASE=args.case,
                NEXAUI_CONTENT_TEST_XDOTOOL=xdotool,
                NEXAUI_CONTENT_CAPTURE_PREFIX=str(args.work_dir / 'content-'))
+    if args.pdf_select:
+        reader = args.clipboard_reader or shutil.which('wl-paste')
+        if not reader:
+            parser.error('--pdf-select needs wl-paste or --clipboard-reader')
+        env.update(NEXAUI_CONTENT_TEST_PDF_SELECT='1',
+                   NEXAUI_CONTENT_TEST_CLIPBOARD_READER=str(Path(reader).resolve(strict=True)))
     command = ['xvfb-run', '-a', '-s', '-screen 0 1600x1200x24', sys.executable,
                str(repo / 'tests/run_weston_native.py'), '--work-dir', str(args.work_dir),
                '--timeout', '60', '--', sys.executable, str(repo / 'tests/run_atspi_native.py'),

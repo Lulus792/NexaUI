@@ -324,6 +324,63 @@ static int pdf_find_pixels(Display *display, Window window, int second_page, con
     return 0;
 }
 
+static int pdf_selection_is(AtspiText *text, const char *expected, int start, int end) {
+    for (unsigned i=0;i<200;++i) {
+        GError *error=NULL;
+        int count=atspi_text_get_n_selections(text,&error);
+        AtspiRange *range=count==1&&!error?atspi_text_get_selection(text,0,&error):NULL;
+        char *value=range&&!error?atspi_text_get_text(text,range->start_offset,range->end_offset,&error):NULL;
+        int match=!error && (expected ?
+            range&&range->start_offset==start&&range->end_offset==end&&value&&!strcmp(value,expected) :
+            count==0);
+        g_free(value);
+        g_free(range);
+        g_clear_error(&error);
+        if (match) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int pdf_selection_pixels(Display *display, Window window) {
+    for (unsigned i=0;i<80;++i) {
+        XImage *image=XGetImage(display,window,content_left,content_top,448,208,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        int ok=(XGetPixel(image,55,52)&0xffffffu)!=0x0000ffu &&
+            (XGetPixel(image,170,52)&0xffffffu)!=0x0000ffu &&
+            (XGetPixel(image,244,52)&0xffffffu)==0x0000ffu;
+        if (ok) ok=save_ppm(image,0,0,448,208,"pdf-selection");
+        XDestroyImage(image);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int clipboard_reads(const char *expected) {
+    const char *reader=getenv("NEXAUI_CONTENT_TEST_CLIPBOARD_READER");
+    FILE *output=reader?tmpfile():NULL;
+    if (!output) return 0;
+    pid_t child=fork();
+    if (!child) {
+        if (dup2(fileno(output),STDOUT_FILENO)<0) _exit(126);
+        execl(reader,reader,"--no-newline","--type","text/plain;charset=utf-8",(char *)NULL);
+        _exit(127);
+    }
+    int status=0,ok=0;
+    if (child>0) {
+        pid_t ended=0;
+        for (unsigned i=0;i<300&&!ended;++i) { ended=waitpid(child,&status,WNOHANG);if (!ended) pump(); }
+        if (!ended) { kill(child,SIGKILL);waitpid(child,NULL,0); }
+        char bytes[128];
+        ssize_t length=pread(fileno(output),bytes,sizeof(bytes),0);
+        ok=ended==child&&WIFEXITED(status)&&WEXITSTATUS(status)==0&&length==(ssize_t)strlen(expected)&&
+            !memcmp(bytes,expected,(size_t)length);
+    }
+    fclose(output);
+    return ok;
+}
+
 int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
@@ -334,12 +391,16 @@ int main(int argc,char **argv) {
     int pdf_case=!strcmp(test_case,"pdf");
     int compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
     int links=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER");
+    int selection=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
     AtspiAccessible *first_text=NULL,*second_text=NULL,*scaled_text=NULL,*returned_text=NULL,*hit_text=NULL;
     AtspiAccessible *old_link=NULL,*link=NULL,*back=NULL;
+    AtspiAccessible *selected=NULL,*new_selected=NULL;
+    AtspiText *selection_text=NULL,*new_text=NULL;
+    AtspiEditableText *selection_edit=NULL;
     AtspiComponent *old_component=NULL;Display *display=NULL;FILE *host_log=NULL;
     char id[32];Window outer=0;
     CHECK(outer_window(id,&outer)&&(display=XOpenDisplay(NULL))&&(host_log=tmpfile()));
@@ -380,6 +441,37 @@ int main(int argc,char **argv) {
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
             pdf_word_geometry(first_text,120,6,195));
         if(links) CHECK(!state(old_link,ATSPI_STATE_DEFUNCT)&&pdf_link_bounds(old_link));
+        if (selection) {
+            CHECK(press(app,"Select text")&&observe(app,"PDF text selection",1));
+            CHECK((selected=find(app,"PDF text selection",0))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
+                !state(selected,ATSPI_STATE_EDITABLE)&&(selection_text=atspi_accessible_get_text_iface(selected)));
+            if (links) CHECK((link=find(app,"PDF link to page 2",0))&&state(old_link,ATSPI_STATE_DEFUNCT)&&
+                !state(link,ATSPI_STATE_ENABLED)&&!press(app,"PDF link to page 2"));
+            CHECK(drive("key","Home")&&drive("key","shift+Right")&&drive("key","shift+Right")&&
+                pdf_selection_is(selection_text,"Ré",0,2));
+            CHECK(point_at(id,48,52)&&drive("mousedown","1")&&point_at(id,174,52)&&drive("mouseup","1")&&
+                drive("park",NULL)&&pdf_selection_is(selection_text,"Résumé page",0,11));
+            CHECK(pdf_selection_pixels(display,outer)&&drive("key","ctrl+c")&&
+                observe(app,"Selection copied",0)&&clipboard_reads("Résumé page"));
+            CHECK(drive("windowfocus",id)&&focus(app,"PDF text selection"));
+            CHECK(atspi_text_set_selection(selection_text,0,7,11,NULL)&&pdf_selection_is(selection_text,"page",7,11));
+            CHECK((selection_edit=atspi_accessible_get_editable_text_iface(selected))&&
+                !atspi_editable_text_set_text_contents(selection_edit,"Edited",NULL)&&pdf_selection_is(selection_text,"page",7,11));
+            /* A new native key press supplies the clipboard ownership serial
+               after the independent client has returned keyboard focus. */
+            CHECK(drive("key","End")&&pdf_selection_is(selection_text,NULL,0,0));
+            CHECK(atspi_editable_text_copy_text(selection_edit,7,11,NULL)&&
+                observe(app,"Selection copied",0)&&clipboard_reads("page"));
+            CHECK(drive("windowfocus",id)&&focus(app,"PDF text selection"));
+            CHECK(press(app,"Next page")&&observe(app,"PDF page 2 of 2.",0)&&state(selected,ATSPI_STATE_DEFUNCT));
+            CHECK((new_selected=find(app,"PDF text selection",0))&&(new_text=atspi_accessible_get_text_iface(new_selected))&&
+                pdf_selection_is(new_text,NULL,0,0)&&!atspi_text_set_selection(selection_text,0,0,1,NULL));
+            CHECK(focus(app,"PDF text selection")&&drive("key","Escape")&&observe(app,viewport,1));
+            CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(new_selected,ATSPI_STATE_DEFUNCT));
+            puts("PDF_SELECTION verified: key and pointer selection, keyboard and AT-SPI clipboard bytes, read-only text and page reset");
+            CHECK(focus(app,"Close")&&drive("key","Return"));
+            goto closed;
+        }
         if(pdf_case) {
             CHECK(drive("key","ctrl+f")&&observe(app,"Find in PDF",1));
             CHECK(pdf_find_value(app,""));
@@ -479,6 +571,11 @@ done:
     if(old_link)g_object_unref(old_link);
     if(link)g_object_unref(link);
     if(back)g_object_unref(back);
+    if(selection_text)g_object_unref(selection_text);
+    if(selection_edit)g_object_unref(selection_edit);
+    if(new_text)g_object_unref(new_text);
+    if(selected)g_object_unref(selected);
+    if(new_selected)g_object_unref(new_selected);
     if(app)g_object_unref(app);if(desktop)g_object_unref(desktop);if(initialized)atspi_exit();if(display)XCloseDisplay(display);
     if(host_log){
         char *text=malloc(128u*1024u);
