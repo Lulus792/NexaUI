@@ -353,3 +353,24 @@ within a page and product browser policy remain app work.
 Use `--pdf-external --clipboard-reader /path/to/wl-paste` together with
 `--pdf-link-reader` to test the address, clipboard and explicit handoff.
 The native fixture uses a local receiver with a reserved example address.
+
+### PDF zoom and pan
+
+The PDF toolbar exposes **Zoom out**, **Fit page** and **Zoom in** for
+100–400% magnification in 50-point steps. The fixture shows the controls
+at widths of 480 logical pixels and above while text selection is inactive.
+Ctrl+wheel zooms around the pointer. Scroll, middle-button drag and arrow
+keys with the page image focused pan within the page. Ctrl+0 with the
+page image focused restores Fit page.
+
+The viewer magnifies the accepted raster using the existing software
+presenter and viewport clip. Zoom and pan reuse the staged pixels. The
+same transform positions hit targets, accessible word rectangles, search
+highlights and selection. Partly visible rectangles are clipped. Fully
+offscreen rectangles are omitted while the page text remains readable
+through AT-SPI. Changing the backing resolution preserves the logical
+zoom and normalized center. Rendering fresh detail on magnification is
+left to the application.
+
+Add `--pdf-zoom` with `--pdf-link-reader` to run the independent native
+pixel and AT-SPI workflow.

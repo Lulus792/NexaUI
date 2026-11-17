@@ -470,3 +470,43 @@ The local receipt is `pdf-url427-final.json`.
 Product browser admission, internationalized URLs as submitted by the
 document, page-internal position targets and human screenreader
 acceptance remain open.
+
+## PDF zoom and pan checkpoint, 2026-11-17
+
+Consumer `c601d1f69d74c6561d1b022ab68e6335a9800528` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. The app reuses the viewport's
+clip and staged bitmap lease. For magnified frames it copies the command
+stream into reusable storage and changes only the accepted bitmap's
+destination rectangle. Keyboard and pointer pan use the same page
+transform as link rectangles, accessible word bounds and hit testing,
+search highlights and text selection. The allocator test rejects a failed
+command copy, retries against the same lease and verifies the source
+commands and pixels remain intact through rendering.
+
+The independent private Wayland peer verifies 150% zoom, a 48-pixel
+keyboard pan, a 40-pixel middle-button drag, clipped link and text
+geometry, search highlighting and mouse selection of the word `page`.
+Changing the backing from 448 × 208 to 896 × 416 preserves the logical
+pan and word bounds and retires the old link. Fit restores the unzoomed
+page. The worker records two staged copies before the backing change and
+one fresh copy for the new backing. All four published frames are
+disposed on close. The zoom controls and geometry are app-owned.
+
+The 50 installed CTests and all 37 private Wayland runs passed with
+Clang 22.1.3 on Alpine. The three zoom runs cover static Release, shared
+Release and ASan/UBSan/LSan. The pixel audit matches the five unmarked zoom
+captures against the expected raster and checks the exact unzoomed captures
+against the preceding linked PDF baseline. Search and selection changed
+4,708 and 4,477 interior page pixels respectively, excluding the cursor,
+in each profile. The checked input path uses the accessible Zoom and Fit
+actions, a keyboard arrow and a middle-button drag.
+
+Local archive `nexaui-pdf-zoom430.tar.gz` binds the source, SDK receipt,
+fixture PDFs, build and test logs, and native pixel captures. Readback
+verified SHA-256
+`144bbd65987de99daeaea4711b4393bb2b6fa0c6fed9e77011678817102bd387`.
+The local receipt is `pdf-zoom430-final.json`.
+
+Rendering fresh detail at higher zoom, thumbnail caching, photo-viewer
+controls, physical-output checks and human screenreader acceptance
+remain open.
