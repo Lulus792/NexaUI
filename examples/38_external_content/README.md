@@ -32,12 +32,12 @@ producer once per new request. The adapter starts no thread or engine command.
 Missing or stale frames return `NX_ERROR_STATE`; the viewport rolls back while
 host controls remain paintable. The app can show a waiting/error placeholder.
 
-The producer publishes one allocation containing `content_frame_header` followed
-by exactly `height * stride` bytes. This is an in-process C object contract,
-not a wire or file format. Fields must echo the request, specify straight-alpha
+The producer publishes one allocation containing `content_frame_header`,
+exactly `height * stride` pixel bytes and optional UTF-8 text. This is an
+in-process C object contract. Fields must echo the request, specify straight-alpha
 `NX_BITMAP_RGBA8`, and use a nonzero sequence that increases for each changed
 frame within that request. Equal sequences denote the same immutable pixels
-and reuse the last staged content. Padded rows are supported within the declared
+and text and reuse the last staged content. Padded rows are supported within the declared
 budget. Finish writing before `nx_snapshot_exchange_publish`; ownership transfers
 only on `NX_OK`. A thread-safe disposer releases the allocation. Producer memory
 and outstanding work need their own app bounds; the surface budget does not
@@ -255,5 +255,14 @@ Enable the native fixture as well and use `run_native.py --case pdf
 work-directory arguments. The fixture walks a two-page PDF, a replacement
 with a late frame, a decode error, a change to 2× backing and navigation
 back to page one. The accessible host controls expose the current page and
-error status. Document text, links, search and selection are separate PDF
-viewer work.
+error status. The same page snapshot can carry up to 32 KiB of read-only
+UTF-8 text from `pdftotext`. The native runner uses the reader next to
+`pdftoppm` by default and accepts an explicit `--pdf-text-reader` path.
+
+`content_pdf_frame_with_text` requests image and text from the same open,
+immutable source file and page. The worker rewinds the descriptor between
+the two tools. Both use bounded output and a three-second deadline per child.
+The surface validates and stages the pair together. The native peer gets
+the accepted text through AT-SPI and observes retirement of old text on a
+page or resize change. Textless pages use the page image and host controls.
+Text geometry, links, search and selection remain separate viewer work.

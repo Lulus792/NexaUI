@@ -179,3 +179,39 @@ Local receipt `content-pdf387-final.json` lists its member hashes.
 
 Production viewer integration, stronger process isolation, semantic document
 text, links, search, selection and GPU/physical acceptance remain open.
+
+## PDF text checkpoint, 2026-11-17
+
+Consumer `0e94bb21266c8825fa4e21baf8418611c21e16a9` uses installed SDK
+`b53513b390dbf135050a858fbdfd434edc04ad08` and Alpine Poppler tools
+25.12.0-r1. The worker passes the same open immutable file and page number
+to `pdftoppm` and `pdftotext`. It bounds raw UTF-8 text at 32 KiB and appends
+it to the existing owned pixel snapshot. Image and text share the source
+generation, resize and sequence. The viewport stages and copies both before
+publishing its read-only AT-SPI text child. Empty extraction produces a
+page image with the host controls. [Poppler upstream](https://poppler.freedesktop.org/)
+
+The fixture adds an invisible PDF text layer with non-ASCII characters. The
+independent peer reads both full UTF-8 page strings and checks AT-SPI scalar
+counts, absence of caret and selection, and read-only state. It verifies
+that failed rendering keeps the old text, a late old document adds no text,
+and old text objects become Defunct after page/resize changes. Navigating
+back restores the original page text. The displayed image pixels equal the
+previous PDF checkpoint. A compiled counterexample that always extracts
+page 1 draws page 2 but fails the native text check.
+
+The installed tests reject invalid UTF-8 and embedded NUL, preserve the
+accepted pair on allocation failure, retry the same publication and clear
+text when resizing rejects an old frame. All 50 installed CTests and nineteen
+native cases passed across static Release, shared Release, ASan/UBSan/LSan
+and the default build on Alpine with Clang 22.1.3. The `pdftotext` binary
+SHA-256 is `04f1da090e97301791df5308a3612c73e48413d9d9b431ff9a00691cd2902330`.
+
+Archive `nexaui-pdf-text391.tar.gz` contains exact source, PDFs, direct
+Poppler output, captures, installed/native logs and the counterexample.
+Readback verified SHA-256
+`99f223bf7542439c4bbca976dccc219c6ffa22d2d71637c049dc60b14ab016ff`.
+Local receipt `pdf-text391-final.json` lists the member hashes.
+
+Production PDF viewer integration, text geometry, links, search, selection,
+spoken screenreader output and engine sandboxing remain open.
