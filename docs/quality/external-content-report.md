@@ -348,3 +348,45 @@ Search uses literal UTF-8 and navigates between matching pages. Unicode
 normalization, case folding, navigation between occurrences on one page,
 links, selection and human screenreader acceptance remain open.
 This advances A05/D08/R06 in the standalone consumer.
+
+## PDF internal links checkpoint, 2026-11-17
+
+Consumer `a21d271a76af1c5e0410caf44a45062c42ae271a` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and an optional Poppler-GLib
+25.12.0-r1 child. ELF inspection shows that the child links Poppler-GLib.
+The viewer passes the pinned file and one-based page number through the
+existing bounded worker path. The PDF child exposes annotation mapping
+and resolves direct and named GoTo destinations within the document.
+The viewer validates the reply and maps its coordinates through the
+actual fitted crop-box raster before staging links with the page frame.
+[Poppler link mapping API](https://poppler.freedesktop.org/api/glib/poppler-Poppler-Page.html)
+
+The independent Wayland peer checks the logical rectangle
+`(352, 224, 84, 48)` at both backing scales. It follows the direct link
+with Tab and Enter or a pointer click, and follows the named return link
+through AT-SPI. The link on the retained page survives a failed render.
+Links from replaced pages become Defunct. The input PDF contains an
+external URI annotation. The peer observes only the supported in-document
+link and page text under the viewport. The fixture exposes links as
+buttons named for their destination.
+
+A separate probe verifies a 90° rotated crop box. The actual Poppler
+reply clips the link to `(14, 76, 12, 20)` in a 44×96 point page.
+The installed consumer maps it into the fitted 448×208 image and checks
+the transparent side margin. A headless child with an out-of-range
+destination leaves valid image, text and word bounds intact.
+
+Fifty installed CTests and 28 private Wayland runs passed on Alpine with
+Clang 22.1.3, including six link workflows. Tests cover static Release,
+shared Release, ASan/UBSan/LSan and the default configuration. Captured
+page and search pixels match the previous baseline when link chrome is
+idle. The dynamically linked viewer does not load Poppler libraries.
+
+Local archive `nexaui-pdf-links420.tar.gz` binds source, package manifests,
+fixture PDFs, raw link replies, logs, captures and the rotated probe.
+Readback verified SHA-256
+`73736744fb56b34fbd386839c0165bb5d19216e441448628dd741220d281cab2`.
+The local receipt is `pdf-links420-final.json`.
+
+External URLs, position and zoom destinations, a dedicated accessibility
+link role, text selection and human screenreader acceptance remain open.

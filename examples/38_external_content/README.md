@@ -296,5 +296,29 @@ Add `--pdf-compose` to run the same fixture with Weston simple-IME and
 Compose on its private Xvfb seat. This mode needs `setxkbmap` (or
 `NEXAUI_SETXKBMAP`) and a Weston helper directory containing
 `weston-simple-im` and `weston-desktop-shell`.
-Normalized and case-insensitive matching, character-level geometry, links
-and selection remain viewer work.
+Normalized and case-insensitive matching, character-level geometry and
+selection remain viewer work.
+
+### PDF links within the same document
+
+Enable `-DNEXAUI_CONTENT_BUILD_PDF_LINKS=ON` with the PDF producer to build
+the separate `content_pdf_link_reader` executable. This executable needs
+Poppler-GLib 21.12 or later and the corresponding development headers.
+Pass its absolute path with `run_native.py --case pdf --pdf-link-reader`
+using the usual PDF fixture arguments. Poppler-GLib links only into that
+child executable.
+
+The worker hands the child the pinned file and page number. The reader
+returns up to 32 in-document page destinations, including named targets.
+The renderer uses the crop box in this mode. The worker validates the
+rotated crop-box coordinates against the fitted page image before appending
+the links to the owned frame. A failed or malformed reply leaves the
+image and text available. The child uses the existing bounded pipe and
+three-second deadline.
+
+The viewer exposes each accepted link rectangle as a button named for its
+destination page. Tab and Enter, a pointer click, and the accessible Click
+action can follow a link. Link identities change with the accepted frame,
+and links are disabled while navigation is pending. This example follows
+page destinations. Position and zoom destinations within a page and
+external URL handling remain app work.
