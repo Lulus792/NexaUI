@@ -510,3 +510,45 @@ The local receipt is `pdf-zoom430-final.json`.
 Rendering fresh detail at higher zoom, thumbnail caching, photo-viewer
 controls, physical-output checks and human screenreader acceptance
 remain open.
+
+## PDF page thumbnails checkpoint, 2026-11-18
+
+Consumer `720368547e7c1908993b770bc6a6cb1269b76304` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. The page dialog displays
+three previews at a time with a selected state for the current page.
+The same pinned Poppler file supplies smaller raster-only outputs on
+the existing worker. Page renders take precedence over queued preview
+jobs. One preview may be queued, running or awaiting adoption.
+
+The UI owns fitted RGBA8 frames keyed by document generation, raster
+size and a local revision. Changing group retires the previous group.
+Closing and reopening the same group reuses its frames. An obsolete
+completion is freed. The previous synchronous software render returns
+before the UI drops a reference. At 2×, three 208 × 160 frames occupy
+399,600 bytes in total, including their frame headers. Theme colors
+belong to the surrounding controls and are recomputed on every draw.
+
+All 53 installed CTests and 40 private Wayland runs passed with Clang
+22.1.3 on Alpine. Each static Release, shared Release and ASan/UBSan/LSan
+preview run opens a seven-page document, checks the current-page state and
+the focus returned by Escape, reopens the same group, changes the backing
+scale and visits the last group. Enter on the final card loads page 7.
+The independent client checks the actual thumbnail pixels, the full
+selected page pixels and retirement of retained native references.
+Each run records exactly three 104 × 80 and seven 208 × 160 preview
+results. The main exchange stages four frames, and every publication is
+disposed at exit. The previous five page and placeholder captures are
+byte-identical.
+
+The cache CTest rejects delayed results after a document or group change
+and after a 1× to 2× to 1× round trip. An isolated counterexample that
+removes the raster revision check fails this test. Local archive
+`nexaui-pdf-thumbnails432.tar.gz` binds exact source, SDK receipt, fixture
+PDFs, commands, logs, captures and the counterexample. Readback verified
+SHA-256 `790283d1721b17f470e936a6587e580b3bd13fa901b05587440eaf801c98dd8d`.
+The local receipt is `pdf-thumbnails432-final.json`.
+
+The dialog relies on a successfully indexed page count and uses an
+in-memory CPU cache. PDF metadata UI, fresh detail rendering at higher
+zoom, GPU-backed and theme-dependent caches, and physical and human
+assistive acceptance remain open.

@@ -374,3 +374,25 @@ left to the application.
 
 Add `--pdf-zoom` with `--pdf-link-reader` to run the independent native
 pixel and AT-SPI workflow.
+
+### PDF page thumbnails
+
+Open **Pages** after the document index reports a page count. The dialog
+shows up to three pages at a time. Tab moves through the cards and
+navigation controls. Enter on a card opens that page. Escape closes the
+dialog and restores the previous focus. The selected card marks the
+current page. The dialog requires a logical window of at least 480 × 248.
+
+The existing worker reads thumbnails from the pinned document with the
+same crop choice as the page image. Page requests take precedence over
+queued previews. An unavailable preview keeps its page card operable.
+The UI owns up to three preview frames for the current group. Reopening
+the same group reuses them. A new document, preview group or raster size
+retires the old frames after the prior software render returns. Only
+matching completions join the visible cache. Dialog colors and focus
+indicators are drawn from the current theme around the page pixels.
+
+The logical thumbnail size is 104 × 80. The fixture combines output and
+page backing scales and caps the preview density at 4×. Use
+`run_native.py --case pdf --pdf-thumbnails` with the normal renderer,
+font and native test arguments to exercise a seven-page document.
