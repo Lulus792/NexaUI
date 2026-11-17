@@ -260,6 +260,28 @@ static int pdf_detail_gate(unsigned edge,int release) {
     return 0;
 }
 
+static int export_file(const char *path,uint64_t *fingerprint) {
+    static const uint8_t signature[]={137,80,78,71,13,10,26,10};
+    static const uint8_t dimensions[]={0,0,3,34,0,0,1,196}; /* 802 × 452 */
+    FILE *file=fopen(path,"rb");
+    if (!file) return 0;
+    uint8_t buffer[4096];
+    size_t read=fread(buffer,1,sizeof(buffer),file), total=0;
+    int ok=read>=24&&!memcmp(buffer,signature,sizeof(signature))&&!memcmp(buffer+12,"IHDR",4)&&
+        !memcmp(buffer+16,dimensions,sizeof(dimensions));
+    uint64_t hash=UINT64_C(14695981039346656037);
+    while (ok&&read) {
+        total+=read;
+        if (total>8u*1024u*1024u) { ok=0;break; }
+        for (size_t i=0;i<read;++i) hash=(hash^buffer[i])*UINT64_C(1099511628211);
+        read=fread(buffer,1,sizeof(buffer),file);
+    }
+    ok=ok&&!ferror(file);
+    if (fclose(file)) ok=0;
+    if (ok) *fingerprint=hash;
+    return ok;
+}
+
 static AtspiRect *pdf_detail_word(AtspiAccessible *node) {
     AtspiText *text=atspi_accessible_get_text_iface(node);
     AtspiRect *rect=text?atspi_text_get_character_extents(text,10,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
@@ -589,6 +611,7 @@ int main(int argc,char **argv) {
     int url_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_URL");
     int zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
     int detail_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_DETAIL");
+    const char *export_path=pdf_case?getenv("NEXAUI_CONTENT_TEST_EXPORT_PATH"):NULL;
     int thumbnails=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     int properties=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
@@ -714,6 +737,23 @@ int main(int argc,char **argv) {
     else CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
         pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
+    if (export_path) {
+        CHECK(press(app,"Zoom in")&&pdf_zoom_pixels(display,outer,224,"pdf-export-center"));
+        CHECK(focus(app,viewport)&&drive("key","Right")&&pdf_zoom_pixels(display,outer,176,"pdf-export-panned"));
+        CHECK(focus(app,"Pages")&&drive("key","Return")&&observe(app,"PDF pages",0));
+        CHECK(focus(app,"Export PNG")&&drive("key","Return")&&observe(app,"Exporting PNG",0));
+        CHECK(pdf_detail_gate(1024,0)&&access(export_path,F_OK)<0&&errno==ENOENT&&!press(app,"Export PNG"));
+        CHECK(drive("key","Escape")&&observe(app,"Pages",1)&&press(app,"Fit page"));
+        CHECK(pdf_detail_capture(display,outer,0,"pdf-export-live-fit"));
+        CHECK(pdf_detail_gate(1024,1)&&host_marker(host_log,"PDF_EXPORT ticket=1 generation=2 page=2 result=0"));
+        uint64_t first=0,after=0;
+        CHECK(export_file(export_path,&first)&&press(app,"Pages")&&observe(app,"PNG saved",0));
+        CHECK(press(app,"Export PNG")&&observe(app,"PNG already exists",0));
+        CHECK(export_file(export_path,&after)&&after==first&&press(app,"Close pages"));
+        CHECK(focus(app,"Close")&&drive("key","Return"));
+        puts("PDF_EXPORT verified: frozen panned page, explicit size, accessible status and no replacement");
+        goto closed;
+    }
     if (detail_case) {
         CHECK(press(app,"Zoom in")&&pdf_detail_gate(672,0));
         CHECK(press(app,"Zoom in")&&focus(app,viewport)&&drive("key","Right"));

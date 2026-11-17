@@ -15,6 +15,7 @@
 #include "pdf_frame.h"
 #include "pdf_thumbnails.h"
 #include "pdf_detail.h"
+#include "pdf_export.h"
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
@@ -34,6 +35,16 @@ typedef struct native_pdf_properties_result {
     nx_result result;
     pdf_properties_packet packet;
 } native_pdf_properties_result;
+typedef struct native_export_job {
+    uint64_t ticket, generation;
+    unsigned page;
+    pdf_export_view view;
+} native_export_job;
+typedef struct native_export_result {
+    uint64_t ticket, generation;
+    unsigned page;
+    nx_result result;
+} native_export_result;
 typedef struct native_uri_result {
     uint64_t ticket;
     nx_result result;
@@ -42,6 +53,7 @@ typedef struct native_worker {
     nx_snapshot_exchange *exchange;
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
     const char *uri_launcher;
+    const char *export_path;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
     pthread_t thread;
@@ -59,6 +71,9 @@ typedef struct native_worker {
     pdf_detail_key detail;
     pdf_detail_result detail_result;
     int detail_working;
+    native_export_job pdf_export;
+    native_export_result export_result;
+    int export_working;
     uint64_t uri_ticket;
     int uri_working;
     char uri[CONTENT_PDF_URI_LIMIT+1u];
@@ -76,7 +91,7 @@ static void native_dispose(void *user, void *data, size_t bytes) {
     atomic_fetch_add((_Atomic unsigned *)user, 1u);
     free(data);
 }
-enum { NATIVE_FRAME_READY='W', NATIVE_PROPERTIES_READY='P' };
+enum { NATIVE_FRAME_READY='W', NATIVE_PROPERTIES_READY='P', NATIVE_EXPORT_READY='E' };
 static void native_wake(native_worker *worker, char byte) {
     ssize_t count;
     do { count = write(worker->wake[1], &byte, 1); } while (count < 0 && errno == EINTR);
@@ -212,6 +227,22 @@ static void native_index_pdf(native_worker *worker, native_job job) {
 #endif
 
 #ifdef CONTENT_NATIVE_PDF
+static void native_render_export(native_worker *worker, native_export_job job) {
+    nx_result result=NX_ERROR_STATE;
+    if (worker->pdf_generation==job.generation) {
+        nx_bitmap_view image={0};
+        result=content_pdf_export_render(worker->pdf_renderer,worker->pdf_link_reader!=NULL,
+            worker->pdf_file,job.page,job.view,&image);
+        if (result==NX_OK) result=content_pdf_export_png(worker->export_path,image);
+        free((void *)image.pixels);
+    }
+    pthread_mutex_lock(&worker->mutex);
+    worker->export_result=(native_export_result){job.ticket,job.generation,job.page,result};
+    worker->export_working=0;
+    pthread_mutex_unlock(&worker->mutex);
+    native_wake(worker,NATIVE_EXPORT_READY);
+}
+
 static void native_render_detail(native_worker *worker, pdf_detail_key key) {
     pdf_detail_result detail={.key=key,.result=NX_ERROR_STATE};
     if (worker->pdf_generation==key.generation)
@@ -240,7 +271,8 @@ static void *native_worker_entry(void *user) {
     native_worker *worker = user;
     for (;;) {
         pthread_mutex_lock(&worker->mutex);
-        while (!worker->stop && !worker->pending && !worker->uri_ticket && !worker->thumbnail.page && !worker->detail.edge)
+        while (!worker->stop && !worker->pending && !worker->uri_ticket && !worker->thumbnail.page &&
+            !worker->detail.edge && !worker->pdf_export.ticket)
             pthread_cond_wait(&worker->condition, &worker->mutex);
         if (worker->stop) { pthread_mutex_unlock(&worker->mutex); break; }
         if (!worker->pending && worker->uri_ticket) {
@@ -262,6 +294,14 @@ static void *native_worker_entry(void *user) {
             continue;
         }
 #ifdef CONTENT_NATIVE_PDF
+        if (!worker->pending && worker->pdf_export.ticket) {
+            native_export_job job=worker->pdf_export;
+            worker->pdf_export=(native_export_job){0};
+            worker->export_working=1;
+            pthread_mutex_unlock(&worker->mutex);
+            native_render_export(worker,job);
+            continue;
+        }
         if (!worker->pending && worker->detail.edge) {
             pdf_detail_key key=worker->detail;
             worker->detail=(pdf_detail_key){0};
@@ -349,13 +389,14 @@ static int native_worker_close(native_worker *worker) {
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
     const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader,
-    const char *uri_launcher) {
+    const char *uri_launcher, const char *export_path) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
     worker->encoded_dir = encoded_dir; worker->pdf_renderer = pdf_renderer; worker->pdf_reader = pdf_reader;
     worker->pdf_link_reader = pdf_link_reader;
     worker->uri_launcher = uri_launcher;
+    worker->export_path = export_path;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;
@@ -423,6 +464,26 @@ static pdf_detail_result native_take_detail(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
     pdf_detail_result result=worker->detail_result;
     worker->detail_result=(pdf_detail_result){0};
+    pthread_mutex_unlock(&worker->mutex);
+    return result;
+}
+
+static int native_schedule_export(native_worker *worker, native_export_job job) {
+    if (!worker->export_path || !job.ticket || !job.generation || !job.page) return 0;
+    pthread_mutex_lock(&worker->mutex);
+    int accepted=!worker->stop && !worker->pdf_export.ticket && !worker->export_result.ticket && !worker->export_working;
+    if (accepted) {
+        worker->pdf_export=job;
+        pthread_cond_signal(&worker->condition);
+    }
+    pthread_mutex_unlock(&worker->mutex);
+    return accepted;
+}
+
+static native_export_result native_take_export(native_worker *worker) {
+    pthread_mutex_lock(&worker->mutex);
+    native_export_result result=worker->export_result;
+    worker->export_result=(native_export_result){0};
     pthread_mutex_unlock(&worker->mutex);
     return result;
 }

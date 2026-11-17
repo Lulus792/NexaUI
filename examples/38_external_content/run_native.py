@@ -97,14 +97,15 @@ def write_pdf_fixtures(directory, include_links=False, thumbnails=False, propert
         print(f'PDF_FIXTURE {name} sha256={hashlib.sha256(data).hexdigest()}', flush=True)
 
 
-def controlled_detail_renderer(directory):
+def controlled_pdf_renderer(directory, export=False):
     path = Path(directory) / 'detail-renderer'
-    path.write_text(f'#!{sys.executable}\n' + '''import os, sys, time
+    settings = 'held_edges, failed_edge = (1024,), 0' if export else 'held_edges, failed_edge = (672, 896), 1024'
+    path.write_text(f'#!{sys.executable}\n{settings}\n' + '''import os, sys, time
 from pathlib import Path
 edge = int(sys.argv[sys.argv.index('-scale-to')+1])
-if edge == 1024:
+if edge == failed_edge:
     sys.exit(1)
-if edge in (672, 896):
+if edge in held_edges:
     directory = Path(__file__).parent
     (directory / f'detail-{edge}-started').touch()
     release = directory / f'detail-{edge}-release'
@@ -136,6 +137,7 @@ def main():
     parser.add_argument('--pdf-thumbnails', action='store_true', help='Exercise the seven-page PDF preview workflow')
     parser.add_argument('--pdf-properties', action='store_true', help='Exercise the PDF properties dialog')
     parser.add_argument('--pdf-detail', action='store_true', help='Exercise higher-resolution PDF zoom rendering')
+    parser.add_argument('--pdf-export', action='store_true', help='Export the current PDF page viewport to PNG')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -150,7 +152,7 @@ def main():
     if args.pdf_zoom and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select or args.pdf_external):
         parser.error('--pdf-zoom requires --case pdf and --pdf-link-reader as a separate workflow')
     if args.pdf_thumbnails and (args.case != 'pdf' or args.pdf_link_reader or args.pdf_select or args.pdf_external or
-                                args.pdf_zoom or args.pdf_compose or args.pdf_properties or args.pdf_detail):
+                                args.pdf_zoom or args.pdf_compose or args.pdf_properties or args.pdf_detail or args.pdf_export):
         parser.error('--pdf-thumbnails requires --case pdf as a separate workflow')
     if args.pdf_properties and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select or args.pdf_external or
                                 args.pdf_zoom or args.pdf_compose or args.pdf_detail):
@@ -158,6 +160,9 @@ def main():
     if args.pdf_detail and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select or args.pdf_external or
                             args.pdf_zoom or args.pdf_compose):
         parser.error('--pdf-detail requires --case pdf and --pdf-link-reader as a separate workflow')
+    if args.pdf_export and (args.case != 'pdf' or args.pdf_select or args.pdf_external or args.pdf_zoom or
+                            args.pdf_compose or args.pdf_properties or args.pdf_detail):
+        parser.error('--pdf-export requires --case pdf as a separate workflow')
     if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
@@ -181,6 +186,8 @@ def main():
         env['NEXAUI_CONTENT_TEST_PDF_PROPERTIES'] = '1'
     if args.pdf_detail:
         env['NEXAUI_CONTENT_TEST_PDF_DETAIL'] = '1'
+    if args.pdf_export:
+        env['NEXAUI_CONTENT_TEST_EXPORT_PATH'] = str(args.work_dir / 'exported-page.png')
     if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:
@@ -211,9 +218,9 @@ def main():
             else:
                 renderer = args.pdf_renderer.resolve(strict=True)
                 reader = args.pdf_text_reader or renderer.with_name('pdftotext')
-                if args.pdf_detail:
+                if args.pdf_detail or args.pdf_export:
                     env['NEXAUI_CONTENT_TEST_DETAIL_RENDERER'] = str(renderer)
-                    renderer = controlled_detail_renderer(directory)
+                    renderer = controlled_pdf_renderer(directory,args.pdf_export)
                 env['NEXAUI_CONTENT_TEST_PDF_RENDERER'] = str(renderer)
                 env['NEXAUI_CONTENT_TEST_PDF_READER'] = str(reader.resolve(strict=True))
                 if args.pdf_link_reader:

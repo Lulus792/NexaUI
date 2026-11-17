@@ -241,6 +241,7 @@ enum { PDF_PAGES=53, PDF_PAGES_DIALOG, PDF_PAGES_BACKDROP, PDF_PAGES_CLOSE, PDF_
 enum { PDF_PROPERTIES=60, PDF_PROPERTIES_DIALOG, PDF_PROPERTIES_BACKDROP, PDF_PROPERTIES_CLOSE,
     PDF_PROPERTIES_DISMISSED, PDF_PROPERTIES_SCROLL, PDF_PROPERTIES_SCROLL_X, PDF_PROPERTIES_SCROLL_Y,
     PDF_PROPERTIES_TEXT, PDF_PROPERTIES_STATUS };
+enum { PDF_EXPORT=70, PDF_EXPORT_STATUS };
 typedef struct pdf_properties_view {
     native_pdf_properties_result available;
     uint64_t session;
@@ -252,6 +253,9 @@ typedef struct pdf_document_view {
     pdf_thumbnails thumbnails;
     pdf_detail detail;
     pdf_properties_view properties;
+    const char *export_status;
+    uint64_t export_ticket;
+    int export_enabled;
     unsigned page, pages, counted_page;
     int index_finished;
     content_pdf_hits hits;
@@ -396,7 +400,9 @@ static nx_result pdf_pages_dialog(nx_context *context, const nx_font_collection 
     nx_color text;
     result=nx_theme_color(context,NX_COLOR_TEXT,&text);
     float x=panel.x+16, y=panel.y;
-    if (result==NX_OK) result=pdf_dialog_text(context,fonts,title,(nx_rect){x,y+12,190,24},17,text);
+    if (result==NX_OK) result=pdf_dialog_text(context,fonts,title,(nx_rect){x,y+12,document->export_enabled?90:190,24},17,text);
+    if (result==NX_OK && document->export_enabled) result=scoped_button(context,fonts,PDF_EXPORT,PDF_PAGES_DIALOG,
+        "Export PNG","Export PNG",x+96,y+8,98,!document->export_ticket,action);
     if (result==NX_OK && document->properties.enabled) result=scoped_button(context,fonts,PDF_PROPERTIES,PDF_PAGES_DIALOG,
         "Properties","Properties",x+200,y+8,104,1,action);
     if (result==NX_OK) result=scoped_button(context,fonts,PDF_PAGES_CLOSE,PDF_PAGES_DIALOG,
@@ -420,7 +426,14 @@ static nx_result pdf_pages_dialog(nx_context *context, const nx_font_collection 
     unsigned last=cache->first+PDF_THUMBNAIL_COUNT-1u;
     if (last>total) last=total;
     snprintf(range,sizeof(range),"%u–%u of %u",cache->first,last,total);
-    if (result==NX_OK && total) result=pdf_dialog_text(context,fonts,range,(nx_rect){x+151,y+181,138,24},14,text);
+    if (result==NX_OK && document->export_status) {
+        const char *message=document->export_status;
+        nx_rect area={x+106,y+181,178,24};
+        nx_semantic_desc semantic={.id=PDF_EXPORT_STATUS,.parent_id=PDF_PAGES_DIALOG,.role=NX_ROLE_STATUS,.bounds=area,
+            .name={message,strlen(message)}};
+        result=nx_semantics_add(context,&semantic,NULL);
+        if (result==NX_OK) result=pdf_dialog_text(context,fonts,message,area,14,text);
+    } else if (result==NX_OK && total) result=pdf_dialog_text(context,fonts,range,(nx_rect){x+151,y+181,138,24},14,text);
     if (result==NX_OK && !dismissed && document->properties.open)
         result=pdf_properties_dialog(context,fonts,&document->properties,panel,action);
     nx_result ended=nx_overlay_end(context);
@@ -594,7 +607,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     }
     int search = find_visible(query,phase,info.width);
     int hit_page = pdf_case&&pdf_hit_page(phase);
-    int pages_visible=pdf_case&&pdf_can_navigate(phase)&&(document->pages||document->properties.enabled)&&
+    int pages_visible=pdf_case&&pdf_can_navigate(phase)&&(document->pages||document->properties.enabled||document->export_enabled)&&
         info.width>=480&&info.height>=248&&
         !selection->active;
     if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts, 2,
@@ -684,6 +697,8 @@ int main(void) {
     int pdf_select_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
     int pdf_zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
     int pdf_detail_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_DETAIL");
+    const char *export_path=pdf_case?getenv("NEXAUI_CONTENT_TEST_EXPORT_PATH"):NULL;
+    int pdf_export_case=export_path&&export_path[0]=='/';
     int pdf_thumbnails_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     int pdf_properties_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
     int pdf_compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
@@ -712,13 +727,16 @@ int main(void) {
     unsigned frames=0,action=0,linked_page=0; int need_frame=1,initial_job=0; double scale=1;
     unsigned nav_completion=0,pending_page=0,scaled_search_completion=0; enum phase nav_target=FAILED;
     uint64_t nav_sequence=0;
-    pdf_document_view document={.properties.enabled=pdf_link_reader!=NULL};
+    pdf_document_view document={.properties.enabled=pdf_link_reader!=NULL,.export_enabled=pdf_export_case};
     pdf_text_view text_view={0};
     pdf_selection selection={0};
     pdf_camera camera;
     pdf_camera_fit(&camera);
     pdf_url_view preview={0};
     uint64_t uri_serial=0;
+#ifdef CONTENT_NATIVE_PDF
+    uint64_t export_serial=0;
+#endif
     char link_address[CONTENT_PDF_URI_LIMIT+1u];
     nx_text_field *query=NULL;
     int logged_preedit=0,find_pressed=0;
@@ -730,7 +748,7 @@ int main(void) {
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
         (pdf_case&&nx_text_field_create("",0,4096,&query)!=NX_OK)||
         nx_software_view_open(window,&software)!=NX_OK||
-        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher)) goto done;
+        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher,export_path)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     for (;;) {
@@ -773,7 +791,7 @@ int main(void) {
             char wake[64]; ssize_t count;
             do {
                 count=read(worker.wake[0],wake,sizeof(wake));
-                for (ssize_t i=0;i<count;++i) worker_frame|=wake[i]!=NATIVE_PROPERTIES_READY;
+                for (ssize_t i=0;i<count;++i) worker_frame|=wake[i]!=NATIVE_PROPERTIES_READY&&wake[i]!=NATIVE_EXPORT_READY;
             } while (count>0||(count<0&&errno==EINTR));
             if (count<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK) goto done;
         }
@@ -831,6 +849,19 @@ int main(void) {
                     printf("PDF_PROPERTIES generation=%llu accepted=%d result=%d\n",
                         (unsigned long long)properties.generation,accepted,(int)properties.result);
                     fflush(stdout);
+                }
+            }
+            if (document.export_enabled&&ready) {
+                native_export_result exported=native_take_export(&worker);
+                if (exported.ticket && exported.ticket==document.export_ticket &&
+                    exported.generation==current.request.generation) {
+                    document.export_ticket=0;
+                    document.export_status=exported.result==NX_OK?"PNG saved":
+                        exported.result==NX_ERROR_STATE?"PNG already exists":"Export unavailable";
+                    printf("PDF_EXPORT ticket=%llu generation=%llu page=%u result=%d\n",(unsigned long long)exported.ticket,
+                        (unsigned long long)exported.generation,exported.page,(int)exported.result);
+                    fflush(stdout);
+                    need_frame|=document.thumbnails.open;
                 }
             }
         }
@@ -953,6 +984,19 @@ int main(void) {
             continue;
         }
         if (had_pages) {
+            if (action==PDF_EXPORT && !document.export_ticket) {
+                int scheduled=0;
+                if (content_result==NX_OK && status.sequence && status.image.width && status.image.height && export_serial!=UINT64_MAX) {
+                    native_export_job job={.ticket=++export_serial,.generation=status.request.generation,
+                        .page=document.page,.view={.viewport=page_view.viewport,.page=pdf_detail_destination(status,page_view.image),
+                            .width=641,.height=361,.scale=1.25}};
+                    scheduled=native_schedule_export(&worker,job);
+                    if (scheduled) document.export_ticket=job.ticket;
+                }
+                document.export_status=scheduled?"Exporting PNG":"Export unavailable";
+                need_frame=1;
+                continue;
+            }
             if (action==PDF_PROPERTIES) {
                 document.properties.open=1;
                 document.properties.x=document.properties.y=0;
@@ -1023,7 +1067,7 @@ int main(void) {
             content_pdf_index_destroy(document.index);
             pdf_thumbnails_clear(&document.thumbnails);
             pdf_detail_clear(&document.detail);
-            document=(pdf_document_view){.properties.enabled=pdf_link_reader!=NULL};
+            document=(pdf_document_view){.properties.enabled=pdf_link_reader!=NULL,.export_enabled=pdf_export_case};
 #endif
             if(input) { if(content_input_rebind(input,2)!=NX_OK) goto done; receiver.generation=2; }
             selection=(pdf_selection){0};
@@ -1110,14 +1154,14 @@ done:
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
     unsigned expected=(!strcmp(test_case,"full")||input_case||png_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
-    if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case||pdf_detail_case)?4u:
+    if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case||pdf_detail_case||pdf_export_case)?4u:
         pdf_zoom_case?5u:pdf_thumbnails_case?6u:pdf_link_reader?10u:8u;
     unsigned published=expected-(unsigned)(png_case||(pdf_case&&!pdf_url_case));
     unsigned discarded=!strcmp(test_case,"pending-close")?1u:0u;
     if (!worker_ready||worker.completed!=expected||worker.publications!=published||worker.discarded!=discarded||
         atomic_load(&worker.disposals)!=published||((expected==5u)&&phase!=SCALED_READY)||
         (pdf_case&&(pdf_url_case?(phase!=READY||document.page!=1u):
-            (pdf_select_case||pdf_properties_case||pdf_detail_case)?(phase!=RECOVERED||document.page!=2u):
+            (pdf_select_case||pdf_properties_case||pdf_detail_case||pdf_export_case)?(phase!=RECOVERED||document.page!=2u):
             pdf_zoom_case?(phase!=SCALED_READY||document.page!=2u):
             pdf_thumbnails_case?(phase!=PDF_HIT_READY||document.page!=7u):
             (phase!=PDF_HIT_READY||document.page!=1u)))||

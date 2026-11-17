@@ -3,6 +3,7 @@
 #include "png_frame.h"
 #include "pdf_thumbnails.h"
 #include "pdf_detail.h"
+#include "pdf_export.h"
 
 #include <errno.h>
 #include <png.h>
@@ -15,8 +16,12 @@
 static int engine_probe(void) {
     int mode = getchar();
     if (mode == 's') { sleep(30); return 0; }
-    if (mode == 'm' || mode == 'g' || mode == 'x') {
-        const uint8_t pixels[16 * 8 * 4] = {0};
+    if (mode == 'm' || mode == 'g' || mode == 'x' || mode == 'e') {
+        uint8_t pixels[16 * 8 * 4] = {0};
+        if (mode=='e') for (unsigned y=0;y<8;++y) for (unsigned x=0;x<16;++x) {
+            uint8_t *p=pixels+(y*16u+x)*4u;
+            p[0]=(uint8_t)(24+x*10u);p[1]=(uint8_t)(33+y*11u);p[2]=112;p[3]=255;
+        }
         png_image image = {.version=PNG_IMAGE_VERSION, .width=16, .height=8, .format=PNG_FORMAT_RGBA};
         return png_image_write_to_stdio(&image, stdout, 0, pixels, 0, NULL) ? 0 : 2;
     }
@@ -279,6 +284,49 @@ done:
     return ok;
 }
 
+static int probe_export(const char *renderer) {
+    char directory[]="/tmp/nexaui-pdf-export-XXXXXX";
+    if (!mkdtemp(directory)) return 0;
+    char source[sizeof(directory)+16],target[sizeof(directory)+16];
+    snprintf(source,sizeof(source),"%s/source",directory);
+    snprintf(target,sizeof(target),"%s/viewport.png",directory);
+    FILE *seed=fopen(source,"wb");
+    int ok=0,file=-1;
+    nx_bitmap_view export={0};
+    if (!seed) goto done;
+    int wrote=fputc('e',seed)!=EOF;
+    if (fclose(seed)||!wrote||content_pdf_open(source,&file)!=NX_OK) goto done;
+    pdf_export_view view={.viewport={10,20,30,20},.page={6,20,32,16},.width=12,.height=8,.scale=1.25};
+    if (content_pdf_export_render(renderer,0,file,1,view,&export)!=NX_OK || export.width!=15 ||
+        export.height!=10 || export.stride_bytes!=60 || export.format!=NX_BITMAP_RGBA8) goto done;
+    for (unsigned y=0;y<10;++y) for (unsigned x=0;x<15;++x) {
+        const uint8_t *p=export.pixels+(y*15u+x)*4u;
+        uint8_t expected[4]={255,255,255,255};
+        if (x<14&&y<8) { expected[0]=(uint8_t)(44+x*10u);expected[1]=(uint8_t)(33+y*11u);expected[2]=112; }
+        if (memcmp(p,expected,sizeof(expected))) goto done;
+    }
+    const uint8_t *owned=export.pixels;
+    view.width=NX_VIEWPORT_MAX_DIMENSION;
+    if (content_pdf_export_render(renderer,0,file,1,view,&export)!=NX_ERROR_LIMIT||export.pixels!=owned) goto done;
+    const uint8_t replacement[]={7,13,19,255};
+    if (content_pdf_export_png(target,export)!=NX_OK ||
+        content_pdf_export_png(target,(nx_bitmap_view){replacement,1,1,4,NX_BITMAP_RGBA8})!=NX_ERROR_STATE) goto done;
+    png_image png={.version=PNG_IMAGE_VERSION};
+    uint8_t decoded[15u*10u*4u];
+    ok=png_image_begin_read_from_file(&png,target)&&png.width==15&&png.height==10;
+    png.format=PNG_FORMAT_RGBA;
+    if (ok) ok=png_image_finish_read(&png,NULL,decoded,0,NULL)&&!memcmp(decoded,export.pixels,sizeof(decoded));
+    png_image_free(&png);
+done:
+    if (file>=0&&close(file)) ok=0;
+    free((void *)export.pixels);
+    if (unlink(source)&&errno!=ENOENT) ok=0;
+    if (unlink(target)&&errno!=ENOENT) ok=0;
+    if (rmdir(directory)) ok=0;
+    if (ok) puts("PDF export verifies exact explicit-size pixels, bounded dimensions and no-replace PNG publication");
+    return ok;
+}
+
 int main(int argc, char **argv) {
     if ((argc == 10 || argc == 11) && !strcmp(argv[1], "-png")) return engine_probe();
     if (argc == 2 && !strcmp(argv[1],"1")) return link_probe();
@@ -286,6 +334,7 @@ int main(int argc, char **argv) {
     if (argc == 2 && !strcmp(argv[1],"--properties")) return properties_reply();
     if (argc == 2 && !strcmp(argv[1],"properties")) return probe_properties(argv[0])?0:1;
     if (argc == 2 && !strcmp(argv[1],"detail")) return probe_detail_cache()?0:1;
+    if (argc == 2 && !strcmp(argv[1],"export")) return probe_export(argv[0])?0:1;
     if (argc == 12 && !strcmp(argv[1], "-f")) return text_probe(argv[9]);
     if (argc == 11 && !strcmp(argv[4], "257")) return index_probe();
     if (argc != 1) return 2;
