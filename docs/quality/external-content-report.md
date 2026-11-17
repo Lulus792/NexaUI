@@ -215,3 +215,17 @@ Local receipt `pdf-text391-final.json` lists the member hashes.
 
 Production PDF viewer integration, text geometry, links, search, selection,
 spoken screenreader output and engine sandboxing remain open.
+
+SDK `85f5d1cab97ff4488062b80d0149dc4efddcb803` accepts owned presentation on
+read-only snapshots through the existing `nx_text_document_set_presentation`
+entry point. Revision 0 identifies a read-only snapshot. Twelve headless and
+twelve native Wayland CTests passed across static, shared and sanitizer builds.
+The independent AT-SPI peer verified shared word bounds, Unicode scalar hit
+testing, unmapped whitespace, absence of a caret and read-only state. The
+Linux shared build has the same 544 `nx_` exports as `b53513b`. The first
+local native invocation omitted Xvfb. The corrected fixture ran the same
+builds through the private Xvfb/Weston test environment.
+[SDK platform CI](https://github.com/Lulus792/NexaUI/actions/runs/43988082890)
+
+Local evidence archive `nexaui-readonly-geometry395.tar.gz` has SHA-256
+`b03dae622d27c8a31b960ca342c3e28c26356f526169dea9c00b3df6de48e4d2`.

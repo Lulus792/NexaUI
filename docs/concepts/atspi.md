@@ -104,7 +104,12 @@ UTF-8 byte positions are translated to AT-SPI scalar offsets. This snapshot
 rejects native caret, selection and editing requests, because its model belongs
 to the application. When no caret or complete selection can be represented in
 the snapshot, `nx_semantics_add_readonly_text_snapshot_without_caret` preserves
-readable text, reports caret offset -1 and reports no selection. GNOME's
+readable text, reports caret offset -1 and reports no selection. Applications
+can attach copied logical bounds and text attributes to either read-only
+snapshot with `nx_text_document_set_presentation`, passing the snapshot
+identity and revision 0. Character and range extents and point-to-offset
+queries use the supplied geometry. Unmapped ranges remain unsupported.
+GNOME's
 [Atk.Text caret contract](https://gnome.pages.gitlab.gnome.org/at-spi2-core/atk/method.Text.get_caret_offset.html)
 defines -1 for a caret outside the element or an error. Caret and a single text selection in built-in fields can be moved
 through deferred AT-SPI requests, including on read-only fields. Offsets must
