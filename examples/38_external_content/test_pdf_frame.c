@@ -67,6 +67,49 @@ static int index_probe(void) {
     }
 }
 
+static int properties_reply(void) {
+    int mode=getchar();
+    pdf_properties_packet packet={.format=CONTENT_PDF_PROPERTIES_FORMAT,.page_count=2,.major=1,.minor=4,
+        .unavailable=1u<<CONTENT_PDF_SUBJECT,.fields={"Résumé","", ""}};
+    size_t bytes=CONTENT_PDF_PROPERTIES_BYTES;
+    switch (mode) {
+    case 's': --bytes;break;
+    case 'p': packet.page_count=0;break;
+    case 'v': packet.format=0;break;
+    case 'u': packet.fields[CONTENT_PDF_AUTHOR][0]=(char)0xc3;break;
+    case 'n': memset(packet.fields[CONTENT_PDF_AUTHOR],'a',sizeof(packet.fields[0]));break;
+    case 'c': memcpy(packet.fields[CONTENT_PDF_AUTHOR],"a\nb",4);break;
+    case 'f': packet.unavailable|=1u<<CONTENT_PDF_PROPERTY_COUNT;break;
+    case 'a': strcpy(packet.fields[CONTENT_PDF_SUBJECT],"Unexpected value");break;
+    }
+    if (fwrite(&packet,1,bytes,stdout)!=bytes) return 2;
+    return mode=='o' && putchar('x')==EOF;
+}
+
+static int probe_properties(const char *executable) {
+    char path[]="/tmp/nexaui-pdf-properties-XXXXXX";
+    int file=mkstemp(path);
+    if (file<0) return 0;
+    int ok=unlink(path)==0;
+    static const char modes[]="gospvuncfa";
+    for (size_t i=0;ok && i<sizeof(modes)-1u;++i) {
+        pdf_properties_packet packet, sentinel;
+        memset(&sentinel,0xa5,sizeof(sentinel));
+        memcpy(&packet,&sentinel,sizeof(packet));
+        nx_result expected=modes[i]=='g'?NX_OK:modes[i]=='o'?NX_ERROR_LIMIT:NX_ERROR_ARGUMENT;
+        ok=pwrite(file,&modes[i],1,0)==1 && content_pdf_read_properties(executable,file,&packet)==expected;
+        if (ok && expected==NX_OK)
+            ok=packet.page_count==2 && packet.major==1 && packet.minor==4 &&
+                packet.unavailable==(1u<<CONTENT_PDF_SUBJECT) && !strcmp(packet.fields[CONTENT_PDF_TITLE],"Résumé") &&
+                !*packet.fields[CONTENT_PDF_AUTHOR] && !*packet.fields[CONTENT_PDF_SUBJECT];
+        else if (ok) ok=!memcmp(&packet,&sentinel,sizeof(packet));
+        if (!ok) fprintf(stderr,"Unexpected PDF properties reply for mode %c\n",modes[i]);
+    }
+    if (close(file)) ok=0;
+    if (ok) puts("PDF properties reply validates size, version, fields and immutable error output");
+    return ok;
+}
+
 static int probe(const char *executable, char mode, nx_result expected) {
     char file[] = "/tmp/nexaui-pdf-probe-XXXXXX";
     int fd = mkstemp(file);
@@ -199,6 +242,8 @@ int main(int argc, char **argv) {
     if ((argc == 10 || argc == 11) && !strcmp(argv[1], "-png")) return engine_probe();
     if (argc == 2 && !strcmp(argv[1],"1")) return link_probe();
     if (argc == 2 && !strcmp(argv[1],"previews")) return probe_thumbnail_cache()?0:1;
+    if (argc == 2 && !strcmp(argv[1],"--properties")) return properties_reply();
+    if (argc == 2 && !strcmp(argv[1],"properties")) return probe_properties(argv[0])?0:1;
     if (argc == 12 && !strcmp(argv[1], "-f")) return text_probe(argv[9]);
     if (argc == 11 && !strcmp(argv[4], "257")) return index_probe();
     if (argc != 1) return 2;

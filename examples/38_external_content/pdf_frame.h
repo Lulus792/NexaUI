@@ -2,6 +2,7 @@
 #define EXAMPLE_CONTENT_PDF_FRAME_H
 
 #include "surface.h"
+#include "pdf_properties.h"
 
 /* Run an app-selected pdftoppm executable on one page (one-based) of a
    regular PDF file. Absolute paths, no shell, private input/output fds.
@@ -31,6 +32,9 @@ nx_result content_pdf_render_with_links(const char *renderer, const char *reader
    text or annotation children. The caller owns the returned frame. */
 nx_result content_pdf_render_thumbnail(const char *renderer, int crop, int file, unsigned page,
     content_request request, void **out, size_t *out_size);
+/* Read one properties reply from the same pinned descriptor. Missing fields
+   are empty, and an invalid reply leaves the caller's output unchanged. */
+nx_result content_pdf_read_properties(const char *helper, int file, pdf_properties_packet *out);
 /* Called only after an explicit host action. Run the host-selected dispatcher
    with one address argument, no shell, private input and a bounded lifetime. */
 nx_result content_pdf_open_uri(const char *launcher, const char uri[CONTENT_PDF_URI_LIMIT+1u]);

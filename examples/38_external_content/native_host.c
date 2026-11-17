@@ -236,10 +236,21 @@ static nx_result pdf_url_dialog(nx_context *context, const nx_font_collection *f
 }
 
 enum { PDF_FIND_FIELD = 32, PDF_NEXT_HIT = 34 };
-enum { PDF_PAGES=53, PDF_PAGES_DIALOG, PDF_PAGES_BACKDROP, PDF_PAGES_CLOSE, PDF_PAGES_PREVIOUS, PDF_PAGES_NEXT };
+enum { PDF_PAGES=53, PDF_PAGES_DIALOG, PDF_PAGES_BACKDROP, PDF_PAGES_CLOSE, PDF_PAGES_PREVIOUS,
+    PDF_PAGES_NEXT, PDF_PAGES_STATUS };
+enum { PDF_PROPERTIES=60, PDF_PROPERTIES_DIALOG, PDF_PROPERTIES_BACKDROP, PDF_PROPERTIES_CLOSE,
+    PDF_PROPERTIES_DISMISSED, PDF_PROPERTIES_SCROLL, PDF_PROPERTIES_SCROLL_X, PDF_PROPERTIES_SCROLL_Y,
+    PDF_PROPERTIES_TEXT, PDF_PROPERTIES_STATUS };
+typedef struct pdf_properties_view {
+    native_pdf_properties_result available;
+    uint64_t session;
+    float x, y;
+    int enabled, open;
+} pdf_properties_view;
 typedef struct pdf_document_view {
     content_pdf_index *index;
     pdf_thumbnails thumbnails;
+    pdf_properties_view properties;
     unsigned page, pages, counted_page;
     int index_finished;
     content_pdf_hits hits;
@@ -248,13 +259,93 @@ typedef struct pdf_document_view {
 } pdf_document_view;
 
 #ifdef CONTENT_NATIVE_PDF
-static nx_result thumbnail_text(nx_context *context, const nx_font_collection *fonts,
+static nx_result pdf_dialog_text(nx_context *context, const nx_font_collection *fonts,
     const char *text, nx_rect bounds, double em, nx_color color) {
     nx_text_layout *layout=NULL;
-    nx_result result=nx_text_layout_create(fonts,text,strlen(text),NX_BIDI_LTR,em,bounds.width,&layout);
+    nx_result result=nx_text_layout_create(fonts,text,strlen(text),NX_BIDI_AUTO,em,bounds.width,&layout);
     if (result==NX_OK) result=nx_draw_text_layout(context,layout,(nx_point){bounds.x,bounds.y},color,65536);
     nx_text_layout_destroy(layout);
     return result;
+}
+
+static nx_result pdf_properties_rows(nx_context *context, const nx_font_collection *fonts,
+    pdf_properties_view *view, nx_rect bounds, nx_color ink) {
+    static const char *labels[]={"Title","Author","Subject","Pages","PDF version"};
+    const pdf_properties_packet *packet=&view->available.packet;
+    char pages[16], version[16];
+    snprintf(pages,sizeof(pages),"%u",packet->page_count);
+    snprintf(version,sizeof(version),"%u.%u",packet->major,packet->minor);
+    const char *values[]={packet->fields[CONTENT_PDF_TITLE],packet->fields[CONTENT_PDF_AUTHOR],
+        packet->fields[CONTENT_PDF_SUBJECT],pages,version};
+    enum { rows=sizeof(labels)/sizeof(*labels), label_width=108, padding=8 };
+    nx_text_layout *layouts[rows]={0};
+    char text[CONTENT_PDF_PROPERTY_COUNT*(CONTENT_PDF_PROPERTY_LIMIT+1u)+128u];
+    size_t length=0;
+    float width=bounds.width-14, height=2*padding;
+    nx_result result=NX_OK;
+    for (unsigned i=0;result==NX_OK && i<rows;++i) {
+        if (!*values[i]) values[i]=packet->unavailable&(1u<<i)?"Value unavailable":"Not specified";
+        int n=snprintf(text+length,sizeof(text)-length,"%s\n%s\n",labels[i],values[i]);
+        if (n<0 || (size_t)n>=sizeof(text)-length) { result=NX_ERROR_LIMIT;break; }
+        length+=(size_t)n;
+        result=nx_text_layout_create(fonts,values[i],strlen(values[i]),NX_BIDI_AUTO,14,
+            bounds.width-label_width-16-2*padding,&layouts[i]);
+        if (result==NX_OK) {
+            float row_width=label_width+(float)nx_text_layout_width(layouts[i])+2*padding;
+            if (row_width>width) width=row_width;
+            height+=(float)nx_text_layout_height(layouts[i])+9;
+        }
+    }
+    nx_scroll_area_desc scroll={.id=PDF_PROPERTIES_SCROLL,.parent_id=PDF_PROPERTIES_DIALOG,
+        .thumb_x_id=PDF_PROPERTIES_SCROLL_X,.thumb_y_id=PDF_PROPERTIES_SCROLL_Y,
+        .viewport=bounds,.name={"Document property values",24},.content_size={width,height},
+        .axes=NX_SCROLL_X|NX_SCROLL_Y};
+    nx_scroll_info info;
+    if (result==NX_OK) result=nx_scroll_area_begin(context,&scroll,&view->x,&view->y,&info);
+    if (result==NX_OK) {
+        nx_semantic_desc semantic={.id=PDF_PROPERTIES_TEXT,.parent_id=PDF_PROPERTIES_SCROLL,.role=NX_ROLE_TEXT,
+            .bounds=bounds,.name={"PDF properties text",19},.value={text,length},.state=NX_SEM_READONLY};
+        result=nx_semantics_add_readonly_text_snapshot_without_caret(context,&semantic,view->session,NULL);
+        float x=bounds.x+padding-view->x, y=bounds.y+padding-view->y;
+        for (unsigned i=0;result==NX_OK && i<rows;++i) {
+            result=pdf_dialog_text(context,fonts,labels[i],(nx_rect){x,y,label_width,20},13,ink);
+            if (result==NX_OK) result=nx_draw_text_layout(context,layouts[i],(nx_point){x+label_width,y},ink,65536);
+            y+=(float)nx_text_layout_height(layouts[i])+9;
+        }
+        nx_result ended=nx_scroll_area_end(context);
+        if (result==NX_OK) result=ended;
+    }
+    for (unsigned i=0;i<rows;++i) nx_text_layout_destroy(layouts[i]);
+    return result;
+}
+
+static nx_result pdf_properties_dialog(nx_context *context, const nx_font_collection *fonts,
+    pdf_properties_view *view, nx_rect panel, unsigned *action) {
+    static const char title[]="Document properties";
+    nx_overlay_desc overlay={.panel={.id=PDF_PROPERTIES_DIALOG,.parent_id=PDF_PAGES_DIALOG,.bounds=panel,
+        .name={title,sizeof(title)-1u}},.backdrop_id=PDF_PROPERTIES_BACKDROP,.dismiss_on_escape=1};
+    int dismissed;
+    nx_result result=nx_modal_begin(context,&overlay,&dismissed);
+    if (result!=NX_OK) return result;
+    nx_color ink;
+    result=nx_theme_color(context,NX_COLOR_TEXT,&ink);
+    float x=panel.x+16, y=panel.y;
+    if (result==NX_OK) result=pdf_dialog_text(context,fonts,title,(nx_rect){x,y+12,300,26},17,ink);
+    if (result==NX_OK) result=scoped_button(context,fonts,PDF_PROPERTIES_CLOSE,PDF_PROPERTIES_DIALOG,
+        "Close properties","Close",x+314,y+8,70,1,action);
+    nx_rect bounds={x,y+54,384,146};
+    if (result==NX_OK && view->available.generation && view->available.result==NX_OK)
+        result=pdf_properties_rows(context,fonts,view,bounds,ink);
+    else if (result==NX_OK) {
+        const char *status=view->available.generation?"Document properties unavailable":"Reading document properties";
+        nx_semantic_desc semantic={.id=PDF_PROPERTIES_STATUS,.parent_id=PDF_PROPERTIES_DIALOG,.role=NX_ROLE_STATUS,
+            .bounds=bounds,.name={status,strlen(status)}};
+        result=nx_semantics_add(context,&semantic,NULL);
+        if (result==NX_OK) result=pdf_dialog_text(context,fonts,status,bounds,14,ink);
+    }
+    nx_result ended=nx_overlay_end(context);
+    if (dismissed) *action=PDF_PROPERTIES_DISMISSED;
+    return result==NX_OK?ended:result;
 }
 
 static nx_result thumbnail_card(nx_context *context, const nx_font_collection *fonts,
@@ -282,17 +373,18 @@ static nx_result thumbnail_card(nx_context *context, const nx_font_collection *f
     if (result==NX_OK && cell->frame)
         result=nx_draw_bitmap(context,image,pdf_thumbnail_pixels(cell),(nx_color){1,1,1,1});
     if (result==NX_OK && !cell->frame)
-        result=thumbnail_text(context,fonts,status,(nx_rect){image.x,image.y+30,image.width,18},11,text);
-    if (result==NX_OK) result=thumbnail_text(context,fonts,name,
+        result=pdf_dialog_text(context,fonts,status,(nx_rect){image.x,image.y+30,image.width,18},11,text);
+    if (result==NX_OK) result=pdf_dialog_text(context,fonts,name,
         (nx_rect){image.x,bounds.y+bounds.height-26,image.width,20},14,text);
     if (result==NX_OK) result=nx_stroke_rect(context,bounds,state.focused||page==current?2:1,border);
     return result;
 }
 
 static nx_result pdf_pages_dialog(nx_context *context, const nx_font_collection *fonts,
-    nx_window_info info, const pdf_thumbnails *cache, unsigned page, unsigned total,
-    unsigned *action, unsigned *linked_page) {
+    nx_window_info info, pdf_document_view *document, unsigned *action, unsigned *linked_page) {
     if (info.width<480 || info.height<248) { *action=PDF_PAGES_CLOSE;return NX_OK; }
+    const pdf_thumbnails *cache=&document->thumbnails;
+    unsigned total=document->pages;
     nx_rect panel={(info.width-416)/2,(info.height-216)/2,416,216};
     static const char title[]="PDF pages";
     nx_overlay_desc overlay={.panel={.id=PDF_PAGES_DIALOG,.parent_id=1,.bounds=panel,
@@ -303,21 +395,33 @@ static nx_result pdf_pages_dialog(nx_context *context, const nx_font_collection 
     nx_color text;
     result=nx_theme_color(context,NX_COLOR_TEXT,&text);
     float x=panel.x+16, y=panel.y;
-    if (result==NX_OK) result=thumbnail_text(context,fonts,title,(nx_rect){x,y+12,280,24},17,text);
+    if (result==NX_OK) result=pdf_dialog_text(context,fonts,title,(nx_rect){x,y+12,190,24},17,text);
+    if (result==NX_OK && document->properties.enabled) result=scoped_button(context,fonts,PDF_PROPERTIES,PDF_PAGES_DIALOG,
+        "Properties","Properties",x+200,y+8,104,1,action);
     if (result==NX_OK) result=scoped_button(context,fonts,PDF_PAGES_CLOSE,PDF_PAGES_DIALOG,
         "Close pages","Close",x+314,y+8,70,1,action);
     float step=392.0f/PDF_THUMBNAIL_COUNT;
     for (unsigned i=0;result==NX_OK && i<PDF_THUMBNAIL_COUNT && cache->first+i<=total;++i)
-        result=thumbnail_card(context,fonts,cache,i,page,(nx_rect){x+i*step,y+48,step-8,120},linked_page);
-    if (result==NX_OK) result=scoped_button(context,fonts,PDF_PAGES_PREVIOUS,PDF_PAGES_DIALOG,
+        result=thumbnail_card(context,fonts,cache,i,document->page,(nx_rect){x+i*step,y+48,step-8,120},linked_page);
+    if (result==NX_OK && !total) {
+        const char *message=document->index_finished?"Page previews unavailable":"Indexing document";
+        nx_rect area={x,y+64,384,24};
+        nx_semantic_desc semantic={.id=PDF_PAGES_STATUS,.parent_id=PDF_PAGES_DIALOG,.role=NX_ROLE_STATUS,.bounds=area,
+            .name={message,strlen(message)}};
+        result=nx_semantics_add(context,&semantic,NULL);
+        if (result==NX_OK) result=pdf_dialog_text(context,fonts,message,area,14,text);
+    }
+    if (result==NX_OK && total) result=scoped_button(context,fonts,PDF_PAGES_PREVIOUS,PDF_PAGES_DIALOG,
         "Previous previews","Previous",x,y+174,94,cache->first>1,action);
-    if (result==NX_OK) result=scoped_button(context,fonts,PDF_PAGES_NEXT,PDF_PAGES_DIALOG,
+    if (result==NX_OK && total) result=scoped_button(context,fonts,PDF_PAGES_NEXT,PDF_PAGES_DIALOG,
         "Next previews","Next",x+290,y+174,94,cache->first+PDF_THUMBNAIL_COUNT<=total,action);
     char range[32];
     unsigned last=cache->first+PDF_THUMBNAIL_COUNT-1u;
     if (last>total) last=total;
     snprintf(range,sizeof(range),"%u–%u of %u",cache->first,last,total);
-    if (result==NX_OK) result=thumbnail_text(context,fonts,range,(nx_rect){x+151,y+181,138,24},14,text);
+    if (result==NX_OK && total) result=pdf_dialog_text(context,fonts,range,(nx_rect){x+151,y+181,138,24},14,text);
+    if (result==NX_OK && !dismissed && document->properties.open)
+        result=pdf_properties_dialog(context,fonts,&document->properties,panel,action);
     nx_result ended=nx_overlay_end(context);
     if (dismissed) { *action=PDF_PAGES_CLOSE; *linked_page=0; }
     return result==NX_OK?ended:result;
@@ -489,7 +593,8 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     }
     int search = find_visible(query,phase,info.width);
     int hit_page = pdf_case&&pdf_hit_page(phase);
-    int pages_visible=pdf_case&&pdf_can_navigate(phase)&&document->pages&&info.width>=480&&info.height>=248&&
+    int pages_visible=pdf_case&&pdf_can_navigate(phase)&&(document->pages||document->properties.enabled)&&
+        info.width>=480&&info.height>=248&&
         !selection->active;
     if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts, 2,
         input_controls?input_name(input_phase):status, (nx_rect){16,12,info.width-(pages_visible?262:32),24},
@@ -561,8 +666,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     if (preview->uri[0] && pdf_url_dialog(context,fonts,info.width,info.height,preview,can_open_url,action)!=NX_OK)
         return 0;
 #ifdef CONTENT_NATIVE_PDF
-    if (document->thumbnails.open && pdf_pages_dialog(context,fonts,info,&document->thumbnails,
-        document->page,document->pages,action,linked_page)!=NX_OK) return 0;
+    if (document->thumbnails.open && pdf_pages_dialog(context,fonts,info,document,action,linked_page)!=NX_OK) return 0;
 #endif
     return nx_end_frame(context)==NX_OK;
 }
@@ -579,6 +683,7 @@ int main(void) {
     int pdf_select_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
     int pdf_zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
     int pdf_thumbnails_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
+    int pdf_properties_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
     int pdf_compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
     const char *encoded_dir=(png_case||pdf_case)?getenv("NEXAUI_CONTENT_TEST_ENCODED"):NULL;
     const char *pdf_renderer=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_RENDERER"):NULL;
@@ -605,7 +710,7 @@ int main(void) {
     unsigned frames=0,action=0,linked_page=0; int need_frame=1,initial_job=0; double scale=1;
     unsigned nav_completion=0,pending_page=0,scaled_search_completion=0; enum phase nav_target=FAILED;
     uint64_t nav_sequence=0;
-    pdf_document_view document={0};
+    pdf_document_view document={.properties.enabled=pdf_link_reader!=NULL};
     pdf_text_view text_view={0};
     pdf_selection selection={0};
     pdf_camera camera;
@@ -661,9 +766,13 @@ int main(void) {
         size_t ax_routed=0;
         if(nx_window_route_events(window,context,&ax_routed)!=NX_OK) goto done;
         routed+=ax_routed;
+        int worker_frame=0;
         if (ready) {
             char wake[64]; ssize_t count;
-            do { count=read(worker.wake[0],wake,sizeof(wake)); } while (count>0||(count<0&&errno==EINTR));
+            do {
+                count=read(worker.wake[0],wake,sizeof(wake));
+                for (ssize_t i=0;i<count;++i) worker_frame|=wake[i]!=NATIVE_PROPERTIES_READY;
+            } while (count>0||(count<0&&errno==EINTR));
             if (count<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK) goto done;
         }
         native_worker_state state=native_state(&worker);
@@ -709,6 +818,19 @@ int main(void) {
                     content_pdf_index_destroy(available.index);
                 }
             }
+            if (pdf_link_reader&&ready) {
+                native_pdf_properties_result properties=native_take_pdf_properties(&worker);
+                if (properties.generation) {
+                    int accepted=properties.generation==current.request.generation;
+                    if (accepted) {
+                        document.properties.available=properties;
+                        need_frame|=document.properties.open;
+                    }
+                    printf("PDF_PROPERTIES generation=%llu accepted=%d result=%d\n",
+                        (unsigned long long)properties.generation,accepted,(int)properties.result);
+                    fflush(stdout);
+                }
+            }
         }
 #endif
         if (phase==PREPARING&&state.prepared) { phase=WAITING; need_frame=1; }
@@ -717,7 +839,7 @@ int main(void) {
             state.completed==nav_completion&&state.result!=NX_OK;
         if (state.result!=NX_OK&&!decode_rejected&&!navigation_error&&phase!=FAILED) { phase=FAILED; need_frame=1; }
         if (info.should_close) { result=0; break; }
-        if (!need_frame&&!routed&&!ready) continue;
+        if (!need_frame&&!routed&&!worker_frame) continue;
         need_frame=0;
         int had_preview=preview.uri[0]!=0;
         int had_pages=document.thumbnails.open;
@@ -809,14 +931,29 @@ int main(void) {
             continue;
         }
         if (had_pages) {
+            if (action==PDF_PROPERTIES) {
+                document.properties.open=1;
+                document.properties.x=document.properties.y=0;
+                ++document.properties.session;
+                need_frame=1;
+                continue;
+            }
+            if (action==PDF_PROPERTIES_CLOSE || action==PDF_PROPERTIES_DISMISSED) {
+                document.properties.open=0;
+                if (action==PDF_PROPERTIES_CLOSE && nx_overlay_close(context)!=NX_OK) goto done;
+                need_frame=1;
+                continue;
+            }
             if (action==PDF_PAGES_CLOSE || linked_page) {
                 document.thumbnails.open=0;
+                document.properties.open=0;
                 nx_result closed=nx_overlay_close(context);
                 if (closed!=NX_OK&&closed!=NX_ERROR_STATE) goto done;
                 need_frame=1;
                 if (linked_page==document.page) linked_page=0;
                 action=0;
             } else {
+                if (document.properties.open) continue;
                 unsigned first=document.thumbnails.first;
                 if (action==PDF_PAGES_PREVIOUS) first-=PDF_THUMBNAIL_COUNT;
                 if (action==PDF_PAGES_NEXT) first+=PDF_THUMBNAIL_COUNT;
@@ -863,7 +1000,7 @@ int main(void) {
 #ifdef CONTENT_NATIVE_PDF
             content_pdf_index_destroy(document.index);
             pdf_thumbnails_clear(&document.thumbnails);
-            document=(pdf_document_view){0};
+            document=(pdf_document_view){.properties.enabled=pdf_link_reader!=NULL};
 #endif
             if(input) { if(content_input_rebind(input,2)!=NX_OK) goto done; receiver.generation=2; }
             selection=(pdf_selection){0};
@@ -945,12 +1082,14 @@ done:
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
     unsigned expected=(!strcmp(test_case,"full")||input_case||png_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
-    if (pdf_case) expected=pdf_url_case?2u:pdf_select_case?4u:pdf_zoom_case?5u:pdf_thumbnails_case?6u:pdf_link_reader?10u:8u;
+    if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case)?4u:
+        pdf_zoom_case?5u:pdf_thumbnails_case?6u:pdf_link_reader?10u:8u;
     unsigned published=expected-(unsigned)(png_case||(pdf_case&&!pdf_url_case));
     unsigned discarded=!strcmp(test_case,"pending-close")?1u:0u;
     if (!worker_ready||worker.completed!=expected||worker.publications!=published||worker.discarded!=discarded||
         atomic_load(&worker.disposals)!=published||((expected==5u)&&phase!=SCALED_READY)||
-        (pdf_case&&(pdf_url_case?(phase!=READY||document.page!=1u):pdf_select_case?(phase!=RECOVERED||document.page!=2u):
+        (pdf_case&&(pdf_url_case?(phase!=READY||document.page!=1u):
+            (pdf_select_case||pdf_properties_case)?(phase!=RECOVERED||document.page!=2u):
             pdf_zoom_case?(phase!=SCALED_READY||document.page!=2u):
             pdf_thumbnails_case?(phase!=PDF_HIT_READY||document.page!=7u):
             (phase!=PDF_HIT_READY||document.page!=1u)))||

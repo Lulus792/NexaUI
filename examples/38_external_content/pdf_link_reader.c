@@ -1,5 +1,6 @@
 #define _POSIX_C_SOURCE 200809L
 #include "pdf_links.h"
+#include "pdf_properties.h"
 #include <poppler.h>
 #include <errno.h>
 #include <limits.h>
@@ -70,15 +71,50 @@ static int emit_links(PopplerDocument *document, unsigned page_number) {
     return fwrite(&packet,1,bytes,stdout) != bytes || fflush(stdout);
 }
 
+static int emit_properties(PopplerDocument *document) {
+    int pages=poppler_document_get_n_pages(document);
+    if (pages<=0) return 1;
+    guint major=0, minor=0;
+    poppler_document_get_pdf_version(document,&major,&minor);
+    pdf_properties_packet packet={.format=CONTENT_PDF_PROPERTIES_FORMAT,.page_count=(uint32_t)pages,
+        .major=major,.minor=minor};
+    gchar *fields[]={poppler_document_get_title(document),poppler_document_get_author(document),
+        poppler_document_get_subject(document)};
+    for (unsigned i=0;i<CONTENT_PDF_PROPERTY_COUNT;++i) {
+        gchar *field=fields[i];
+        if (!field) continue;
+        size_t length=strnlen(field,CONTENT_PDF_PROPERTY_LIMIT+1u);
+        if (length>CONTENT_PDF_PROPERTY_LIMIT || !g_utf8_validate(field,(gssize)length,NULL))
+            packet.unavailable|=1u<<i;
+        else {
+            size_t offset=0;
+            for (const gchar *read=field;*read;) {
+                const gchar *next=g_utf8_next_char(read);
+                size_t bytes=(size_t)(next-read);
+                if (pdf_property_control(g_utf8_get_char(read))) packet.fields[i][offset++]=' ';
+                else { memcpy(packet.fields[i]+offset,read,bytes); offset+=bytes; }
+                read=next;
+            }
+        }
+        g_free(field);
+    }
+    return fwrite(&packet,1,CONTENT_PDF_PROPERTIES_BYTES,stdout)!=CONTENT_PDF_PROPERTIES_BYTES || fflush(stdout);
+}
+
 int main(int argc, char **argv) {
-    if (argc != 2 || *argv[1] < '0' || *argv[1] > '9') return 2;
-    char *end;
-    errno = 0;
-    unsigned long page = strtoul(argv[1],&end,10);
-    if (errno || *end || !page || page > INT_MAX) return 2;
+    if (argc != 2) return 2;
+    unsigned long page=0;
+    int properties=!strcmp(argv[1],"--properties");
+    if (!properties) {
+        if (*argv[1] < '0' || *argv[1] > '9') return 2;
+        char *end;
+        errno=0;
+        page=strtoul(argv[1],&end,10);
+        if (errno || *end || !page || page > INT_MAX) return 2;
+    }
     PopplerDocument *document = poppler_document_new_from_fd(STDIN_FILENO,NULL,NULL);
     if (!document) return 1;
-    int result = emit_links(document,(unsigned)page);
+    int result = properties?emit_properties(document):emit_links(document,(unsigned)page);
     g_object_unref(document);
     return result;
 }

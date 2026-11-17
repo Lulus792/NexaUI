@@ -28,6 +28,11 @@ typedef struct native_pdf_index_result {
     uint64_t generation;
     content_pdf_index *index;
 } native_pdf_index_result;
+typedef struct native_pdf_properties_result {
+    uint64_t generation;
+    nx_result result;
+    pdf_properties_packet packet;
+} native_pdf_properties_result;
 typedef struct native_uri_result {
     uint64_t ticket;
     nx_result result;
@@ -47,6 +52,7 @@ typedef struct native_worker {
     int pdf_file;
     uint64_t pdf_generation, indexed_generation;
     native_pdf_index_result pdf_index;
+    native_pdf_properties_result pdf_properties;
     pdf_thumbnail thumbnail, thumbnail_result;
     int thumbnail_working;
     uint64_t uri_ticket;
@@ -66,8 +72,8 @@ static void native_dispose(void *user, void *data, size_t bytes) {
     atomic_fetch_add((_Atomic unsigned *)user, 1u);
     free(data);
 }
-static void native_wake(native_worker *worker) {
-    char byte = 'W';
+enum { NATIVE_FRAME_READY='W', NATIVE_PROPERTIES_READY='P' };
+static void native_wake(native_worker *worker, char byte) {
     ssize_t count;
     do { count = write(worker->wake[1], &byte, 1); } while (count < 0 && errno == EINTR);
     if (count != 1 && errno != EAGAIN && errno != EWOULDBLOCK) {
@@ -186,7 +192,18 @@ static void native_index_pdf(native_worker *worker, native_job job) {
     worker->pdf_index = (native_pdf_index_result){generation,index};
     pthread_mutex_unlock(&worker->mutex);
     content_pdf_index_destroy(retired);
-    native_wake(worker);
+    native_wake(worker,NATIVE_FRAME_READY);
+    if (!worker->pdf_link_reader) return;
+    pthread_mutex_lock(&worker->mutex);
+    skip=worker->stop;
+    pthread_mutex_unlock(&worker->mutex);
+    if (skip) return;
+    native_pdf_properties_result properties={.generation=generation};
+    properties.result=content_pdf_read_properties(worker->pdf_link_reader,worker->pdf_file,&properties.packet);
+    pthread_mutex_lock(&worker->mutex);
+    worker->pdf_properties=properties;
+    pthread_mutex_unlock(&worker->mutex);
+    native_wake(worker,NATIVE_PROPERTIES_READY);
 }
 #endif
 
@@ -199,7 +216,7 @@ static void native_render_thumbnail(native_worker *worker, pdf_thumbnail thumbna
     worker->thumbnail_result=thumbnail;
     worker->thumbnail_working=0;
     pthread_mutex_unlock(&worker->mutex);
-    native_wake(worker);
+    native_wake(worker,NATIVE_FRAME_READY);
 }
 #endif
 
@@ -225,7 +242,7 @@ static void *native_worker_entry(void *user) {
             worker->uri_result=(native_uri_result){ticket,opened};
             worker->uri_working=0;
             pthread_mutex_unlock(&worker->mutex);
-            native_wake(worker);
+            native_wake(worker,NATIVE_FRAME_READY);
             continue;
         }
 #ifdef CONTENT_NATIVE_PDF
@@ -259,7 +276,7 @@ static void *native_worker_entry(void *user) {
         pthread_mutex_lock(&worker->mutex);
         worker->prepared = 1;
         pthread_mutex_unlock(&worker->mutex);
-        native_wake(worker);
+        native_wake(worker,NATIVE_FRAME_READY);
         pthread_mutex_lock(&worker->mutex);
         while (!worker->stop && job.held && !worker->allowed)
             pthread_cond_wait(&worker->condition, &worker->mutex);
@@ -274,7 +291,7 @@ static void *native_worker_entry(void *user) {
         worker->prepared = 0; worker->working = 0; ++worker->completed; worker->result = result;
         if (result == NX_OK) ++worker->publications;
         pthread_mutex_unlock(&worker->mutex);
-        native_wake(worker);
+        native_wake(worker,NATIVE_FRAME_READY);
 #ifdef CONTENT_NATIVE_PDF
         if (result == NX_OK) native_index_pdf(worker,job);
 #endif
@@ -335,6 +352,14 @@ static native_pdf_index_result native_take_pdf_index(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
     native_pdf_index_result result = worker->pdf_index;
     worker->pdf_index = (native_pdf_index_result){0};
+    pthread_mutex_unlock(&worker->mutex);
+    return result;
+}
+
+static native_pdf_properties_result native_take_pdf_properties(native_worker *worker) {
+    pthread_mutex_lock(&worker->mutex);
+    native_pdf_properties_result result=worker->pdf_properties;
+    worker->pdf_properties.generation=0;
     pthread_mutex_unlock(&worker->mutex);
     return result;
 }

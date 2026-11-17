@@ -346,6 +346,35 @@ nx_result content_pdf_render(const char *renderer, const char *reader, int file,
     return content_pdf_render_with_links(renderer,reader,NULL,file,page,request,sequence,out,out_size);
 }
 
+nx_result content_pdf_read_properties(const char *helper, int file, pdf_properties_packet *out) {
+    if (!helper || *helper!='/' || file<0 || !out) return NX_ERROR_ARGUMENT;
+    if (lseek(file,0,SEEK_SET)<0) return NX_ERROR_PLATFORM;
+    char *argv[]={(char *)helper,"--properties",NULL};
+    uint8_t encoded[CONTENT_PDF_PROPERTIES_BYTES+1u];
+    size_t bytes=0;
+    nx_result result=run_tool(helper,argv,file,encoded,CONTENT_PDF_PROPERTIES_BYTES,&bytes);
+    if (result!=NX_OK) return result;
+    pdf_properties_packet packet={0};
+    if (bytes!=CONTENT_PDF_PROPERTIES_BYTES) return NX_ERROR_ARGUMENT;
+    memcpy(&packet,encoded,bytes);
+    if (packet.format!=CONTENT_PDF_PROPERTIES_FORMAT || !packet.page_count || packet.page_count>INT_MAX ||
+        !packet.major || packet.major>999 || packet.minor>999 ||
+        packet.unavailable>>CONTENT_PDF_PROPERTY_COUNT) return NX_ERROR_ARGUMENT;
+    for (unsigned i=0;i<CONTENT_PDF_PROPERTY_COUNT;++i) {
+        const char *field=packet.fields[i];
+        const char *end=memchr(field,0,sizeof(packet.fields[i]));
+        if (!end || ((packet.unavailable&(1u<<i)) && end!=field)) return NX_ERROR_ARGUMENT;
+        size_t length=(size_t)(end-field);
+        for (size_t offset=0;offset<length;) {
+            uint32_t scalar;
+            if (nx_utf8_decode(field,length,&offset,&scalar)!=NX_OK || pdf_property_control(scalar))
+                return NX_ERROR_ARGUMENT;
+        }
+    }
+    *out=packet;
+    return NX_OK;
+}
+
 nx_result content_pdf_open_uri(const char *launcher, const char uri[CONTENT_PDF_URI_LIMIT+1u]) {
     if (!launcher || *launcher!='/' || !uri || !content_pdf_web_uri(uri)) return NX_ERROR_ARGUMENT;
     int input=open("/dev/null",O_RDONLY|O_CLOEXEC);

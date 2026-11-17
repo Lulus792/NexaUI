@@ -29,8 +29,8 @@ def write_png_fixtures(directory):
         print(f'PNG_FIXTURE {kind} sha256={hashlib.sha256(image).hexdigest()}', flush=True)
 
 
-def write_pdf_fixtures(directory, include_links=False, thumbnails=False):
-    def document(pages):
+def write_pdf_fixtures(directory, include_links=False, thumbnails=False, properties=False):
+    def document(pages, properties=None):
         annotated = include_links and len(pages) == 2
         kids = ' '.join(f'{3+2*i} 0 R' for i in range(len(pages)))
         font = 3 + 2 * len(pages)
@@ -54,6 +54,9 @@ def write_pdf_fixtures(directory, include_links=False, thumbnails=False):
                             base + b' /A << /S /URI /URI (file:///tmp/example) >> >>',
                             base + b' /A << /S /URI /URI (javascript:ignored) >> >>',
                             base + b' /A << /S /URI /URI (https://user@example.invalid/) >> >>'))
+        if properties:
+            fields = (f'/{name} <FEFF{value.encode("utf-16-be").hex()}>' for name, value in properties.items())
+            objects.append(('<< ' + ' '.join(fields) + ' >>').encode())
         result = bytearray(b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')
         offsets = []
         for i, obj in enumerate(objects, 1):
@@ -63,7 +66,8 @@ def write_pdf_fixtures(directory, include_links=False, thumbnails=False):
         result.extend(f'xref\n0 {len(objects)+1}\n0000000000 65535 f \n'.encode())
         for offset in offsets:
             result.extend(f'{offset:010d} 00000 n \n'.encode())
-        result.extend(f'trailer\n<< /Size {len(objects)+1} /Root 1 0 R >>\nstartxref\n{index}\n%%EOF\n'.encode())
+        info = f' /Info {len(objects)} 0 R' if properties else ''
+        result.extend(f'trailer\n<< /Size {len(objects)+1} /Root 1 0 R{info} >>\nstartxref\n{index}\n%%EOF\n'.encode())
         return result
 
     blue = b'0 0 1 rg 0 0 112 52 re f\n'
@@ -76,8 +80,12 @@ def write_pdf_fixtures(directory, include_links=False, thumbnails=False):
     if thumbnails:
         pages.extend(blue + text(f'Preview page {page}'.encode()) for page in range(3, 7))
         pages.append(b'0 1 1 rg 0 0 112 52 re f\n' + text(b'Last preview page'))
-    fixtures = {'old.pdf': document([b'1 0 0 rg 0 0 112 52 re f\n' + text(b'Retired draft')]),
-                'document.pdf': document(pages),
+    old_properties = {'Title': 'Retired document title'} if properties else None
+    authors = ('Zoë Martín, Maja Søndergaard, Anaïs Laurent, Jens Østergård, Léonie Weber, Şirin Kaya, Béla Kovács, '
+               "Łucja Nowak, Rui Ferreira, Élodie Dubois, Zoë N'Dour, Lejla Hadžić, Anika Meier, Tereza Nováková")
+    current_properties = {'Title': 'Résumé — Übersicht\n2026', 'Author': authors, 'Subject': 'W' * 513} if properties else None
+    fixtures = {'old.pdf': document([b'1 0 0 rg 0 0 112 52 re f\n' + text(b'Retired draft')], old_properties),
+                'document.pdf': document(pages, current_properties),
                 'bad.pdf': b'%PDF-1.4\n1 0 obj\n'}
     for name, data in fixtures.items():
         (directory / name).write_bytes(data)
@@ -98,6 +106,7 @@ def main():
     parser.add_argument('--pdf-external', action='store_true', help='Exercise the PDF link preview and local handoff')
     parser.add_argument('--pdf-zoom', action='store_true', help='Exercise the PDF zoom, pan and backing-scale workflow')
     parser.add_argument('--pdf-thumbnails', action='store_true', help='Exercise the seven-page PDF preview workflow')
+    parser.add_argument('--pdf-properties', action='store_true', help='Exercise the PDF properties dialog')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -112,8 +121,11 @@ def main():
     if args.pdf_zoom and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select or args.pdf_external):
         parser.error('--pdf-zoom requires --case pdf and --pdf-link-reader as a separate workflow')
     if args.pdf_thumbnails and (args.case != 'pdf' or args.pdf_link_reader or args.pdf_select or args.pdf_external or
-                                args.pdf_zoom or args.pdf_compose):
+                                args.pdf_zoom or args.pdf_compose or args.pdf_properties):
         parser.error('--pdf-thumbnails requires --case pdf as a separate workflow')
+    if args.pdf_properties and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select or args.pdf_external or
+                                args.pdf_zoom or args.pdf_compose):
+        parser.error('--pdf-properties requires --case pdf and --pdf-link-reader as a separate workflow')
     if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
@@ -133,6 +145,8 @@ def main():
         env['NEXAUI_CONTENT_TEST_PDF_ZOOM'] = '1'
     if args.pdf_thumbnails:
         env['NEXAUI_CONTENT_TEST_PDF_THUMBNAILS'] = '1'
+    if args.pdf_properties:
+        env['NEXAUI_CONTENT_TEST_PDF_PROPERTIES'] = '1'
     if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:
@@ -167,7 +181,7 @@ def main():
                 env['NEXAUI_CONTENT_TEST_PDF_READER'] = str(reader.resolve(strict=True))
                 if args.pdf_link_reader:
                     env['NEXAUI_CONTENT_TEST_PDF_LINK_READER'] = str(args.pdf_link_reader.resolve(strict=True))
-                write_pdf_fixtures(Path(directory),bool(args.pdf_link_reader),args.pdf_thumbnails)
+                write_pdf_fixtures(Path(directory),bool(args.pdf_link_reader),args.pdf_thumbnails,args.pdf_properties)
             return subprocess.run(command, env=env, timeout=90).returncode
     return subprocess.run(command, env=env, timeout=90).returncode
 

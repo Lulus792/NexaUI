@@ -77,6 +77,16 @@ static int dimensions(AtspiAccessible *node) {
     int yes=rect&&!error&&rect->x==16&&rect->y==136&&rect->width==448&&rect->height==208;
     g_free(rect);if(error)g_error_free(error);if(component)g_object_unref(component);return yes;
 }
+static int component_top(AtspiAccessible *app,const char *name) {
+    AtspiAccessible *node=find(app,name,0);
+    AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
+    AtspiRect *rect=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+    int y=rect?rect->y:-1;
+    g_free(rect);
+    if (component) g_object_unref(component);
+    if (node) g_object_unref(node);
+    return y;
+}
 static int pdf_link_bounds_at(AtspiAccessible *node,int x,int width) {
     if (!node || atspi_accessible_get_role(node,NULL)!=ATSPI_ROLE_PUSH_BUTTON) return 0;
     AtspiComponent *component=atspi_accessible_get_component_iface(node);
@@ -521,6 +531,7 @@ int main(int argc,char **argv) {
     int url_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_URL");
     int zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
     int thumbnails=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
+    int properties=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
@@ -643,6 +654,31 @@ int main(int argc,char **argv) {
     CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
         pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
+    if (properties) {
+        static const char expected[]="Title\nRésumé — Übersicht 2026\nAuthor\n"
+            "Zoë Martín, Maja Søndergaard, Anaïs Laurent, Jens Østergård, Léonie Weber, Şirin Kaya, Béla Kovács, "
+            "Łucja Nowak, Rui Ferreira, Élodie Dubois, Zoë N'Dour, Lejla Hadžić, Anika Meier, Tereza Nováková\n"
+            "Subject\nValue unavailable\nPages\n2\nPDF version\n1.4\n";
+        CHECK(host_marker(host_log,"PDF_PROPERTIES generation=1 accepted=0 result=0")&&
+            host_marker(host_log,"PDF_PROPERTIES generation=2 accepted=1 result=0"));
+        CHECK(focus(app,"Pages")&&drive("key","Return")&&observe(app,"PDF pages",0));
+        CHECK(focus(app,"Properties")&&drive("key","Return")&&observe(app,"Document properties",0));
+        CHECK((selected=find(app,"PDF properties text",0))&&pdf_text_is(selected,expected)&&
+            state(selected,ATSPI_STATE_READ_ONLY));
+        CHECK(!press(app,"Close pages")&&!press(app,"Close")&&input_chrome(display,id,"pdf-properties"));
+        CHECK(observe(app,"Close properties",1)&&drive("key","Tab")&&observe(app,"Vertical scrollbar",1));
+        int before=component_top(app,"Vertical scrollbar"),after=before;
+        CHECK(before>0&&drive("key","End"));
+        for (unsigned i=0;i<200&&after<=before;++i) { pump();after=component_top(app,"Vertical scrollbar"); }
+        CHECK(after>before&&pdf_text_is(selected,expected)&&input_chrome(display,id,"pdf-properties-end"));
+        CHECK(drive("key","Escape")&&observe(app,"Properties",1)&&state(selected,ATSPI_STATE_DEFUNCT));
+        CHECK(drive("key","Return")&&observe(app,"PDF properties text",0)&&
+            (new_selected=find(app,"PDF properties text",0))&&pdf_text_is(new_selected,expected));
+        CHECK(press(app,"Close properties")&&observe(app,"Properties",1)&&state(new_selected,ATSPI_STATE_DEFUNCT));
+        CHECK(drive("key","Escape")&&observe(app,"Pages",1)&&focus(app,"Close")&&drive("key","Return"));
+        puts("PDF_PROPERTIES verified: pinned generation, Unicode fields, keyboard scroll, native read-only text and nested focus restoration");
+        goto closed;
+    }
     if (thumbnails) {
         CHECK(focus(app,"Pages")&&drive("key","Return")&&observe(app,"PDF pages",0));
         CHECK(pdf_preview_ready(app,1)&&(old_link=pdf_ready_preview(app,2))&&pdf_preview_ready(app,3));
