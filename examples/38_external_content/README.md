@@ -261,8 +261,17 @@ UTF-8 text from `pdftotext`. The native runner uses the reader next to
 
 `content_pdf_frame_with_text` requests image and text from the same open,
 immutable source file and page. The worker rewinds the descriptor between
-the two tools. Both use bounded output and a three-second deadline per child.
-The surface validates and stages the pair together. The native peer gets
-the accepted text through AT-SPI and observes retirement of old text on a
-page or resize change. Textless pages use the page image and host controls.
-Text geometry, links, search and selection remain separate viewer work.
+tool calls. Each child uses bounded output and a three-second deadline.
+An additional `pdftotext -tsv` call supplies up to 1024 word boxes. The
+worker accepts a complete match to the plain UTF-8 text in order and maps
+the boxes through the fitted page image, including its margins. Text remains
+available if the geometry match fails. The surface stages image, text and
+boxes together.
+
+The PDF fixture uses the SDK's read-only snapshot presentation support
+introduced in revision `85f5d1c`. The native peer queries the accepted text,
+word extents and point offsets through AT-SPI at 1× and 2× backing. It
+observes retirement of old text on page or resize changes. The scalars of
+each word share its box. Spaces and line breaks have no box. Textless pages
+use the image and host controls. Character-level geometry, links, search
+and selection remain viewer work.

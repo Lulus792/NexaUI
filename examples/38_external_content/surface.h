@@ -7,8 +7,13 @@ typedef struct content_request {
     uint64_t generation, resize;
     uint32_t width, height;
 } content_request;
+typedef struct content_frame_word {
+    uint32_t start_byte, end_byte;
+    nx_rect bounds; /* Normalized to the entire image, including margins. */
+} content_frame_word;
 /* In-process owned snapshot layout. The header is followed by height*stride
-   bytes of straight-alpha RGBA8, then optional UTF-8 text for the same frame.
+   bytes of straight-alpha RGBA8, then optional UTF-8 text and unaligned
+   content_frame_word records for the same frame.
    The producer finishes writing before publishing and supplies the disposer. */
 typedef struct content_frame_header {
     content_request request;
@@ -20,6 +25,7 @@ typedef struct content_frame_header {
     uint64_t damage_base;
     uint32_t damage_x, damage_y, damage_width, damage_height;
     uint32_t text_bytes; /* Unpadded length, without a NUL terminator. */
+    uint32_t word_count;
 } content_frame_header;
 typedef struct content_surface_status {
     content_request request;
@@ -30,6 +36,7 @@ typedef struct content_surface_status {
 
 #define CONTENT_FRAME_LIMIT (64u * 1024u * 1024u)
 #define CONTENT_FRAME_TEXT_LIMIT (32u * 1024u)
+#define CONTENT_FRAME_WORD_LIMIT 1024u
 
 /* Reference consumer of existing public APIs; no installed SDK API/engine.
    Borrow exchange until destroy; one UI owner thread. Generation is nonzero
@@ -52,4 +59,7 @@ nx_result content_surface_get_status(const content_surface *surface,
     content_surface_status *out);
 /* Borrow the accepted frame's text until the next draw/resize or destroy. */
 nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span *out);
+/* Same borrow lifetime as text. Byte endpoints refer to that text. */
+nx_result content_surface_get_words(const content_surface *surface,
+    const content_frame_word **words, size_t *count);
 #endif

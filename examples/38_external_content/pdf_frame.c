@@ -111,6 +111,119 @@ static nx_result attach_text(const char *reader, int document, unsigned page, ui
     return NX_OK;
 }
 
+/* Poppler writes ASCII decimals with a period. Keep parsing independent of
+   the process locale, and reject unsupported spellings or dimensions. */
+static int read_decimal(const char *field, double *out) {
+    if (*field < '0' || *field > '9' || strlen(field) > 16u) return 0;
+    double value = 0;
+    while (*field >= '0' && *field <= '9') value = value * 10 + (*field++ - '0');
+    if (*field == '.') {
+        double place = 0.1;
+        ++field;
+        if (*field < '0' || *field > '9') return 0;
+        while (*field >= '0' && *field <= '9') {
+            value += (*field++ - '0') * place;
+            place *= 0.1;
+        }
+    }
+    if (*field) return 0;
+    *out = value;
+    return 1;
+}
+
+static size_t skip_space(const char *text, size_t length, size_t offset) {
+    while (offset < length && strchr(" \t\r\n\f\v", text[offset])) ++offset;
+    return offset;
+}
+
+/* Text and geometry come from different Poppler output modes. Associate
+   boxes only if all words, in order, consume the plain text exactly. */
+static size_t match_words(char *tsv, const char *text, size_t length, content_request request,
+    const content_png_fit *fit, uint32_t edge, content_frame_word words[CONTENT_FRAME_WORD_LIMIT]) {
+    static const char columns[] =
+        "level\tpage_num\tpar_num\tblock_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n";
+    if (strncmp(tsv, columns, sizeof(columns) - 1u)) return 0;
+    char *line = tsv + sizeof(columns) - 1u;
+    double page_width = 0, page_height = 0, scale_x = 0, scale_y = 0;
+    size_t offset = 0, count = 0;
+    while (*line) {
+        char *newline = strchr(line, '\n');
+        if (!newline) return 0;
+        *newline = 0;
+        char *field[12] = {line};
+        for (size_t i = 1; i < 12; ++i) {
+            char *tab = strchr(field[i - 1], '\t');
+            if (!tab) return 0;
+            *tab = 0;
+            field[i] = tab + 1;
+        }
+        line = newline + 1;
+        if (strcmp(field[0], "1") && strcmp(field[0], "5")) continue;
+        double x, y, width, height;
+        if (!read_decimal(field[6], &x) || !read_decimal(field[7], &y) ||
+            !read_decimal(field[8], &width) || !read_decimal(field[9], &height) ||
+            width <= 0 || height <= 0) return 0;
+        if (!strcmp(field[0], "1")) {
+            if (page_width || x || y) return 0;
+            double dpi_scale = edge / (width > height ? width : height);
+            double raster_width = width * dpi_scale, raster_height = height * dpi_scale;
+            if (raster_width < fit->source_width - 1.01 || raster_width > fit->source_width + 0.01 ||
+                raster_height < fit->source_height - 1.01 || raster_height > fit->source_height + 0.01)
+                return 0;
+            page_width = width;
+            page_height = height;
+            scale_x = dpi_scale * fit->width / fit->source_width;
+            scale_y = dpi_scale * fit->height / fit->source_height;
+            continue;
+        }
+        offset = skip_space(text, length, offset);
+        size_t bytes = strlen(field[11]);
+        if (!page_width || x + width > page_width || y + height > page_height ||
+            count == CONTENT_FRAME_WORD_LIMIT || !bytes || bytes > length - offset ||
+            memcmp(text + offset, field[11], bytes)) return 0;
+        /* A TSV row must end at a word boundary in the plain text. */
+        size_t end = offset + bytes;
+        if (end < length && skip_space(text, length, end) == end) return 0;
+        nx_rect bounds = {
+            (float)((fit->x + x * scale_x) / request.width),
+            (float)((fit->y + y * scale_y) / request.height),
+            (float)(width * scale_x / request.width),
+            (float)(height * scale_y / request.height)};
+        if (!(bounds.width > 0 && bounds.height > 0 &&
+            bounds.x + bounds.width <= 1 && bounds.y + bounds.height <= 1)) return 0;
+        words[count++] = (content_frame_word){(uint32_t)offset, (uint32_t)end, bounds};
+        offset = end;
+    }
+    return skip_space(text, length, offset) == length ? count : 0;
+}
+
+static void attach_words(const char *reader, int document, unsigned page, uint8_t *buffer,
+    const content_png_fit *fit, uint32_t edge, void **frame, size_t *frame_size) {
+    content_frame_header header;
+    memcpy(&header, *frame, sizeof(header));
+    if (!header.text_bytes || lseek(document, 0, SEEK_SET) < 0) return;
+    char page_number[16];
+    snprintf(page_number, sizeof(page_number), "%u", page);
+    char *argv[] = {(char *)reader, "-f", page_number, "-l", page_number, "-enc", "UTF-8",
+        "-eol", "unix", "-tsv", "-", "-", NULL};
+    size_t bytes = 0;
+    if (run_tool(reader, argv, document, buffer, 256u * 1024u, &bytes) != NX_OK ||
+        !bytes || memchr(buffer, 0, bytes)) return;
+    buffer[bytes] = 0;
+    content_frame_word words[CONTENT_FRAME_WORD_LIMIT];
+    const char *text = (const char *)*frame + *frame_size - header.text_bytes;
+    size_t count = match_words((char *)buffer, text, header.text_bytes, header.request, fit, edge, words);
+    if (!count) return;
+    size_t word_bytes = count * sizeof(*words);
+    uint8_t *extended = realloc(*frame, *frame_size + word_bytes);
+    if (!extended) return;
+    header.word_count = (uint32_t)count;
+    memcpy(extended, &header, sizeof(header));
+    memcpy(extended + *frame_size, words, word_bytes);
+    *frame = extended;
+    *frame_size += word_bytes;
+}
+
 static nx_result make_frame(const char *renderer, const char *reader, const char *document, unsigned page,
     content_request request, uint64_t sequence, void **out, size_t *out_size) {
     if (!renderer || *renderer != '/' || !document || *document != '/' || !page || page > INT_MAX ||
@@ -133,8 +246,13 @@ static nx_result make_frame(const char *renderer, const char *reader, const char
                 result = render_page(renderer, file, page, edge, encoded, &bytes);
                 void *frame = NULL;
                 size_t frame_size = 0;
-                if (result == NX_OK) result = content_png_frame(encoded, bytes, request, sequence, &frame, &frame_size);
-                if (result == NX_OK && reader) result = attach_text(reader, file, page, encoded, &frame, &frame_size);
+                content_png_fit fit;
+                if (result == NX_OK)
+                    result = content_png_frame_fit(encoded, bytes, request, sequence, &frame, &frame_size, &fit);
+                if (result == NX_OK && reader) {
+                    result = attach_text(reader, file, page, encoded, &frame, &frame_size);
+                    if (result == NX_OK) attach_words(reader, file, page, encoded, &fit, edge, &frame, &frame_size);
+                }
                 if (result == NX_OK) {
                     *out = frame;
                     *out_size = frame_size;

@@ -83,7 +83,22 @@ static nx_result pdf_text_semantics(nx_context *context, content_surface *surfac
     }
     nx_semantic_desc node = {.id=101, .parent_id=viewport->id, .role=NX_ROLE_TEXT, .bounds=viewport->bounds,
         .name={"PDF page text",13}, .value=text, .state=NX_SEM_READONLY};
-    return nx_semantics_add_readonly_text_snapshot_without_caret(context, &node, text_view->identity, NULL);
+    result = nx_semantics_add_readonly_text_snapshot_without_caret(context, &node, text_view->identity, NULL);
+    if (result != NX_OK) return result;
+    const content_frame_word *words;
+    size_t word_count;
+    result = content_surface_get_words(surface, &words, &word_count);
+    if (result != NX_OK || !word_count) return result;
+    nx_text_document_box boxes[CONTENT_FRAME_WORD_LIMIT];
+    nx_rect view = viewport->bounds;
+    for (size_t i = 0; i < word_count; ++i) {
+        nx_rect word = words[i].bounds;
+        boxes[i] = (nx_text_document_box){words[i].start_byte, words[i].end_byte, {
+            view.x + word.x * view.width, view.y + word.y * view.height,
+            word.width * view.width, word.height * view.height}};
+    }
+    nx_text_document_presentation presentation = {.boxes=boxes, .box_count=word_count};
+    return nx_text_document_set_presentation(context, node.id, text_view->identity, 0, &presentation);
 }
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,

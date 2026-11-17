@@ -4,8 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-nx_result content_png_frame(const void *encoded, size_t encoded_size, content_request request,
-    uint64_t sequence, void **out, size_t *out_size) {
+nx_result content_png_frame_fit(const void *encoded, size_t encoded_size, content_request request,
+    uint64_t sequence, void **out, size_t *out_size, content_png_fit *fit) {
     if (!encoded || !encoded_size || !out || !out_size || !request.generation || !request.resize ||
         !request.width || !request.height || !sequence) return NX_ERROR_ARGUMENT;
     if (encoded_size > CONTENT_PNG_ENCODED_LIMIT || request.width > NX_VIEWPORT_MAX_DIMENSION ||
@@ -41,8 +41,9 @@ nx_result content_png_frame(const void *encoded, size_t encoded_size, content_re
     else fit_height = fit_width * height / width;
     if (!fit_width) fit_width = 1;
     if (!fit_height) fit_height = 1;
-    uint8_t *dest = data + sizeof(header) + ((request.height - fit_height) / 2u) * stride +
-        ((request.width - fit_width) / 2u) * 4u;
+    uint32_t x_offset = (request.width - fit_width) / 2u;
+    uint32_t y_offset = (request.height - fit_height) / 2u;
+    uint8_t *dest = data + sizeof(header) + y_offset * stride + x_offset * 4u;
     for (uint32_t y = 0; y < fit_height; ++y) {
         const uint8_t *source = decoded + (size_t)(y * height / fit_height) * width * 4u;
         uint8_t *row = dest + (size_t)y * stride;
@@ -51,9 +52,15 @@ nx_result content_png_frame(const void *encoded, size_t encoded_size, content_re
     }
     *out = data;
     *out_size = bytes;
+    if (fit) *fit = (content_png_fit){width, height, x_offset, y_offset, fit_width, fit_height};
     result = NX_OK;
 done:
     free(decoded);
     png_image_free(&image);
     return result;
+}
+
+nx_result content_png_frame(const void *encoded, size_t encoded_size, content_request request,
+    uint64_t sequence, void **out, size_t *out_size) {
+    return content_png_frame_fit(encoded, encoded_size, request, sequence, out, out_size, NULL);
 }

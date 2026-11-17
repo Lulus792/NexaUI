@@ -61,15 +61,19 @@ static int publish(nx_snapshot_exchange *exchange, content_request request, uint
     return result == NX_OK;
 }
 static int publish_text(nx_snapshot_exchange *exchange, content_request request, uint64_t sequence,
-    uint8_t value, const char *text, size_t text_bytes, _Atomic unsigned *disposals) {
+    uint8_t value, const char *text, size_t text_bytes, const content_frame_word *word,
+    _Atomic unsigned *disposals) {
     size_t bytes;
     void *frame = make_frame(request, sequence, request.width*4u, value, &bytes);
     if (!frame) return 0;
-    uint8_t *extended = realloc(frame, bytes+text_bytes);
+    size_t full_size = bytes + text_bytes + (word ? sizeof(*word) : 0);
+    uint8_t *extended = realloc(frame, full_size);
     if (!extended) { free(frame); return 0; }
     ((content_frame_header *)extended)->text_bytes = (uint32_t)text_bytes;
+    ((content_frame_header *)extended)->word_count = word ? 1u : 0u;
     memcpy(extended+bytes, text, text_bytes);
-    nx_result result = nx_snapshot_exchange_publish(exchange, extended, bytes+text_bytes, dispose, disposals);
+    if (word) memcpy(extended+bytes+text_bytes, word, sizeof(*word));
+    nx_result result = nx_snapshot_exchange_publish(exchange, extended, full_size, dispose, disposals);
     if (result != NX_OK) free(extended);
     return result == NX_OK;
 }
@@ -345,22 +349,33 @@ int main(int argc, char **argv) {
         CHECK(publish(exchange, status.request, 1, 100, &disposals));
         CHECK(record(surface, exchange, context, &desc, NX_OK, &leased) && image_matches(context, &desc, 100));
     } else if (!strcmp(argv[1], "text")) {
-        CHECK(publish_text(exchange, request, 1, 50, "Résumé", sizeof("Résumé")-1, &disposals));
+        content_frame_word valid = {0, 8, {.125f,.375f,.25f,.25f}};
+        const content_frame_word *words = NULL;
+        size_t count = 0;
+        CHECK(publish_text(exchange, request, 1, 50, "Résumé", sizeof("Résumé")-1, &valid, &disposals));
         CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
         CHECK(image_matches(context, &desc, 50) && text_matches(surface, "Résumé"));
+        CHECK(content_surface_get_words(surface, &words, &count) == NX_OK && count == 1 &&
+            words[0].start_byte == 0 && words[0].end_byte == 8 && words[0].bounds.y == .375f);
         CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
-        CHECK(publish_text(exchange, request, 2, 70, "\xc3", 1, &disposals));
+        CHECK(publish_text(exchange, request, 2, 70, "\xc3", 1, NULL, &disposals));
         CHECK(record(surface, exchange, context, &desc, NX_ERROR_ARGUMENT, &leased));
         CHECK(text_matches(surface, "Résumé"));
-        CHECK(publish_text(exchange, request, 3, 71, "a\0b", 3, &disposals));
+        CHECK(publish_text(exchange, request, 3, 71, "a\0b", 3, NULL, &disposals));
         CHECK(record(surface, exchange, context, &desc, NX_ERROR_ARGUMENT, &leased));
         CHECK(text_matches(surface, "Résumé"));
-        CHECK(publish_text(exchange, request, 4, 110, "Grün", sizeof("Grün")-1, &disposals));
+        content_frame_word split_scalar = {3, 5, {.125f,.375f,.25f,.25f}};
+        CHECK(publish_text(exchange, request, 4, 90, "Grün", sizeof("Grün")-1, &split_scalar, &disposals));
+        CHECK(record(surface, exchange, context, &desc, NX_ERROR_ARGUMENT, &leased));
+        CHECK(text_matches(surface, "Résumé") &&
+            content_surface_get_words(surface, &words, &count) == NX_OK && count == 1);
+        CHECK(publish_text(exchange, request, 5, 110, "Grün", sizeof("Grün")-1, NULL, &disposals));
         probe.fail_next = 1;
         CHECK(record(surface, exchange, context, &desc, NX_ERROR_MEMORY, &leased));
         CHECK(text_matches(surface, "Résumé") && content_surface_get_status(surface, &status) == NX_OK && status.sequence == 1);
         CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
         CHECK(image_matches(context, &desc, 110) && text_matches(surface, "Grün"));
+        CHECK(content_surface_get_words(surface, &words, &count) == NX_OK && count == 0 && !words);
         CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
         desc.scale = 2;
         CHECK(record(surface, exchange, context, &desc, NX_ERROR_STATE, &leased));

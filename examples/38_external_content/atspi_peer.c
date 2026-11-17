@@ -247,6 +247,27 @@ static AtspiAccessible *pdf_text(AtspiAccessible *app, const char *expected) {
     return NULL;
 }
 
+static int pdf_word_geometry(AtspiAccessible *node, int first_width, int space, int next_x) {
+    AtspiText *text = atspi_accessible_get_text_iface(node);
+    if (!text) return 0;
+    GError *error = NULL;
+    AtspiRect *first = atspi_text_get_character_extents(text, 1, ATSPI_COORD_TYPE_WINDOW, &error);
+    int ok = !error && first && first->x == 48 && first->y == 181 &&
+        first->width == first_width && first->height == 30;
+    g_free(first);
+    if (ok) ok = atspi_text_get_offset_at_point(text,60,190,ATSPI_COORD_TYPE_WINDOW,&error)==0 && !error;
+    if (ok) ok = atspi_text_get_offset_at_point(text,next_x,190,ATSPI_COORD_TYPE_WINDOW,&error)==space+1 && !error;
+    if (ok) ok = atspi_text_get_offset_at_point(text,30,190,ATSPI_COORD_TYPE_WINDOW,&error)==-1 && !error;
+    if (ok) {
+        AtspiRect *unmapped = atspi_text_get_character_extents(text,space,ATSPI_COORD_TYPE_WINDOW,&error);
+        ok = error != NULL;
+        g_free(unmapped);
+    }
+    g_clear_error(&error);
+    g_object_unref(text);
+    return ok;
+}
+
 int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
@@ -289,13 +310,14 @@ int main(int argc,char **argv) {
     CHECK((retired=find(app,viewport,0))&&dimensions(retired));
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
     CHECK(capture(display,outer,blue,"fresh"));
-    if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n")));
+    if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n"))&&pdf_word_geometry(first_text,120,6,195));
     CHECK(press(app,"Bad frame"));
     if(png_case||pdf_case) {
         CHECK(observe(app,pdf_case?"PDF rendering failed; page retained.":"PNG decoding failed; image retained.",0));
         CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
         CHECK(capture(display,outer,blue,"bad-retained"));
-        if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n"));
+        if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
+            pdf_word_geometry(first_text,120,6,195));
     } else {
         CHECK(observe(app,"Frame format unavailable.",0));
         CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
@@ -308,7 +330,8 @@ int main(int argc,char **argv) {
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
     CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
-    if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT));
+    if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
+        pdf_word_geometry(second_text,72,4,145));
     CHECK(focus(app,viewport)&&drive("key","Tab")&&observe(app,"Scale 2x",1)&&drive("key","Return"));
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
     if(pdf_case)CHECK(state(second_text,ATSPI_STATE_DEFUNCT));
@@ -316,12 +339,13 @@ int main(int argc,char **argv) {
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
     if(pdf_case) {
-        CHECK((scaled_text=pdf_text(app,"Grün page two\n\n")));
+        CHECK((scaled_text=pdf_text(app,"Grün page two\n\n"))&&pdf_word_geometry(scaled_text,72,4,145));
         CHECK(focus(app,"Previous page")&&drive("key","Return")&&observe(app,"PDF page 1 of 2 at 2x.",0));
         CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=2 copied=4"));
         CHECK(capture(display,outer,blue,"pdf-previous"));
-        CHECK((returned_text=pdf_text(app,"Résumé page one\n\n"))&&state(scaled_text,ATSPI_STATE_DEFUNCT));
-        puts("PDF_TEXT AT-SPI verified: UTF-8 pages, retained failure, resize and defunct old text");
+        CHECK((returned_text=pdf_text(app,"Résumé page one\n\n"))&&state(scaled_text,ATSPI_STATE_DEFUNCT)&&
+            pdf_word_geometry(returned_text,120,6,195));
+        puts("PDF_TEXT AT-SPI verified: UTF-8 pages, word bounds, point offsets, unmapped spaces, retained failure and resize");
     }
     if(!strcmp(test_case,"input")) CHECK(input_workflow(app,display,id,host_log));
     CHECK(focus(app,"Close")&&drive("key","Return"));

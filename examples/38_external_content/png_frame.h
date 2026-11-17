@@ -15,4 +15,13 @@
 nx_result content_png_frame(const void *encoded, size_t encoded_size, content_request request,
     uint64_t sequence, void **out, size_t *out_size);
 
+typedef struct content_png_fit {
+    uint32_t source_width, source_height;
+    uint32_t x, y, width, height;
+} content_png_fit;
+
+/* Also return the actual fitted image rectangle in physical frame pixels. */
+nx_result content_png_frame_fit(const void *encoded, size_t encoded_size, content_request request,
+    uint64_t sequence, void **out, size_t *out_size, content_png_fit *fit);
+
 #endif
