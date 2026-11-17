@@ -77,6 +77,15 @@ static int dimensions(AtspiAccessible *node) {
     int yes=rect&&!error&&rect->x==16&&rect->y==136&&rect->width==448&&rect->height==208;
     g_free(rect);if(error)g_error_free(error);if(component)g_object_unref(component);return yes;
 }
+static int pdf_link_bounds(AtspiAccessible *node) {
+    if (!node || atspi_accessible_get_role(node,NULL)!=ATSPI_ROLE_PUSH_BUTTON) return 0;
+    AtspiComponent *component=atspi_accessible_get_component_iface(node);
+    AtspiRect *rect=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+    int ok=rect&&rect->x==352&&rect->y==224&&rect->width==84&&rect->height==48;
+    g_free(rect);
+    if (component) g_object_unref(component);
+    return ok;
+}
 static int outer_window(char id[32],Window *window) {
     const char *path=getenv("NEXAUI_TEST_WESTON_LOG");FILE *file=path?fopen(path,"r"):NULL;if(!file)return 0;
     char line[1024];unsigned count=0;
@@ -324,11 +333,13 @@ int main(int argc,char **argv) {
     int png_case=!strcmp(test_case,"png");
     int pdf_case=!strcmp(test_case,"pdf");
     int compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
+    int links=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
     AtspiAccessible *first_text=NULL,*second_text=NULL,*scaled_text=NULL,*returned_text=NULL,*hit_text=NULL;
+    AtspiAccessible *old_link=NULL,*link=NULL,*back=NULL;
     AtspiComponent *old_component=NULL;Display *display=NULL;FILE *host_log=NULL;
     char id[32];Window outer=0;
     CHECK(outer_window(id,&outer)&&(display=XOpenDisplay(NULL))&&(host_log=tmpfile()));
@@ -359,6 +370,8 @@ int main(int argc,char **argv) {
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
     CHECK(capture(display,outer,blue,"fresh"));
     if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n"))&&pdf_word_geometry(first_text,120,6,195));
+    if(links) CHECK((old_link=find(app,"PDF link to page 2",0))&&pdf_link_bounds(old_link)&&
+        atspi_accessible_get_child_count(retired,NULL)==2);
     CHECK(press(app,"Bad frame"));
     if(png_case||pdf_case) {
         CHECK(observe(app,pdf_case?"PDF rendering failed; page retained.":"PNG decoding failed; image retained.",0));
@@ -366,6 +379,7 @@ int main(int argc,char **argv) {
         CHECK(capture(display,outer,blue,"bad-retained"));
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
             pdf_word_geometry(first_text,120,6,195));
+        if(links) CHECK(!state(old_link,ATSPI_STATE_DEFUNCT)&&pdf_link_bounds(old_link));
         if(pdf_case) {
             CHECK(drive("key","ctrl+f")&&observe(app,"Find in PDF",1));
             CHECK(pdf_find_value(app,""));
@@ -402,6 +416,7 @@ int main(int argc,char **argv) {
         puts("PDF_FIND_IME verified: native preedit leaves the query empty and commit finds the matching word");
     }
     CHECK(focus(app,viewport)&&drive("key","Tab"));
+    if(links) CHECK(observe(app,"PDF link to page 1",1)&&drive("key","Tab")&&state(old_link,ATSPI_STATE_DEFUNCT));
     if (pdf_case) {
         CHECK(observe(app,"Find in PDF",1));
         if (compose) CHECK(focus(app,"Scale 2x"));
@@ -439,6 +454,15 @@ int main(int argc,char **argv) {
         puts("PDF_FIND verified: keyboard focus, clear, accessible UTF-8 query, page rollover and logical highlight");
         puts("PDF_TEXT AT-SPI verified: UTF-8 pages, word bounds, point offsets, unmapped spaces, retained failure and resize");
     }
+    if(links) {
+        CHECK((link=find(app,"PDF link to page 2",0))&&pdf_link_bounds(link));
+        if (compose) CHECK(point_at(id,350,100)&&drive("click","1")&&drive("park",NULL));
+        else CHECK(focus(app,viewport)&&drive("key","Tab")&&observe(app,"PDF link to page 2",1)&&drive("key","Return"));
+        CHECK(observe(app,"PDF page 2 of 2 at 2x.",0)&&state(link,ATSPI_STATE_DEFUNCT));
+        CHECK((back=find(app,"PDF link to page 1",0))&&pdf_link_bounds(back));
+        CHECK(press(app,"PDF link to page 1")&&observe(app,"PDF page 1 of 2 at 2x.",0)&&state(back,ATSPI_STATE_DEFUNCT));
+        puts("PDF_LINK verified: both destination forms, accepted bounds and defunct prior links");
+    }
     if(!strcmp(test_case,"input")) CHECK(input_workflow(app,display,id,host_log));
     CHECK(focus(app,"Close")&&drive("key","Return"));
 closed: ;
@@ -452,6 +476,9 @@ done:
     if(first_text)g_object_unref(first_text);if(second_text)g_object_unref(second_text);
     if(scaled_text)g_object_unref(scaled_text);if(returned_text)g_object_unref(returned_text);
     if(hit_text)g_object_unref(hit_text);
+    if(old_link)g_object_unref(old_link);
+    if(link)g_object_unref(link);
+    if(back)g_object_unref(back);
     if(app)g_object_unref(app);if(desktop)g_object_unref(desktop);if(initialized)atspi_exit();if(display)XCloseDisplay(display);
     if(host_log){
         char *text=malloc(128u*1024u);

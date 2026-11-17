@@ -22,6 +22,11 @@ nx_result content_pdf_frame_with_text(const char *renderer, const char *reader, 
 nx_result content_pdf_open(const char *path, int *out_file);
 nx_result content_pdf_render(const char *renderer, const char *reader, int file, unsigned page,
     content_request request, uint64_t sequence, void **out, size_t *out_size);
+/* Optional link reader receives the same descriptor and page. With it,
+   rendering uses the crop box. A failed link read leaves image/text usable. */
+nx_result content_pdf_render_with_links(const char *renderer, const char *reader,
+    const char *link_reader, int file, unsigned page, content_request request,
+    uint64_t sequence, void **out, size_t *out_size);
 
 #define CONTENT_PDF_PAGE_LIMIT 256u
 #define CONTENT_PDF_INDEX_LIMIT (512u * 1024u)

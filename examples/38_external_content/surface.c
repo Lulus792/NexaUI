@@ -10,7 +10,7 @@ struct content_surface {
     size_t max_bytes;
     uint8_t *pixels;
     uint8_t *metadata;
-    size_t text_bytes, word_count;
+    size_t text_bytes, word_count, link_count;
 };
 
 static void *allocate(void *user, size_t bytes) { (void)user; return malloc(bytes); }
@@ -20,10 +20,12 @@ static void deallocate(void *user, void *data, size_t bytes) {
 static void clear_metadata(content_surface *surface) {
     if (surface->metadata)
         surface->allocator.deallocate(surface->allocator.user, surface->metadata,
-            surface->text_bytes + surface->word_count * sizeof(content_frame_word));
+            surface->text_bytes + surface->word_count * sizeof(content_frame_word) +
+            surface->link_count * sizeof(content_frame_link));
     surface->metadata = NULL;
     surface->text_bytes = 0;
     surface->word_count = 0;
+    surface->link_count = 0;
 }
 
 static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
@@ -49,19 +51,31 @@ static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
     return NX_OK;
 }
 
+static int unit_bounds(nx_rect box) {
+    return box.x >= 0 && box.y >= 0 && box.width > 0 && box.height > 0 &&
+        box.x + box.width <= 1 && box.y + box.height <= 1;
+}
+
 static int valid_words(const char *text, size_t text_bytes, const uint8_t *words, size_t count) {
     uint32_t previous_end = 0;
     for (size_t i = 0; i < count; ++i) {
         content_frame_word word;
         memcpy(&word, words + i * sizeof(word), sizeof(word));
-        nx_rect box = word.bounds;
         if (word.start_byte < previous_end || word.start_byte >= word.end_byte || word.end_byte > text_bytes ||
             ((uint8_t)text[word.start_byte] & 0xc0u) == 0x80u ||
             (word.end_byte < text_bytes && ((uint8_t)text[word.end_byte] & 0xc0u) == 0x80u) ||
-            !(box.x >= 0 && box.y >= 0 && box.width > 0 && box.height > 0 &&
-              box.x + box.width <= 1 && box.y + box.height <= 1))
+            !unit_bounds(word.bounds))
             return 0;
         previous_end = word.end_byte;
+    }
+    return 1;
+}
+
+static int valid_links(const uint8_t *links, size_t count) {
+    for (size_t i = 0; i < count; ++i) {
+        content_frame_link link;
+        memcpy(&link,links + i * sizeof(link),sizeof(link));
+        if (!link.target_page || !unit_bounds(link.bounds)) return 0;
     }
     return 1;
 }
@@ -80,10 +94,12 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     size_t payload = (size_t)request->height * header.stride;
     if (payload > surface->max_bytes) return NX_ERROR_LIMIT;
     size_t body = view->bytes - sizeof(header);
-    if (header.text_bytes > CONTENT_FRAME_TEXT_LIMIT || header.word_count > CONTENT_FRAME_WORD_LIMIT)
+    if (header.text_bytes > CONTENT_FRAME_TEXT_LIMIT || header.word_count > CONTENT_FRAME_WORD_LIMIT ||
+        header.link_count > CONTENT_PDF_LINK_LIMIT)
         return NX_ERROR_LIMIT;
     size_t word_bytes = (size_t)header.word_count * sizeof(content_frame_word);
-    size_t metadata_bytes = word_bytes + header.text_bytes;
+    size_t link_bytes = (size_t)header.link_count * sizeof(content_frame_link);
+    size_t metadata_bytes = word_bytes + link_bytes + header.text_bytes;
     if (body < payload || body - payload != metadata_bytes) return NX_ERROR_ARGUMENT;
     if (header.damage_base) {
         if (header.damage_base >= header.sequence ||
@@ -103,15 +119,18 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     const uint8_t *pixels = (const uint8_t *)view->data + sizeof(header);
     const char *text = (const char *)(pixels + payload);
     const uint8_t *words = (const uint8_t *)text + header.text_bytes;
+    const uint8_t *links = words + word_bytes;
     uint8_t *metadata = NULL;
     if (metadata_bytes) {
         if (memchr(text, 0, header.text_bytes) || nx_utf8_validate(text, header.text_bytes, NULL) != NX_OK)
             return NX_ERROR_ARGUMENT;
         if (!valid_words(text, header.text_bytes, words, header.word_count)) return NX_ERROR_ARGUMENT;
+        if (!valid_links(links,header.link_count)) return NX_ERROR_ARGUMENT;
         metadata = surface->allocator.allocate(surface->allocator.user, metadata_bytes);
         if (!metadata) return NX_ERROR_MEMORY;
         memcpy(metadata, words, word_bytes);
-        memcpy(metadata + word_bytes, text, header.text_bytes);
+        memcpy(metadata + word_bytes, links, link_bytes);
+        memcpy(metadata + word_bytes + link_bytes, text, header.text_bytes);
     }
     size_t row = (size_t)request->width * 4u;
     /* Publication can replace an unseen snapshot. A mismatched base requires
@@ -128,6 +147,7 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     surface->metadata = metadata;
     surface->text_bytes = header.text_bytes;
     surface->word_count = header.word_count;
+    surface->link_count = header.link_count;
     surface->status.sequence = header.sequence;
     surface->status.last_copy_bytes = copy_bytes * rows;
     ++surface->status.copied_frames;
@@ -207,8 +227,18 @@ nx_result content_surface_get_status(const content_surface *surface, content_sur
 nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span *out) {
     if (!surface || !out) return NX_ERROR_ARGUMENT;
     const char *text = surface->metadata ?
-        (const char *)(surface->metadata + surface->word_count * sizeof(content_frame_word)) : NULL;
+        (const char *)(surface->metadata + surface->word_count * sizeof(content_frame_word) +
+            surface->link_count * sizeof(content_frame_link)) : NULL;
     *out = (nx_utf8_span){text, surface->text_bytes};
+    return NX_OK;
+}
+
+nx_result content_surface_get_links(const content_surface *surface,
+    const content_frame_link **links, size_t *count) {
+    if (!surface || !links || !count) return NX_ERROR_ARGUMENT;
+    *count = surface->link_count;
+    *links = surface->link_count ? (const content_frame_link *)(surface->metadata +
+        surface->word_count * sizeof(content_frame_word)) : NULL;
     return NX_OK;
 }
 

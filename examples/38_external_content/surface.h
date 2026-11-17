@@ -1,6 +1,7 @@
 #ifndef EXAMPLE_CONTENT_SURFACE_H
 #define EXAMPLE_CONTENT_SURFACE_H
 #include <nexaui/nexaui.h>
+#include "pdf_links.h"
 
 typedef struct content_surface content_surface;
 typedef struct content_request {
@@ -11,9 +12,13 @@ typedef struct content_frame_word {
     uint32_t start_byte, end_byte;
     nx_rect bounds; /* Normalized to the entire image, including margins. */
 } content_frame_word;
+typedef struct content_frame_link {
+    nx_rect bounds; /* Normalized to the entire image, including margins. */
+    uint32_t target_page;
+} content_frame_link;
 /* In-process owned snapshot layout. The header is followed by height*stride
    bytes of straight-alpha RGBA8, then optional UTF-8 text and unaligned
-   content_frame_word records for the same frame.
+   content_frame_word and content_frame_link records for the same frame.
    The producer finishes writing before publishing and supplies the disposer. */
 typedef struct content_frame_header {
     content_request request;
@@ -25,7 +30,7 @@ typedef struct content_frame_header {
     uint64_t damage_base;
     uint32_t damage_x, damage_y, damage_width, damage_height;
     uint32_t text_bytes; /* Unpadded length, without a NUL terminator. */
-    uint32_t word_count;
+    uint32_t word_count, link_count;
 } content_frame_header;
 typedef struct content_surface_status {
     content_request request;
@@ -62,4 +67,6 @@ nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span 
 /* Same borrow lifetime as text. Byte endpoints refer to that text. */
 nx_result content_surface_get_words(const content_surface *surface,
     const content_frame_word **words, size_t *count);
+nx_result content_surface_get_links(const content_surface *surface,
+    const content_frame_link **links, size_t *count);
 #endif

@@ -29,7 +29,7 @@ typedef struct native_pdf_index_result {
 } native_pdf_index_result;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
-    const char *encoded_dir, *pdf_renderer, *pdf_reader;
+    const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
     pthread_t thread;
@@ -153,8 +153,8 @@ static nx_result native_pdf(native_worker *worker, native_job job, void **data, 
         worker->pdf_file = file;
         worker->pdf_generation = job.request.generation;
     }
-    return content_pdf_render(worker->pdf_renderer,worker->pdf_reader,worker->pdf_file,page,
-        job.request,job.sequence,data,bytes);
+    return content_pdf_render_with_links(worker->pdf_renderer,worker->pdf_reader,worker->pdf_link_reader,
+        worker->pdf_file,page,job.request,job.sequence,data,bytes);
 }
 
 static void native_index_pdf(native_worker *worker, native_job job) {
@@ -250,11 +250,12 @@ static int native_worker_close(native_worker *worker) {
     return result;
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
-    const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader) {
+    const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
     worker->encoded_dir = encoded_dir; worker->pdf_renderer = pdf_renderer; worker->pdf_reader = pdf_reader;
+    worker->pdf_link_reader = pdf_link_reader;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;

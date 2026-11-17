@@ -13,7 +13,7 @@
 static int engine_probe(void) {
     int mode = getchar();
     if (mode == 's') { sleep(30); return 0; }
-    if (mode == 'm' || mode == 'g') {
+    if (mode == 'm' || mode == 'g' || mode == 'x') {
         const uint8_t pixels[16 * 8 * 4] = {0};
         png_image image = {.version=PNG_IMAGE_VERSION, .width=16, .height=8, .format=PNG_FORMAT_RGBA};
         return png_image_write_to_stdio(&image, stdout, 0, pixels, 0, NULL) ? 0 : 2;
@@ -29,13 +29,21 @@ static const char plain_text[] = "écho go\n";
 
 static int text_probe(const char *output) {
     int mode = getchar();
-    if (mode != 'm' && mode != 'g') return 2;
+    if (mode != 'm' && mode != 'g' && mode != 'x') return 2;
     if (!strcmp(output, "-nopgbrk")) return fputs(plain_text, stdout) == EOF ? 2 : 0;
     if (strcmp(output, "-tsv")) return 2;
     return printf("level\tpage_num\tpar_num\tblock_num\tline_num\tword_num\tleft\ttop\twidth\theight\tconf\ttext\n"
         "1\t1\t0\t0\t0\t0\t0\t0\t16\t8\t-1\t###PAGE###\n"
         "5\t1\t0\t0\t0\t0\t2\t2\t4\t4\t100\técho\n"
-        "5\t1\t0\t0\t0\t1\t8\t2\t2\t4\t100\t%s\n", mode == 'g' ? "go" : "changed") < 0 ? 2 : 0;
+        "5\t1\t0\t0\t0\t1\t8\t2\t2\t4\t100\t%s\n", mode == 'm' ? "changed" : "go") < 0 ? 2 : 0;
+}
+
+static int link_probe(void) {
+    int mode=getchar();
+    pdf_link_packet packet={.format=CONTENT_PDF_LINK_FORMAT,.source_page=1,.page_count=2,
+        .count=1,.width=16,.height=8,.links={{2,2,4,4,mode=='x'?3u:2u}}};
+    size_t bytes=offsetof(pdf_link_packet,links)+sizeof(pdf_link_area);
+    return fwrite(&packet,1,bytes,stdout)!=bytes;
 }
 
 static int index_probe(void) {
@@ -73,7 +81,7 @@ static int probe(const char *executable, char mode, nx_result expected) {
         waitpid(-1, &status, WNOHANG) == -1 && errno == ECHILD;
 }
 
-static int probe_words(const char *executable, char mode, uint32_t expected_count) {
+static int probe_words(const char *executable, char mode, uint32_t expected_count, int with_links) {
     char file[] = "/tmp/nexaui-pdf-words-XXXXXX";
     int fd = mkstemp(file);
     if (fd < 0) return 0;
@@ -81,17 +89,32 @@ static int probe_words(const char *executable, char mode, uint32_t expected_coun
     if (close(fd)) ok = 0;
     void *frame = NULL;
     size_t bytes = 0;
-    if (ok) ok = content_pdf_frame_with_text(executable, executable, file, 1,
+    if (ok && with_links) {
+        int document=-1;
+        ok=content_pdf_open(file,&document)==NX_OK;
+        if (ok) ok=content_pdf_render_with_links(executable,executable,executable,document,1,
+            (content_request){1,1,16,16},1,&frame,&bytes)==NX_OK;
+        if (document>=0 && close(document)) ok=0;
+    } else if (ok) ok = content_pdf_frame_with_text(executable, executable, file, 1,
         (content_request){1,1,16,16}, 1, &frame, &bytes) == NX_OK;
     if (unlink(file)) ok = 0;
     const size_t text_start = sizeof(content_frame_header) + 16u * 16u * 4u;
     const size_t text_size = sizeof(plain_text) - 1u;
-    if (ok) ok = bytes == text_start + text_size + expected_count * sizeof(content_frame_word);
+    unsigned expected_links=with_links && mode=='g';
+    size_t link_start=text_start+text_size+expected_count*sizeof(content_frame_word);
+    if (ok) ok = bytes==link_start+expected_links*sizeof(content_frame_link);
     if (ok) {
         content_frame_header header;
         memcpy(&header, frame, sizeof(header));
         ok = header.word_count == expected_count && header.text_bytes == text_size &&
+            header.link_count == expected_links &&
             !memcmp((const uint8_t *)frame + text_start, plain_text, text_size);
+    }
+    if (ok && expected_links) {
+        content_frame_link link;
+        memcpy(&link,(const uint8_t *)frame+link_start,sizeof(link));
+        ok=link.target_page==2 && link.bounds.x==.125f && link.bounds.y==.375f &&
+            link.bounds.width==.25f && link.bounds.height==.25f;
     }
     if (ok && expected_count) {
         content_frame_word words[2];
@@ -131,13 +154,15 @@ static int probe_index(const char *executable, char mode, nx_result expected) {
 }
 
 int main(int argc, char **argv) {
-    if (argc == 10 && !strcmp(argv[1], "-png")) return engine_probe();
+    if ((argc == 10 || argc == 11) && !strcmp(argv[1], "-png")) return engine_probe();
+    if (argc == 2 && !strcmp(argv[1],"1")) return link_probe();
     if (argc == 12 && !strcmp(argv[1], "-f")) return text_probe(argv[9]);
     if (argc == 11 && !strcmp(argv[4], "257")) return index_probe();
     if (argc != 1) return 2;
     if (!probe(argv[0], 's', NX_ERROR_PLATFORM) || !probe(argv[0], 'o', NX_ERROR_LIMIT) ||
-        !probe(argv[0], 'b', NX_ERROR_ARGUMENT) || !probe_words(argv[0], 'g', 2) ||
-        !probe_words(argv[0], 'm', 0) || !probe_index(argv[0],'i',NX_OK) ||
+        !probe(argv[0], 'b', NX_ERROR_ARGUMENT) || !probe_words(argv[0],'g',2,0) ||
+        !probe_words(argv[0],'m',0,0) || !probe_words(argv[0],'g',2,1) ||
+        !probe_words(argv[0],'x',2,1) || !probe_index(argv[0],'i',NX_OK) ||
         !probe_index(argv[0],'t',NX_ERROR_ARGUMENT) || !probe_index(argv[0],'u',NX_ERROR_ARGUMENT) ||
         !probe_index(argv[0],'p',NX_ERROR_LIMIT) || !probe_index(argv[0],'b',NX_ERROR_LIMIT)) return 1;
     puts("PDF worker verified: deadlines, word bounds, pinned document, indexed blank page and search limits");

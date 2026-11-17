@@ -29,18 +29,28 @@ def write_png_fixtures(directory):
         print(f'PNG_FIXTURE {kind} sha256={hashlib.sha256(image).hexdigest()}', flush=True)
 
 
-def write_pdf_fixtures(directory):
+def write_pdf_fixtures(directory, include_links=False):
     def document(pages):
+        annotated = include_links and len(pages) == 2
         kids = ' '.join(f'{3+2*i} 0 R' for i in range(len(pages)))
         font = 3 + 2 * len(pages)
-        objects = [b'<< /Type /Catalog /Pages 2 0 R >>',
+        names = b' /Names << /Dests << /Names [(first-page) [3 0 R /Fit]] >> >>' if annotated else b''
+        objects = [b'<< /Type /Catalog /Pages 2 0 R' + names + b' >>',
                    f'<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>'.encode()]
         for i, drawing in enumerate(pages):
+            annots = ((' /Annots [8 0 R 10 0 R]' if i == 0 else ' /Annots [9 0 R]')
+                      if annotated else '')
             objects.append(
                 f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 112 52] '
-                f'/Resources << /Font << /F1 {font} 0 R >> >> /Contents {4+2*i} 0 R >>'.encode())
+                f'/Resources << /Font << /F1 {font} 0 R >> >> /Contents {4+2*i} 0 R{annots} >>'.encode())
             objects.append(f'<< /Length {len(drawing)} >>\nstream\n'.encode() + drawing + b'endstream')
         objects.append(b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>')
+        if annotated:
+            base = b'<< /Type /Annot /Subtype /Link /Rect [84 18 105 30] /Border [0 0 0]'
+            objects.extend((base + b' /A << /S /GoTo /D [5 0 R /Fit] >> >>',
+                            base + b' /Dest (first-page) >>',
+                            b'<< /Type /Annot /Subtype /Link /Rect [5 18 22 30] /Border [0 0 0]'
+                            b' /A << /S /URI /URI (https://example.invalid/) >> >>'))
         result = bytearray(b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')
         offsets = []
         for i, obj in enumerate(objects, 1):
@@ -76,10 +86,13 @@ def main():
     parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'pending-close', 'rejected-close'), default='full')
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
     parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
+    parser.add_argument('--pdf-link-reader', type=Path, help='Optional content_pdf_link_reader path')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
+    if args.pdf_link_reader and args.case != 'pdf':
+        parser.error('--pdf-link-reader requires --case pdf')
     if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
@@ -116,7 +129,9 @@ def main():
                 reader = args.pdf_text_reader or renderer.with_name('pdftotext')
                 env['NEXAUI_CONTENT_TEST_PDF_RENDERER'] = str(renderer)
                 env['NEXAUI_CONTENT_TEST_PDF_READER'] = str(reader.resolve(strict=True))
-                write_pdf_fixtures(Path(directory))
+                if args.pdf_link_reader:
+                    env['NEXAUI_CONTENT_TEST_PDF_LINK_READER'] = str(args.pdf_link_reader.resolve(strict=True))
+                write_pdf_fixtures(Path(directory),bool(args.pdf_link_reader))
             return subprocess.run(command, env=env, timeout=90).returncode
     return subprocess.run(command, env=env, timeout=90).returncode
 

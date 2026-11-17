@@ -17,6 +17,10 @@ enum phase { PREPARING, WAITING, REPLACED, RELEASED, OLD_REJECTED, FRESH_PENDING
 static int pdf_hit_page(enum phase phase) {
     return phase==PDF_HIT_READY || phase==PDF_HIT_FAILED;
 }
+static int pdf_can_navigate(enum phase phase) {
+    return phase==READY || phase==BAD_REJECTED || phase==RECOVERED ||
+        phase==SCALED_READY || phase==PDF_PAGE1_SCALED || pdf_hit_page(phase);
+}
 
 static const char *phase_name(enum phase phase) {
     static const char *names[] = {"Preparing old frame.","Waiting for frame.","Replacement waiting.",
@@ -78,17 +82,17 @@ static nx_rect word_bounds(nx_rect view, nx_rect word) {
 
 static nx_result pdf_text_semantics(nx_context *context, content_surface *surface,
     const nx_viewport_desc *viewport, pdf_text_view *text_view) {
-    nx_utf8_span text;
-    nx_result result = content_surface_get_text(surface, &text);
-    if (result != NX_OK || !text.length) return result;
     content_surface_status status;
-    result = content_surface_get_status(surface, &status);
+    nx_result result = content_surface_get_status(surface, &status);
     if (result != NX_OK) return result;
     if (text_view->generation != status.request.generation || text_view->resize != status.request.resize ||
         text_view->sequence != status.sequence) {
         if (text_view->identity == UINT64_MAX) return NX_ERROR_LIMIT;
         *text_view = (pdf_text_view){status.request.generation, status.request.resize, status.sequence, text_view->identity+1};
     }
+    nx_utf8_span text;
+    result = content_surface_get_text(surface, &text);
+    if (result != NX_OK || !text.length) return result;
     nx_semantic_desc node = {.id=101, .parent_id=viewport->id, .role=NX_ROLE_TEXT, .bounds=viewport->bounds,
         .name={"PDF page text",13}, .value=text, .state=NX_SEM_READONLY};
     result = nx_semantics_add_readonly_text_snapshot_without_caret(context, &node, text_view->identity, NULL);
@@ -103,6 +107,36 @@ static nx_result pdf_text_semantics(nx_context *context, content_surface *surfac
             word_bounds(viewport->bounds,words[i].bounds)};
     nx_text_document_presentation presentation = {.boxes=boxes, .box_count=word_count};
     return nx_text_document_set_presentation(context, node.id, text_view->identity, 0, &presentation);
+}
+
+static nx_result pdf_link_widgets(nx_context *context, content_surface *surface,
+    const nx_viewport_desc *viewport, uint64_t frame_identity, int enabled, unsigned *destination) {
+    const content_frame_link *links;
+    size_t count;
+    nx_result result = content_surface_get_links(surface,&links,&count);
+    if (result != NX_OK || !count) return result;
+    if (frame_identity >= (UINT64_MAX-1024u)/CONTENT_PDF_LINK_LIMIT) return NX_ERROR_LIMIT;
+    uint64_t first_id=1024u+frame_identity*CONTENT_PDF_LINK_LIMIT;
+    for (size_t i=0;i<count;++i) {
+        char title[64];
+        snprintf(title,sizeof(title),"PDF link to page %u",links[i].target_page);
+        nx_rect bounds=word_bounds(viewport->bounds,links[i].bounds);
+        nx_widget_desc widget = {
+            .semantic={.id=first_id+i,.parent_id=viewport->id,.role=NX_ROLE_BUTTON,
+                .bounds=bounds,.name={title,strlen(title)},.state=enabled?0:NX_SEM_DISABLED,
+                .actions=NX_ACTION_FOCUS|NX_ACTION_PRESS},
+            .flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE};
+        nx_interaction_state state;
+        result=nx_widget_register(context,&widget,&state);
+        if (result != NX_OK) return result;
+        if (enabled && state.clicked) *destination=links[i].target_page;
+        if (enabled && (state.focused || state.hovered)) {
+            result=nx_stroke_rect(context,bounds,2,(nx_color){0,0,0,1});
+            if (result==NX_OK) result=nx_stroke_rect(context,bounds,1,(nx_color){1,1,1,1});
+            if (result != NX_OK) return result;
+        }
+    }
+    return NX_OK;
 }
 
 enum { PDF_FIND_FIELD = 32, PDF_NEXT_HIT = 34 };
@@ -253,8 +287,9 @@ static nx_result pdf_find_results(nx_context *context, const nx_font_collection 
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
     nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case,
-    pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document) {
-    *action = 0; *leased = 0;
+    pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
+    unsigned *linked_page) {
+    *action = 0; *leased = 0; *linked_page=0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
     nx_semantic_desc root = {.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
         .name={"External CPU content fixture",28}};
@@ -295,9 +330,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
 #ifdef CONTENT_NATIVE_PDF
     if (search && pdf_document_find(context,fonts,query,document,info.width-32)!=NX_OK) return 0;
     if (search && document->hits.next_page && info.width>=480) {
-        int navigable = phase==READY || phase==BAD_REJECTED || phase==RECOVERED ||
-            phase==SCALED_READY || phase==PDF_PAGE1_SCALED || hit_page;
-        if (button(context,fonts,PDF_NEXT_HIT,"Next hit",392,48,72,navigable,action)!=NX_OK) return 0;
+        if (button(context,fonts,PDF_NEXT_HIT,"Next hit",392,48,72,pdf_can_navigate(phase),action)!=NX_OK) return 0;
     }
 #endif
     const char *name=pdf_case?"PDF page image":"Fixture frame";
@@ -310,6 +343,8 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     if (*content_result != NX_OK && nx_fill_rect(context, desc.bounds,
         (nx_color){227.0f/255.0f,231.0f/255.0f,239.0f/255.0f,1}) != NX_OK) return 0;
     if (search && pdf_find_results(context,fonts,query,*leased?surface:NULL,desc.bounds)!=NX_OK) return 0;
+    if (pdf_case && *leased && pdf_link_widgets(context,surface,&desc,text_view->identity,
+        pdf_can_navigate(phase),linked_page)!=NX_OK) return 0;
     if (focus) {
         uint64_t id = phase==WAITING?10u:phase==REPLACED?11u:
             phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT?12u:
@@ -335,6 +370,7 @@ int main(void) {
     const char *encoded_dir=(png_case||pdf_case)?getenv("NEXAUI_CONTENT_TEST_ENCODED"):NULL;
     const char *pdf_renderer=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_RENDERER"):NULL;
     const char *pdf_reader=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_READER"):NULL;
+    const char *pdf_link_reader=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER"):NULL;
 #ifndef CONTENT_NATIVE_PNG
     if (png_case) return 2;
 #endif
@@ -351,7 +387,7 @@ int main(void) {
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
     size_t bytes=0; uint8_t *data=read_font(path,&bytes);
     enum phase phase=PREPARING,last_phase=FAILED;
-    unsigned frames=0,action=0; int need_frame=1,initial_job=0; double scale=1;
+    unsigned frames=0,action=0,linked_page=0; int need_frame=1,initial_job=0; double scale=1;
     unsigned nav_completion=0,pending_page=0,scaled_search_completion=0; enum phase nav_target=FAILED;
     uint64_t nav_sequence=0;
     pdf_document_view document={0};
@@ -366,7 +402,7 @@ int main(void) {
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
         (pdf_case&&nx_text_field_create("",0,4096,&query)!=NX_OK)||
         nx_software_view_open(window,&software)!=NX_OK||
-        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader)) goto done;
+        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     for (;;) {
@@ -448,7 +484,8 @@ int main(void) {
         need_frame=0;
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
         if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
-            &content_result,&leased,input_case,input_phase,png_case,pdf_case,&text_view,window,query,&document)) goto done;
+            &content_result,&leased,input_case,input_phase,png_case,pdf_case,&text_view,window,query,&document,
+            &linked_page)) goto done;
         int search_focused=nx_focus_id(context)==PDF_FIND_FIELD;
         if (find_visible(query,drawn,info.width)) {
             if (pdf_find_shortcut(context,leased,&find_pressed,&need_frame)!=NX_OK) goto done;
@@ -540,11 +577,12 @@ int main(void) {
         }
         else if (pdf_case&&((action==13&&phase==SCALED_READY)||(action==12&&phase==PDF_PAGE1_SCALED)||
             (pdf_hit_page(phase)&&((action==12&&document.page<document.pages)||(action==13&&document.page>1u)))||
-            (action==PDF_NEXT_HIT&&document.hits.next_page&&content_result==NX_OK))) {
+            (action==PDF_NEXT_HIT&&document.hits.next_page&&content_result==NX_OK)||
+            (linked_page&&content_result==NX_OK))) {
             if (status.sequence==UINT64_MAX||state.completed==UINT_MAX) goto done;
             int from_hits=pdf_hit_page(phase);
-            nav_target=action==PDF_NEXT_HIT||from_hits?PDF_HIT_READY:action==13?PDF_PAGE1_SCALED:SCALED_READY;
-            pending_page=action==PDF_NEXT_HIT?document.hits.next_page:
+            nav_target=linked_page||action==PDF_NEXT_HIT||from_hits?PDF_HIT_READY:action==13?PDF_PAGE1_SCALED:SCALED_READY;
+            pending_page=linked_page?linked_page:action==PDF_NEXT_HIT?document.hits.next_page:
                 action==13?document.page-1u:document.page+1u;
             nav_sequence=status.sequence+1;
             native_job job={.request=status.request,.sequence=nav_sequence,.kind=5,.page=pending_page};
@@ -597,7 +635,7 @@ done:
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
     unsigned expected=(!strcmp(test_case,"full")||input_case||png_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
-    if (pdf_case) expected=8;
+    if (pdf_case) expected=pdf_link_reader?10u:8u;
     unsigned published=expected-(unsigned)(png_case||pdf_case);
     unsigned discarded=!strcmp(test_case,"pending-close")?1u:0u;
     if (!worker_ready||worker.completed!=expected||worker.publications!=published||worker.discarded!=discarded||
