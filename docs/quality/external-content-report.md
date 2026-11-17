@@ -229,3 +229,37 @@ builds through the private Xvfb/Weston test environment.
 
 Local evidence archive `nexaui-readonly-geometry395.tar.gz` has SHA-256
 `b03dae622d27c8a31b960ca342c3e28c26356f526169dea9c00b3df6de48e4d2`.
+
+## PDF word geometry checkpoint, 2026-11-17
+
+Consumer `30cf77aea466838b7a38b6fb86ca48f1b3c37b7a` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and Poppler 25.12.0-r1.
+It matches bounded TSV word rows against the complete plain UTF-8 text in
+order and maps the page coordinates through the actual PNG fit. The image,
+text and matching word boxes share the same generation, resize and
+sequence. On a mismatch the snapshot retains the image and text.
+
+The independent AT-SPI client checked both pages and backing scales.
+`Résumé` yields the shared window rectangle (48, 181, 120, 30) and
+`Grün` yields (48, 181, 72, 30). A point inside each second word
+returns its first Unicode scalar offset. Spaces have no rectangle.
+Failed rendering retains the previous page and bounds. Page changes and
+resize retire the previous accessible text object. Deleting the presentation
+boxes in a separate build retained the captured image and failed the native
+geometry assertion.
+
+All 50 installed CTests and 19 private Wayland runs passed across static
+Release, shared Release, ASan/UBSan/LSan and the default build on Alpine.
+Headless cases cover letterbox offsets, a TSV text mismatch and rejection
+of a box that starts inside a UTF-8 scalar without changing the accepted
+snapshot. Native pixel captures match the previous PDF baseline.
+
+Local archive `nexaui-pdf-words398.tar.gz` contains the exact source,
+fixture PDFs, raw text and TSV, captures, logs and counterexample. Readback
+verified SHA-256
+`e5fdd88194782bba54478438db262a31f38955052ff310238c93fd0b3cf68b79`.
+Local receipt `pdf-words398-final.json` lists the member hashes.
+
+Character-level geometry, richer document reading order, links, search and
+selection remain open, as do production isolation and human screenreader
+acceptance. A05 and D08 remain partial.
