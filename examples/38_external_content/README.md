@@ -318,7 +318,7 @@ fixture to exercise the two copy paths with a separate Wayland client.
 With `--pdf-link-reader` the same run also verifies that selecting text
 prevents link activation.
 
-### PDF links within the same document
+### PDF links
 
 Enable `-DNEXAUI_CONTENT_BUILD_PDF_LINKS=ON` with the PDF producer to build
 the separate `content_pdf_link_reader` executable. This executable needs
@@ -328,16 +328,28 @@ using the usual PDF fixture arguments. Poppler-GLib links only into that
 child executable.
 
 The worker hands the child the pinned file and page number. The reader
-returns up to 32 in-document page destinations, including named targets.
+returns up to 32 link annotations with direct or named page targets or
+absolute HTTP(S) addresses. The web addresses use printable ASCII with
+at most 256 bytes and a host without embedded credentials.
 The renderer uses the crop box in this mode. The worker validates the
 rotated crop-box coordinates against the fitted page image before appending
 the links to the owned frame. A failed or malformed reply leaves the
 image and text available. The child uses the existing bounded pipe and
 three-second deadline.
 
-The viewer exposes each accepted link rectangle as a button named for its
-destination page. Tab and Enter, a pointer click, and the accessible Click
-action can follow a link. Link identities change with the accepted frame,
-and links are disabled while navigation is pending. This example follows
-page destinations. Position and zoom destinations within a page and
-external URL handling remain app work.
+The viewer exposes accepted link rectangles as buttons. Tab and Enter,
+a pointer click, and the accessible Click action follow an in-document
+link or show the full address of a web link. The dialog can copy the
+address and can hand it to the viewer's optional host-selected launcher
+on **Open link**. The worker calls that launcher with one URL argument
+and a three-second deadline. The launcher must return after processing
+the handoff.
+
+Link identities change with the accepted frame. Navigation and selection
+mode disable link activation. Replacing a page discards its address
+preview, and Escape closes the preview. Position and zoom destinations
+within a page and product browser policy remain app work.
+
+Use `--pdf-external --clipboard-reader /path/to/wl-paste` together with
+`--pdf-link-reader` to test the address, clipboard and explicit handoff.
+The native fixture uses a local receiver with a reserved example address.

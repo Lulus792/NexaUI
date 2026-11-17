@@ -427,3 +427,46 @@ The clipboard peer executable SHA-256 is
 The fixture exercises selection within one page and highlights whole word
 boxes. Cross-page selection, per-glyph highlight geometry, external
 URL handling and human screenreader acceptance remain open.
+
+## PDF external web links checkpoint, 2026-11-17
+
+Consumer `3c6169e9eede74a431f6ec5af3f21ffe55ca87ce` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and Poppler-GLib 25.12.0-r1
+in the existing child process. The versioned child reply distinguishes
+page destinations and HTTP(S) annotations. It admits up to 256 printable
+ASCII bytes per address, requires a host, and rejects embedded credentials.
+The frame validates the transport envelope before staging a reply.
+[Poppler URI annotation API](https://poppler.freedesktop.org/api/glib/PopplerAction.html)
+
+The viewer copies the address into a modal preview tied to the accepted
+page identity. The preview exposes the full address to AT-SPI and uses
+the measured text layout for display. Escape restores link focus.
+An explicit **Open link** action submits the address to the host-selected
+launcher on the existing worker. The child receives a single argument
+and a private input descriptor, with the existing three-second deadline.
+The UI reports the handoff result.
+
+The independent native workflow checks the external annotation rectangle
+at `(36, 224, 68, 48)` and the full address in the dialog. The page also
+contains file, script-like and credential-bearing annotations, which do
+not appear as active links. The peer checks that background Close is
+blocked while the dialog is open. A separate `wl-paste` process reads
+the exact query string and fragment after Copy address. Preview, Escape
+and copy leave the local receiver untouched. **Open link** writes one
+receipt, and the peer compares every byte and checks focus restoration
+after closing the dialog.
+
+All 50 installed CTests and 34 private Wayland runs passed with Clang
+22.1.3 on Alpine. The three external link workflows cover static Release,
+shared Release and ASan/UBSan/LSan. Each local receipt contains exactly
+one copy of the whole address, including its original percent encoding.
+The evidence includes the rendered dialog.
+
+Local archive `nexaui-pdf-url427.tar.gz` binds exact source, fixture
+PDFs, logs, screenshots and handoff receipts. Readback verified
+SHA-256 `99c7d419e74a1b3e60fe1e2de616fc7719817d7b2800e75b8903c027af58a6b1`.
+The local receipt is `pdf-url427-final.json`.
+
+Product browser admission, internationalized URLs as submitted by the
+document, page-internal position targets and human screenreader
+acceptance remain open.
