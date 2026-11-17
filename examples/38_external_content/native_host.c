@@ -250,6 +250,7 @@ typedef struct pdf_properties_view {
 typedef struct pdf_document_view {
     content_pdf_index *index;
     pdf_thumbnails thumbnails;
+    pdf_detail detail;
     pdf_properties_view properties;
     unsigned page, pages, counted_page;
     int index_finished;
@@ -682,6 +683,7 @@ int main(void) {
     int pdf_case=!strcmp(test_case,"pdf");
     int pdf_select_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
     int pdf_zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
+    int pdf_detail_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_DETAIL");
     int pdf_thumbnails_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     int pdf_properties_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
     int pdf_compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
@@ -899,15 +901,35 @@ int main(void) {
         if (nx_window_publish_semantics(window,context)!=NX_OK) goto done;
         const nx_command *commands=NULL; size_t count=0; nx_software_view_outcome outcome=NX_SOFTWARE_VIEW_READY;
         if (nx_frame_commands(context,&commands,&count)!=NX_OK) goto done;
+        content_surface_status status;
+        if (content_surface_get_status(surface,&status)!=NX_OK) goto done;
+        nx_rect image=page_view.image;
+        const nx_bitmap_view *detail_bitmap=NULL;
+#ifdef CONTENT_NATIVE_PDF
+        if (pdf_case) {
+            pdf_detail_select(&document.detail,status,image,leased&&camera.percent>100?document.page:0,info.scale);
+            pdf_detail_result detail=native_take_detail(&worker);
+            if (detail.key.edge) {
+                int accepted=pdf_detail_adopt(&document.detail,detail);
+                printf("PDF_DETAIL generation=%llu resize=%llu base=%llu page=%u edge=%u pixels=%ux%u accepted=%d result=%d\n",
+                    (unsigned long long)detail.key.generation,(unsigned long long)detail.key.resize,
+                    (unsigned long long)detail.key.sequence,detail.key.page,detail.key.edge,
+                    detail.bitmap.width,detail.bitmap.height,accepted,(int)detail.result);
+                fflush(stdout);
+            }
+            if (document.detail.visible.bitmap.pixels) {
+                image=pdf_detail_destination(status,image);
+                detail_bitmap=&document.detail.visible.bitmap;
+            }
+        }
+#endif
         if (pdf_case&&leased&&camera.percent>100 &&
-            content_surface_map_commands(surface,commands,count,page_view.image,&commands)!=NX_OK) goto done;
+            content_surface_map_commands(surface,commands,count,image,detail_bitmap,&commands)!=NX_OK) goto done;
         if (nx_software_view_render(software,commands,count,(nx_color){1,1,1,1},&outcome)!=NX_OK) goto done;
         /* The presenter borrows commands only until return. Discard this
            stream after completing its lease; BUSY/SUSPENDED rebuild later. */
         if (leased) { if (content_surface_complete(surface)!=NX_OK) goto done; leased=0; }
         if (outcome!=NX_SOFTWARE_VIEW_READY) need_frame=1;
-        content_surface_status status;
-        if (content_surface_get_status(surface,&status)!=NX_OK) goto done;
         if (status.request.generation!=logged_generation||status.request.resize!=logged_resize||status.sequence!=logged_sequence) {
             printf("CONTENT_STATE generation=%llu resize=%llu width=%u height=%u sequence=%llu copied=%llu copy_bytes=%zu\n",
                 (unsigned long long)status.request.generation,(unsigned long long)status.request.resize,
@@ -1000,6 +1022,7 @@ int main(void) {
 #ifdef CONTENT_NATIVE_PDF
             content_pdf_index_destroy(document.index);
             pdf_thumbnails_clear(&document.thumbnails);
+            pdf_detail_clear(&document.detail);
             document=(pdf_document_view){.properties.enabled=pdf_link_reader!=NULL};
 #endif
             if(input) { if(content_input_rebind(input,2)!=NX_OK) goto done; receiver.generation=2; }
@@ -1064,6 +1087,10 @@ int main(void) {
                 else if(armed!=NX_ERROR_STATE) goto done;
             }
         }
+#ifdef CONTENT_NATIVE_PDF
+        if (pdf_case&&!need_frame&&pdf_can_navigate(phase)&&pdf_detail_missing(&document.detail))
+            native_schedule_detail(&worker,document.detail.wanted);
+#endif
     }
 done:
     if(content_input_close(&input)!=NX_OK) result=1;
@@ -1076,20 +1103,21 @@ done:
 #ifdef CONTENT_NATIVE_PDF
     content_pdf_index_destroy(document.index);
     pdf_thumbnails_clear(&document.thumbnails);
+    pdf_detail_clear(&document.detail);
 #endif
     if (native_worker_close(&worker)) result=1;
     if (exchange&&nx_snapshot_exchange_destroy(exchange)!=NX_OK) result=1;
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
     unsigned expected=(!strcmp(test_case,"full")||input_case||png_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
-    if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case)?4u:
+    if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case||pdf_detail_case)?4u:
         pdf_zoom_case?5u:pdf_thumbnails_case?6u:pdf_link_reader?10u:8u;
     unsigned published=expected-(unsigned)(png_case||(pdf_case&&!pdf_url_case));
     unsigned discarded=!strcmp(test_case,"pending-close")?1u:0u;
     if (!worker_ready||worker.completed!=expected||worker.publications!=published||worker.discarded!=discarded||
         atomic_load(&worker.disposals)!=published||((expected==5u)&&phase!=SCALED_READY)||
         (pdf_case&&(pdf_url_case?(phase!=READY||document.page!=1u):
-            (pdf_select_case||pdf_properties_case)?(phase!=RECOVERED||document.page!=2u):
+            (pdf_select_case||pdf_properties_case||pdf_detail_case)?(phase!=RECOVERED||document.page!=2u):
             pdf_zoom_case?(phase!=SCALED_READY||document.page!=2u):
             pdf_thumbnails_case?(phase!=PDF_HIT_READY||document.page!=7u):
             (phase!=PDF_HIT_READY||document.page!=1u)))||

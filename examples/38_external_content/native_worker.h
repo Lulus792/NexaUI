@@ -14,6 +14,7 @@
 #endif
 #include "pdf_frame.h"
 #include "pdf_thumbnails.h"
+#include "pdf_detail.h"
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
@@ -55,6 +56,9 @@ typedef struct native_worker {
     native_pdf_properties_result pdf_properties;
     pdf_thumbnail thumbnail, thumbnail_result;
     int thumbnail_working;
+    pdf_detail_key detail;
+    pdf_detail_result detail_result;
+    int detail_working;
     uint64_t uri_ticket;
     int uri_working;
     char uri[CONTENT_PDF_URI_LIMIT+1u];
@@ -208,6 +212,18 @@ static void native_index_pdf(native_worker *worker, native_job job) {
 #endif
 
 #ifdef CONTENT_NATIVE_PDF
+static void native_render_detail(native_worker *worker, pdf_detail_key key) {
+    pdf_detail_result detail={.key=key,.result=NX_ERROR_STATE};
+    if (worker->pdf_generation==key.generation)
+        detail.result=content_pdf_render_detail(worker->pdf_renderer,worker->pdf_link_reader!=NULL,
+            worker->pdf_file,key.page,key.edge,&detail.bitmap);
+    pthread_mutex_lock(&worker->mutex);
+    worker->detail_result=detail;
+    worker->detail_working=0;
+    pthread_mutex_unlock(&worker->mutex);
+    native_wake(worker,NATIVE_FRAME_READY);
+}
+
 static void native_render_thumbnail(native_worker *worker, pdf_thumbnail thumbnail) {
     if (worker->pdf_generation==thumbnail.request.generation)
         (void)content_pdf_render_thumbnail(worker->pdf_renderer,worker->pdf_link_reader!=NULL,
@@ -224,7 +240,7 @@ static void *native_worker_entry(void *user) {
     native_worker *worker = user;
     for (;;) {
         pthread_mutex_lock(&worker->mutex);
-        while (!worker->stop && !worker->pending && !worker->uri_ticket && !worker->thumbnail.page)
+        while (!worker->stop && !worker->pending && !worker->uri_ticket && !worker->thumbnail.page && !worker->detail.edge)
             pthread_cond_wait(&worker->condition, &worker->mutex);
         if (worker->stop) { pthread_mutex_unlock(&worker->mutex); break; }
         if (!worker->pending && worker->uri_ticket) {
@@ -246,6 +262,14 @@ static void *native_worker_entry(void *user) {
             continue;
         }
 #ifdef CONTENT_NATIVE_PDF
+        if (!worker->pending && worker->detail.edge) {
+            pdf_detail_key key=worker->detail;
+            worker->detail=(pdf_detail_key){0};
+            worker->detail_working=1;
+            pthread_mutex_unlock(&worker->mutex);
+            native_render_detail(worker,key);
+            continue;
+        }
         if (!worker->pending && worker->thumbnail.page) {
             pdf_thumbnail thumbnail=worker->thumbnail;
             worker->thumbnail=(pdf_thumbnail){0};
@@ -312,6 +336,7 @@ static int native_worker_close(native_worker *worker) {
 #ifdef CONTENT_NATIVE_PDF
     content_pdf_index_destroy(worker->pdf_index.index);
     free(worker->thumbnail_result.frame);
+    free((void *)worker->detail_result.bitmap.pixels);
     if (worker->pdf_renderer && worker->pdf_file >= 0 && close(worker->pdf_file)) result = -1;
 #endif
     for (unsigned i = 0; i < 2; ++i) if (worker->wake[i] >= 0) {
@@ -380,6 +405,24 @@ static pdf_thumbnail native_take_thumbnail(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
     pdf_thumbnail result=worker->thumbnail_result;
     worker->thumbnail_result=(pdf_thumbnail){0};
+    pthread_mutex_unlock(&worker->mutex);
+    return result;
+}
+
+static void native_schedule_detail(native_worker *worker, pdf_detail_key key) {
+    pthread_mutex_lock(&worker->mutex);
+    if (!worker->stop && !worker->pending && !worker->working && !worker->uri_ticket &&
+        !worker->detail.edge && !worker->detail_result.key.edge && !worker->detail_working) {
+        worker->detail=key;
+        pthread_cond_signal(&worker->condition);
+    }
+    pthread_mutex_unlock(&worker->mutex);
+}
+
+static pdf_detail_result native_take_detail(native_worker *worker) {
+    pthread_mutex_lock(&worker->mutex);
+    pdf_detail_result result=worker->detail_result;
+    worker->detail_result=(pdf_detail_result){0};
     pthread_mutex_unlock(&worker->mutex);
     return result;
 }

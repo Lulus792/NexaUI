@@ -2,6 +2,7 @@
 #include "pdf_frame.h"
 #include "png_frame.h"
 #include "pdf_thumbnails.h"
+#include "pdf_detail.h"
 
 #include <errno.h>
 #include <png.h>
@@ -238,12 +239,53 @@ done:
     return ok;
 }
 
+static int detail_completion(pdf_detail *detail, pdf_detail_key key, int expected) {
+    uint8_t *pixels=calloc(1,4);
+    if (!pixels) return 0;
+    pdf_detail_result result={.key=key,.bitmap={pixels,1,1,4,NX_BITMAP_RGBA8},.result=NX_OK};
+    return pdf_detail_adopt(detail,result)==expected;
+}
+
+static int probe_detail_cache(void) {
+    pdf_detail detail={0};
+    content_surface_status base={.request={7,3,448,208},.sequence=11,.image={16,4,416,200,416,200}};
+    nx_rect image={-96,84,672,312};
+    int ok=0;
+    pdf_detail_select(&detail,base,image,2,1);
+    pdf_detail_key first=detail.wanted;
+    nx_rect destination=pdf_detail_destination(base,image);
+    if (!pdf_detail_missing(&detail) || first.edge!=624 || destination.x!=-72 || destination.y!=90 ||
+        destination.width!=624 || destination.height!=300 || !detail_completion(&detail,first,1)) goto done;
+    const uint8_t *first_pixels=detail.visible.bitmap.pixels;
+    image.x-=32;
+    pdf_detail_select(&detail,base,image,2,1);
+    if (pdf_detail_missing(&detail) || detail.visible.bitmap.pixels!=first_pixels) goto done;
+    pdf_detail_select(&detail,base,image,2,2);
+    if (!pdf_detail_missing(&detail) || detail.wanted.edge!=1024 || detail.visible.bitmap.pixels!=first_pixels ||
+        !detail_completion(&detail,first,0)) goto done;
+    pdf_detail_key second=detail.wanted;
+    if (!pdf_detail_adopt(&detail,(pdf_detail_result){.key=second,.result=NX_ERROR_ARGUMENT}) ||
+        pdf_detail_missing(&detail) || detail.visible.bitmap.pixels!=first_pixels) goto done;
+    ++base.sequence;
+    pdf_detail_select(&detail,base,image,2,2);
+    if (detail.visible.bitmap.pixels || !pdf_detail_missing(&detail) || !detail_completion(&detail,second,0) ||
+        !detail_completion(&detail,detail.wanted,1)) goto done;
+    pdf_detail_select(&detail,base,image,1,2);
+    if (detail.visible.bitmap.pixels || !pdf_detail_missing(&detail)) goto done;
+    puts("PDF detail cache verifies fitted bounds, pan reuse, failed refinement and retired page/frame keys");
+    ok=1;
+done:
+    pdf_detail_clear(&detail);
+    return ok;
+}
+
 int main(int argc, char **argv) {
     if ((argc == 10 || argc == 11) && !strcmp(argv[1], "-png")) return engine_probe();
     if (argc == 2 && !strcmp(argv[1],"1")) return link_probe();
     if (argc == 2 && !strcmp(argv[1],"previews")) return probe_thumbnail_cache()?0:1;
     if (argc == 2 && !strcmp(argv[1],"--properties")) return properties_reply();
     if (argc == 2 && !strcmp(argv[1],"properties")) return probe_properties(argv[0])?0:1;
+    if (argc == 2 && !strcmp(argv[1],"detail")) return probe_detail_cache()?0:1;
     if (argc == 12 && !strcmp(argv[1], "-f")) return text_probe(argv[9]);
     if (argc == 11 && !strcmp(argv[4], "257")) return index_probe();
     if (argc != 1) return 2;

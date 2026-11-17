@@ -7,6 +7,9 @@
 #define CONTENT_PNG_PIXEL_LIMIT (4u * 1024u * 1024u)
 #define CONTENT_PNG_SOURCE_DIMENSION 2048u
 
+/* Return an owned tightly packed RGBA8 raster. Free out->pixels on success. */
+nx_result content_png_bitmap(const void *encoded, size_t encoded_size, nx_bitmap_view *out);
+
 /* Decode a borrowed PNG into one owned content frame. Scale to fit the
    physical viewport with nearest-neighbor sampling and transparent margins.
    The decoded source and output pixels each have a 4 MiB staging limit.

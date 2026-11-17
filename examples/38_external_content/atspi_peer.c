@@ -219,6 +219,64 @@ static int pdf_zoom_pixels(Display *display,Window window,int patch_x,const char
     return 0;
 }
 
+static int pdf_detail_capture(Display *display,Window window,int mode,const char *name) {
+    for (unsigned attempt=0;attempt<100;++attempt) {
+        XImage *image=XGetImage(display,window,content_left,content_top,448,208,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        int ok=(XGetPixel(image,mode?200:250,mode?170:125)&0xffffffu)==0x00ff00u;
+        if (!mode) ok=ok&&(XGetPixel(image,200,170)&0xffffffu)==0x0000ffu;
+        else if (mode==1) {
+            for (int x=48;ok&&x<208;x+=2) ok=XGetPixel(image,x,72)==XGetPixel(image,x+1,72);
+        } else if (mode==2) {
+            for (int x=48;ok&&x<208;++x)
+                ok=(XGetPixel(image,x,72)&0xffffffu)==(x%2?0x2000dfu:0xff0000u);
+        } else if (mode==3) {
+            int transitions=0;
+            for (int x=8;x<200;++x) transitions+=XGetPixel(image,x,72)!=XGetPixel(image,x+1,72);
+            ok=ok&&transitions>110;
+        }
+        if (ok) ok=save_ppm(image,0,0,448,208,name);
+        XDestroyImage(image);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int pdf_detail_gate(unsigned edge,int release) {
+    const char *directory=getenv("NEXAUI_CONTENT_TEST_ENCODED");
+    if (!directory) return 0;
+    char path[4096];
+    int length=snprintf(path,sizeof(path),"%s/detail-%u-%s",directory,edge,release?"release":"started");
+    if (length<0 || (size_t)length>=sizeof(path)) return 0;
+    if (release) {
+        FILE *marker=fopen(path,"wx");
+        return marker&&fclose(marker)==0;
+    }
+    for (unsigned i=0;i<100;++i) {
+        if (access(path,F_OK)==0) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static AtspiRect *pdf_detail_word(AtspiAccessible *node) {
+    AtspiText *text=atspi_accessible_get_text_iface(node);
+    AtspiRect *rect=text?atspi_text_get_character_extents(text,10,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+    if (text) g_object_unref(text);
+    return rect;
+}
+
+static int pdf_detail_link(AtspiAccessible *node) {
+    AtspiComponent *component=atspi_accessible_get_component_iface(node);
+    if (!component) return 0;
+    AtspiRect *rect=atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL);
+    int ok=rect&&abs(rect->x-416)<=1&&rect->y==208&&abs(rect->width-48)<=1&&rect->height==96;
+    g_free(rect);
+    g_object_unref(component);
+    return ok;
+}
+
 static int pdf_zoom_highlight(Display *display,Window window,const char *name) {
     for (unsigned i=0;i<100;++i) {
         XImage *image=XGetImage(display,window,content_left,content_top,448,208,AllPlanes,ZPixmap);
@@ -530,6 +588,7 @@ int main(int argc,char **argv) {
     int selection=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
     int url_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_URL");
     int zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
+    int detail_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_DETAIL");
     int thumbnails=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     int properties=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
@@ -651,9 +710,33 @@ int main(int argc,char **argv) {
     CHECK(host_marker(host_log,pdf_case?
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
-    CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
+    if (detail_case) CHECK(pdf_detail_capture(display,outer,0,"pdf-detail-fit-before"));
+    else CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
         pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
+    if (detail_case) {
+        CHECK(press(app,"Zoom in")&&pdf_detail_gate(672,0));
+        CHECK(press(app,"Zoom in")&&focus(app,viewport)&&drive("key","Right"));
+        CHECK(pdf_detail_capture(display,outer,1,"pdf-detail-fallback"));
+        CHECK((back=find(app,"PDF link to page 1",0))&&pdf_detail_link(back));
+        AtspiRect *rect=pdf_detail_word(second_text);
+        int valid=rect&&rect->width>0&&rect->height>0;
+        AtspiRect word=valid?*rect:(AtspiRect){0};
+        g_free(rect);
+        CHECK(valid&&pdf_detail_gate(672,1)&&host_marker(host_log,"edge=672 pixels=672x312 accepted=0 result=0"));
+        CHECK(pdf_detail_gate(896,0)&&pdf_detail_gate(896,1)&&host_marker(host_log,"edge=896 pixels=896x416 accepted=1 result=0"));
+        CHECK(pdf_detail_capture(display,outer,2,"pdf-detail-refined")&&pdf_detail_link(back)&&!state(back,ATSPI_STATE_DEFUNCT));
+        rect=pdf_detail_word(second_text);
+        valid=rect&&rect->x==word.x&&rect->y==word.y&&rect->width==word.width&&rect->height==word.height;
+        g_free(rect);
+        CHECK(valid);
+        CHECK(press(app,"Zoom in")&&host_marker(host_log,"edge=1024 pixels=0x0 accepted=1 result="));
+        CHECK(pdf_detail_capture(display,outer,3,"pdf-detail-retained"));
+        CHECK(press(app,"Fit page")&&focus(app,"Close")&&pdf_detail_capture(display,outer,0,"pdf-detail-fit-after"));
+        CHECK(drive("key","Return"));
+        puts("PDF_DETAIL verified: native vector detail, delayed fallback, stale raster, stable geometry and retained failure");
+        goto closed;
+    }
     if (properties) {
         static const char expected[]="Title\nRésumé — Übersicht 2026\nAuthor\n"
             "Zoë Martín, Maja Søndergaard, Anaïs Laurent, Jens Østergård, Léonie Weber, Şirin Kaya, Béla Kovács, "

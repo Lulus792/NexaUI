@@ -32,6 +32,10 @@ nx_result content_pdf_render_with_links(const char *renderer, const char *reader
    text or annotation children. The caller owns the returned frame. */
 nx_result content_pdf_render_thumbnail(const char *renderer, int crop, int file, unsigned page,
     content_request request, void **out, size_t *out_size);
+#define CONTENT_PDF_RASTER_EDGE 1024u
+/* Render an unpadded RGBA8 raster from the pinned page. Free out->pixels. */
+nx_result content_pdf_render_detail(const char *renderer, int crop, int file, unsigned page,
+    unsigned edge, nx_bitmap_view *out);
 /* Read one properties reply from the same pinned descriptor. Missing fields
    are empty, and an invalid reply leaves the caller's output unchanged. */
 nx_result content_pdf_read_properties(const char *helper, int file, pdf_properties_packet *out);

@@ -309,7 +309,7 @@ static nx_result render_pdf(const char *renderer, const char *reader,
     uint8_t *encoded = malloc(CONTENT_PNG_ENCODED_LIMIT + 1u);
     if (!encoded) return NX_ERROR_MEMORY;
     uint32_t edge = request.width > request.height ? request.width : request.height;
-    if (edge > 1024u) edge = 1024u;
+    if (edge > CONTENT_PDF_RASTER_EDGE) edge = CONTENT_PDF_RASTER_EDGE;
     size_t bytes = 0;
     nx_result result = render_page(renderer, file, page, edge, crop, encoded, &bytes);
     void *frame = NULL;
@@ -339,6 +339,29 @@ nx_result content_pdf_render_with_links(const char *renderer, const char *reader
 nx_result content_pdf_render_thumbnail(const char *renderer, int crop, int file, unsigned page,
     content_request request, void **out, size_t *out_size) {
     return render_pdf(renderer,NULL,NULL,crop,file,page,request,1,out,out_size);
+}
+
+nx_result content_pdf_render_detail(const char *renderer, int crop, int file, unsigned page,
+    unsigned edge, nx_bitmap_view *out) {
+    if (!renderer || *renderer!='/' || file<0 || !page || page>INT_MAX || !out ||
+        !edge || edge>CONTENT_PDF_RASTER_EDGE) return NX_ERROR_ARGUMENT;
+    if (lseek(file,0,SEEK_SET)<0) return NX_ERROR_PLATFORM;
+    uint8_t *encoded=malloc(CONTENT_PNG_ENCODED_LIMIT+1u);
+    if (!encoded) return NX_ERROR_MEMORY;
+    size_t bytes=0;
+    nx_result result=render_page(renderer,file,page,edge,crop,encoded,&bytes);
+    nx_bitmap_view bitmap={0};
+    if (result==NX_OK) result=content_png_bitmap(encoded,bytes,&bitmap);
+    free(encoded);
+    if (result==NX_OK) {
+        unsigned actual=bitmap.width>bitmap.height?bitmap.width:bitmap.height;
+        if (actual+1u<edge || actual>edge+1u) {
+            free((void *)bitmap.pixels);
+            return NX_ERROR_ARGUMENT;
+        }
+        *out=bitmap;
+    }
+    return result;
 }
 
 nx_result content_pdf_render(const char *renderer, const char *reader, int file, unsigned page,

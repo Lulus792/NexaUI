@@ -17,6 +17,12 @@ typedef struct content_frame_link {
     uint32_t target_page;
     char uri[CONTENT_PDF_URI_LIMIT+1u];
 } content_frame_link;
+/* Placement of the decoded image within the padded frame, in frame pixels.
+   A producer without a fitted image leaves all six fields zero. */
+typedef struct content_image_area {
+    uint32_t x, y, width, height;
+    uint32_t source_width, source_height;
+} content_image_area;
 /* In-process owned snapshot layout. The header is followed by height*stride
    bytes of straight-alpha RGBA8, then optional UTF-8 text and unaligned
    content_frame_word and content_frame_link records for the same frame.
@@ -32,12 +38,14 @@ typedef struct content_frame_header {
     uint32_t damage_x, damage_y, damage_width, damage_height;
     uint32_t text_bytes; /* Unpadded length, without a NUL terminator. */
     uint32_t word_count, link_count;
+    content_image_area image;
 } content_frame_header;
 typedef struct content_surface_status {
     content_request request;
     uint64_t sequence, copied_frames;
     size_t staging_bytes;
     size_t last_copy_bytes; /* Bytes copied for sequence, excluding row padding. */
+    content_image_area image;
 } content_surface_status;
 
 #define CONTENT_FRAME_LIMIT (64u * 1024u * 1024u)
@@ -61,11 +69,13 @@ nx_result content_surface_destroy(content_surface **surface);
 nx_result content_surface_draw(content_surface *surface, nx_context *context,
     const nx_viewport_desc *desc, nx_interaction_state *out);
 nx_result content_surface_complete(content_surface *surface);
-/* Borrow a copy of the completed frame commands with only this surface's
-   image destination replaced. Its original viewport clip and lease apply.
-   Consume the copy before completing the draw or mapping again. */
+/* Borrow a copy of the completed frame commands with this surface's image
+   destination and optional replacement pixels. The caller owns replacement
+   pixels through the renderer call. The original viewport clip and base
+   lease apply. Consume before completing the draw or mapping again. */
 nx_result content_surface_map_commands(content_surface *surface,
-    const nx_command *commands, size_t count, nx_rect image, const nx_command **out);
+    const nx_command *commands, size_t count, nx_rect image,
+    const nx_bitmap_view *replacement, const nx_command **out);
 nx_result content_surface_get_status(const content_surface *surface,
     content_surface_status *out);
 /* Borrow the accepted frame's text until the next draw/resize or destroy. */

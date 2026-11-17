@@ -238,8 +238,8 @@ int main(int argc, char **argv) {
         nx_rect magnified={4,20,30,26};
         CHECK(nx_frame_commands(context,&original,&count)==NX_OK);
         probe.fail_next=1;
-        CHECK(content_surface_map_commands(surface,original,count,magnified,&mapped)==NX_ERROR_MEMORY&&!mapped);
-        CHECK(content_surface_map_commands(surface,original,count,magnified,&mapped)==NX_OK&&mapped!=original);
+        CHECK(content_surface_map_commands(surface,original,count,magnified,NULL,&mapped)==NX_ERROR_MEMORY&&!mapped);
+        CHECK(content_surface_map_commands(surface,original,count,magnified,NULL,&mapped)==NX_OK&&mapped!=original);
         size_t bitmap_count=0;
         for (size_t i=0;i<count;++i) {
             if (original[i].type==NX_COMMAND_BITMAP&&original[i].bitmap.format==NX_BITMAP_RGBA8) {
@@ -252,8 +252,21 @@ int main(int argc, char **argv) {
         uint8_t source_pixels[64u*64u*4u],mapped_pixels[64u*64u*4u];
         CHECK(raster(context,source_pixels)&&nx_headless_render(mapped,count,mapped_pixels,64,64,256,
             (nx_color){0,0,0,1})==NX_OK&&!memcmp(source_pixels,mapped_pixels,sizeof(source_pixels)));
+        const uint8_t refined[]={171,57,33,255};
+        nx_bitmap_view detail={refined,1,1,sizeof(refined),NX_BITMAP_RGBA8};
+        CHECK(content_surface_map_commands(surface,original,count,magnified,&detail,&mapped)==NX_OK);
+        CHECK(nx_headless_render(mapped,count,mapped_pixels,64,64,256,(nx_color){0,0,0,1})==NX_OK);
+        for (size_t y=0;y<64;++y) for (size_t x=0;x<64;++x) {
+            size_t i=(y*64+x)*4u;
+            if (x>desc.bounds.x && x<desc.bounds.x+desc.bounds.width-1 &&
+                y>desc.bounds.y && y<desc.bounds.y+desc.bounds.height-1)
+                CHECK(!memcmp(mapped_pixels+i,refined,sizeof(refined)));
+            else if (x<desc.bounds.x || x>=desc.bounds.x+desc.bounds.width ||
+                y<desc.bounds.y || y>=desc.bounds.y+desc.bounds.height)
+                CHECK(!memcmp(mapped_pixels+i,source_pixels+i,sizeof(refined)));
+        }
         CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
-        CHECK(content_surface_map_commands(surface,original,count,magnified,&mapped)==NX_ERROR_STATE);
+        CHECK(content_surface_map_commands(surface,original,count,magnified,NULL,&mapped)==NX_ERROR_STATE);
         CHECK(record(surface, exchange, context, &desc, NX_OK, &leased) && image_matches(context, &desc, 90));
         CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
         size_t allocations = probe.calls;

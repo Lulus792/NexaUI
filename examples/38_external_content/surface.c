@@ -49,6 +49,7 @@ static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
     surface->status.staging_bytes = bytes;
     surface->status.sequence = 0;
     surface->status.last_copy_bytes = 0;
+    surface->status.image = (content_image_area){0};
     ++surface->status.request.resize;
     surface->status.request.width = width;
     surface->status.request.height = height;
@@ -94,6 +95,12 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
         return NX_ERROR_STATE;
     if (header.request.width != request->width || header.request.height != request->height ||
         !header.sequence || header.stride < (size_t)request->width * 4u) return NX_ERROR_ARGUMENT;
+    content_image_area image=header.image;
+    if (image.width || image.height || image.x || image.y || image.source_width || image.source_height) {
+        if (!image.width || !image.height || !image.source_width || !image.source_height ||
+            image.x>=request->width || image.y>=request->height ||
+            image.width>request->width-image.x || image.height>request->height-image.y) return NX_ERROR_ARGUMENT;
+    }
     if (header.format != NX_BITMAP_RGBA8) return NX_ERROR_UNSUPPORTED;
     if (request->height > SIZE_MAX / header.stride) return NX_ERROR_LIMIT;
     size_t payload = (size_t)request->height * header.stride;
@@ -154,6 +161,7 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     surface->word_count = header.word_count;
     surface->link_count = header.link_count;
     surface->status.sequence = header.sequence;
+    surface->status.image = image;
     surface->status.last_copy_bytes = copy_bytes * rows;
     ++surface->status.copied_frames;
     return NX_OK;
@@ -231,10 +239,15 @@ nx_result content_surface_complete(content_surface *surface) {
 }
 
 nx_result content_surface_map_commands(content_surface *surface,
-    const nx_command *commands, size_t count, nx_rect image, const nx_command **out) {
+    const nx_command *commands, size_t count, nx_rect image,
+    const nx_bitmap_view *replacement, const nx_command **out) {
     if (!surface || !commands || !out || count>SIZE_MAX/sizeof(nx_command) ||
         !isfinite(image.x) || !isfinite(image.y) || !isfinite(image.width) || !isfinite(image.height) ||
         !(image.width>0 && image.height>0)) return NX_ERROR_ARGUMENT;
+    if (replacement && (!replacement->pixels || replacement->format!=NX_BITMAP_RGBA8 ||
+        !replacement->width || !replacement->height || replacement->width>NX_VIEWPORT_MAX_DIMENSION ||
+        replacement->height>NX_VIEWPORT_MAX_DIMENSION || replacement->stride_bytes<(size_t)replacement->width*4u ||
+        replacement->height>SIZE_MAX/replacement->stride_bytes)) return NX_ERROR_ARGUMENT;
     if (!surface->leased) return NX_ERROR_STATE;
     if (commands==surface->mapped) return NX_ERROR_ARGUMENT;
     size_t target=count;
@@ -255,6 +268,7 @@ nx_result content_surface_map_commands(content_surface *surface,
     }
     memcpy(surface->mapped,commands,count*sizeof(*commands));
     surface->mapped[target].rect=image;
+    if (replacement) surface->mapped[target].bitmap=*replacement;
     *out=surface->mapped;
     return NX_OK;
 }
