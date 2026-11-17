@@ -7,9 +7,9 @@ typedef struct content_request {
     uint64_t generation, resize;
     uint32_t width, height;
 } content_request;
-/* In-process owned snapshot layout, not an IPC/wire format. Exactly this
-   header followed by height*stride bytes, straight-alpha RGBA8. The producer
-   finishes writing before publishing and supplies the snapshot disposer. */
+/* In-process owned snapshot layout. The header is followed by height*stride
+   bytes of straight-alpha RGBA8, then optional UTF-8 text for the same frame.
+   The producer finishes writing before publishing and supplies the disposer. */
 typedef struct content_frame_header {
     content_request request;
     uint64_t sequence;
@@ -19,6 +19,7 @@ typedef struct content_frame_header {
        five fields to zero when the producer has no damage information. */
     uint64_t damage_base;
     uint32_t damage_x, damage_y, damage_width, damage_height;
+    uint32_t text_bytes; /* Unpadded length, without a NUL terminator. */
 } content_frame_header;
 typedef struct content_surface_status {
     content_request request;
@@ -28,6 +29,7 @@ typedef struct content_surface_status {
 } content_surface_status;
 
 #define CONTENT_FRAME_LIMIT (64u * 1024u * 1024u)
+#define CONTENT_FRAME_TEXT_LIMIT (32u * 1024u)
 
 /* Reference consumer of existing public APIs; no installed SDK API/engine.
    Borrow exchange until destroy; one UI owner thread. Generation is nonzero
@@ -48,4 +50,6 @@ nx_result content_surface_draw(content_surface *surface, nx_context *context,
 nx_result content_surface_complete(content_surface *surface);
 nx_result content_surface_get_status(const content_surface *surface,
     content_surface_status *out);
+/* Borrow the accepted frame's text until the next draw/resize or destroy. */
+nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span *out);
 #endif

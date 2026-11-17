@@ -64,9 +64,31 @@ static nx_result input_hint(nx_context *context,const nx_font_collection *fonts)
         (nx_point){16,122},(nx_color){0.05f,0.07f,0.1f,1},65536);
     nx_text_layout_destroy(layout);return result;
 }
+typedef struct pdf_text_view {
+    uint64_t generation, resize, sequence, identity;
+} pdf_text_view;
+
+static nx_result pdf_text_semantics(nx_context *context, content_surface *surface,
+    const nx_viewport_desc *viewport, pdf_text_view *text_view) {
+    nx_utf8_span text;
+    nx_result result = content_surface_get_text(surface, &text);
+    if (result != NX_OK || !text.length) return result;
+    content_surface_status status;
+    result = content_surface_get_status(surface, &status);
+    if (result != NX_OK) return result;
+    if (text_view->generation != status.request.generation || text_view->resize != status.request.resize ||
+        text_view->sequence != status.sequence) {
+        if (text_view->identity == UINT64_MAX) return NX_ERROR_LIMIT;
+        *text_view = (pdf_text_view){status.request.generation, status.request.resize, status.sequence, text_view->identity+1};
+    }
+    nx_semantic_desc node = {.id=101, .parent_id=viewport->id, .role=NX_ROLE_TEXT, .bounds=viewport->bounds,
+        .name={"PDF page text",13}, .value=text, .state=NX_SEM_READONLY};
+    return nx_semantics_add_readonly_text_snapshot_without_caret(context, &node, text_view->identity, NULL);
+}
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
-    nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case) {
+    nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case,
+    pdf_text_view *text_view) {
     *action = 0; *leased = 0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
     nx_semantic_desc root = {.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
@@ -100,6 +122,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     nx_interaction_state interaction;
     *content_result = content_surface_draw(surface, context, &desc, &interaction);
     *leased = *content_result == NX_OK && desc.bounds.width>0 && desc.bounds.height>0;
+    if (pdf_case && *leased && pdf_text_semantics(context,surface,&desc,text_view)!=NX_OK) return 0;
     if (*content_result != NX_OK && nx_fill_rect(context, desc.bounds,
         (nx_color){227.0f/255.0f,231.0f/255.0f,239.0f/255.0f,1}) != NX_OK) return 0;
     if (focus) {
@@ -124,13 +147,14 @@ int main(void) {
     int pdf_case=!strcmp(test_case,"pdf");
     const char *encoded_dir=(png_case||pdf_case)?getenv("NEXAUI_CONTENT_TEST_ENCODED"):NULL;
     const char *pdf_renderer=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_RENDERER"):NULL;
+    const char *pdf_reader=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_READER"):NULL;
 #ifndef CONTENT_NATIVE_PNG
     if (png_case) return 2;
 #endif
 #ifndef CONTENT_NATIVE_PDF
     if (pdf_case) return 2;
 #endif
-    if (((png_case||pdf_case)&&!encoded_dir)||(pdf_case&&!pdf_renderer)) return 2;
+    if (((png_case||pdf_case)&&!encoded_dir)||(pdf_case&&(!pdf_renderer||!pdf_reader))) return 2;
     int result=1,leased=0,worker_ready=0;
     nx_snapshot_exchange *exchange=NULL; content_surface *surface=NULL;
     nx_window *window=NULL; nx_software_view *software=NULL; nx_context *context=NULL;
@@ -142,13 +166,15 @@ int main(void) {
     enum phase phase=PREPARING,last_phase=FAILED;
     unsigned frames=0,action=0; int need_frame=1,initial_job=0; double scale=1;
     unsigned nav_completion=0; enum phase nav_target=FAILED;
+    pdf_text_view text_view={0};
     uint64_t logged_generation=0,logged_resize=0,logged_sequence=0;
     const nx_window_desc desc={.title_utf8="External CPU content fixture",.width=480,.height=360};
     if (!data||nx_font_open(data,bytes,NULL,&font)!=NX_OK||nx_font_collection_create(NULL,&fonts)!=NX_OK||
         nx_font_collection_add(fonts,font)!=NX_OK||nx_snapshot_exchange_create(NULL,&exchange)!=NX_OK||
         content_surface_create(exchange,1,4u*1024u*1024u,NULL,&surface)!=NX_OK||
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
-        nx_software_view_open(window,&software)!=NX_OK||native_worker_open(&worker,exchange,encoded_dir,pdf_renderer)) goto done;
+        nx_software_view_open(window,&software)!=NX_OK||
+        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     for (;;) {
@@ -200,7 +226,7 @@ int main(void) {
         need_frame=0;
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
         if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
-            &content_result,&leased,input_case,input_phase,png_case,pdf_case)) goto done;
+            &content_result,&leased,input_case,input_phase,png_case,pdf_case,&text_view)) goto done;
         if (phase!=last_phase) need_frame=1;
         last_phase=drawn;
         if (nx_key_pressed(context,NX_KEY_ESCAPE)) { result=0; break; }

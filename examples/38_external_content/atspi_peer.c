@@ -222,6 +222,31 @@ static int host_marker(FILE *log,const char *marker) {
     return 0;
 }
 
+static int pdf_text_is(AtspiAccessible *node, const char *expected) {
+    AtspiText *text=node?atspi_accessible_get_text_iface(node):NULL;
+    if(!text)return 0;
+    GError *error=NULL;
+    char *value=atspi_text_get_text(text,0,-1,&error);
+    int ok=!error&&value&&!strcmp(value,expected);
+    if(ok)ok=atspi_text_get_character_count(text,&error)==g_utf8_strlen(expected,-1)&&!error;
+    if(ok)ok=atspi_text_get_caret_offset(text,&error)==-1&&!error;
+    if(ok)ok=atspi_text_get_n_selections(text,&error)==0&&!error&&!state(node,ATSPI_STATE_EDITABLE);
+    g_free(value);
+    if(error)g_error_free(error);
+    g_object_unref(text);
+    return ok;
+}
+
+static AtspiAccessible *pdf_text(AtspiAccessible *app, const char *expected) {
+    for(unsigned i=0;i<200;++i) {
+        AtspiAccessible *node=find(app,"PDF page text",0);
+        if(pdf_text_is(node,expected))return node;
+        if(node)g_object_unref(node);
+        pump();
+    }
+    return NULL;
+}
+
 int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
@@ -234,6 +259,7 @@ int main(int argc,char **argv) {
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
+    AtspiAccessible *first_text=NULL,*second_text=NULL,*scaled_text=NULL,*returned_text=NULL;
     AtspiComponent *old_component=NULL;Display *display=NULL;FILE *host_log=NULL;
     char id[32];Window outer=0;
     CHECK(outer_window(id,&outer)&&(display=XOpenDisplay(NULL))&&(host_log=tmpfile()));
@@ -252,16 +278,24 @@ int main(int argc,char **argv) {
     CHECK(drive("key","shift+Tab")&&observe(app,"Replace tab",1)&&drive("key","Return"));
     CHECK(observe(app,"Replacement waiting.",0)&&focus(app,"Release old")&&drive("key","Return"));
     CHECK(observe(app,"Old frame rejected.",0)&&capture(display,outer,0xe3e7efu,"rejected"));
+    if(pdf_case) {
+        AtspiAccessible *old_text=find(app,"PDF page text",0);
+        int absent=old_text==NULL;
+        if(old_text)g_object_unref(old_text);
+        CHECK(absent);
+    }
     if(!strcmp(test_case,"rejected-close")){CHECK(focus(app,"Close")&&drive("key","Return"));goto closed;}
     CHECK(press(app,"Publish frame")&&observe(app,pdf_case?"PDF page 1 of 2.":"Frame ready.",0));
     CHECK((retired=find(app,viewport,0))&&dimensions(retired));
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
     CHECK(capture(display,outer,blue,"fresh"));
+    if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n")));
     CHECK(press(app,"Bad frame"));
     if(png_case||pdf_case) {
         CHECK(observe(app,pdf_case?"PDF rendering failed; page retained.":"PNG decoding failed; image retained.",0));
         CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
         CHECK(capture(display,outer,blue,"bad-retained"));
+        if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n"));
     } else {
         CHECK(observe(app,"Frame format unavailable.",0));
         CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
@@ -274,15 +308,20 @@ int main(int argc,char **argv) {
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
     CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
+    if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT));
     CHECK(focus(app,viewport)&&drive("key","Tab")&&observe(app,"Scale 2x",1)&&drive("key","Return"));
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
+    if(pdf_case)CHECK(state(second_text,ATSPI_STATE_DEFUNCT));
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
     if(pdf_case) {
+        CHECK((scaled_text=pdf_text(app,"Grün page two\n\n")));
         CHECK(focus(app,"Previous page")&&drive("key","Return")&&observe(app,"PDF page 1 of 2 at 2x.",0));
         CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=2 copied=4"));
         CHECK(capture(display,outer,blue,"pdf-previous"));
+        CHECK((returned_text=pdf_text(app,"Résumé page one\n\n"))&&state(scaled_text,ATSPI_STATE_DEFUNCT));
+        puts("PDF_TEXT AT-SPI verified: UTF-8 pages, retained failure, resize and defunct old text");
     }
     if(!strcmp(test_case,"input")) CHECK(input_workflow(app,display,id,host_log));
     CHECK(focus(app,"Close")&&drive("key","Return"));
@@ -294,6 +333,8 @@ closed: ;
 done:
     if(child>0){kill(child,SIGKILL);waitpid(child,NULL,0);}
     if(old_component)g_object_unref(old_component);if(fresh)g_object_unref(fresh);if(retired)g_object_unref(retired);
+    if(first_text)g_object_unref(first_text);if(second_text)g_object_unref(second_text);
+    if(scaled_text)g_object_unref(scaled_text);if(returned_text)g_object_unref(returned_text);
     if(app)g_object_unref(app);if(desktop)g_object_unref(desktop);if(initialized)atspi_exit();if(display)XCloseDisplay(display);
     if(host_log){
         char *text=malloc(128u*1024u);

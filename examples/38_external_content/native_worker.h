@@ -21,7 +21,7 @@
 typedef struct native_job { content_request request; uint64_t sequence; unsigned kind; int held; } native_job;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
-    const char *encoded_dir, *pdf_renderer;
+    const char *encoded_dir, *pdf_renderer, *pdf_reader;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
     pthread_t thread;
@@ -131,7 +131,8 @@ static nx_result native_pdf(const native_worker *worker, native_job job, void **
     int written = snprintf(path, sizeof(path), "%s/%s", worker->encoded_dir, name);
     if (written < 0 || (size_t)written >= sizeof(path)) return NX_ERROR_LIMIT;
     unsigned page = job.kind == 3 || job.kind == 4 ? 2u : 1u;
-    return content_pdf_frame(worker->pdf_renderer, path, page, job.request, job.sequence, data, bytes);
+    return content_pdf_frame_with_text(worker->pdf_renderer, worker->pdf_reader, path, page,
+        job.request, job.sequence, data, bytes);
 }
 #endif
 static void *native_worker_entry(void *user) {
@@ -200,10 +201,10 @@ static int native_worker_close(native_worker *worker) {
     return result;
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
-    const char *encoded_dir, const char *pdf_renderer) {
+    const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
-    worker->encoded_dir = encoded_dir; worker->pdf_renderer = pdf_renderer;
+    worker->encoded_dir = encoded_dir; worker->pdf_renderer = pdf_renderer; worker->pdf_reader = pdf_reader;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;

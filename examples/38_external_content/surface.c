@@ -9,11 +9,19 @@ struct content_surface {
     content_surface_status status;
     size_t max_bytes;
     uint8_t *pixels;
+    char *text;
+    size_t text_bytes;
 };
 
 static void *allocate(void *user, size_t bytes) { (void)user; return malloc(bytes); }
 static void deallocate(void *user, void *data, size_t bytes) {
     (void)user; (void)bytes; free(data);
+}
+static void clear_text(content_surface *surface) {
+    if (surface->text)
+        surface->allocator.deallocate(surface->allocator.user, surface->text, surface->text_bytes);
+    surface->text = NULL;
+    surface->text_bytes = 0;
 }
 
 static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
@@ -29,6 +37,7 @@ static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
     if (surface->pixels)
         surface->allocator.deallocate(surface->allocator.user, surface->pixels, surface->status.staging_bytes);
     surface->pixels = replacement;
+    clear_text(surface);
     surface->status.staging_bytes = bytes;
     surface->status.sequence = 0;
     surface->status.last_copy_bytes = 0;
@@ -51,7 +60,9 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     if (request->height > SIZE_MAX / header.stride) return NX_ERROR_LIMIT;
     size_t payload = (size_t)request->height * header.stride;
     if (payload > surface->max_bytes) return NX_ERROR_LIMIT;
-    if (view->bytes - sizeof(header) != payload) return NX_ERROR_ARGUMENT;
+    size_t body = view->bytes - sizeof(header);
+    if (header.text_bytes > CONTENT_FRAME_TEXT_LIMIT) return NX_ERROR_LIMIT;
+    if (body < payload || body - payload != header.text_bytes) return NX_ERROR_ARGUMENT;
     if (header.damage_base) {
         if (header.damage_base >= header.sequence ||
             !header.damage_width || !header.damage_height ||
@@ -68,6 +79,15 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     if (header.sequence == surface->status.sequence) return NX_OK;
     if (surface->status.copied_frames == UINT64_MAX) return NX_ERROR_LIMIT;
     const uint8_t *pixels = (const uint8_t *)view->data + sizeof(header);
+    const char *text = (const char *)(pixels + payload);
+    char *staged_text = NULL;
+    if (header.text_bytes) {
+        if (memchr(text, 0, header.text_bytes) || nx_utf8_validate(text, header.text_bytes, NULL) != NX_OK)
+            return NX_ERROR_ARGUMENT;
+        staged_text = surface->allocator.allocate(surface->allocator.user, header.text_bytes);
+        if (!staged_text) return NX_ERROR_MEMORY;
+        memcpy(staged_text, text, header.text_bytes);
+    }
     size_t row = (size_t)request->width * 4u;
     /* Publication can replace an unseen snapshot. A mismatched base requires
        the complete current image even when its rectangle is valid. */
@@ -79,6 +99,9 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     for (uint32_t y = first_y; y < first_y + rows; ++y)
         memcpy(surface->pixels + (size_t)y * row + offset,
                pixels + (size_t)y * header.stride + offset, copy_bytes);
+    clear_text(surface);
+    surface->text = staged_text;
+    surface->text_bytes = header.text_bytes;
     surface->status.sequence = header.sequence;
     surface->status.last_copy_bytes = copy_bytes * rows;
     ++surface->status.copied_frames;
@@ -133,6 +156,7 @@ nx_result content_surface_destroy(content_surface **out) {
     if (result != NX_OK) return result;
     nx_allocator allocator = surface->allocator;
     if (surface->pixels) allocator.deallocate(allocator.user, surface->pixels, surface->status.staging_bytes);
+    clear_text(surface);
     allocator.deallocate(allocator.user, surface, sizeof(*surface));
     *out = NULL;
     return NX_OK;
@@ -151,5 +175,11 @@ nx_result content_surface_complete(content_surface *surface) {
 nx_result content_surface_get_status(const content_surface *surface, content_surface_status *out) {
     if (!surface || !out) return NX_ERROR_ARGUMENT;
     *out = surface->status;
+    return NX_OK;
+}
+
+nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span *out) {
+    if (!surface || !out) return NX_ERROR_ARGUMENT;
+    *out = (nx_utf8_span){surface->text, surface->text_bytes};
     return NX_OK;
 }

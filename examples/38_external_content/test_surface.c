@@ -60,6 +60,25 @@ static int publish(nx_snapshot_exchange *exchange, content_request request, uint
     if (result != NX_OK) free(data);
     return result == NX_OK;
 }
+static int publish_text(nx_snapshot_exchange *exchange, content_request request, uint64_t sequence,
+    uint8_t value, const char *text, size_t text_bytes, _Atomic unsigned *disposals) {
+    size_t bytes;
+    void *frame = make_frame(request, sequence, request.width*4u, value, &bytes);
+    if (!frame) return 0;
+    uint8_t *extended = realloc(frame, bytes+text_bytes);
+    if (!extended) { free(frame); return 0; }
+    ((content_frame_header *)extended)->text_bytes = (uint32_t)text_bytes;
+    memcpy(extended+bytes, text, text_bytes);
+    nx_result result = nx_snapshot_exchange_publish(exchange, extended, bytes+text_bytes, dispose, disposals);
+    if (result != NX_OK) free(extended);
+    return result == NX_OK;
+}
+
+static int text_matches(const content_surface *surface, const char *expected) {
+    nx_utf8_span text;
+    return content_surface_get_text(surface, &text) == NX_OK && text.length == strlen(expected) &&
+        (!text.length || !memcmp(text.data, expected, text.length));
+}
 static int host_button(nx_context *context) {
     nx_control_desc button = {.id = 1, .bounds = {0, 0, 32, 12}, .name = {"Host controls", 13}};
     nx_interaction_state state;
@@ -325,6 +344,27 @@ int main(int argc, char **argv) {
         CHECK(content_surface_get_status(surface, &status) == NX_OK && status.request.generation == 12);
         CHECK(publish(exchange, status.request, 1, 100, &disposals));
         CHECK(record(surface, exchange, context, &desc, NX_OK, &leased) && image_matches(context, &desc, 100));
+    } else if (!strcmp(argv[1], "text")) {
+        CHECK(publish_text(exchange, request, 1, 50, "Résumé", sizeof("Résumé")-1, &disposals));
+        CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
+        CHECK(image_matches(context, &desc, 50) && text_matches(surface, "Résumé"));
+        CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
+        CHECK(publish_text(exchange, request, 2, 70, "\xc3", 1, &disposals));
+        CHECK(record(surface, exchange, context, &desc, NX_ERROR_ARGUMENT, &leased));
+        CHECK(text_matches(surface, "Résumé"));
+        CHECK(publish_text(exchange, request, 3, 71, "a\0b", 3, &disposals));
+        CHECK(record(surface, exchange, context, &desc, NX_ERROR_ARGUMENT, &leased));
+        CHECK(text_matches(surface, "Résumé"));
+        CHECK(publish_text(exchange, request, 4, 110, "Grün", sizeof("Grün")-1, &disposals));
+        probe.fail_next = 1;
+        CHECK(record(surface, exchange, context, &desc, NX_ERROR_MEMORY, &leased));
+        CHECK(text_matches(surface, "Résumé") && content_surface_get_status(surface, &status) == NX_OK && status.sequence == 1);
+        CHECK(record(surface, exchange, context, &desc, NX_OK, &leased));
+        CHECK(image_matches(context, &desc, 110) && text_matches(surface, "Grün"));
+        CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
+        desc.scale = 2;
+        CHECK(record(surface, exchange, context, &desc, NX_ERROR_STATE, &leased));
+        CHECK(text_matches(surface, "") && content_surface_get_status(surface, &status) == NX_OK && status.sequence == 0);
     } else if (!strcmp(argv[1], "worker")) {
         worker.exchange = exchange; worker.request = request; worker.disposals = &disposals;
         CHECK(start(&thread, &worker)); started = 1;

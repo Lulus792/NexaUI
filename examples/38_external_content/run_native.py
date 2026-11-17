@@ -32,12 +32,15 @@ def write_png_fixtures(directory):
 def write_pdf_fixtures(directory):
     def document(pages):
         kids = ' '.join(f'{3+2*i} 0 R' for i in range(len(pages)))
+        font = 3 + 2 * len(pages)
         objects = [b'<< /Type /Catalog /Pages 2 0 R >>',
                    f'<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>'.encode()]
         for i, drawing in enumerate(pages):
             objects.append(
-                f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 112 52] /Resources <<>> /Contents {4+2*i} 0 R >>'.encode())
+                f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 112 52] '
+                f'/Resources << /Font << /F1 {font} 0 R >> >> /Contents {4+2*i} 0 R >>'.encode())
             objects.append(f'<< /Length {len(drawing)} >>\nstream\n'.encode() + drawing + b'endstream')
+        objects.append(b'<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>')
         result = bytearray(b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')
         offsets = []
         for i, obj in enumerate(objects, 1):
@@ -51,8 +54,13 @@ def write_pdf_fixtures(directory):
         return result
 
     blue = b'0 0 1 rg 0 0 112 52 re f\n'
-    fixtures = {'old.pdf': document([b'1 0 0 rg 0 0 112 52 re f\n']),
-                'document.pdf': document([blue, blue + b'0 1 0 rg 56 13 28 13 re f\n']),
+    # A real PDF text layer in invisible rendering mode, as in OCR documents.
+    def text(label):
+        return b'BT /F1 8 Tf 3 Tr 8 35 Td (' + label + b') Tj ET\n'
+
+    fixtures = {'old.pdf': document([b'1 0 0 rg 0 0 112 52 re f\n' + text(b'Retired draft')]),
+                'document.pdf': document([blue + text(b'R\\351sum\\351 page one'),
+                    blue + b'0 1 0 rg 56 13 28 13 re f\n' + text(b'Gr\\374n page two')]),
                 'bad.pdf': b'%PDF-1.4\n1 0 obj\n'}
     for name, data in fixtures.items():
         (directory / name).write_bytes(data)
@@ -67,6 +75,7 @@ def main():
     parser.add_argument('--work-dir', type=Path, required=True)
     parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'pending-close', 'rejected-close'), default='full')
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
+    parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
     args = parser.parse_args()
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
@@ -94,7 +103,10 @@ def main():
             if args.case == 'png':
                 write_png_fixtures(Path(directory))
             else:
-                env['NEXAUI_CONTENT_TEST_PDF_RENDERER'] = str(args.pdf_renderer.resolve(strict=True))
+                renderer = args.pdf_renderer.resolve(strict=True)
+                reader = args.pdf_text_reader or renderer.with_name('pdftotext')
+                env['NEXAUI_CONTENT_TEST_PDF_RENDERER'] = str(renderer)
+                env['NEXAUI_CONTENT_TEST_PDF_READER'] = str(reader.resolve(strict=True))
                 write_pdf_fixtures(Path(directory))
             return subprocess.run(command, env=env, timeout=90).returncode
     return subprocess.run(command, env=env, timeout=90).returncode

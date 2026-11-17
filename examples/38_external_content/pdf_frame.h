@@ -9,5 +9,10 @@
    On success the outputs follow the same owned contract as content_png_frame. */
 nx_result content_pdf_frame(const char *renderer, const char *document, unsigned page,
     content_request request, uint64_t sequence, void **out, size_t *out_size);
+/* App-selected pdftotext reads the same open document and page. Nonempty
+   UTF-8 text is appended to the image snapshot. The file is immutable during
+   both tool calls. A failed extraction preserves the caller's outputs. */
+nx_result content_pdf_frame_with_text(const char *renderer, const char *reader, const char *document,
+    unsigned page, content_request request, uint64_t sequence, void **out, size_t *out_size);
 
 #endif
