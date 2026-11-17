@@ -263,3 +263,42 @@ Local receipt `pdf-words398-final.json` lists the member hashes.
 Character-level geometry, richer document reading order, links, search and
 selection remain open, as do production isolation and human screenreader
 acceptance. A05 and D08 remain partial.
+
+## PDF page search checkpoint, 2026-11-17
+
+Consumer `76b756cbfc228d5d86dec73e7619837aa91503db` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and Poppler 25.12.0-r1. The
+example hosts a NexaUI text field with window IME and clipboard. It finds
+literal case-sensitive UTF-8 occurrences in the accepted page text and
+exposes the count as a status. Matches intersecting known word boxes use
+the same logical coordinates as AT-SPI. The query persists across page
+changes and backing-scale changes. The worker does no additional work on
+a query.
+
+The ordinary native peer verifies Ctrl+F, Escape to the page, Tab through
+the search field, keyboard clear, AT-SPI editing and highlight readback.
+`Résumé` gives one result on page 1, zero on page 2, and one after
+returning to page 1 at 2×. The Weston simple-IME peer composes `ü` on
+page 2. The preedit leaves the committed query empty. Committing it
+returns one hit and marks `Grün`. An earlier protocol trace captured the
+provider committing a stray `f` when focus moved before key release.
+The shortcut now gives the field focus after the release. The simple-IME
+peer moves focus and clears the field through AT-SPI. The provider
+consumed Escape in a recorded trace, so keyboard exit with that provider
+remains open.
+
+Fifty installed CTests and 22 private Wayland runs passed. The native
+matrix includes three Compose runs across static Release, shared Release
+and ASan/UBSan/LSan. Captures of the unmarked pages match the earlier
+baseline. The first-page highlight changes the same 3,570 logical pixels
+at 1× and 2×. The composed second-page search changes 2,130 pixels within
+the matching word. All profiles agree.
+
+Local archive `nexaui-pdf-find406.tar.gz` contains the exact source,
+fixtures, logs, captures and diagnostic protocol traces. Readback verified
+SHA-256 `1133608ff462e47672e5a6cb16e1618f596ac4829998c42a1ee34521fda401a6`.
+Local receipt `pdf-find406-final.json` lists the member hashes.
+
+Document-wide search, normalization and case folding, character-level
+geometry, links, selection and human screenreader acceptance remain open.
+This advances A05/D08/R06 in the standalone consumer.
