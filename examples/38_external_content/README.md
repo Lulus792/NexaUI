@@ -422,3 +422,23 @@ reply. A failed read keeps the page and available previews usable.
 
 Add `--pdf-properties` with `--pdf-link-reader` to run the native keyboard,
 scrolling and AT-SPI workflow.
+
+### PDF viewport PNG export
+
+With a destination supplied by the host, **Pages → Export PNG** captures
+the current document page, zoom and pan. The worker renders the captured
+viewport into an independent white canvas. It preserves the viewport
+aspect ratio and centers it in the requested output. The current viewer
+stays usable during export, and the dialog reports the result through
+visible text and AT-SPI.
+
+`content_pdf_export_render` accepts logical width and height and a scale.
+It returns owned RGBA8 pixels at the ceiling of each scaled dimension.
+The fixture requests 641 × 361 at 1.25× for an 802 × 452 PNG. The export
+has a 4 MiB pixel limit and uses the pinned Poppler document. The PNG
+writer completes a temporary file beside the selected destination before
+publishing it. A name already in use keeps its original bytes and is
+reported as a conflict.
+
+Use `--case pdf --pdf-export` for the native workflow. It saves
+`exported-page.png` under the private work directory.

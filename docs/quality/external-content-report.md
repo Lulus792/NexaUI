@@ -642,3 +642,44 @@ The local receipt is `pdf-detail438-final.json`.
 
 Larger tiled rasters, GPU interop and physical-output and human assistive
 acceptance remain open.
+
+## PDF viewport export checkpoint, 2026-11-18
+
+Consumer `b9dbb8fe5786ac728e1b38e4e5e76de9663f7cfd` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. An explicit export action
+copies the page number, document generation, camera geometry and output
+size to the existing worker. It rereads the pinned PDF and composites
+the fitted page under the captured viewport clip with `nx_headless_render`.
+The viewport aspect is preserved on a white canvas.
+
+The worker encodes an owned PNG and publishes it at the host-selected
+path only after encoding completes. Existing destinations return a
+conflict. The UI reports progress and the outcome. File publication
+and rendering use the captured view throughout, including when the live
+view changes or the Pages dialog closes.
+
+All 62 installed CTests and 49 private Wayland matrix runs passed with
+Clang 22.1.3 on Alpine. An additional native static Release export ran
+without the optional link reader. The offscreen CTest clears `DISPLAY`
+and `WAYLAND_DISPLAY` and verifies exact RGBA pixels, invalid dimensions
+and preservation of an existing PNG.
+
+The native workflow captures page 2 at 150% after a 48-logical-pixel pan.
+While its render is held, the peer confirms that the target path is absent,
+closes the dialog and resets the live view to Fit. The worker publishes
+the original panned crop at 802 × 452. The peer reads the PNG, observes
+the accessible success message and verifies that a second request for
+the same path retains the file. No temporary output remains after the
+tested publication and conflict paths.
+
+The four native PNG files are byte-identical. Independent PNG decoding
+and comparison with direct Poppler pixels confirm all 362,504 pixels,
+including the viewport margins. Local archive
+`nexaui-pdf-export440.tar.gz` binds exact source, SDK receipt, input PDFs,
+PNG output, reference pixels, commands and logs. Readback verified SHA-256
+`d7ad60ff9bab88242139e4fa43f98b84c2f0235251c88bec58b380866ac5cbb4`.
+The local receipt is `pdf-export440-final.json`.
+
+Product destination selection and print integration remain open. The
+fixture uses one host-supplied destination and a fixed output size. The
+offscreen interface takes caller-supplied dimensions and scale.
