@@ -1,6 +1,7 @@
 #define _POSIX_C_SOURCE 200809L
 #include "pdf_frame.h"
 #include "png_frame.h"
+#include "pdf_thumbnails.h"
 
 #include <errno.h>
 #include <png.h>
@@ -154,9 +155,50 @@ static int probe_index(const char *executable, char mode, nx_result expected) {
     return ok;
 }
 
+static int preview_completion(pdf_thumbnails *cache, content_request request, unsigned page, int expected) {
+    size_t bytes=sizeof(content_frame_header)+(size_t)request.width*request.height*4u;
+    void *frame=calloc(1,bytes);
+    return frame && pdf_thumbnails_adopt(cache,(pdf_thumbnail){request,page,frame,bytes})==expected;
+}
+
+static int probe_thumbnail_cache(void) {
+    pdf_thumbnails cache={0};
+    int ok=0;
+    pdf_thumbnails_configure(&cache,81,1);
+    pdf_thumbnails_open(&cache,2);
+    content_request original=cache.request;
+    if (cache.first!=1 || pdf_thumbnails_missing(&cache,7)!=1 ||
+        !preview_completion(&cache,original,1,1) || pdf_thumbnails_missing(&cache,7)!=2) goto done;
+    nx_bitmap_view pixels=pdf_thumbnail_pixels(&cache.cells[0]);
+    if (!pixels.pixels || pixels.width!=104 || pixels.height!=80 || pixels.stride_bytes!=416) goto done;
+    cache.open=0;
+    if (pdf_thumbnails_missing(&cache,7)) goto done;
+    pdf_thumbnails_configure(&cache,81,1);
+    pdf_thumbnails_open(&cache,2);
+    if (pdf_thumbnails_missing(&cache,7)!=2 || pdf_thumbnail_pixels(&cache.cells[0]).pixels!=pixels.pixels) goto done;
+    pdf_thumbnails_configure(&cache,81,2);
+    if (cache.cells[0].frame || cache.request.width!=208 || cache.request.height!=160 ||
+        !preview_completion(&cache,original,2,0)) goto done;
+    pdf_thumbnails_configure(&cache,81,1);
+    if (cache.request.resize==original.resize || !preview_completion(&cache,original,2,0)) goto done;
+    content_request before=cache.request;
+    pdf_thumbnails_configure(&cache,82,1);
+    if (!preview_completion(&cache,before,1,0) || !preview_completion(&cache,cache.request,1,1)) goto done;
+    pdf_thumbnails_set_group(&cache,7);
+    if (cache.first!=7 || cache.cells[0].frame || pdf_thumbnails_missing(&cache,7)!=7 ||
+        !preview_completion(&cache,cache.request,1,0) || !preview_completion(&cache,cache.request,7,1) ||
+        pdf_thumbnails_missing(&cache,7)) goto done;
+    puts("PDF cache verified: retained frame, scale ABA and retired generation/group rejection");
+    ok=1;
+done:
+    pdf_thumbnails_clear(&cache);
+    return ok;
+}
+
 int main(int argc, char **argv) {
     if ((argc == 10 || argc == 11) && !strcmp(argv[1], "-png")) return engine_probe();
     if (argc == 2 && !strcmp(argv[1],"1")) return link_probe();
+    if (argc == 2 && !strcmp(argv[1],"previews")) return probe_thumbnail_cache()?0:1;
     if (argc == 12 && !strcmp(argv[1], "-f")) return text_probe(argv[9]);
     if (argc == 11 && !strcmp(argv[4], "257")) return index_probe();
     if (argc != 1) return 2;

@@ -27,6 +27,10 @@ nx_result content_pdf_render(const char *renderer, const char *reader, int file,
 nx_result content_pdf_render_with_links(const char *renderer, const char *reader,
     const char *link_reader, int file, unsigned page, content_request request,
     uint64_t sequence, void **out, size_t *out_size);
+/* Raster-only preview. Uses the same crop choice as the main page, with no
+   text or annotation children. The caller owns the returned frame. */
+nx_result content_pdf_render_thumbnail(const char *renderer, int crop, int file, unsigned page,
+    content_request request, void **out, size_t *out_size);
 /* Called only after an explicit host action. Run the host-selected dispatcher
    with one address argument, no shell, private input and a bounded lifetime. */
 nx_result content_pdf_open_uri(const char *launcher, const char uri[CONTENT_PDF_URI_LIMIT+1u]);

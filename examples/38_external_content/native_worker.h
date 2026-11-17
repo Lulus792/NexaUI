@@ -13,6 +13,7 @@
 #include <stdio.h>
 #endif
 #include "pdf_frame.h"
+#include "pdf_thumbnails.h"
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
@@ -46,6 +47,8 @@ typedef struct native_worker {
     int pdf_file;
     uint64_t pdf_generation, indexed_generation;
     native_pdf_index_result pdf_index;
+    pdf_thumbnail thumbnail, thumbnail_result;
+    int thumbnail_working;
     uint64_t uri_ticket;
     int uri_working;
     char uri[CONTENT_PDF_URI_LIMIT+1u];
@@ -186,11 +189,26 @@ static void native_index_pdf(native_worker *worker, native_job job) {
     native_wake(worker);
 }
 #endif
+
+#ifdef CONTENT_NATIVE_PDF
+static void native_render_thumbnail(native_worker *worker, pdf_thumbnail thumbnail) {
+    if (worker->pdf_generation==thumbnail.request.generation)
+        (void)content_pdf_render_thumbnail(worker->pdf_renderer,worker->pdf_link_reader!=NULL,
+            worker->pdf_file,thumbnail.page,thumbnail.request,&thumbnail.frame,&thumbnail.bytes);
+    pthread_mutex_lock(&worker->mutex);
+    worker->thumbnail_result=thumbnail;
+    worker->thumbnail_working=0;
+    pthread_mutex_unlock(&worker->mutex);
+    native_wake(worker);
+}
+#endif
+
 static void *native_worker_entry(void *user) {
     native_worker *worker = user;
     for (;;) {
         pthread_mutex_lock(&worker->mutex);
-        while (!worker->stop && !worker->pending && !worker->uri_ticket) pthread_cond_wait(&worker->condition, &worker->mutex);
+        while (!worker->stop && !worker->pending && !worker->uri_ticket && !worker->thumbnail.page)
+            pthread_cond_wait(&worker->condition, &worker->mutex);
         if (worker->stop) { pthread_mutex_unlock(&worker->mutex); break; }
         if (!worker->pending && worker->uri_ticket) {
             char address[CONTENT_PDF_URI_LIMIT+1u];
@@ -210,6 +228,16 @@ static void *native_worker_entry(void *user) {
             native_wake(worker);
             continue;
         }
+#ifdef CONTENT_NATIVE_PDF
+        if (!worker->pending && worker->thumbnail.page) {
+            pdf_thumbnail thumbnail=worker->thumbnail;
+            worker->thumbnail=(pdf_thumbnail){0};
+            worker->thumbnail_working=1;
+            pthread_mutex_unlock(&worker->mutex);
+            native_render_thumbnail(worker,thumbnail);
+            continue;
+        }
+#endif
         native_job job = worker->job;
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
@@ -266,6 +294,7 @@ static int native_worker_close(native_worker *worker) {
     }
 #ifdef CONTENT_NATIVE_PDF
     content_pdf_index_destroy(worker->pdf_index.index);
+    free(worker->thumbnail_result.frame);
     if (worker->pdf_renderer && worker->pdf_file >= 0 && close(worker->pdf_file)) result = -1;
 #endif
     for (unsigned i = 0; i < 2; ++i) if (worker->wake[i] >= 0) {
@@ -306,6 +335,26 @@ static native_pdf_index_result native_take_pdf_index(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
     native_pdf_index_result result = worker->pdf_index;
     worker->pdf_index = (native_pdf_index_result){0};
+    pthread_mutex_unlock(&worker->mutex);
+    return result;
+}
+
+static int native_schedule_thumbnail(native_worker *worker, content_request request, unsigned page) {
+    pthread_mutex_lock(&worker->mutex);
+    int accepted=!worker->stop && !worker->pending && !worker->working && !worker->uri_ticket &&
+        !worker->thumbnail.page && !worker->thumbnail_result.page && !worker->thumbnail_working;
+    if (accepted) {
+        worker->thumbnail=(pdf_thumbnail){.request=request,.page=page};
+        pthread_cond_signal(&worker->condition);
+    }
+    pthread_mutex_unlock(&worker->mutex);
+    return accepted;
+}
+
+static pdf_thumbnail native_take_thumbnail(native_worker *worker) {
+    pthread_mutex_lock(&worker->mutex);
+    pdf_thumbnail result=worker->thumbnail_result;
+    worker->thumbnail_result=(pdf_thumbnail){0};
     pthread_mutex_unlock(&worker->mutex);
     return result;
 }

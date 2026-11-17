@@ -296,8 +296,8 @@ nx_result content_pdf_open(const char *path, int *out_file) {
     return result;
 }
 
-nx_result content_pdf_render_with_links(const char *renderer, const char *reader,
-    const char *link_reader, int file, unsigned page, content_request request,
+static nx_result render_pdf(const char *renderer, const char *reader,
+    const char *link_reader, int crop, int file, unsigned page, content_request request,
     uint64_t sequence, void **out, size_t *out_size) {
     if (!renderer || *renderer != '/' || (reader && *reader != '/') || file < 0 || !page || page > INT_MAX ||
         (link_reader && *link_reader != '/') ||
@@ -311,7 +311,7 @@ nx_result content_pdf_render_with_links(const char *renderer, const char *reader
     uint32_t edge = request.width > request.height ? request.width : request.height;
     if (edge > 1024u) edge = 1024u;
     size_t bytes = 0;
-    nx_result result = render_page(renderer, file, page, edge, link_reader!=NULL, encoded, &bytes);
+    nx_result result = render_page(renderer, file, page, edge, crop, encoded, &bytes);
     void *frame = NULL;
     size_t frame_size = 0;
     content_png_fit fit;
@@ -328,6 +328,17 @@ nx_result content_pdf_render_with_links(const char *renderer, const char *reader
     } else free(frame);
     free(encoded);
     return result;
+}
+
+nx_result content_pdf_render_with_links(const char *renderer, const char *reader,
+    const char *link_reader, int file, unsigned page, content_request request,
+    uint64_t sequence, void **out, size_t *out_size) {
+    return render_pdf(renderer,reader,link_reader,link_reader!=NULL,file,page,request,sequence,out,out_size);
+}
+
+nx_result content_pdf_render_thumbnail(const char *renderer, int crop, int file, unsigned page,
+    content_request request, void **out, size_t *out_size) {
+    return render_pdf(renderer,NULL,NULL,crop,file,page,request,1,out,out_size);
 }
 
 nx_result content_pdf_render(const char *renderer, const char *reader, int file, unsigned page,

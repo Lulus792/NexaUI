@@ -29,7 +29,7 @@ def write_png_fixtures(directory):
         print(f'PNG_FIXTURE {kind} sha256={hashlib.sha256(image).hexdigest()}', flush=True)
 
 
-def write_pdf_fixtures(directory, include_links=False):
+def write_pdf_fixtures(directory, include_links=False, thumbnails=False):
     def document(pages):
         annotated = include_links and len(pages) == 2
         kids = ' '.join(f'{3+2*i} 0 R' for i in range(len(pages)))
@@ -71,9 +71,13 @@ def write_pdf_fixtures(directory, include_links=False):
     def text(label):
         return b'BT /F1 8 Tf 3 Tr 8 35 Td (' + label + b') Tj ET\n'
 
+    pages = [blue + text(b'R\\351sum\\351 page one'),
+             blue + b'0 1 0 rg 56 13 28 13 re f\n' + text(b'Gr\\374n page two')]
+    if thumbnails:
+        pages.extend(blue + text(f'Preview page {page}'.encode()) for page in range(3, 7))
+        pages.append(b'0 1 1 rg 0 0 112 52 re f\n' + text(b'Last preview page'))
     fixtures = {'old.pdf': document([b'1 0 0 rg 0 0 112 52 re f\n' + text(b'Retired draft')]),
-                'document.pdf': document([blue + text(b'R\\351sum\\351 page one'),
-                    blue + b'0 1 0 rg 56 13 28 13 re f\n' + text(b'Gr\\374n page two')]),
+                'document.pdf': document(pages),
                 'bad.pdf': b'%PDF-1.4\n1 0 obj\n'}
     for name, data in fixtures.items():
         (directory / name).write_bytes(data)
@@ -93,6 +97,7 @@ def main():
     parser.add_argument('--pdf-select', action='store_true', help='Exercise PDF text selection and copy')
     parser.add_argument('--pdf-external', action='store_true', help='Exercise the PDF link preview and local handoff')
     parser.add_argument('--pdf-zoom', action='store_true', help='Exercise the PDF zoom, pan and backing-scale workflow')
+    parser.add_argument('--pdf-thumbnails', action='store_true', help='Exercise the seven-page PDF preview workflow')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -106,6 +111,9 @@ def main():
         parser.error('--pdf-external requires --case pdf and --pdf-link-reader and runs separately from --pdf-select')
     if args.pdf_zoom and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select or args.pdf_external):
         parser.error('--pdf-zoom requires --case pdf and --pdf-link-reader as a separate workflow')
+    if args.pdf_thumbnails and (args.case != 'pdf' or args.pdf_link_reader or args.pdf_select or args.pdf_external or
+                                args.pdf_zoom or args.pdf_compose):
+        parser.error('--pdf-thumbnails requires --case pdf as a separate workflow')
     if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
@@ -123,6 +131,8 @@ def main():
                NEXAUI_CONTENT_CAPTURE_PREFIX=str(args.work_dir / 'content-'))
     if args.pdf_zoom:
         env['NEXAUI_CONTENT_TEST_PDF_ZOOM'] = '1'
+    if args.pdf_thumbnails:
+        env['NEXAUI_CONTENT_TEST_PDF_THUMBNAILS'] = '1'
     if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:
@@ -157,7 +167,7 @@ def main():
                 env['NEXAUI_CONTENT_TEST_PDF_READER'] = str(reader.resolve(strict=True))
                 if args.pdf_link_reader:
                     env['NEXAUI_CONTENT_TEST_PDF_LINK_READER'] = str(args.pdf_link_reader.resolve(strict=True))
-                write_pdf_fixtures(Path(directory),bool(args.pdf_link_reader))
+                write_pdf_fixtures(Path(directory),bool(args.pdf_link_reader),args.pdf_thumbnails)
             return subprocess.run(command, env=env, timeout=90).returncode
     return subprocess.run(command, env=env, timeout=90).returncode
 

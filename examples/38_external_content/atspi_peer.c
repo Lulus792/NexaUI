@@ -249,6 +249,39 @@ static int input_chrome(Display *display,const char *window,const char *name) {
     int saved=save_ppm(image,content_left-16,content_top-136,480,360,name);
     XDestroyImage(image);return saved;
 }
+static AtspiAccessible *pdf_ready_preview(AtspiAccessible *app,unsigned page) {
+    char name[24];
+    snprintf(name,sizeof(name),"Page %u",page);
+    for (unsigned i=0;i<200;++i) {
+        AtspiAccessible *node=find(app,name,0);
+        char *description=node?atspi_accessible_get_description(node,NULL):NULL;
+        int ready=description&&!strcmp(description,"Preview ready");
+        g_free(description);
+        if (ready) return node;
+        if (node) g_object_unref(node);
+        pump();
+    }
+    return NULL;
+}
+static int pdf_preview_ready(AtspiAccessible *app,unsigned page) {
+    AtspiAccessible *node=pdf_ready_preview(app,page);
+    if (!node) return 0;
+    g_object_unref(node);
+    return 1;
+}
+static int pdf_preview_pixels(Display *display,Window window) {
+    for (unsigned i=0;i<100;++i) {
+        XImage *view=XGetImage(display,window,content_left-16,content_top-136,480,360,AllPlanes,ZPixmap);
+        if (!view) return 0;
+        int ok=(XGetPixel(view,200,155)&0xffffffu)==0x0000ffu &&
+            (XGetPixel(view,247,173)&0xffffffu)==0x00ff00u &&
+            (XGetPixel(view,275,173)&0xffffffu)==0x0000ffu;
+        XDestroyImage(view);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
 #define INPUT_VERIFY(x) do { if(!(x)) { fprintf(stderr,"input peer line %d: %s\n",__LINE__,#x); return 0; } } while(0)
 static int input_workflow(AtspiAccessible *app,Display *display,const char *window,FILE *log) {
     INPUT_VERIFY(observe(app,"Physical input fixture; exit: Ctrl+Shift+F12",0));
@@ -487,6 +520,7 @@ int main(int argc,char **argv) {
     int selection=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
     int url_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_URL");
     int zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
+    int thumbnails=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
@@ -522,7 +556,7 @@ int main(int argc,char **argv) {
         CHECK(absent&&host_marker(host_log,"PDF_INDEX stale generation=1 current=2"));
     }
     if(!strcmp(test_case,"rejected-close")){CHECK(focus(app,"Close")&&drive("key","Return"));goto closed;}
-    CHECK(press(app,"Publish frame")&&observe(app,pdf_case?"PDF page 1 of 2.":"Frame ready.",0));
+    CHECK(press(app,"Publish frame")&&observe(app,thumbnails?"PDF page 1 of 7.":pdf_case?"PDF page 1 of 2.":"Frame ready.",0));
     CHECK((retired=find(app,viewport,0))&&dimensions(retired));
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
     CHECK(capture(display,outer,blue,"fresh"));
@@ -599,7 +633,8 @@ int main(int argc,char **argv) {
         CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
         CHECK(capture(display,outer,0xe3e7efu,"bad"));
     }
-    CHECK(press(app,pdf_case?"Next page":"Publish frame")&&observe(app,pdf_case?"PDF page 2 of 2.":"Frame recovered.",0));
+    CHECK(press(app,pdf_case?"Next page":"Publish frame")&&observe(app,
+        thumbnails?"PDF page 2 of 7.":pdf_case?"PDF page 2 of 2.":"Frame recovered.",0));
     if(!png_case&&!pdf_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
     CHECK((fresh=find(app,viewport,0))&&dimensions(fresh));
     CHECK(host_marker(host_log,pdf_case?
@@ -608,6 +643,27 @@ int main(int argc,char **argv) {
     CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
         pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
+    if (thumbnails) {
+        CHECK(focus(app,"Pages")&&drive("key","Return")&&observe(app,"PDF pages",0));
+        CHECK(pdf_preview_ready(app,1)&&(old_link=pdf_ready_preview(app,2))&&pdf_preview_ready(app,3));
+        CHECK(atspi_accessible_get_role(old_link,NULL)==ATSPI_ROLE_PUSH_BUTTON&&state(old_link,ATSPI_STATE_SELECTED));
+        CHECK(!press(app,"Close")&&pdf_preview_pixels(display,outer)&&input_chrome(display,id,"pdf-previews-1x"));
+        CHECK(drive("key","Escape")&&observe(app,"Pages",1)&&state(old_link,ATSPI_STATE_DEFUNCT));
+        CHECK(drive("key","Return")&&observe(app,"PDF pages",0)&&pdf_preview_ready(app,3));
+        CHECK(press(app,"Close pages")&&observe(app,"Pages",1));
+        CHECK(press(app,"Scale 2x")&&observe(app,"Waiting for scaled frame.",0));
+        CHECK(press(app,"Publish frame")&&observe(app,"PDF page 2 of 7 at 2x.",0));
+        CHECK(press(app,"Pages")&&observe(app,"PDF pages",0)&&pdf_preview_ready(app,3));
+        CHECK(pdf_preview_pixels(display,outer)&&input_chrome(display,id,"pdf-previews-2x"));
+        CHECK(press(app,"Next previews")&&pdf_preview_ready(app,4)&&pdf_preview_ready(app,5)&&pdf_preview_ready(app,6));
+        CHECK(!find(app,"Page 3",0)&&press(app,"Next previews")&&pdf_preview_ready(app,7));
+        CHECK(!find(app,"Page 6",0)&&!press(app,"Next previews")&&input_chrome(display,id,"pdf-previews-last"));
+        CHECK(focus(app,"Page 7")&&drive("key","Return")&&observe(app,"PDF page 7 of 7 at 2x.",0));
+        CHECK((hit_text=pdf_text(app,"Last preview page\n\n"))&&state(second_text,ATSPI_STATE_DEFUNCT));
+        CHECK(focus(app,"Close")&&capture(display,outer,0x00ffffu,"pdf-page7")&&drive("key","Return"));
+        puts("PDF_PREVIEWS verified: bounded pages, retained cache, native pixels, scale change, modal focus and page navigation");
+        goto closed;
+    }
     if (zoom_case) {
         CHECK((back=find(app,"PDF link to page 1",0))&&pdf_link_bounds(back));
         CHECK(press(app,"Zoom in")&&pdf_zoom_pixels(display,outer,224,"pdf-zoom-center"));
