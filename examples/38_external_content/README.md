@@ -363,17 +363,25 @@ Ctrl+wheel zooms around the pointer. Scroll, middle-button drag and arrow
 keys with the page image focused pan within the page. Ctrl+0 with the
 page image focused restores Fit page.
 
-The viewer magnifies the accepted raster using the existing software
-presenter and viewport clip. Zoom and pan reuse the staged pixels. The
-same transform positions hit targets, accessible word rectangles, search
-highlights and selection. Partly visible rectangles are clipped. Fully
-offscreen rectangles are omitted while the page text remains readable
-through AT-SPI. Changing the backing resolution preserves the logical
-zoom and normalized center. Rendering fresh detail on magnification is
-left to the application.
+The viewer immediately magnifies the accepted raster using the existing
+software presenter and viewport clip. When the zoomed page needs more
+physical pixels, the existing worker renders a sharper page from the pinned
+file. One extra raster request may be in flight, with a requested long edge
+of at most 1024 pixels and a decoded RGBA8 limit of 4 MiB. Page navigation
+takes precedence over queued refinement work. The viewer uses the last
+usable raster while the worker runs or if a refinement fails. Panning
+reuses it, and Fit page releases it.
+
+The refinement uses the base raster's fitted page rectangle, including its
+placement within a letterboxed viewport. The same transform positions hit
+targets, accessible word rectangles, search highlights and selection.
+Partly visible rectangles are clipped. Fully offscreen rectangles are
+omitted while the page text remains readable through AT-SPI. Changing
+the backing resolution preserves the logical zoom and normalized center.
 
 Add `--pdf-zoom` with `--pdf-link-reader` to run the independent native
-pixel and AT-SPI workflow.
+pixel and AT-SPI workflow. Use `--pdf-detail` with `--pdf-link-reader` to
+exercise delayed, successful and rejected refinement results.
 
 ### PDF page thumbnails
 

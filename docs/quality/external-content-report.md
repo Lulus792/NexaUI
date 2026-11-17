@@ -597,3 +597,48 @@ The local receipt is `pdf-properties435-final.json`.
 
 Additional metadata fields, fresh detail rendering at higher zoom and
 human assistive acceptance remain open.
+
+## PDF raster refinement checkpoint, 2026-11-18
+
+Consumer `be15ffcc9eebfacca1f586515ed04b538e1f1db6` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. Magnification initially draws
+the accepted raster. The existing worker then asks Poppler for a higher
+resolution when the fitted page's physical extent exceeds its current
+detail. It reads the pinned PDF and keeps the same crop choice. The
+requested long edge stays at or below 1024 pixels, and the decoder limits
+an owned RGBA8 raster to 4 MiB.
+
+The base frame supplies the exact fitted page rectangle. The app maps
+the unpadded refinement to that rectangle using the existing viewport
+clip and synchronous bitmap command. Only the bitmap and its destination
+change. Metadata continues to use the accepted base frame's geometry and
+identity. A refinement must match document generation, base resize,
+base sequence, page and requested edge. A failed render preserves the
+last usable raster. Pan reuses it and Fit releases it.
+
+All 59 installed CTests and 46 private Wayland runs passed with Clang
+22.1.3 on Alpine. Each static Release, shared Release and ASan/UBSan/LSan
+refinement run holds a 672 × 312 result while changing the view to 200%.
+The older result is discarded. Releasing the 896 × 416 render reveals
+individual vector strokes without retiring the active link or changing
+the AT-SPI word rectangle. A forced failure at the next requested edge
+leaves the 896 × 416 image usable. The main exchange still stages two
+frames for this workflow and disposes all three publications on close.
+The existing zoom workflow also verifies search, text selection and
+geometry through a backing scale change with refinement enabled.
+
+An independent pixel audit compares every interior pixel of five captures
+per profile with direct Poppler output and the expected viewport sampling.
+The 160-pixel proof stripe contains one color while magnifying the base
+and alternates two colors at single-pixel spacing after refinement.
+Fit restores the original painted pixels. The cache CTest additionally
+verifies letterbox placement, reuse on pan, and retired page/frame keys.
+
+Local archive `nexaui-pdf-detail438.tar.gz` binds the exact source, SDK
+receipt, fixture PDFs, direct renderer output, commands, logs and captures.
+Readback verified SHA-256
+`016d9627fed2f85bf24000d7b5430f831c6d8c8fe7cbdf2aa7e49b328ea51331`.
+The local receipt is `pdf-detail438-final.json`.
+
+Larger tiled rasters, GPU interop and physical-output and human assistive
+acceptance remain open.
