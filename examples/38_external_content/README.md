@@ -396,3 +396,21 @@ The logical thumbnail size is 104 × 80. The fixture combines output and
 page backing scales and caps the preview density at 4×. Use
 `run_native.py --case pdf --pdf-thumbnails` with the normal renderer,
 font and native test arguments to exercise a seven-page document.
+
+### PDF document properties
+
+With the optional Poppler-GLib helper enabled, choose **Pages → Properties**
+to read the title, author, subject, page count and PDF version. Tab reaches
+the scrollbars when the text overflows. Escape closes the properties dialog
+and restores focus to **Properties**. AT-SPI can read the complete admitted
+text while any part is scrolled out of sight.
+
+The worker invokes the same helper with `--properties` on the pinned file
+after the first page publication and index job for that document. It admits
+a versioned reply with at most 512 UTF-8 bytes per field. Control characters
+used as separators become spaces. Unset and unavailable fields have
+distinct labels. The view checks document generation before adopting the
+reply. A failed read keeps the page and available previews usable.
+
+Add `--pdf-properties` with `--pdf-link-reader` to run the native keyboard,
+scrolling and AT-SPI workflow.

@@ -552,3 +552,48 @@ The dialog relies on a successfully indexed page count and uses an
 in-memory CPU cache. PDF metadata UI, fresh detail rendering at higher
 zoom, GPU-backed and theme-dependent caches, and physical and human
 assistive acceptance remain open.
+
+## PDF document properties checkpoint, 2026-11-18
+
+Consumer `662de64567b216e18f477e51b05ce0e77719cb1e` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. The Poppler-GLib 25.12.0-r1
+helper reads the pinned document for title, author, subject, page count
+and PDF version. It publishes a fixed, versioned reply with 512 UTF-8
+bytes available per text field. The worker checks the envelope, numeric
+fields and each string before passing it to the UI. The UI admits the
+current generation only. The same helper retains its page-link mode.
+[Poppler document API](https://poppler.freedesktop.org/api/glib/PopplerDocument.html)
+
+**Pages → Properties** shows the document values. The existing modal stack
+owns focus and dismissal. The existing scroll area updates caller-owned offsets.
+The app publishes one read-only AT-SPI Text snapshot for the admitted
+values. The seven-page thumbnail workflow remains independent of the
+optional helper. A missing properties reply leaves the page, search and
+any available thumbnails operable.
+
+All 56 installed CTests and 43 private Wayland runs passed with Clang
+22.1.3 on Alpine. The three properties workflows use static Release,
+shared Release and ASan/UBSan/LSan. They reject the retired document's
+reply, verify the current Unicode title and long author list, and display
+an unavailable state for a 513-byte subject. Tab reaches the vertical
+scrollbar and End reveals the last fields. AT-SPI reads the same complete
+text before and after the scroll. The native peer verifies modal focus
+and retirement of old text references. The properties captures change
+12,365 interior pixels on scroll in each profile, and the five existing
+page and placeholder captures stay byte-identical.
+
+The transport CTest exercises ten replies, including undersized and
+oversized payloads, invalid Unicode and invalid flags. Direct invocation
+of the real child verifies both fixture documents in each profile. An
+initial shared link run reached the fixture's frame limit. A dedicated
+properties notification now triggers a redraw only when the dialog is
+open, and the full rerun passes with the original limit.
+
+Local archive `nexaui-pdf-properties435.tar.gz` binds exact source, SDK
+receipt, fixture PDFs, raw child replies, commands, logs and captures.
+Readback verified SHA-256
+`7643732a395b69071356366eadd55f1fd3a1c047e27de9647fdebb18f147d010`.
+The local receipt is `pdf-properties435-final.json`.
+
+Additional metadata fields, fresh detail rendering at higher zoom and
+human assistive acceptance remain open.
