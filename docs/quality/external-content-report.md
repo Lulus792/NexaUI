@@ -390,3 +390,40 @@ The local receipt is `pdf-links420-final.json`.
 
 External URLs, position and zoom destinations, a dedicated accessibility
 link role, text selection and human screenreader acceptance remain open.
+
+## PDF text selection checkpoint, 2026-11-17
+
+Consumer `7c51f2c597a5a99243bf5fa89f205d4c08916eff` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. The selection mode registers
+the accepted immutable page with `nx_text_document_register_with_clipboard`
+and read-only select/copy capabilities. Ordinary reading still exposes a
+snapshot without caret. The model owns byte boundaries, selection revision,
+pointer capture and the current page identity. A native request must match
+the identity and revision before it can change the selection.
+
+The independent AT-SPI and input peer selects `Ré` with Shift+Right and
+`Résumé page` by dragging over the page image. It verifies that the third
+word has no selection highlight. Independent `wl-paste` 2.2.1 reads
+`Résumé page` after Ctrl+C and `page` after native AT-SPI CopyText.
+The test waits for the viewer's copy status before reading the selection.
+An AT-SPI write is rejected. The linked PDF keeps its link disabled during
+selection. Page navigation clears the selection, retires the previous
+native object and rejects a subsequent selection request to it. Escape
+restores the ordinary snapshot on page 2.
+
+Fifty installed CTests and 31 private Wayland runs passed with Clang 22.1.3
+on Alpine. The three selection runs cover static Release, shared Release
+and ASan/UBSan/LSan. Each capture changes 5,700 pixels within the two
+word rectangles, apart from the selection mode's focus outline. The
+page's image without selection matches the previous baseline.
+
+Local archive `nexaui-pdf-select424.tar.gz` contains exact source, files,
+commands, native logs and captures. Readback verified SHA-256
+`fd233d0646d515e5ec4e8d7ab15e5599379458aa0a7d1c9d8e086ecebe1222ea`.
+The receipt is `pdf-select424-final.json`.
+
+The clipboard peer executable SHA-256 is
+`7221ecacd258bf00989f30bff9ea02bc3cac17a588150f4bf81a8b0253ef9356`.
+The fixture exercises selection within one page and highlights whole word
+boxes. Cross-page selection, per-glyph highlight geometry, external
+URL handling and human screenreader acceptance remain open.

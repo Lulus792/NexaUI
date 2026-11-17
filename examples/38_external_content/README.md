@@ -296,8 +296,27 @@ Add `--pdf-compose` to run the same fixture with Weston simple-IME and
 Compose on its private Xvfb seat. This mode needs `setxkbmap` (or
 `NEXAUI_SETXKBMAP`) and a Weston helper directory containing
 `weston-simple-im` and `weston-desktop-shell`.
-Normalized and case-insensitive matching, character-level geometry and
-selection remain viewer work.
+Normalized and case-insensitive matching and character-level geometry
+remain viewer work.
+
+### Read-only PDF text selection
+
+**Select text** focuses the accepted page's text. Drag over words, use
+Shift with Left/Right or Home/End, or select the page with Ctrl+A.
+Dragging selects whole words. Keyboard movement follows grapheme
+boundaries, and AT-SPI uses Unicode scalar offsets. The highlight covers
+intersecting word boxes when the page supplies geometry.
+
+Ctrl+C and the native accessibility copy action write the exact selected
+UTF-8 bytes to the window clipboard. The viewer reports the copy result.
+The page text remains read-only. Links stay disabled during selection.
+A new accepted page clears the range and retires the old text object.
+Escape from the text or **Done** returns to normal page interaction.
+
+Add `--pdf-select --clipboard-reader /path/to/wl-paste` to the native PDF
+fixture to exercise the two copy paths with a separate Wayland client.
+With `--pdf-link-reader` the same run also verifies that selecting text
+prevents link activation.
 
 ### PDF links within the same document
 
