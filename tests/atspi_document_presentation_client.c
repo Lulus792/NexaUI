@@ -55,6 +55,19 @@ int main(int argc,char **argv) {
     }
     CHECK(app);AtspiAccessible *field=fresh(app);CHECK(field);AtspiText *text=atspi_accessible_get_text_iface(field);CHECK(text);
     GError *e=NULL;CHECK(atspi_text_get_character_count(text,&e)==4 && !e);
+    AtspiAccessible *page=find(app,"Read-only page",0);CHECK(page);
+    AtspiText *page_text=atspi_accessible_get_text_iface(page);CHECK(page_text);
+    CHECK(!atspi_accessible_get_editable_text_iface(page));
+    CHECK(atspi_text_get_character_count(page_text,&e)==6 && !e);
+    CHECK(atspi_text_get_caret_offset(page_text,&e)==-1 && !e);
+    CHECK(atspi_text_get_n_selections(page_text,&e)==0 && !e);
+    CHECK(rectangle(page_text,0,ATSPI_COORD_TYPE_WINDOW,32,100,37,17));
+    CHECK(rectangle(page_text,3,ATSPI_COORD_TYPE_WINDOW,32,100,37,17));
+    CHECK(rectangle(page_text,5,ATSPI_COORD_TYPE_WINDOW,80,100,21,17));
+    CHECK(atspi_text_get_offset_at_point(page_text,85,105,ATSPI_COORD_TYPE_WINDOW,&e)==5 && !e);
+    AtspiRect *unmapped=atspi_text_get_character_extents(page_text,4,ATSPI_COORD_TYPE_WINDOW,&e);
+    CHECK(e);g_clear_error(&e);g_free(unmapped);
+    g_object_unref(page_text);g_object_unref(page);
     CHECK(rectangle(text,1,ATSPI_COORD_TYPE_WINDOW,28,30,9,16));
     CHECK(rectangle(text,2,ATSPI_COORD_TYPE_WINDOW,36,30,17,16));
     CHECK(rectangle(text,1,ATSPI_COORD_TYPE_PARENT,23,24,9,16));
@@ -105,5 +118,5 @@ int main(int argc,char **argv) {
     CHECK(command("detach"));r=atspi_text_get_character_extents(text,0,ATSPI_COORD_TYPE_WINDOW,&e);CHECK(e);g_clear_error(&e);g_free(r);
     CHECK(fprintf(commands,"quit\n")>0 && !fflush(commands));int status=0;CHECK(waitpid(child,&status,0)==child && WIFEXITED(status) && !WEXITSTATUS(status));child=-1;
     g_object_unref(text);g_object_unref(field);g_object_unref(app);g_object_unref(desktop);atspi_exit();cleanup();
-    puts("AT-SPI document presentation: scalar/window/parent geometry, range/interior caret, hit test, attributes/default override, actual edit/replacement/omission,8MiB sparse bounds, stale/unknown-screen/detach and clean exit passed");return 0;
+    puts("AT-SPI document presentation: read-only page geometry and hit test; editable scalar geometry, attributes, stale queries and clean exit passed");return 0;
 }

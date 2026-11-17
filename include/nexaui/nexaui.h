@@ -2066,7 +2066,9 @@ NX_API nx_result nx_text_document_register_with_clipboard(nx_context *context,
     const nx_text_document_clipboard *clipboard, nx_text_document_result *out_result);
 /* Copy optional presentation after registering this frame's document and after
    applying any admitted edit. identity/revision must match its current copied
-   state. No layout/model pointer is retained. Call at most once per node/frame;
+   state. A read-only text snapshot takes its snapshot identity and revision 0.
+   Adding presentation keeps the snapshot's read-only and caret policy.
+   No layout/model pointer is retained. Call at most once per node/frame;
    failed validation/allocation leaves it unattached and permits retry.
    Boxes are sorted by (start,end), with at most one caret at a boundary and no
    overlapping nonempty ranges. Carets may be inside a shared cluster range;

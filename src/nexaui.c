@@ -3240,12 +3240,13 @@ nx_result nx_text_document_register_with_clipboard(nx_context *ctx,const nx_widg
 
 nx_result nx_text_document_set_presentation(nx_context *ctx,uint64_t id,uint64_t identity,
     uint64_t revision,const nx_text_document_presentation *description) {
-    if(!ctx || !id || !identity || !revision || !description)return NX_ERROR_ARGUMENT;
-    if(ctx->state!=1u)return NX_ERROR_STATE;
+    if(!ctx || !id || !identity || !description)return NX_ERROR_ARGUMENT;
+    if(ctx->state!=1u)return revision?NX_ERROR_STATE:NX_ERROR_ARGUMENT;
     uint32_t index=nx_semantic_find_index(&ctx->semantics,id);
-    if(index==UINT32_MAX)return NX_ERROR_STATE;
+    if(index==UINT32_MAX)return revision?NX_ERROR_STATE:NX_ERROR_ARGUMENT;
     nx_semantic_record *node=&ctx->semantics.nodes[index];
-    if(!(node->text_value.document_operations&NX_TEXT_DOCUMENT_BOUND) ||
+    if(!revision&&!node->text_snapshot_only)return NX_ERROR_ARGUMENT;
+    if((!node->text_snapshot_only&&!(node->text_value.document_operations&NX_TEXT_DOCUMENT_BOUND)) ||
        node->text_value.identity!=identity || node->text_value.revision!=revision ||
        node->presentation_bytes || (node->state&NX_SEM_PROTECTED))return NX_ERROR_STATE;
     nx_utf8_span value={node->value_length?ctx->semantics.text+node->value_offset:"",node->value_length};

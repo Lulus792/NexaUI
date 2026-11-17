@@ -31,12 +31,42 @@ static nx_text_document_presentation sample(nx_text_document_box *b,nx_text_docu
     r[0]=(nx_text_document_attribute_run){3,7,&a[2],1};
     return (nx_text_document_presentation){b,3,a,2,r,1};
 }
+static int readonly_snapshot(void) {
+    nx_context *c=NULL;
+    const char value[]="\xc3\xa9 A";
+    CHECK(nx_context_create(NULL,&c)==NX_OK && nx_begin_frame(c,100,80,0)==NX_OK);
+    nx_semantic_desc text={.id=1,.role=NX_ROLE_TEXT,.bounds={0,0,100,80},
+        .name={"Page",4},.value={value,4},.state=NX_SEM_READONLY};
+    CHECK(nx_semantics_add_readonly_text_snapshot_without_caret(c,&text,11,NULL)==NX_OK);
+    nx_text_document_box box={0,2,{12,20,24,16}};
+    nx_text_document_presentation p={.boxes=&box,.box_count=1};
+    CHECK(nx_text_document_set_presentation(c,1,10,0,&p)==NX_ERROR_STATE);
+    CHECK(nx_text_document_set_presentation(c,1,11,1,&p)==NX_ERROR_STATE);
+    box.end_byte=1;
+    CHECK(nx_text_document_set_presentation(c,1,11,0,&p)==NX_ERROR_ARGUMENT);
+    box.end_byte=2;
+    CHECK(nx_text_document_set_presentation(c,1,11,0,&p)==NX_OK);
+    CHECK(nx_text_document_set_presentation(c,1,11,0,&p)==NX_ERROR_STATE);
+    memset(&box,0,sizeof(box));
+    CHECK(nx_end_frame(c)==NX_OK);
+    nx_semantic_view node;
+    CHECK(nx_semantics_get(c,0,&node)==NX_OK && node.role==NX_ROLE_TEXT && (node.state&NX_SEM_READONLY));
+#ifdef PRIVATE_QUERIES
+    const nx_document_presentation *saved=nx_context_document_presentation(c,1);
+    nx_rect geometry;
+    CHECK(saved && saved->box_count==1 && nx_document_presentation_character(saved,0,&geometry)==NX_OK && geometry.x==12);
+    CHECK(nx_document_presentation_character(saved,2,&geometry)==NX_ERROR_UNSUPPORTED);
+#endif
+    nx_context_destroy(c);
+    return 0;
+}
 static int ordinary(void) {
     heap h={0};nx_context_desc desc={0};desc.allocator=(nx_allocator){&h,allocate,release};nx_context *c=NULL;
     CHECK(nx_context_create(&desc,&c)==NX_OK);
     const char value[]="A\xcc\x81\xf0\x9f\x8c\x8d";nx_text_document_box b[3];nx_text_document_attribute a[3];nx_text_document_attribute_run r[1];nx_text_document_presentation d=sample(b,a,r);
     CHECK(nx_text_document_set_presentation(NULL,1,77,9,&d)==NX_ERROR_ARGUMENT);
     CHECK(begin(c,(nx_utf8_span){value,7})==0);
+    CHECK(nx_text_document_set_presentation(c,1,77,0,&d)==NX_ERROR_ARGUMENT);
     CHECK(nx_text_document_set_presentation(c,2,77,9,&d)==NX_ERROR_STATE);
     CHECK(nx_text_document_set_presentation(c,1,78,9,&d)==NX_ERROR_STATE);
     CHECK(nx_text_document_set_presentation(c,1,77,10,&d)==NX_ERROR_STATE);
@@ -164,4 +194,4 @@ static int interior_carets(void) {
 #endif
     nx_context_destroy(c);return 0;
 }
-int main(void){if(ordinary() || invalid() || allocation_and_sparse() || interior_carets())return 1;puts("Document presentation: copied cluster geometry, interior caret, sparse ranges, attributes, identity, omission and allocation retry passed");return 0;}
+int main(void){if(ordinary() || invalid() || allocation_and_sparse() || interior_carets() || readonly_snapshot())return 1;puts("Document presentation: copied cluster geometry, read-only snapshot, interior caret, sparse ranges, attributes, identity, omission and allocation retry passed");return 0;}

@@ -97,6 +97,15 @@ static int frame(fixture *f) {
             memset(boxes,0,sizeof(boxes));memset(defaults,0,sizeof(defaults));memset(&override,0,sizeof(override));
         }
     }
+    if(f->presentation) {
+        const char text[]="\xc3\xa9" "cho \xe6\xbc\xa2";
+        nx_semantic_desc snapshot={.id=3,.parent_id=1,.role=NX_ROLE_TEXT,.bounds={24,92,280,52},
+            .name={"Read-only page",14},.value={text,sizeof(text)-1},.state=NX_SEM_READONLY};
+        nx_text_document_box words[]={{0,5,{32.25f,100.5f,36,16}},{6,9,{80.25f,100.5f,20,16}}};
+        nx_text_document_presentation geometry={.boxes=words,.box_count=2};
+        if(nx_semantics_add_readonly_text_snapshot_without_caret(f->context,&snapshot,301,NULL)!=NX_OK ||
+           nx_text_document_set_presentation(f->context,3,301,0,&geometry)!=NX_OK)return 0;
+    }
     if(f->cache_name)for(unsigned i=0;i<3072;++i) {
         nx_semantic_desc label={0};label.id=100u+i;label.parent_id=1;label.role=NX_ROLE_TEXT;
         label.bounds=(nx_rect){0,0,1,1};label.name=(nx_utf8_span){f->cache_name,1536};
