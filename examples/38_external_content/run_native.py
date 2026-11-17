@@ -76,9 +76,12 @@ def main():
     parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'pending-close', 'rejected-close'), default='full')
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
     parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
+    parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
+    if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
+        parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
         setattr(args, key, getattr(args, key).resolve(strict=True))
     args.work_dir = args.work_dir.resolve()
@@ -97,6 +100,12 @@ def main():
                '--timeout', '60', '--', sys.executable, str(repo / 'tests/run_atspi_native.py'),
                str(args.registry), str(args.build_dir / 'content_atspi_peer'),
                str(args.build_dir / 'content_native_host')]
+    if args.pdf_compose:
+        setxkbmap = os.environ.get('NEXAUI_SETXKBMAP', 'setxkbmap')
+        command[4:4] = ['sh', '-ec', '"$1" -layout us -option "" -option compose:ralt; shift; exec "$@"',
+                        'pdf-compose', setxkbmap]
+        env.update(NEXAUI_WESTON_INPUT_METHOD='weston-simple-im', XKB_DEFAULT_OPTIONS='compose:ralt',
+                   NEXAUI_CONTENT_PDF_COMPOSE='1')
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

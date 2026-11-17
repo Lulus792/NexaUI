@@ -268,6 +268,53 @@ static int pdf_word_geometry(AtspiAccessible *node, int first_width, int space, 
     return ok;
 }
 
+static int pdf_find_text(AtspiAccessible *app, const char *value) {
+    AtspiAccessible *field = find(app,"Find on page",0);
+    AtspiEditableText *editor = field ? atspi_accessible_get_editable_text_iface(field) : NULL;
+    GError *error = NULL;
+    int ok = editor && atspi_editable_text_set_text_contents(editor,value,&error) && !error;
+    g_clear_error(&error);
+    if (editor) g_object_unref(editor);
+    if (field) g_object_unref(field);
+    return ok;
+}
+
+static int pdf_find_value(AtspiAccessible *app, const char *expected) {
+    AtspiAccessible *field = find(app,"Find on page",0);
+    AtspiText *text = field ? atspi_accessible_get_text_iface(field) : NULL;
+    GError *error = NULL;
+    char *value = text ? atspi_text_get_text(text,0,-1,&error) : NULL;
+    int ok = !error && value && !strcmp(value,expected);
+    g_free(value);
+    g_clear_error(&error);
+    if (text) g_object_unref(text);
+    if (field) g_object_unref(field);
+    return ok;
+}
+
+static int pdf_find_pixels(Display *display, Window window, int second_page, const char *capture_name) {
+    for (unsigned attempt = 0; attempt < 80; ++attempt) {
+        XImage *image = XGetImage(display,window,content_left,content_top,448,208,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        /* The only changed pixels are inside the first word's own rectangle. */
+        int ok = (XGetPixel(image,50,52) & 0xffffffu) != 0x0000ffu;
+        int word_end = second_page ? 104 : 152;
+        for (int y = 0; ok && y < 208; ++y) {
+            for (int x = 0; ok && x < 448; ++x) {
+                if (x >= 32 && x < word_end && y >= 45 && y < 75) continue;
+                unsigned long expected = second_page && x >= 224 && x < 336 && y >= 104 && y < 156 ?
+                    0x00ff00u : 0x0000ffu;
+                ok = (XGetPixel(image,x,y) & 0xffffffu) == expected;
+            }
+        }
+        if (ok) ok = save_ppm(image,0,0,448,208,capture_name);
+        XDestroyImage(image);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
 int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
@@ -276,6 +323,7 @@ int main(int argc,char **argv) {
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     int png_case=!strcmp(test_case,"png");
     int pdf_case=!strcmp(test_case,"pdf");
+    int compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
@@ -318,6 +366,16 @@ int main(int argc,char **argv) {
         CHECK(capture(display,outer,blue,"bad-retained"));
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
             pdf_word_geometry(first_text,120,6,195));
+        if(pdf_case) {
+            CHECK(drive("key","ctrl+f")&&observe(app,"Find on page",1));
+            CHECK(pdf_find_value(app,""));
+            CHECK(pdf_find_text(app,"Résumé")&&observe(app,"1 match on page",0));
+            CHECK(pdf_find_pixels(display,outer,0,"pdf-find-resume"));
+            /* simple-IME owns Escape while its editor is active. The
+               ordinary PDF case checks the application's Escape path. */
+            if (compose) CHECK(focus(app,viewport));
+            else CHECK(drive("key","Escape")&&observe(app,viewport,1));
+        }
     } else {
         CHECK(observe(app,"Frame format unavailable.",0));
         CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
@@ -331,20 +389,43 @@ int main(int argc,char **argv) {
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
     CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
-        pdf_word_geometry(second_text,72,4,145));
-    CHECK(focus(app,viewport)&&drive("key","Tab")&&observe(app,"Scale 2x",1)&&drive("key","Return"));
+        pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
+    if (compose) {
+        CHECK(drive("key","ctrl+f")&&observe(app,"Find on page",1)&&pdf_find_text(app,""));
+        for (unsigned i=0;i<200&&!pdf_find_value(app,"");++i) pump();
+        CHECK(pdf_find_value(app,""));
+        CHECK(drive("key","108")&&drive("keydown","Shift_L")&&drive("key","apostrophe")&&drive("keyup","Shift_L"));
+        CHECK(host_marker(host_log,"PDF_FIND_PREEDIT")&&pdf_find_value(app,""));
+        CHECK(drive("key","u")&&observe(app,"1 match on page",0)&&pdf_find_value(app,"ü"));
+        CHECK(pdf_find_pixels(display,outer,1,"pdf-find-compose"));
+        CHECK(pdf_find_text(app,"Résumé")&&observe(app,"0 matches on page",0));
+        puts("PDF_FIND_IME verified: native preedit leaves the query empty and commit finds the matching word");
+    }
+    CHECK(focus(app,viewport)&&drive("key","Tab"));
+    if (pdf_case) {
+        CHECK(observe(app,"Find on page",1));
+        if (compose) CHECK(focus(app,"Scale 2x"));
+        else CHECK(drive("key","Tab"));
+    }
+    CHECK(observe(app,"Scale 2x",1)&&drive("key","Return"));
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
     if(pdf_case)CHECK(state(second_text,ATSPI_STATE_DEFUNCT));
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
     if(pdf_case) {
-        CHECK((scaled_text=pdf_text(app,"Grün page two\n\n"))&&pdf_word_geometry(scaled_text,72,4,145));
+        CHECK((scaled_text=pdf_text(app,"Grün page two\n\n"))&&pdf_word_geometry(scaled_text,72,4,145)&&
+            observe(app,"0 matches on page",0));
         CHECK(focus(app,"Previous page")&&drive("key","Return")&&observe(app,"PDF page 1 of 2 at 2x.",0));
         CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=2 copied=4"));
-        CHECK(capture(display,outer,blue,"pdf-previous"));
         CHECK((returned_text=pdf_text(app,"Résumé page one\n\n"))&&state(scaled_text,ATSPI_STATE_DEFUNCT)&&
             pdf_word_geometry(returned_text,120,6,195));
+        CHECK(observe(app,"1 match on page",0)&&pdf_find_pixels(display,outer,0,"pdf-find-resume-scaled"));
+        CHECK(drive("key","ctrl+f")&&observe(app,"Find on page",1));
+        if (compose) CHECK(pdf_find_text(app,""));
+        else CHECK(drive("key","ctrl+a")&&drive("key","BackSpace"));
+        CHECK(capture(display,outer,blue,"pdf-previous"));
+        puts("PDF_FIND verified: keyboard focus, clear, accessible UTF-8 query, page rollover and logical highlight");
         puts("PDF_TEXT AT-SPI verified: UTF-8 pages, word bounds, point offsets, unmapped spaces, retained failure and resize");
     }
     if(!strcmp(test_case,"input")) CHECK(input_workflow(app,display,id,host_log));

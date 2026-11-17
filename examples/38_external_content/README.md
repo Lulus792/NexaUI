@@ -273,5 +273,18 @@ introduced in revision `85f5d1c`. The native peer queries the accepted text,
 word extents and point offsets through AT-SPI at 1× and 2× backing. It
 observes retirement of old text on page or resize changes. The scalars of
 each word share its box. Spaces and line breaks have no box. Textless pages
-use the image and host controls. Character-level geometry, links, search
-and selection remain viewer work.
+use the image and host controls.
+
+The fixture's **Find on page** field uses the existing NexaUI text editor,
+window IME and clipboard. Ctrl+F focuses it and Escape returns focus to
+the page. It finds case-sensitive, non-overlapping UTF-8 matches in the
+accepted page text, reports their count in an accessible status and
+highlights the intersecting word boxes when available. The draft stays in
+the field across page and backing-scale changes. Only committed text
+participates in matching. The search accepts up to 128 UTF-8 bytes.
+Add `--pdf-compose` to run the same fixture with Weston simple-IME and
+Compose on its private Xvfb seat. This mode needs `setxkbmap` (or
+`NEXAUI_SETXKBMAP`) and a Weston helper directory containing
+`weston-simple-im` and `weston-desktop-shell`.
+Document-wide search, character-level geometry, links and selection remain
+viewer work.
