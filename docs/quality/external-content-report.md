@@ -144,3 +144,38 @@ member hashes.
 Production image viewer navigation, process-level decoder isolation, broader
 format and metadata handling, PDF/browser/guest engines and GPU handoff
 remain separate acceptance work.
+
+## PDF producer checkpoint, 2026-11-17
+
+Consumer `623d1cba50d198ede2788ee190ff27b5813477ae` uses the installed SDK
+`b53513b390dbf135050a858fbdfd434edc04ad08`. The optional Linux worker runs
+Alpine `pdftoppm` 25.12.0-r1 in a separate process. The fixture uses verified
+packages extracted to a private test directory. The host passes an already
+open regular file and explicit page as input, reads bounded PNG output, and
+uses the existing owned CPU snapshot and viewport lease. The native host's
+dynamic link audit contains no Poppler library. [Poppler package](https://pkgs.alpinelinux.org/packages?branch=v3.24&name=poppler-utils)
+
+The independent native peer selects page 1, triggers an invalid PDF render,
+queries the error status and checks that the image and its native semantic
+object remain available. When it selects **Next page**, every pixel matches
+the expected page 2 image, including the 5,824 changed pixels. It repeats
+the page render with 896×416 backing. **Previous page** restores the original
+page 1 pixels. The native workflow rejects a late old-generation page after
+replacement and accounts for six completions, five publications and five
+disposals after close. Both page images match across all three build profiles.
+
+The process test checks a stalled child, oversized stdout and a nonzero exit.
+It verifies that failed calls preserve output parameters and leave no child
+to reap. The real renderer is exercised separately by the native test.
+On Alpine with Clang 22.1.3, 46 installed CTests and nineteen private Wayland
+cases passed across static Release, shared Release, ASan/UBSan/LSan and the
+default build. The exact renderer SHA-256 is
+`e969e55d7e2229f1e438284f9e8cfd666313e45a9b7b6265ccbf8b4ade5f2070`.
+
+Archive `nexaui-content-pdf387.tar.gz` binds source, commands, fixture PDFs,
+captures, package checksums and logs. Readback verified SHA-256
+`836ab956d9b4edeb61c9e75f83f37ab7cde6a94a5ef5a0b4de9f98fee95a5c33`.
+Local receipt `content-pdf387-final.json` lists its member hashes.
+
+Production viewer integration, stronger process isolation, semantic document
+text, links, search, selection and GPU/physical acceptance remain open.

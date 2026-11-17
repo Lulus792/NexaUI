@@ -232,3 +232,28 @@ adds a truncated PNG to exercise the decode-error path. The host reports the
 failure through its accessible status and leaves the last valid image
 visible. A valid follow-up frame restores progress. The fixture also tests a
 late frame across tab replacement and decoding for 2× backing.
+
+## Optional PDF producer on Linux
+
+Configure with `-DNEXAUI_CONTENT_BUILD_PNG=ON` and
+`-DNEXAUI_CONTENT_BUILD_PDF=ON` to build `content_pdf`. The app supplies an
+absolute path to a trusted `pdftoppm` executable, a regular PDF file and a
+one-based page number. `content_pdf_frame` opens the file and gives the
+descriptor to a separate Poppler process. It converts the page image through
+the same PNG snapshot path as other CPU content. Call it from the content
+worker. The UI uses the existing resize/generation and render-lease checks.
+
+The adapter admits PDF files up to 16 MiB. It requests at most 1024 pixels on
+the longest side from the child and caps its PNG output at 4 MiB. The worker
+allows three seconds for the child to produce output and exit. It kills and
+reaps the child on timeout or overflow. These limits cover this adapter's
+I/O. Production policy for operating-system isolation and PDF admission
+belongs to the application.
+
+Enable the native fixture as well and use `run_native.py --case pdf
+--pdf-renderer /path/to/pdftoppm` with the usual build, font, registry and
+work-directory arguments. The fixture walks a two-page PDF, a replacement
+with a late frame, a decode error, a change to 2× backing and navigation
+back to page one. The accessible host controls expose the current page and
+error status. Document text, links, search and selection are separate PDF
+viewer work.
