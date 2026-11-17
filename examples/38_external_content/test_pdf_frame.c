@@ -38,6 +38,25 @@ static int text_probe(const char *output) {
         "5\t1\t0\t0\t0\t1\t8\t2\t2\t4\t100\t%s\n", mode == 'g' ? "go" : "changed") < 0 ? 2 : 0;
 }
 
+static int index_probe(void) {
+    switch (getchar()) {
+    case 'i': return fputs("Résumé page one\n\n\f\fGrün page two\n\n\f",stdout)==EOF;
+    case 't': return fputs("Missing page terminator",stdout)==EOF;
+    case 'u': return fputs("\xc3\f",stdout)==EOF;
+    case 'p':
+        for (unsigned page = 0; page <= CONTENT_PDF_PAGE_LIMIT; ++page)
+            if (putchar('\f') == EOF) return 1;
+        return 0;
+    case 'b': {
+        char block[4096] = {0};
+        for (size_t i = 0; i <= CONTENT_PDF_INDEX_LIMIT; i += sizeof(block))
+            if (fwrite(block,1,sizeof(block),stdout) != sizeof(block)) return 1;
+        return 0;
+    }
+    default: return 1;
+    }
+}
+
 static int probe(const char *executable, char mode, nx_result expected) {
     char file[] = "/tmp/nexaui-pdf-probe-XXXXXX";
     int fd = mkstemp(file);
@@ -86,13 +105,41 @@ static int probe_words(const char *executable, char mode, uint32_t expected_coun
     return ok;
 }
 
+static int probe_index(const char *executable, char mode, nx_result expected) {
+    char path[] = "/tmp/nexaui-pdf-index-XXXXXX";
+    int seed = mkstemp(path);
+    if (seed < 0) return 0;
+    int ok = write(seed,&mode,1) == 1;
+    if (close(seed)) ok = 0;
+    int file = -1;
+    if (ok) ok = content_pdf_open(path,&file)==NX_OK;
+    if (unlink(path)) ok = 0;
+    content_pdf_index *index = NULL;
+    if (ok) ok = content_pdf_index_read(executable,file,&index)==expected;
+    if (file >= 0 && close(file)) ok = 0;
+    if (ok && expected == NX_OK) {
+        content_pdf_hits hits;
+        nx_utf8_span query = {"page",4};
+        ok = content_pdf_index_pages(index)==3 &&
+            content_pdf_index_find(index,query,1,&hits)==NX_OK && hits.total==2 && hits.next_page==3 &&
+            content_pdf_index_find(index,query,3,&hits)==NX_OK && hits.total==2 && hits.next_page==1 &&
+            content_pdf_index_find(index,(nx_utf8_span){"ü",2},2,&hits)==NX_OK && hits.total==1 && hits.next_page==3 &&
+            content_pdf_index_find(index,(nx_utf8_span){"\f",1},2,&hits)==NX_OK && !hits.total && !hits.next_page;
+    } else if (index) ok = 0;
+    content_pdf_index_destroy(index);
+    return ok;
+}
+
 int main(int argc, char **argv) {
     if (argc == 10 && !strcmp(argv[1], "-png")) return engine_probe();
     if (argc == 12 && !strcmp(argv[1], "-f")) return text_probe(argv[9]);
+    if (argc == 11 && !strcmp(argv[4], "257")) return index_probe();
     if (argc != 1) return 2;
     if (!probe(argv[0], 's', NX_ERROR_PLATFORM) || !probe(argv[0], 'o', NX_ERROR_LIMIT) ||
         !probe(argv[0], 'b', NX_ERROR_ARGUMENT) || !probe_words(argv[0], 'g', 2) ||
-        !probe_words(argv[0], 'm', 0)) return 1;
-    puts("PDF worker verified: deadline, output cap, reaping, UTF-8 word bounds, margins and text-only fallback");
+        !probe_words(argv[0], 'm', 0) || !probe_index(argv[0],'i',NX_OK) ||
+        !probe_index(argv[0],'t',NX_ERROR_ARGUMENT) || !probe_index(argv[0],'u',NX_ERROR_ARGUMENT) ||
+        !probe_index(argv[0],'p',NX_ERROR_LIMIT) || !probe_index(argv[0],'b',NX_ERROR_LIMIT)) return 1;
+    puts("PDF worker verified: deadlines, word bounds, pinned document, indexed blank page and search limits");
     return 0;
 }

@@ -275,16 +275,26 @@ observes retirement of old text on page or resize changes. The scalars of
 each word share its box. Spaces and line breaks have no box. Textless pages
 use the image and host controls.
 
-The fixture's **Find on page** field uses the existing NexaUI text editor,
-window IME and clipboard. Ctrl+F focuses it and Escape returns focus to
-the page. It finds case-sensitive, non-overlapping UTF-8 matches in the
-accepted page text, reports their count in an accessible status and
-highlights the intersecting word boxes when available. The draft stays in
-the field across page and backing-scale changes. Only committed text
-participates in matching. The search accepts up to 128 UTF-8 bytes.
+The fixture's **Find in PDF** field uses the existing NexaUI text editor,
+window IME and clipboard. Ctrl+F focuses it. The ordinary Wayland fixture
+uses Escape to return to the page. Only committed search text participates
+in case-sensitive, non-overlapping UTF-8 matching, with a 128-byte query
+limit. The draft stays in the field across page and backing-scale changes.
+
+The worker retains one descriptor for the current immutable document.
+After the first successful page publication it reads the document's text
+once with Poppler. The index is bounded to 256 pages and 512 KiB of UTF-8,
+with the same three-second child deadline. The worker hands the immutable
+index to the UI, which accepts it for the matching document generation.
+The viewer displays counts for the current page and the whole document.
+**Next hit** opens a different matching page and wraps at the document
+end. The accepted page highlights its matching word boxes when available.
+Query or page changes reuse the index without invoking another text
+extraction for the search. If the index is unavailable, the accepted
+page can still be searched.
 Add `--pdf-compose` to run the same fixture with Weston simple-IME and
 Compose on its private Xvfb seat. This mode needs `setxkbmap` (or
 `NEXAUI_SETXKBMAP`) and a Weston helper directory containing
 `weston-simple-im` and `weston-desktop-shell`.
-Document-wide search, character-level geometry, links and selection remain
-viewer work.
+Normalized and case-insensitive matching, character-level geometry, links
+and selection remain viewer work.

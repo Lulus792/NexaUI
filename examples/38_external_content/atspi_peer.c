@@ -269,7 +269,7 @@ static int pdf_word_geometry(AtspiAccessible *node, int first_width, int space, 
 }
 
 static int pdf_find_text(AtspiAccessible *app, const char *value) {
-    AtspiAccessible *field = find(app,"Find on page",0);
+    AtspiAccessible *field = find(app,"Find in PDF",0);
     AtspiEditableText *editor = field ? atspi_accessible_get_editable_text_iface(field) : NULL;
     GError *error = NULL;
     int ok = editor && atspi_editable_text_set_text_contents(editor,value,&error) && !error;
@@ -280,7 +280,7 @@ static int pdf_find_text(AtspiAccessible *app, const char *value) {
 }
 
 static int pdf_find_value(AtspiAccessible *app, const char *expected) {
-    AtspiAccessible *field = find(app,"Find on page",0);
+    AtspiAccessible *field = find(app,"Find in PDF",0);
     AtspiText *text = field ? atspi_accessible_get_text_iface(field) : NULL;
     GError *error = NULL;
     char *value = text ? atspi_text_get_text(text,0,-1,&error) : NULL;
@@ -328,7 +328,7 @@ int main(int argc,char **argv) {
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
-    AtspiAccessible *first_text=NULL,*second_text=NULL,*scaled_text=NULL,*returned_text=NULL;
+    AtspiAccessible *first_text=NULL,*second_text=NULL,*scaled_text=NULL,*returned_text=NULL,*hit_text=NULL;
     AtspiComponent *old_component=NULL;Display *display=NULL;FILE *host_log=NULL;
     char id[32];Window outer=0;
     CHECK(outer_window(id,&outer)&&(display=XOpenDisplay(NULL))&&(host_log=tmpfile()));
@@ -351,7 +351,7 @@ int main(int argc,char **argv) {
         AtspiAccessible *old_text=find(app,"PDF page text",0);
         int absent=old_text==NULL;
         if(old_text)g_object_unref(old_text);
-        CHECK(absent);
+        CHECK(absent&&host_marker(host_log,"PDF_INDEX stale generation=1 current=2"));
     }
     if(!strcmp(test_case,"rejected-close")){CHECK(focus(app,"Close")&&drive("key","Return"));goto closed;}
     CHECK(press(app,"Publish frame")&&observe(app,pdf_case?"PDF page 1 of 2.":"Frame ready.",0));
@@ -367,7 +367,7 @@ int main(int argc,char **argv) {
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
             pdf_word_geometry(first_text,120,6,195));
         if(pdf_case) {
-            CHECK(drive("key","ctrl+f")&&observe(app,"Find on page",1));
+            CHECK(drive("key","ctrl+f")&&observe(app,"Find in PDF",1));
             CHECK(pdf_find_value(app,""));
             CHECK(pdf_find_text(app,"Résumé")&&observe(app,"1 match on page",0));
             CHECK(pdf_find_pixels(display,outer,0,"pdf-find-resume"));
@@ -391,7 +391,7 @@ int main(int argc,char **argv) {
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
         pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
     if (compose) {
-        CHECK(drive("key","ctrl+f")&&observe(app,"Find on page",1)&&pdf_find_text(app,""));
+        CHECK(drive("key","ctrl+f")&&observe(app,"Find in PDF",1)&&pdf_find_text(app,""));
         for (unsigned i=0;i<200&&!pdf_find_value(app,"");++i) pump();
         CHECK(pdf_find_value(app,""));
         CHECK(drive("key","108")&&drive("keydown","Shift_L")&&drive("key","apostrophe")&&drive("keyup","Shift_L"));
@@ -403,7 +403,7 @@ int main(int argc,char **argv) {
     }
     CHECK(focus(app,viewport)&&drive("key","Tab"));
     if (pdf_case) {
-        CHECK(observe(app,"Find on page",1));
+        CHECK(observe(app,"Find in PDF",1));
         if (compose) CHECK(focus(app,"Scale 2x"));
         else CHECK(drive("key","Tab"));
     }
@@ -421,10 +421,21 @@ int main(int argc,char **argv) {
         CHECK((returned_text=pdf_text(app,"Résumé page one\n\n"))&&state(scaled_text,ATSPI_STATE_DEFUNCT)&&
             pdf_word_geometry(returned_text,120,6,195));
         CHECK(observe(app,"1 match on page",0)&&pdf_find_pixels(display,outer,0,"pdf-find-resume-scaled"));
-        CHECK(drive("key","ctrl+f")&&observe(app,"Find on page",1));
+        CHECK(drive("key","ctrl+f")&&observe(app,"Find in PDF",1));
         if (compose) CHECK(pdf_find_text(app,""));
         else CHECK(drive("key","ctrl+a")&&drive("key","BackSpace"));
         CHECK(capture(display,outer,blue,"pdf-previous"));
+        CHECK(pdf_find_text(app,"page")&&observe(app,"2 matches in document",0));
+        CHECK(pdf_find_text(app,"Grün")&&observe(app,"0 matches on page",0)&&observe(app,"1 match in document",0));
+        CHECK(focus(app,"Next hit")&&drive("key","Return")&&observe(app,"PDF page 2 of 2 at 2x.",0));
+        CHECK((hit_text=pdf_text(app,"Grün page two\n\n"))&&state(returned_text,ATSPI_STATE_DEFUNCT));
+        CHECK(observe(app,viewport,1)&&focus(app,"Previous page"));
+        CHECK(observe(app,"1 match on page",0)&&pdf_find_pixels(display,outer,1,"pdf-document-hit-two"));
+        CHECK(focus(app,"Find in PDF")&&pdf_find_text(app,"Résumé")&&observe(app,"0 matches on page",0));
+        CHECK(press(app,"Next hit")&&observe(app,"PDF page 1 of 2 at 2x.",0)&&state(hit_text,ATSPI_STATE_DEFUNCT));
+        CHECK(observe(app,"Find in PDF",1)&&focus(app,"Next page"));
+        CHECK(observe(app,"1 match on page",0)&&pdf_find_pixels(display,outer,0,"pdf-document-hit-one"));
+        puts("PDF_DOCUMENT_FIND verified: totals, keyboard jump, AT-SPI wrap and accepted page highlight");
         puts("PDF_FIND verified: keyboard focus, clear, accessible UTF-8 query, page rollover and logical highlight");
         puts("PDF_TEXT AT-SPI verified: UTF-8 pages, word bounds, point offsets, unmapped spaces, retained failure and resize");
     }
@@ -440,6 +451,7 @@ done:
     if(old_component)g_object_unref(old_component);if(fresh)g_object_unref(fresh);if(retired)g_object_unref(retired);
     if(first_text)g_object_unref(first_text);if(second_text)g_object_unref(second_text);
     if(scaled_text)g_object_unref(scaled_text);if(returned_text)g_object_unref(returned_text);
+    if(hit_text)g_object_unref(hit_text);
     if(app)g_object_unref(app);if(desktop)g_object_unref(desktop);if(initialized)atspi_exit();if(display)XCloseDisplay(display);
     if(host_log){
         char *text=malloc(128u*1024u);

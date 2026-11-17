@@ -12,13 +12,21 @@
 #include "png_frame.h"
 #include <stdio.h>
 #endif
-#ifdef CONTENT_NATIVE_PDF
 #include "pdf_frame.h"
-#endif
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
-typedef struct native_job { content_request request; uint64_t sequence; unsigned kind; int held; } native_job;
+typedef struct native_job {
+    content_request request;
+    uint64_t sequence;
+    unsigned kind;
+    int held;
+    unsigned page; /* Zero uses the existing scenario's page. */
+} native_job;
+typedef struct native_pdf_index_result {
+    uint64_t generation;
+    content_pdf_index *index;
+} native_pdf_index_result;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
     const char *encoded_dir, *pdf_renderer, *pdf_reader;
@@ -30,6 +38,9 @@ typedef struct native_worker {
     native_job job;
     unsigned completed, publications, discarded;
     nx_result result;
+    int pdf_file;
+    uint64_t pdf_generation, indexed_generation;
+    native_pdf_index_result pdf_index;
     _Atomic unsigned disposals;
 } native_worker;
 typedef struct native_worker_state {
@@ -125,14 +136,45 @@ static nx_result native_png(const char *directory, native_job job, void **data, 
 }
 #endif
 #ifdef CONTENT_NATIVE_PDF
-static nx_result native_pdf(const native_worker *worker, native_job job, void **data, size_t *bytes) {
+static nx_result native_pdf(native_worker *worker, native_job job, void **data, size_t *bytes) {
     const char *name = job.kind == 0 ? "old.pdf" : job.kind == 2 ? "bad.pdf" : "document.pdf";
     char path[4096];
     int written = snprintf(path, sizeof(path), "%s/%s", worker->encoded_dir, name);
     if (written < 0 || (size_t)written >= sizeof(path)) return NX_ERROR_LIMIT;
-    unsigned page = job.kind == 3 || job.kind == 4 ? 2u : 1u;
-    return content_pdf_frame_with_text(worker->pdf_renderer, worker->pdf_reader, path, page,
-        job.request, job.sequence, data, bytes);
+    unsigned page = job.page ? job.page : job.kind == 3 || job.kind == 4 ? 2u : 1u;
+    if (job.kind == 2)
+        return content_pdf_frame_with_text(worker->pdf_renderer,worker->pdf_reader,path,page,
+            job.request,job.sequence,data,bytes);
+    if (worker->pdf_generation != job.request.generation) {
+        int file;
+        nx_result result = content_pdf_open(path,&file);
+        if (result != NX_OK) return result;
+        if (worker->pdf_file >= 0) close(worker->pdf_file);
+        worker->pdf_file = file;
+        worker->pdf_generation = job.request.generation;
+    }
+    return content_pdf_render(worker->pdf_renderer,worker->pdf_reader,worker->pdf_file,page,
+        job.request,job.sequence,data,bytes);
+}
+
+static void native_index_pdf(native_worker *worker, native_job job) {
+    uint64_t generation = job.request.generation;
+    if (!worker->pdf_reader || job.kind == 2 || generation == worker->indexed_generation) return;
+    pthread_mutex_lock(&worker->mutex);
+    int skip = worker->stop;
+    pthread_mutex_unlock(&worker->mutex);
+    if (skip) return;
+    /* After frame publication so indexing never delays that first frame.
+       Further per-page work uses this same worker and pinned descriptor. */
+    content_pdf_index *index = NULL;
+    (void)content_pdf_index_read(worker->pdf_reader,worker->pdf_file,&index);
+    worker->indexed_generation = generation;
+    pthread_mutex_lock(&worker->mutex);
+    content_pdf_index *retired = worker->pdf_index.index;
+    worker->pdf_index = (native_pdf_index_result){generation,index};
+    pthread_mutex_unlock(&worker->mutex);
+    content_pdf_index_destroy(retired);
+    native_wake(worker);
 }
 #endif
 static void *native_worker_entry(void *user) {
@@ -178,6 +220,9 @@ static void *native_worker_entry(void *user) {
         if (result == NX_OK) ++worker->publications;
         pthread_mutex_unlock(&worker->mutex);
         native_wake(worker);
+#ifdef CONTENT_NATIVE_PDF
+        if (result == NX_OK) native_index_pdf(worker,job);
+#endif
     }
     return NULL;
 }
@@ -192,6 +237,10 @@ static int native_worker_close(native_worker *worker) {
         if (pthread_join(worker->thread, NULL)) _Exit(1);
         worker->started = 0;
     }
+#ifdef CONTENT_NATIVE_PDF
+    content_pdf_index_destroy(worker->pdf_index.index);
+    if (worker->pdf_renderer && worker->pdf_file >= 0 && close(worker->pdf_file)) result = -1;
+#endif
     for (unsigned i = 0; i < 2; ++i) if (worker->wake[i] >= 0) {
         if (close(worker->wake[i])) result = -1;
         worker->wake[i] = -1;
@@ -203,6 +252,7 @@ static int native_worker_close(native_worker *worker) {
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
     const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
+    worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
     worker->encoded_dir = encoded_dir; worker->pdf_renderer = pdf_renderer; worker->pdf_reader = pdf_reader;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
@@ -220,6 +270,16 @@ static native_worker_state native_state(native_worker *worker) {
     pthread_mutex_unlock(&worker->mutex);
     return state;
 }
+
+#ifdef CONTENT_NATIVE_PDF
+static native_pdf_index_result native_take_pdf_index(native_worker *worker) {
+    pthread_mutex_lock(&worker->mutex);
+    native_pdf_index_result result = worker->pdf_index;
+    worker->pdf_index = (native_pdf_index_result){0};
+    pthread_mutex_unlock(&worker->mutex);
+    return result;
+}
+#endif
 static int native_schedule(native_worker *worker, native_job job) {
     pthread_mutex_lock(&worker->mutex);
     int accepted = !worker->stop && !worker->pending && !worker->working;

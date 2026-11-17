@@ -224,43 +224,60 @@ static void attach_words(const char *reader, int document, unsigned page, uint8_
     *frame_size += word_bytes;
 }
 
-static nx_result make_frame(const char *renderer, const char *reader, const char *document, unsigned page,
-    content_request request, uint64_t sequence, void **out, size_t *out_size) {
-    if (!renderer || *renderer != '/' || !document || *document != '/' || !page || page > INT_MAX ||
-        !request.generation || !request.resize || !request.width || !request.height || !sequence ||
-        !out || !out_size) return NX_ERROR_ARGUMENT;
-    if (request.width > NX_VIEWPORT_MAX_DIMENSION || request.height > NX_VIEWPORT_MAX_DIMENSION ||
-        (size_t)request.width * 4u > CONTENT_PNG_PIXEL_LIMIT / request.height) return NX_ERROR_LIMIT;
-    int file = open(document, O_RDONLY | O_CLOEXEC | O_NONBLOCK);
+nx_result content_pdf_open(const char *path, int *out_file) {
+    if (!path || *path != '/' || !out_file) return NX_ERROR_ARGUMENT;
+    int file = open(path, O_RDONLY | O_CLOEXEC | O_NONBLOCK);
     if (file < 0) return NX_ERROR_PLATFORM;
     struct stat attributes;
     nx_result result = NX_ERROR_ARGUMENT;
     if (!fstat(file, &attributes) && S_ISREG(attributes.st_mode) && attributes.st_size > 0) {
-        result = NX_ERROR_LIMIT;
         if (attributes.st_size <= 16 * 1024 * 1024) {
-            uint8_t *encoded = malloc(CONTENT_PNG_ENCODED_LIMIT + 1u);
-            if (encoded) {
-                uint32_t edge = request.width > request.height ? request.width : request.height;
-                if (edge > 1024u) edge = 1024u;
-                size_t bytes = 0;
-                result = render_page(renderer, file, page, edge, encoded, &bytes);
-                void *frame = NULL;
-                size_t frame_size = 0;
-                content_png_fit fit;
-                if (result == NX_OK)
-                    result = content_png_frame_fit(encoded, bytes, request, sequence, &frame, &frame_size, &fit);
-                if (result == NX_OK && reader) {
-                    result = attach_text(reader, file, page, encoded, &frame, &frame_size);
-                    if (result == NX_OK) attach_words(reader, file, page, encoded, &fit, edge, &frame, &frame_size);
-                }
-                if (result == NX_OK) {
-                    *out = frame;
-                    *out_size = frame_size;
-                } else free(frame);
-                free(encoded);
-            } else result = NX_ERROR_MEMORY;
+            *out_file = file;
+            return NX_OK;
         }
+        result = NX_ERROR_LIMIT;
     }
+    close(file);
+    return result;
+}
+
+nx_result content_pdf_render(const char *renderer, const char *reader, int file, unsigned page,
+    content_request request, uint64_t sequence, void **out, size_t *out_size) {
+    if (!renderer || *renderer != '/' || (reader && *reader != '/') || file < 0 || !page || page > INT_MAX ||
+        !request.generation || !request.resize || !request.width || !request.height || !sequence ||
+        !out || !out_size) return NX_ERROR_ARGUMENT;
+    if (request.width > NX_VIEWPORT_MAX_DIMENSION || request.height > NX_VIEWPORT_MAX_DIMENSION ||
+        (size_t)request.width * 4u > CONTENT_PNG_PIXEL_LIMIT / request.height) return NX_ERROR_LIMIT;
+    if (lseek(file, 0, SEEK_SET) < 0) return NX_ERROR_PLATFORM;
+    uint8_t *encoded = malloc(CONTENT_PNG_ENCODED_LIMIT + 1u);
+    if (!encoded) return NX_ERROR_MEMORY;
+    uint32_t edge = request.width > request.height ? request.width : request.height;
+    if (edge > 1024u) edge = 1024u;
+    size_t bytes = 0;
+    nx_result result = render_page(renderer, file, page, edge, encoded, &bytes);
+    void *frame = NULL;
+    size_t frame_size = 0;
+    content_png_fit fit;
+    if (result == NX_OK)
+        result = content_png_frame_fit(encoded, bytes, request, sequence, &frame, &frame_size, &fit);
+    if (result == NX_OK && reader) {
+        result = attach_text(reader, file, page, encoded, &frame, &frame_size);
+        if (result == NX_OK) attach_words(reader, file, page, encoded, &fit, edge, &frame, &frame_size);
+    }
+    if (result == NX_OK) {
+        *out = frame;
+        *out_size = frame_size;
+    } else free(frame);
+    free(encoded);
+    return result;
+}
+
+static nx_result make_frame(const char *renderer, const char *reader, const char *document, unsigned page,
+    content_request request, uint64_t sequence, void **out, size_t *out_size) {
+    int file;
+    nx_result result = content_pdf_open(document,&file);
+    if (result != NX_OK) return result;
+    result = content_pdf_render(renderer,reader,file,page,request,sequence,out,out_size);
     close(file);
     return result;
 }
@@ -274,4 +291,65 @@ nx_result content_pdf_frame_with_text(const char *renderer, const char *reader, 
     unsigned page, content_request request, uint64_t sequence, void **out, size_t *out_size) {
     if (!reader || *reader != '/') return NX_ERROR_ARGUMENT;
     return make_frame(renderer, reader, document, page, request, sequence, out, out_size);
+}
+
+struct content_pdf_index {
+    unsigned pages;
+    uint32_t offsets[CONTENT_PDF_PAGE_LIMIT + 1u];
+    uint8_t text[];
+};
+
+nx_result content_pdf_index_read(const char *reader, int file, content_pdf_index **out) {
+    if (!reader || *reader != '/' || file < 0 || !out) return NX_ERROR_ARGUMENT;
+    if (lseek(file,0,SEEK_SET) < 0) return NX_ERROR_PLATFORM;
+    content_pdf_index *index = malloc(sizeof(*index) + CONTENT_PDF_INDEX_LIMIT + 1u);
+    if (!index) return NX_ERROR_MEMORY;
+    char last_page[16];
+    snprintf(last_page,sizeof(last_page),"%u",CONTENT_PDF_PAGE_LIMIT+1u);
+    char *argv[] = {(char *)reader,"-f","1","-l",last_page,"-enc","UTF-8","-eol","unix","-","-",NULL};
+    size_t bytes = 0;
+    nx_result result = run_tool(reader,argv,file,index->text,CONTENT_PDF_INDEX_LIMIT,&bytes);
+    if (result == NX_OK && (!bytes || index->text[bytes-1] != '\f' || memchr(index->text,0,bytes) ||
+        nx_utf8_validate((const char *)index->text,bytes,NULL) != NX_OK)) result = NX_ERROR_ARGUMENT;
+    index->pages = 0;
+    index->offsets[0] = 0;
+    for (size_t offset = 0; result == NX_OK && offset < bytes; ++offset) {
+        if (index->text[offset] != '\f') continue;
+        if (index->pages == CONTENT_PDF_PAGE_LIMIT) result = NX_ERROR_LIMIT;
+        else index->offsets[++index->pages] = (uint32_t)(offset + 1u);
+    }
+    if (result != NX_OK) {
+        free(index);
+        return result;
+    }
+    content_pdf_index *exact = realloc(index,sizeof(*index)+bytes);
+    *out = exact ? exact : index;
+    return NX_OK;
+}
+
+void content_pdf_index_destroy(content_pdf_index *index) { free(index); }
+
+unsigned content_pdf_index_pages(const content_pdf_index *index) { return index ? index->pages : 0; }
+
+nx_result content_pdf_index_find(const content_pdf_index *index, nx_utf8_span query,
+    unsigned current_page, content_pdf_hits *out) {
+    if (!index || !out || !query.data || !query.length || query.length > CONTENT_PDF_QUERY_LIMIT ||
+        !current_page || current_page > index->pages || nx_utf8_validate(query.data,query.length,NULL)!=NX_OK)
+        return NX_ERROR_ARGUMENT;
+    content_pdf_hits hits = {0};
+    /* Visit the current page last. For navigation it contributes to the
+       total only. Exclude form feeds so matches never span two pages. */
+    for (unsigned i = 0; i < index->pages; ++i) {
+        unsigned page = (current_page + i) % index->pages + 1u;
+        const uint8_t *begin = index->text + index->offsets[page-1u];
+        const uint8_t *end = index->text + index->offsets[page] - 1u;
+        const uint8_t *match;
+        while ((match = memmem(begin,(size_t)(end-begin),query.data,query.length))) {
+            ++hits.total;
+            if (!hits.next_page && page != current_page) hits.next_page = page;
+            begin = match + query.length;
+        }
+    }
+    *out = hits;
+    return NX_OK;
 }
