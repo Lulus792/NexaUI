@@ -92,6 +92,7 @@ def main():
     parser.add_argument('--pdf-link-reader', type=Path, help='Optional content_pdf_link_reader path')
     parser.add_argument('--pdf-select', action='store_true', help='Exercise PDF text selection and copy')
     parser.add_argument('--pdf-external', action='store_true', help='Exercise the PDF link preview and local handoff')
+    parser.add_argument('--pdf-zoom', action='store_true', help='Exercise the PDF zoom, pan and backing-scale workflow')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -103,6 +104,8 @@ def main():
         parser.error('--pdf-select requires --case pdf')
     if args.pdf_external and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select):
         parser.error('--pdf-external requires --case pdf and --pdf-link-reader and runs separately from --pdf-select')
+    if args.pdf_zoom and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select or args.pdf_external):
+        parser.error('--pdf-zoom requires --case pdf and --pdf-link-reader as a separate workflow')
     if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
@@ -118,6 +121,8 @@ def main():
                NEXAUI_CONTENT_TEST_FONT=str(args.font), NEXAUI_CONTENT_TEST_CASE=args.case,
                NEXAUI_CONTENT_TEST_XDOTOOL=xdotool,
                NEXAUI_CONTENT_CAPTURE_PREFIX=str(args.work_dir / 'content-'))
+    if args.pdf_zoom:
+        env['NEXAUI_CONTENT_TEST_PDF_ZOOM'] = '1'
     if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:

@@ -61,6 +61,11 @@ nx_result content_surface_destroy(content_surface **surface);
 nx_result content_surface_draw(content_surface *surface, nx_context *context,
     const nx_viewport_desc *desc, nx_interaction_state *out);
 nx_result content_surface_complete(content_surface *surface);
+/* Borrow a copy of the completed frame commands with only this surface's
+   image destination replaced. Its original viewport clip and lease apply.
+   Consume the copy before completing the draw or mapping again. */
+nx_result content_surface_map_commands(content_surface *surface,
+    const nx_command *commands, size_t count, nx_rect image, const nx_command **out);
 nx_result content_surface_get_status(const content_surface *surface,
     content_surface_status *out);
 /* Borrow the accepted frame's text until the next draw/resize or destroy. */

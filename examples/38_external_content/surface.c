@@ -1,4 +1,5 @@
 #include "surface.h"
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -11,6 +12,9 @@ struct content_surface {
     uint8_t *pixels;
     uint8_t *metadata;
     size_t text_bytes, word_count, link_count;
+    nx_command *mapped;
+    size_t mapped_capacity;
+    int leased;
 };
 
 static void *allocate(void *user, size_t bytes) { (void)user; return malloc(bytes); }
@@ -203,6 +207,8 @@ nx_result content_surface_destroy(content_surface **out) {
     if (result != NX_OK) return result;
     nx_allocator allocator = surface->allocator;
     if (surface->pixels) allocator.deallocate(allocator.user, surface->pixels, surface->status.staging_bytes);
+    if (surface->mapped) allocator.deallocate(allocator.user,surface->mapped,
+        surface->mapped_capacity*sizeof(*surface->mapped));
     clear_metadata(surface);
     allocator.deallocate(allocator.user, surface, sizeof(*surface));
     *out = NULL;
@@ -212,11 +218,45 @@ nx_result content_surface_destroy(content_surface **out) {
 nx_result content_surface_draw(content_surface *surface, nx_context *context,
     const nx_viewport_desc *desc, nx_interaction_state *out) {
     if (!surface) return NX_ERROR_ARGUMENT;
-    return nx_viewport(context, surface->viewport, desc, out);
+    nx_result result=nx_viewport(context,surface->viewport,desc,out);
+    if (result==NX_OK) surface->leased=desc->bounds.width>0&&desc->bounds.height>0;
+    return result;
 }
 
 nx_result content_surface_complete(content_surface *surface) {
-    return surface ? nx_viewport_surface_complete(surface->viewport) : NX_ERROR_ARGUMENT;
+    if (!surface) return NX_ERROR_ARGUMENT;
+    nx_result result=nx_viewport_surface_complete(surface->viewport);
+    if (result==NX_OK) surface->leased=0;
+    return result;
+}
+
+nx_result content_surface_map_commands(content_surface *surface,
+    const nx_command *commands, size_t count, nx_rect image, const nx_command **out) {
+    if (!surface || !commands || !out || count>SIZE_MAX/sizeof(nx_command) ||
+        !isfinite(image.x) || !isfinite(image.y) || !isfinite(image.width) || !isfinite(image.height) ||
+        !(image.width>0 && image.height>0)) return NX_ERROR_ARGUMENT;
+    if (!surface->leased) return NX_ERROR_STATE;
+    if (commands==surface->mapped) return NX_ERROR_ARGUMENT;
+    size_t target=count;
+    for (size_t i=0;i<count;++i) {
+        if (commands[i].type!=NX_COMMAND_BITMAP || commands[i].bitmap.pixels!=surface->pixels) continue;
+        if (target!=count) return NX_ERROR_ARGUMENT;
+        target=i;
+    }
+    if (target==count) return NX_ERROR_ARGUMENT;
+    if (surface->mapped_capacity<count) {
+        nx_allocator allocator=surface->allocator;
+        nx_command *replacement=allocator.allocate(allocator.user,count*sizeof(*replacement));
+        if (!replacement) return NX_ERROR_MEMORY;
+        if (surface->mapped) allocator.deallocate(allocator.user,surface->mapped,
+            surface->mapped_capacity*sizeof(*surface->mapped));
+        surface->mapped=replacement;
+        surface->mapped_capacity=count;
+    }
+    memcpy(surface->mapped,commands,count*sizeof(*commands));
+    surface->mapped[target].rect=image;
+    *out=surface->mapped;
+    return NX_OK;
 }
 
 nx_result content_surface_get_status(const content_surface *surface, content_surface_status *out) {

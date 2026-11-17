@@ -233,7 +233,27 @@ int main(int argc, char **argv) {
         /* Producer retirement is legal now. Command pixels must survive it. */
         CHECK(publish(exchange, request, 2, 90, &disposals) && atomic_load(&disposals) == 1);
         CHECK(image_matches(context, &desc, 30));
+        const nx_command *original=NULL,*mapped=NULL;
+        size_t count=0;
+        nx_rect magnified={4,20,30,26};
+        CHECK(nx_frame_commands(context,&original,&count)==NX_OK);
+        probe.fail_next=1;
+        CHECK(content_surface_map_commands(surface,original,count,magnified,&mapped)==NX_ERROR_MEMORY&&!mapped);
+        CHECK(content_surface_map_commands(surface,original,count,magnified,&mapped)==NX_OK&&mapped!=original);
+        size_t bitmap_count=0;
+        for (size_t i=0;i<count;++i) {
+            if (original[i].type==NX_COMMAND_BITMAP&&original[i].bitmap.format==NX_BITMAP_RGBA8) {
+                CHECK(original[i].rect.x==desc.bounds.x&&mapped[i].rect.x==magnified.x&&
+                    mapped[i].bitmap.pixels==original[i].bitmap.pixels);
+                ++bitmap_count;
+            } else CHECK(!memcmp(&original[i],&mapped[i],sizeof(*original)));
+        }
+        CHECK(bitmap_count==1);
+        uint8_t source_pixels[64u*64u*4u],mapped_pixels[64u*64u*4u];
+        CHECK(raster(context,source_pixels)&&nx_headless_render(mapped,count,mapped_pixels,64,64,256,
+            (nx_color){0,0,0,1})==NX_OK&&!memcmp(source_pixels,mapped_pixels,sizeof(source_pixels)));
         CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
+        CHECK(content_surface_map_commands(surface,original,count,magnified,&mapped)==NX_ERROR_STATE);
         CHECK(record(surface, exchange, context, &desc, NX_OK, &leased) && image_matches(context, &desc, 90));
         CHECK(content_surface_complete(surface) == NX_OK); leased = 0;
         size_t allocations = probe.calls;

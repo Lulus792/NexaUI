@@ -87,6 +87,21 @@ static int pdf_link_bounds_at(AtspiAccessible *node,int x,int width) {
     return ok;
 }
 static int pdf_link_bounds(AtspiAccessible *node) { return pdf_link_bounds_at(node,352,84); }
+
+static int pdf_zoom_link(AtspiAccessible *node, int x, int width) {
+    AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
+    if (!component) return 0;
+    int ok=0;
+    for (unsigned i=0;i<100&&!ok;++i) {
+        AtspiRect *rect=atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL);
+        /* Fractional float edges may straddle an integer by one pixel. */
+        ok=rect&&abs(rect->x-x)<=1&&rect->y==216&&abs(rect->width-width)<=1&&rect->height==72;
+        g_free(rect);
+        if (!ok) pump();
+    }
+    g_object_unref(component);
+    return ok;
+}
 static int outer_window(char id[32],Window *window) {
     const char *path=getenv("NEXAUI_TEST_WESTON_LOG");FILE *file=path?fopen(path,"r"):NULL;if(!file)return 0;
     char line[1024];unsigned count=0;
@@ -174,6 +189,55 @@ static int capture(Display *display,Window window,unsigned long rgb,const char *
         XDestroyImage(image);pump();
     }
     fprintf(stderr,"Content screen rectangle mismatch: %s\n",name);return 0;
+}
+static int pdf_zoom_pixels(Display *display,Window window,int patch_x,const char *name) {
+    for (unsigned i=0;i<100;++i) {
+        XImage *image=XGetImage(display,window,content_left-1,content_top,450,208,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        unsigned long outside=XGetPixel(image,0,124)&0xffffffu;
+        int ok=outside!=0x0000ffu&&outside!=0x00ff00u;
+        for (int y=2;ok&&y<206;++y)
+            for (int x=2;ok&&x<446;++x) {
+                unsigned long expected=x>=patch_x&&x<patch_x+168&&y>=104&&y<182?0x00ff00u:0x0000ffu;
+                ok=(XGetPixel(image,x+1,y)&0xffffffu)==expected;
+            }
+        if (ok) ok=save_ppm(image,1,0,448,208,name);
+        XDestroyImage(image);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int pdf_zoom_highlight(Display *display,Window window,const char *name) {
+    for (unsigned i=0;i<100;++i) {
+        XImage *image=XGetImage(display,window,content_left,content_top,448,208,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        int ok=(XGetPixel(image,74,35)&0xffffffu)!=0x0000ffu &&
+            (XGetPixel(image,38,35)&0xffffffu)==0x0000ffu;
+        if (ok) ok=save_ppm(image,0,0,448,208,name);
+        XDestroyImage(image);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int pdf_zoom_word(AtspiAccessible *node,int offset,int expected_x,int width) {
+    AtspiText *text=node?atspi_accessible_get_text_iface(node):NULL;
+    if (!text) return 0;
+    int ok=0;
+    for (unsigned i=0;i<100&&!ok;++i) {
+        GError *error=NULL;
+        AtspiRect *rect=atspi_text_get_character_extents(text,offset,ATSPI_COORD_TYPE_WINDOW,&error);
+        ok=expected_x<0 ? error!=NULL :
+            !error&&rect&&abs(rect->x-expected_x)<=1&&rect->y==151&&abs(rect->width-width)<=1&&rect->height==45;
+        g_free(rect);
+        g_clear_error(&error);
+        if (!ok) pump();
+    }
+    g_object_unref(text);
+    return ok;
 }
 static int host_marker(FILE *log,const char *marker);
 static int input_chrome(Display *display,const char *window,const char *name) {
@@ -422,6 +486,7 @@ int main(int argc,char **argv) {
     int links=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER");
     int selection=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
     int url_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_URL");
+    int zoom_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_ZOOM");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
@@ -543,6 +608,32 @@ int main(int argc,char **argv) {
     CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
         pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
+    if (zoom_case) {
+        CHECK((back=find(app,"PDF link to page 1",0))&&pdf_link_bounds(back));
+        CHECK(press(app,"Zoom in")&&pdf_zoom_pixels(display,outer,224,"pdf-zoom-center"));
+        CHECK(pdf_zoom_link(back,408,56)&&pdf_zoom_word(second_text,0,16,43));
+        CHECK(focus(app,viewport)&&drive("key","Right")&&pdf_zoom_pixels(display,outer,176,"pdf-zoom-key-pan"));
+        CHECK(pdf_zoom_link(back,360,104)&&pdf_zoom_word(second_text,0,-1,0));
+        CHECK(point_at(id,252,120)&&drive("mousedown","2")&&point_at(id,292,120)&&drive("mouseup","2")&&
+            drive("park",NULL)&&pdf_zoom_pixels(display,outer,216,"pdf-zoom-pointer-pan"));
+        CHECK(pdf_zoom_link(back,400,64)&&pdf_zoom_word(second_text,5,64,107));
+        CHECK(focus(app,"Find in PDF")&&pdf_find_text(app,"page")&&observe(app,"1 match on page",0)&&
+            pdf_zoom_highlight(display,outer,"pdf-zoom-search"));
+        CHECK(drive("key","ctrl+a")&&drive("key","BackSpace")&&pdf_zoom_pixels(display,outer,216,"pdf-zoom-clear"));
+        CHECK(press(app,"Select text")&&observe(app,"PDF text selection",1));
+        CHECK((selected=find(app,"PDF text selection",0))&&(selection_text=atspi_accessible_get_text_iface(selected)));
+        CHECK(point_at(id,74,35)&&drive("click","1")&&pdf_selection_is(selection_text,"page",5,9)&&
+            pdf_zoom_highlight(display,outer,"pdf-zoom-selection"));
+        CHECK(drive("park",NULL)&&drive("key","Escape")&&observe(app,"PDF page text",0));
+        CHECK(press(app,"Scale 2x")&&observe(app,"Waiting for scaled frame.",0)&&state(back,ATSPI_STATE_DEFUNCT));
+        CHECK(press(app,"Publish frame")&&observe(app,"PDF page 2 of 2 at 2x.",0));
+        CHECK(pdf_zoom_pixels(display,outer,216,"pdf-zoom-backing"));
+        CHECK((scaled_text=pdf_text(app,"Grün page two\n\n"))&&pdf_zoom_word(scaled_text,5,64,107));
+        CHECK(press(app,"Fit page")&&capture(display,outer,blue,"pdf-page2-scaled"));
+        CHECK(pdf_word_geometry(scaled_text,72,4,145)&&focus(app,"Close")&&drive("key","Return"));
+        puts("PDF_ZOOM verified: clipped bitmap and geometry, keyboard and mouse pan, search/selection and backing scale");
+        goto closed;
+    }
     if (compose) {
         CHECK(drive("key","ctrl+f")&&observe(app,"Find in PDF",1)&&pdf_find_text(app,""));
         for (unsigned i=0;i<200&&!pdf_find_value(app,"");++i) pump();
