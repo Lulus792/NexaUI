@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 static unsigned destination(PopplerDocument *document, const PopplerAction *action) {
@@ -20,6 +21,21 @@ static unsigned destination(PopplerDocument *document, const PopplerAction *acti
     return page > 0 ? (unsigned)page : 0;
 }
 
+static int web_address(const PopplerAction *action, char out[CONTENT_PDF_URI_LIMIT+1u]) {
+    if (!action || action->type!=POPPLER_ACTION_URI || !action->uri.uri) return 0;
+    const char *address=action->uri.uri;
+    size_t length=strnlen(address,CONTENT_PDF_URI_LIMIT+1u);
+    if (!length || length>CONTENT_PDF_URI_LIMIT) return 0;
+    memcpy(out,address,length+1u);
+    if (!content_pdf_web_uri(out)) return 0;
+    GUri *uri=g_uri_parse(address,G_URI_FLAGS_NONE,NULL);
+    if (!uri) return 0;
+    const char *host=g_uri_get_host(uri);
+    int ok=host&&*host&&!g_uri_get_userinfo(uri);
+    g_uri_unref(uri);
+    return ok;
+}
+
 static int emit_links(PopplerDocument *document, unsigned page_number) {
     unsigned pages = (unsigned)poppler_document_get_n_pages(document);
     if (page_number > pages) return 1;
@@ -30,15 +46,23 @@ static int emit_links(PopplerDocument *document, unsigned page_number) {
     GList *mappings = poppler_page_get_link_mapping(page);
     for (const GList *item = g_list_last(mappings); item; item = item->prev) {
         const PopplerLinkMapping *mapping = item->data;
+        pdf_link_area area={0};
         unsigned target = destination(document,mapping->action);
-        if (!target || target > pages || target == page_number) continue;
+        if (target) {
+            if (target>pages||target==page_number) continue;
+            area.target_page=target;
+        } else if (!web_address(mapping->action,area.uri)) continue;
         PopplerRectangle box = mapping->area;
         if (!isfinite(box.x1)||!isfinite(box.x2)||!isfinite(box.y1)||!isfinite(box.y2)) continue;
         double left = fmax(0,box.x1), right = fmin(packet.width,box.x2);
         double top = fmax(0,packet.height-box.y2), bottom = fmin(packet.height,packet.height-box.y1);
         if (!(right > left && bottom > top)) continue;
         if (packet.count == CONTENT_PDF_LINK_LIMIT) break;
-        packet.links[packet.count++] = (pdf_link_area){left,top,right-left,bottom-top,target};
+        area.x=left;
+        area.y=top;
+        area.width=right-left;
+        area.height=bottom-top;
+        packet.links[packet.count++]=area;
     }
     poppler_page_free_link_mapping(mappings);
     g_object_unref(page);

@@ -27,9 +27,14 @@ typedef struct native_pdf_index_result {
     uint64_t generation;
     content_pdf_index *index;
 } native_pdf_index_result;
+typedef struct native_uri_result {
+    uint64_t ticket;
+    nx_result result;
+} native_uri_result;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
+    const char *uri_launcher;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
     pthread_t thread;
@@ -41,6 +46,10 @@ typedef struct native_worker {
     int pdf_file;
     uint64_t pdf_generation, indexed_generation;
     native_pdf_index_result pdf_index;
+    uint64_t uri_ticket;
+    int uri_working;
+    char uri[CONTENT_PDF_URI_LIMIT+1u];
+    native_uri_result uri_result;
     _Atomic unsigned disposals;
 } native_worker;
 typedef struct native_worker_state {
@@ -181,8 +190,26 @@ static void *native_worker_entry(void *user) {
     native_worker *worker = user;
     for (;;) {
         pthread_mutex_lock(&worker->mutex);
-        while (!worker->stop && !worker->pending) pthread_cond_wait(&worker->condition, &worker->mutex);
+        while (!worker->stop && !worker->pending && !worker->uri_ticket) pthread_cond_wait(&worker->condition, &worker->mutex);
         if (worker->stop) { pthread_mutex_unlock(&worker->mutex); break; }
+        if (!worker->pending && worker->uri_ticket) {
+            char address[CONTENT_PDF_URI_LIMIT+1u];
+            memcpy(address,worker->uri,sizeof(address));
+            uint64_t ticket=worker->uri_ticket;
+            worker->uri_ticket=0;
+            worker->uri_working=1;
+            pthread_mutex_unlock(&worker->mutex);
+            nx_result opened=NX_ERROR_UNSUPPORTED;
+#ifdef CONTENT_NATIVE_PDF
+            opened=content_pdf_open_uri(worker->uri_launcher,address);
+#endif
+            pthread_mutex_lock(&worker->mutex);
+            worker->uri_result=(native_uri_result){ticket,opened};
+            worker->uri_working=0;
+            pthread_mutex_unlock(&worker->mutex);
+            native_wake(worker);
+            continue;
+        }
         native_job job = worker->job;
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
@@ -250,12 +277,14 @@ static int native_worker_close(native_worker *worker) {
     return result;
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
-    const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader) {
+    const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader,
+    const char *uri_launcher) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
     worker->encoded_dir = encoded_dir; worker->pdf_renderer = pdf_renderer; worker->pdf_reader = pdf_reader;
     worker->pdf_link_reader = pdf_link_reader;
+    worker->uri_launcher = uri_launcher;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;
@@ -290,6 +319,27 @@ static int native_schedule(native_worker *worker, native_job job) {
     }
     pthread_mutex_unlock(&worker->mutex);
     return accepted;
+}
+static int native_schedule_uri(native_worker *worker, uint64_t ticket,
+    const char uri[CONTENT_PDF_URI_LIMIT+1u]) {
+    if (!worker->uri_launcher || !ticket || !content_pdf_web_uri(uri)) return 0;
+    pthread_mutex_lock(&worker->mutex);
+    int accepted=!worker->stop && !worker->uri_ticket && !worker->uri_working;
+    if (accepted) {
+        memcpy(worker->uri,uri,sizeof(worker->uri));
+        worker->uri_ticket=ticket;
+        pthread_cond_signal(&worker->condition);
+    }
+    pthread_mutex_unlock(&worker->mutex);
+    return accepted;
+}
+
+static native_uri_result native_take_uri_result(native_worker *worker) {
+    pthread_mutex_lock(&worker->mutex);
+    native_uri_result result=worker->uri_result;
+    worker->uri_result=(native_uri_result){0};
+    pthread_mutex_unlock(&worker->mutex);
+    return result;
 }
 static void native_release(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex); worker->allowed = 1;

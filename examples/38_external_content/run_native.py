@@ -38,7 +38,7 @@ def write_pdf_fixtures(directory, include_links=False):
         objects = [b'<< /Type /Catalog /Pages 2 0 R' + names + b' >>',
                    f'<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>'.encode()]
         for i, drawing in enumerate(pages):
-            annots = ((' /Annots [8 0 R 10 0 R]' if i == 0 else ' /Annots [9 0 R]')
+            annots = ((' /Annots [8 0 R 10 0 R 11 0 R 12 0 R 13 0 R]' if i == 0 else ' /Annots [9 0 R]')
                       if annotated else '')
             objects.append(
                 f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 112 52] '
@@ -50,7 +50,10 @@ def write_pdf_fixtures(directory, include_links=False):
             objects.extend((base + b' /A << /S /GoTo /D [5 0 R /Fit] >> >>',
                             base + b' /Dest (first-page) >>',
                             b'<< /Type /Annot /Subtype /Link /Rect [5 18 22 30] /Border [0 0 0]'
-                            b' /A << /S /URI /URI (https://example.invalid/) >> >>'))
+                            b' /A << /S /URI /URI (https://example.invalid/docs?x=1&y=two%20words#part) >> >>',
+                            base + b' /A << /S /URI /URI (file:///tmp/example) >> >>',
+                            base + b' /A << /S /URI /URI (javascript:ignored) >> >>',
+                            base + b' /A << /S /URI /URI (https://user@example.invalid/) >> >>'))
         result = bytearray(b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')
         offsets = []
         for i, obj in enumerate(objects, 1):
@@ -88,7 +91,8 @@ def main():
     parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
     parser.add_argument('--pdf-link-reader', type=Path, help='Optional content_pdf_link_reader path')
     parser.add_argument('--pdf-select', action='store_true', help='Exercise PDF text selection and copy')
-    parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for --pdf-select')
+    parser.add_argument('--pdf-external', action='store_true', help='Exercise the PDF link preview and local handoff')
+    parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
     if args.case == 'pdf' and not args.pdf_renderer:
@@ -97,6 +101,8 @@ def main():
         parser.error('--pdf-link-reader requires --case pdf')
     if args.pdf_select and args.case != 'pdf':
         parser.error('--pdf-select requires --case pdf')
+    if args.pdf_external and (args.case != 'pdf' or not args.pdf_link_reader or args.pdf_select):
+        parser.error('--pdf-external requires --case pdf and --pdf-link-reader and runs separately from --pdf-select')
     if args.pdf_compose and (args.case != 'pdf' or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('--pdf-compose requires --case pdf and a private Weston helper directory')
     for key in ('build_dir', 'font', 'registry'):
@@ -112,12 +118,17 @@ def main():
                NEXAUI_CONTENT_TEST_FONT=str(args.font), NEXAUI_CONTENT_TEST_CASE=args.case,
                NEXAUI_CONTENT_TEST_XDOTOOL=xdotool,
                NEXAUI_CONTENT_CAPTURE_PREFIX=str(args.work_dir / 'content-'))
-    if args.pdf_select:
+    if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:
-            parser.error('--pdf-select needs wl-paste or --clipboard-reader')
-        env.update(NEXAUI_CONTENT_TEST_PDF_SELECT='1',
-                   NEXAUI_CONTENT_TEST_CLIPBOARD_READER=str(Path(reader).resolve(strict=True)))
+            parser.error('PDF copy cases need wl-paste or --clipboard-reader')
+        env['NEXAUI_CONTENT_TEST_CLIPBOARD_READER'] = str(Path(reader).resolve(strict=True))
+        if args.pdf_select:
+            env['NEXAUI_CONTENT_TEST_PDF_SELECT'] = '1'
+        if args.pdf_external:
+            env.update(NEXAUI_CONTENT_TEST_PDF_URL='1',
+                       NEXAUI_CONTENT_TEST_URI_LAUNCHER=str(args.build_dir / 'content_atspi_peer'),
+                       NEXAUI_CONTENT_TEST_URI_RECEIPT=str(args.work_dir / 'uri-receipt.txt'))
     command = ['xvfb-run', '-a', '-s', '-screen 0 1600x1200x24', sys.executable,
                str(repo / 'tests/run_weston_native.py'), '--work-dir', str(args.work_dir),
                '--timeout', '60', '--', sys.executable, str(repo / 'tests/run_atspi_native.py'),

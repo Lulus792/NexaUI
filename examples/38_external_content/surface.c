@@ -75,7 +75,8 @@ static int valid_links(const uint8_t *links, size_t count) {
     for (size_t i = 0; i < count; ++i) {
         content_frame_link link;
         memcpy(&link,links + i * sizeof(link),sizeof(link));
-        if (!link.target_page || !unit_bounds(link.bounds)) return 0;
+        if (!unit_bounds(link.bounds) ||
+            (link.target_page ? link.uri[0]!=0 : !content_pdf_web_uri(link.uri))) return 0;
     }
     return 1;
 }

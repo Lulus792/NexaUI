@@ -41,7 +41,8 @@ static int text_probe(const char *output) {
 static int link_probe(void) {
     int mode=getchar();
     pdf_link_packet packet={.format=CONTENT_PDF_LINK_FORMAT,.source_page=1,.page_count=2,
-        .count=1,.width=16,.height=8,.links={{2,2,4,4,mode=='x'?3u:2u}}};
+        .count=1,.width=16,.height=8,
+        .links={{.x=2,.y=2,.width=4,.height=4,.target_page=mode=='x'?3u:2u}}};
     size_t bytes=offsetof(pdf_link_packet,links)+sizeof(pdf_link_area);
     return fwrite(&packet,1,bytes,stdout)!=bytes;
 }
@@ -159,6 +160,12 @@ int main(int argc, char **argv) {
     if (argc == 12 && !strcmp(argv[1], "-f")) return text_probe(argv[9]);
     if (argc == 11 && !strcmp(argv[4], "257")) return index_probe();
     if (argc != 1) return 2;
+    const char good[CONTENT_PDF_URI_LIMIT+1u]="https://example.invalid/?a=b%20c#d";
+    const char file[CONTENT_PDF_URI_LIMIT+1u]="file:///tmp/example";
+    const char user[CONTENT_PDF_URI_LIMIT+1u]="https://user@example.invalid/";
+    const char escaped[CONTENT_PDF_URI_LIMIT+1u]="https://example%2einvalid/";
+    if (!content_pdf_web_uri(good) || content_pdf_web_uri(file) ||
+        content_pdf_web_uri(user) || content_pdf_web_uri(escaped)) return 1;
     if (!probe(argv[0], 's', NX_ERROR_PLATFORM) || !probe(argv[0], 'o', NX_ERROR_LIMIT) ||
         !probe(argv[0], 'b', NX_ERROR_ARGUMENT) || !probe_words(argv[0],'g',2,0) ||
         !probe_words(argv[0],'m',0,0) || !probe_words(argv[0],'g',2,1) ||

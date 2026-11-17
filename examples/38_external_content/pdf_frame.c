@@ -254,7 +254,9 @@ static void attach_links(const char *reader, int document, unsigned page, uint8_
     content_frame_link links[CONTENT_PDF_LINK_LIMIT];
     for (size_t i=0;i<packet.count;++i) {
         pdf_link_area area=packet.links[i];
-        if (!area.target_page || area.target_page>packet.page_count || area.target_page==page ||
+        if ((area.target_page ?
+            area.target_page>packet.page_count || area.target_page==page || area.uri[0]!=0 :
+            !content_pdf_web_uri(area.uri)) ||
             !(area.x>=0 && area.y>=0 && area.width>0 && area.height>0 &&
               area.x+area.width<=packet.width+1e-6 && area.y+area.height<=packet.height+1e-6)) return;
         nx_rect bounds = {
@@ -264,7 +266,8 @@ static void attach_links(const char *reader, int document, unsigned page, uint8_
             (float)(area.height*scale_y/header.request.height)};
         if (!(bounds.width>0 && bounds.height>0 &&
               bounds.x+bounds.width<=1 && bounds.y+bounds.height<=1)) return;
-        links[i]=(content_frame_link){bounds,area.target_page};
+        links[i]=(content_frame_link){.bounds=bounds,.target_page=area.target_page};
+        if (!area.target_page) memcpy(links[i].uri,area.uri,strlen(area.uri)+1u);
     }
     size_t link_bytes=packet.count*sizeof(*links);
     uint8_t *extended=realloc(*frame,*frame_size+link_bytes);
@@ -330,6 +333,18 @@ nx_result content_pdf_render_with_links(const char *renderer, const char *reader
 nx_result content_pdf_render(const char *renderer, const char *reader, int file, unsigned page,
     content_request request, uint64_t sequence, void **out, size_t *out_size) {
     return content_pdf_render_with_links(renderer,reader,NULL,file,page,request,sequence,out,out_size);
+}
+
+nx_result content_pdf_open_uri(const char *launcher, const char uri[CONTENT_PDF_URI_LIMIT+1u]) {
+    if (!launcher || *launcher!='/' || !uri || !content_pdf_web_uri(uri)) return NX_ERROR_ARGUMENT;
+    int input=open("/dev/null",O_RDONLY|O_CLOEXEC);
+    if (input<0) return NX_ERROR_PLATFORM;
+    uint8_t output[4097];
+    size_t bytes=0;
+    char *argv[]={(char *)launcher,(char *)uri,NULL};
+    nx_result result=run_tool(launcher,argv,input,output,sizeof(output)-1u,&bytes);
+    close(input);
+    return result;
 }
 
 static nx_result make_frame(const char *renderer, const char *reader, const char *document, unsigned page,

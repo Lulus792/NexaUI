@@ -15,6 +15,7 @@ typedef struct content_frame_word {
 typedef struct content_frame_link {
     nx_rect bounds; /* Normalized to the entire image, including margins. */
     uint32_t target_page;
+    char uri[CONTENT_PDF_URI_LIMIT+1u];
 } content_frame_link;
 /* In-process owned snapshot layout. The header is followed by height*stride
    bytes of straight-alpha RGBA8, then optional UTF-8 text and unaligned

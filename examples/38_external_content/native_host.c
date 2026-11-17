@@ -56,18 +56,22 @@ static nx_result label(nx_context *context, const nx_font_collection *fonts,
     }
     nx_text_layout_destroy(layout); return result;
 }
-static nx_result button(nx_context *context, const nx_font_collection *fonts, uint64_t id,
+static nx_result scoped_button(nx_context *context, const nx_font_collection *fonts, uint64_t id, uint64_t parent,
     const char *text, float x, float y, float width, int enabled, unsigned *action) {
     nx_text_layout *layout = NULL;
     nx_result result = nx_text_layout_create(fonts, text, strlen(text), NX_BIDI_AUTO, 14, width - 12, &layout);
     if (result == NX_OK) {
-        nx_control_desc desc = {.id=id,.parent_id=1,.bounds={x,y,width,32},.name={text,strlen(text)},
+        nx_control_desc desc = {.id=id,.parent_id=parent,.bounds={x,y,width,32},.name={text,strlen(text)},
             .label_layout=layout,.label_origin={x+6,y+8},.glyph_cache_bytes=65536,.disabled=!enabled};
         nx_interaction_state state;
         result = nx_button(context, &desc, &state);
         if (result == NX_OK && state.clicked && enabled) *action = (unsigned)id;
     }
     nx_text_layout_destroy(layout); return result;
+}
+static nx_result button(nx_context *context, const nx_font_collection *fonts, uint64_t id,
+    const char *text, float x, float y, float width, int enabled, unsigned *action) {
+    return scoped_button(context,fonts,id,1,text,x,y,width,enabled,action);
 }
 static nx_result input_hint(nx_context *context,const nx_font_collection *fonts) {
     return label(context,fonts,3,"Physical input fixture; exit: Ctrl+Shift+F12",(nx_rect){16,122,448,14},11);
@@ -117,7 +121,8 @@ static nx_result pdf_text_semantics(nx_context *context, content_surface *surfac
 }
 
 static nx_result pdf_link_widgets(nx_context *context, content_surface *surface,
-    const nx_viewport_desc *viewport, uint64_t frame_identity, int enabled, unsigned *destination) {
+    const nx_viewport_desc *viewport, uint64_t frame_identity, int enabled, unsigned *destination,
+    char address[CONTENT_PDF_URI_LIMIT+1u]) {
     const content_frame_link *links;
     size_t count;
     nx_result result = content_surface_get_links(surface,&links,&count);
@@ -126,17 +131,22 @@ static nx_result pdf_link_widgets(nx_context *context, content_surface *surface,
     uint64_t first_id=1024u+frame_identity*CONTENT_PDF_LINK_LIMIT;
     for (size_t i=0;i<count;++i) {
         char title[64];
-        snprintf(title,sizeof(title),"PDF link to page %u",links[i].target_page);
+        if (links[i].target_page) snprintf(title,sizeof(title),"PDF link to page %u",links[i].target_page);
+        else snprintf(title,sizeof(title),"External PDF link");
         nx_rect bounds=word_bounds(viewport->bounds,links[i].bounds);
         nx_widget_desc widget = {
             .semantic={.id=first_id+i,.parent_id=viewport->id,.role=NX_ROLE_BUTTON,
                 .bounds=bounds,.name={title,strlen(title)},.state=enabled?0:NX_SEM_DISABLED,
+                .description={links[i].uri,strlen(links[i].uri)},
                 .actions=NX_ACTION_FOCUS|NX_ACTION_PRESS},
             .flags=NX_WIDGET_INTERACTIVE|NX_WIDGET_FOCUSABLE};
         nx_interaction_state state;
         result=nx_widget_register(context,&widget,&state);
         if (result != NX_OK) return result;
-        if (enabled && state.clicked) *destination=links[i].target_page;
+        if (enabled && state.clicked) {
+            *destination=links[i].target_page;
+            memcpy(address,links[i].uri,sizeof(links[i].uri));
+        }
         if (enabled && (state.focused || state.hovered)) {
             result=nx_stroke_rect(context,bounds,2,(nx_color){0,0,0,1});
             if (result==NX_OK) result=nx_stroke_rect(context,bounds,1,(nx_color){1,1,1,1});
@@ -144,6 +154,85 @@ static nx_result pdf_link_widgets(nx_context *context, content_surface *surface,
         }
     }
     return NX_OK;
+}
+
+enum { PDF_URL_DIALOG=40, PDF_URL_BACKDROP, PDF_URL_ADDRESS, PDF_URL_STATUS,
+    PDF_URL_OPEN, PDF_URL_COPY, PDF_URL_CLOSE };
+typedef struct pdf_url_view {
+    uint64_t identity, ticket;
+    char uri[CONTENT_PDF_URI_LIMIT+1u];
+    const char *status;
+} pdf_url_view;
+
+static nx_result pdf_url_dialog(nx_context *context, const nx_font_collection *fonts,
+    float width, float height, const pdf_url_view *preview, int can_open, unsigned *action) {
+    if (width<320 || height<128) { *action=PDF_URL_CLOSE; return NX_OK; }
+    float w=width<456?width-24:432;
+    size_t length=strlen(preview->uri);
+    nx_text_layout *url=NULL;
+    nx_result result=nx_text_layout_create(fonts,preview->uri,length,NX_BIDI_LTR,11,w-32,&url);
+    if (result!=NX_OK) return result;
+    if (nx_text_layout_width(url)>w-32) {
+        /* Force wraps for unbreakable runs. Keep percent escapes together. */
+        char wrapped[CONTENT_PDF_URI_LIMIT+16u];
+        size_t columns=(size_t)((w-32)/10), bytes=0, offset=0;
+        while (offset<length) {
+            size_t end=offset+columns;
+            if (end<length) {
+                if (preview->uri[end-1u]=='%') --end;
+                else if (preview->uri[end-2u]=='%') end-=2u;
+            } else end=length;
+            if (offset) wrapped[bytes++]='\n';
+            memcpy(wrapped+bytes,preview->uri+offset,end-offset);
+            bytes+=end-offset;
+            offset=end;
+        }
+        nx_text_layout_destroy(url);
+        url=NULL;
+        result=nx_text_layout_create(fonts,wrapped,bytes,NX_BIDI_LTR,11,w-32,&url);
+        if (result!=NX_OK) return result;
+    }
+    float address_height=(float)nx_text_layout_height(url);
+    float panel_height=address_height+101;
+    if (panel_height>height-16 || nx_text_layout_width(url)>w-32) {
+        nx_text_layout_destroy(url);
+        *action=PDF_URL_CLOSE;
+        return NX_OK;
+    }
+    nx_rect panel={(width-w)/2,(height-panel_height)/2,w,panel_height};
+    float x=panel.x+16,y=panel.y;
+    static const char title[]="External link address";
+    nx_overlay_desc overlay={.panel={.id=PDF_URL_DIALOG,.parent_id=1,.bounds=panel,
+        .name={title,sizeof(title)-1u}},.backdrop_id=PDF_URL_BACKDROP,.dismiss_on_escape=1};
+    int dismissed=0;
+    result=nx_modal_begin(context,&overlay,&dismissed);
+    if (result!=NX_OK) { nx_text_layout_destroy(url);return result; }
+    result=nx_fill_round_rect(context,panel,8,(nx_color){.97f,.98f,1,1});
+    if (result==NX_OK) result=label(context,fonts,0,title,(nx_rect){x,y+12,w-32,22},16);
+    nx_rect address={x,y+36,w-32,address_height};
+    nx_semantic_desc text={.id=PDF_URL_ADDRESS,.parent_id=PDF_URL_DIALOG,.role=NX_ROLE_TEXT,
+        .bounds=address,.name={preview->uri,length},.state=NX_SEM_READONLY};
+    if (result==NX_OK) result=nx_semantics_add(context,&text,NULL);
+    if (result==NX_OK) result=nx_draw_text_layout(context,url,(nx_point){address.x,address.y},
+        (nx_color){.05f,.07f,.1f,1},65536);
+    nx_text_layout_destroy(url);
+    if (result==NX_OK && preview->status) {
+        nx_rect bounds={x,y+address_height+42,w-32,16};
+        nx_semantic_desc status={.id=PDF_URL_STATUS,.parent_id=PDF_URL_DIALOG,.role=NX_ROLE_STATUS,
+            .bounds=bounds,.name={preview->status,strlen(preview->status)}};
+        result=nx_semantics_add(context,&status,NULL);
+        if (result==NX_OK) result=label(context,fonts,0,preview->status,bounds,12);
+    }
+    float step=(w-32)/3, buttons_y=y+address_height+59;
+    if (result==NX_OK) result=scoped_button(context,fonts,PDF_URL_COPY,PDF_URL_DIALOG,
+        "Copy address",x,buttons_y,step-4,1,action);
+    if (result==NX_OK) result=scoped_button(context,fonts,PDF_URL_OPEN,PDF_URL_DIALOG,
+        "Open link",x+step,buttons_y,step-4,can_open&&!preview->ticket,action);
+    if (result==NX_OK) result=scoped_button(context,fonts,PDF_URL_CLOSE,PDF_URL_DIALOG,
+        "Close preview",x+2*step,buttons_y,step,1,action);
+    nx_result ended=nx_overlay_end(context);
+    if (dismissed) *action=PDF_URL_CLOSE;
+    return result==NX_OK?ended:result;
 }
 
 enum { PDF_FIND_FIELD = 32, PDF_NEXT_HIT = 34 };
@@ -295,8 +384,10 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
     nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case,
     pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
-    unsigned *linked_page, pdf_selection *selection, int *redraw) {
+    unsigned *linked_page, pdf_selection *selection, int *redraw,
+    char link_address[CONTENT_PDF_URI_LIMIT+1u], pdf_url_view *preview, int can_open_url) {
     *action = 0; *leased = 0; *linked_page=0;
+    link_address[0]=0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
     nx_semantic_desc root = {.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
         .name={"External CPU content fixture",28}};
@@ -361,7 +452,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         (nx_color){227.0f/255.0f,231.0f/255.0f,239.0f/255.0f,1}) != NX_OK) return 0;
     if (search && pdf_find_results(context,fonts,query,*leased?surface:NULL,desc.bounds)!=NX_OK) return 0;
     if (pdf_case && *leased && pdf_link_widgets(context,surface,&desc,text_view->identity,
-        pdf_can_navigate(phase)&&!selection->active,linked_page)!=NX_OK) return 0;
+        pdf_can_navigate(phase)&&!selection->active,linked_page,link_address)!=NX_OK) return 0;
     if (focus) {
         uint64_t id = phase==WAITING?10u:phase==REPLACED?11u:
             phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT?12u:
@@ -371,6 +462,10 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         if (hit_page&&*leased) id=100u;
         if (nx_focus_id(context)!=PDF_FIND_FIELD && nx_focus_set(context,id)!=NX_OK) return 0;
     }
+    if (preview->uri[0] && (!*leased || preview->identity!=text_view->identity))
+        *preview=(pdf_url_view){0};
+    if (preview->uri[0] && pdf_url_dialog(context,fonts,info.width,info.height,preview,can_open_url,action)!=NX_OK)
+        return 0;
     return nx_end_frame(context)==NX_OK;
 }
 
@@ -389,6 +484,8 @@ int main(void) {
     const char *pdf_renderer=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_RENDERER"):NULL;
     const char *pdf_reader=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_READER"):NULL;
     const char *pdf_link_reader=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER"):NULL;
+    const char *uri_launcher=pdf_case?getenv("NEXAUI_CONTENT_TEST_URI_LAUNCHER"):NULL;
+    int pdf_url_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_URL");
 #ifndef CONTENT_NATIVE_PNG
     if (png_case) return 2;
 #endif
@@ -411,6 +508,9 @@ int main(void) {
     pdf_document_view document={0};
     pdf_text_view text_view={0};
     pdf_selection selection={0};
+    pdf_url_view preview={0};
+    uint64_t uri_serial=0;
+    char link_address[CONTENT_PDF_URI_LIMIT+1u];
     nx_text_field *query=NULL;
     int logged_preedit=0,find_pressed=0;
     uint64_t logged_generation=0,logged_resize=0,logged_sequence=0;
@@ -421,7 +521,7 @@ int main(void) {
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
         (pdf_case&&nx_text_field_create("",0,4096,&query)!=NX_OK)||
         nx_software_view_open(window,&software)!=NX_OK||
-        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader)) goto done;
+        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     for (;;) {
@@ -465,6 +565,14 @@ int main(void) {
             if (count<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK) goto done;
         }
         native_worker_state state=native_state(&worker);
+        if (uri_launcher) {
+            native_uri_result released=native_take_uri_result(&worker);
+            if (released.ticket && released.ticket==preview.ticket) {
+                preview.ticket=0;
+                preview.status=released.result==NX_OK?"Link handed off":"Open unavailable";
+                need_frame=1;
+            }
+        }
 #ifdef CONTENT_NATIVE_PDF
         if (pdf_case) {
             native_pdf_index_result available = native_take_pdf_index(&worker);
@@ -501,17 +609,18 @@ int main(void) {
         if (info.should_close) { result=0; break; }
         if (!need_frame&&!routed&&!ready) continue;
         need_frame=0;
+        int had_preview=preview.uri[0]!=0;
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
         if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
             &content_result,&leased,input_case,input_phase,png_case,pdf_case,&text_view,window,query,&document,
-            &linked_page,&selection,&need_frame)) goto done;
+            &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL)) goto done;
         int search_focused=nx_focus_id(context)==PDF_FIND_FIELD;
-        if (find_visible(query,drawn,info.width)) {
+        if (!had_preview&&!preview.uri[0]&&find_visible(query,drawn,info.width)) {
             if (pdf_find_shortcut(context,leased,&find_pressed,&need_frame)!=NX_OK) goto done;
         } else find_pressed=0;
         if (phase!=last_phase) need_frame=1;
         last_phase=drawn;
-        if (!search_focused&&nx_key_pressed(context,NX_KEY_ESCAPE)) {
+        if (!had_preview&&!preview.uri[0]&&!search_focused&&nx_key_pressed(context,NX_KEY_ESCAPE)) {
             if (!selection.active || nx_focus_id(context)!=PDF_TEXT_NODE) { result=0; break; }
             selection.active=selection.dragging=selection.take_focus=0;
             if (nx_focus_set(context,leased?100u:15u)!=NX_OK) goto done;
@@ -576,7 +685,30 @@ int main(void) {
             initial_job=1;
         }
         if (action==15) { result=0; break; }
-        if (action==PDF_SELECT_BUTTON) {
+        if (preview.uri[0]) {
+            if (action==PDF_URL_CLOSE) {
+                preview=(pdf_url_view){0};
+                nx_result closed=nx_overlay_close(context);
+                if (closed!=NX_OK&&closed!=NX_ERROR_STATE) goto done;
+                need_frame=1;
+            } else if (action==PDF_URL_COPY) {
+                nx_result copied=nx_window_clipboard_set_text(window,preview.uri,strlen(preview.uri));
+                preview.status=copied==NX_OK?"Address copied":"Copy unavailable";
+                need_frame=1;
+            } else if (action==PDF_URL_OPEN && !preview.ticket && uri_serial!=UINT64_MAX) {
+                if (native_schedule_uri(&worker,++uri_serial,preview.uri)) {
+                    preview.ticket=uri_serial;
+                    preview.status="Opening link";
+                } else preview.status="Open unavailable";
+                need_frame=1;
+            }
+            continue;
+        }
+        if (link_address[0]&&content_result==NX_OK) {
+            preview=(pdf_url_view){.identity=text_view.identity};
+            memcpy(preview.uri,link_address,sizeof(preview.uri));
+            need_frame=1;
+        } else if (action==PDF_SELECT_BUTTON) {
             selection.active=!selection.active;
             selection.take_focus=selection.active;
             selection.dragging=0;
@@ -665,12 +797,12 @@ done:
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
     unsigned expected=(!strcmp(test_case,"full")||input_case||png_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
-    if (pdf_case) expected=pdf_select_case?4u:pdf_link_reader?10u:8u;
-    unsigned published=expected-(unsigned)(png_case||pdf_case);
+    if (pdf_case) expected=pdf_url_case?2u:pdf_select_case?4u:pdf_link_reader?10u:8u;
+    unsigned published=expected-(unsigned)(png_case||(pdf_case&&!pdf_url_case));
     unsigned discarded=!strcmp(test_case,"pending-close")?1u:0u;
     if (!worker_ready||worker.completed!=expected||worker.publications!=published||worker.discarded!=discarded||
         atomic_load(&worker.disposals)!=published||((expected==5u)&&phase!=SCALED_READY)||
-        (pdf_case&&(pdf_select_case?(phase!=RECOVERED||document.page!=2u):
+        (pdf_case&&(pdf_url_case?(phase!=READY||document.page!=1u):pdf_select_case?(phase!=RECOVERED||document.page!=2u):
             (phase!=PDF_HIT_READY||document.page!=1u)))||
         (!strcmp(test_case,"rejected-close")&&phase!=OLD_REJECTED)||(!strcmp(test_case,"pending-close")&&phase!=WAITING)) result=1;
     if(input_case) {

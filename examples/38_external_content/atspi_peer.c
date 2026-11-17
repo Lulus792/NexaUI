@@ -77,15 +77,16 @@ static int dimensions(AtspiAccessible *node) {
     int yes=rect&&!error&&rect->x==16&&rect->y==136&&rect->width==448&&rect->height==208;
     g_free(rect);if(error)g_error_free(error);if(component)g_object_unref(component);return yes;
 }
-static int pdf_link_bounds(AtspiAccessible *node) {
+static int pdf_link_bounds_at(AtspiAccessible *node,int x,int width) {
     if (!node || atspi_accessible_get_role(node,NULL)!=ATSPI_ROLE_PUSH_BUTTON) return 0;
     AtspiComponent *component=atspi_accessible_get_component_iface(node);
     AtspiRect *rect=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
-    int ok=rect&&rect->x==352&&rect->y==224&&rect->width==84&&rect->height==48;
+    int ok=rect&&rect->x==x&&rect->y==224&&rect->width==width&&rect->height==48;
     g_free(rect);
     if (component) g_object_unref(component);
     return ok;
 }
+static int pdf_link_bounds(AtspiAccessible *node) { return pdf_link_bounds_at(node,352,84); }
 static int outer_window(char id[32],Window *window) {
     const char *path=getenv("NEXAUI_TEST_WESTON_LOG");FILE *file=path?fopen(path,"r"):NULL;if(!file)return 0;
     char line[1024];unsigned count=0;
@@ -381,23 +382,53 @@ static int clipboard_reads(const char *expected) {
     return ok;
 }
 
+static const char external_url[]="https://example.invalid/docs?x=1&y=two%20words#part";
+
+static int uri_received(const char *receipt, const char *uri) {
+    if (!receipt || strcmp(uri,external_url)) return 2;
+    FILE *file=fopen(receipt,"ab");
+    if (!file) return 1;
+    int ok=fprintf(file,"%s\n",uri)>0;
+    if (fclose(file)) ok=0;
+    return ok?0:1;
+}
+
+static int uri_receipt_is(const char *receipt, int written) {
+    if (!receipt) return 0;
+    FILE *file=fopen(receipt,"rb");
+    if (!written) {
+        if (file) { fclose(file);return 0; }
+        return errno==ENOENT;
+    }
+    if (!file) return 0;
+    char output[128];
+    size_t bytes=fread(output,1,sizeof(output),file);
+    int ok=bytes==sizeof(external_url)&&!memcmp(output,external_url,bytes-1u)&&output[bytes-1u]=='\n';
+    fclose(file);
+    return ok;
+}
+
 int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
+    const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
+    if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int png_case=!strcmp(test_case,"png");
     int pdf_case=!strcmp(test_case,"pdf");
     int compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
     int links=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER");
     int selection=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
+    int url_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_URL");
     const char *viewport=pdf_case?"PDF page image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
     AtspiAccessible *first_text=NULL,*second_text=NULL,*scaled_text=NULL,*returned_text=NULL,*hit_text=NULL;
     AtspiAccessible *old_link=NULL,*link=NULL,*back=NULL;
+    AtspiAccessible *external=NULL;
     AtspiAccessible *selected=NULL,*new_selected=NULL;
     AtspiText *selection_text=NULL,*new_text=NULL;
     AtspiEditableText *selection_edit=NULL;
@@ -432,7 +463,23 @@ int main(int argc,char **argv) {
     CHECK(capture(display,outer,blue,"fresh"));
     if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n"))&&pdf_word_geometry(first_text,120,6,195));
     if(links) CHECK((old_link=find(app,"PDF link to page 2",0))&&pdf_link_bounds(old_link)&&
-        atspi_accessible_get_child_count(retired,NULL)==2);
+        atspi_accessible_get_child_count(retired,NULL)==3);
+    if (url_case) {
+        CHECK((external=find(app,"External PDF link",0))&&pdf_link_bounds_at(external,36,68));
+        CHECK(focus(app,"External PDF link")&&drive("key","Return"));
+        CHECK(observe(app,"External link address",0)&&observe(app,external_url,0)&&uri_receipt_is(uri_receipt,0));
+        CHECK(!press(app,"Close"));
+        CHECK(drive("key","Escape")&&observe(app,"External PDF link",1)&&uri_receipt_is(uri_receipt,0));
+        CHECK(drive("key","Return")&&observe(app,"External link address",0)&&observe(app,external_url,0));
+        CHECK(input_chrome(display,id,"pdf-url-preview"));
+        CHECK(focus(app,"Copy address")&&drive("key","Return")&&observe(app,"Address copied",0));
+        CHECK(clipboard_reads(external_url)&&uri_receipt_is(uri_receipt,0));
+        CHECK(drive("windowfocus",id)&&press(app,"Open link")&&observe(app,"Link handed off",0));
+        CHECK(uri_receipt_is(uri_receipt,1)&&press(app,"Close preview")&&observe(app,"External PDF link",1));
+        puts("PDF_EXTERNAL_LINK verified: accessible URL, modal focus, clipboard, exact explicit handoff");
+        CHECK(focus(app,"Close")&&drive("key","Return"));
+        goto closed;
+    }
     CHECK(press(app,"Bad frame"));
     if(png_case||pdf_case) {
         CHECK(observe(app,pdf_case?"PDF rendering failed; page retained.":"PNG decoding failed; image retained.",0));
@@ -571,6 +618,7 @@ done:
     if(old_link)g_object_unref(old_link);
     if(link)g_object_unref(link);
     if(back)g_object_unref(back);
+    if(external)g_object_unref(external);
     if(selection_text)g_object_unref(selection_text);
     if(selection_edit)g_object_unref(selection_edit);
     if(new_text)g_object_unref(new_text);
