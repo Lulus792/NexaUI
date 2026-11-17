@@ -302,3 +302,49 @@ Local receipt `pdf-find406-final.json` lists the member hashes.
 Document-wide search, normalization and case folding, character-level
 geometry, links, selection and human screenreader acceptance remain open.
 This advances A05/D08/R06 in the standalone consumer.
+
+## PDF document search checkpoint, 2026-11-17
+
+Consumer `abf98a5ed33cc4bd6a76f897b833fd94b01e7041` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and Poppler 25.12.0-r1.
+The worker pins the open immutable document across render requests. It
+extracts the index after publishing the first page, with a three-second
+tool deadline and limits of 256 pages and 512 KiB of extracted UTF-8.
+The UI accepts ownership only for the active generation. It caches
+the case-sensitive results for the current query and page. Page search
+remains available if document indexing fails.
+
+The independent Wayland peer observes a real late index from generation 1
+being retired after replacement with generation 2. It checks the distinct
+per-page and document totals, follows `Grün` to page 2 by keyboard and
+wraps to `Résumé` on page 1 through AT-SPI. The keyboard jump focuses
+the accepted page. AT-SPI activation while the query field has focus
+keeps it ready for editing. The peer checks that the normal page
+controls can take focus and that highlights occupy the expected word
+bounds. Installed tests exercise an empty indexed page,
+invalid UTF-8, missing page delimiters and both limits. They read an
+already-open file after its original path was removed.
+
+All 50 installed CTests and 22 private Wayland runs passed on Alpine with
+Clang 22.1.3. The matrix includes static Release, shared Release, the
+default configuration and ASan/UBSan/LSan. Three native runs include
+Weston simple-IME. All three PDF profiles captured the same 2,130
+highlight pixels on page 2 after the jump and 3,570 on the return.
+
+A separate static Release probe counted matches in a synthetic index
+of 256 pages and 512 KiB on a Xeon W-2123 under WSL2. Over 32 samples
+per query, median thread CPU time was 2.69 ms for a one-byte query
+with 524,032 matches and 2.17 ms for a 128-byte query with no matches.
+The respective p95 times were 4.92 ms and 2.58 ms. The samples time
+counting an in-memory index. They exclude extraction, frame layout and
+presentation.
+
+Local archive `nexaui-pdf-document416.tar.gz` contains exact source,
+fixtures, logs, captures and the benchmark with its raw samples. Readback
+verified SHA-256 `e70e44989c4d73328e483c9626dd9d7bfc2593a1338035cd4a952274a4a06bce`.
+Local receipt `pdf-document416-final.json` lists the member hashes.
+
+Search uses literal UTF-8 and navigates between matching pages. Unicode
+normalization, case folding, navigation between occurrences on one page,
+links, selection and human screenreader acceptance remain open.
+This advances A05/D08/R06 in the standalone consumer.
