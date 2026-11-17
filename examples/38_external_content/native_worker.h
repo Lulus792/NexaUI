@@ -12,13 +12,16 @@
 #include "png_frame.h"
 #include <stdio.h>
 #endif
+#ifdef CONTENT_NATIVE_PDF
+#include "pdf_frame.h"
+#endif
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
 typedef struct native_job { content_request request; uint64_t sequence; unsigned kind; int held; } native_job;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
-    const char *png_dir;
+    const char *encoded_dir, *pdf_renderer;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
     pthread_t thread;
@@ -121,6 +124,16 @@ static nx_result native_png(const char *directory, native_job job, void **data, 
     return result;
 }
 #endif
+#ifdef CONTENT_NATIVE_PDF
+static nx_result native_pdf(const native_worker *worker, native_job job, void **data, size_t *bytes) {
+    const char *name = job.kind == 0 ? "old.pdf" : job.kind == 2 ? "bad.pdf" : "document.pdf";
+    char path[4096];
+    int written = snprintf(path, sizeof(path), "%s/%s", worker->encoded_dir, name);
+    if (written < 0 || (size_t)written >= sizeof(path)) return NX_ERROR_LIMIT;
+    unsigned page = job.kind == 3 || job.kind == 4 ? 2u : 1u;
+    return content_pdf_frame(worker->pdf_renderer, path, page, job.request, job.sequence, data, bytes);
+}
+#endif
 static void *native_worker_entry(void *user) {
     native_worker *worker = user;
     for (;;) {
@@ -133,8 +146,12 @@ static void *native_worker_entry(void *user) {
         size_t bytes = 0;
         void *data = NULL;
         nx_result result;
+#ifdef CONTENT_NATIVE_PDF
+        if (worker->pdf_renderer) result = native_pdf(worker, job, &data, &bytes);
+        else
+#endif
 #ifdef CONTENT_NATIVE_PNG
-        if (worker->png_dir) result = native_png(worker->png_dir, job, &data, &bytes);
+        if (worker->encoded_dir) result = native_png(worker->encoded_dir, job, &data, &bytes);
         else
 #endif
         {
@@ -182,9 +199,11 @@ static int native_worker_close(native_worker *worker) {
     if (worker->mutex_ready) { if (pthread_mutex_destroy(&worker->mutex)) result = -1; worker->mutex_ready = 0; }
     return result;
 }
-static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange, const char *png_dir) {
+static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
+    const char *encoded_dir, const char *pdf_renderer) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
-    atomic_init(&worker->disposals, 0); worker->exchange = exchange; worker->png_dir = png_dir;
+    atomic_init(&worker->disposals, 0); worker->exchange = exchange;
+    worker->encoded_dir = encoded_dir; worker->pdf_renderer = pdf_renderer;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;

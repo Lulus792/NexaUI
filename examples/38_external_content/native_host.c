@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 #include "native_worker.h"
 #include <nexaui/software.h>
+#include <limits.h>
 #include <stdio.h>
 #include "native_input.h"
 
@@ -13,12 +14,13 @@ static const char *input_name(enum input_phase phase) {
 
 enum phase { PREPARING, WAITING, REPLACED, RELEASED, OLD_REJECTED, FRESH_PENDING, READY,
              BAD_PENDING, BAD_REJECTED, RECOVERY_PENDING, RECOVERED, SCALED_WAIT, SCALED_PENDING,
-             SCALED_READY, FAILED };
+             SCALED_READY, FAILED, PDF_PAGE1_SCALED, PDF_PAGE_PENDING };
 static const char *phase_name(enum phase phase) {
     static const char *names[] = {"Preparing old frame.","Waiting for frame.","Replacement waiting.",
         "Old frame completing.","Old frame rejected.","Fresh frame pending.","Frame ready.",
         "Bad frame pending.","Frame format unavailable.","Recovery frame pending.","Frame recovered.",
-        "Waiting for scaled frame.","Scaled frame pending.","Scaled frame ready.","Producer unavailable."};
+        "Waiting for scaled frame.","Scaled frame pending.","Scaled frame ready.","Producer unavailable.",
+        "PDF page 1 of 2 at 2x.","Rendering PDF page."};
     return names[(unsigned)phase];
 }
 static uint8_t *read_font(const char *path, size_t *bytes) {
@@ -64,27 +66,37 @@ static nx_result input_hint(nx_context *context,const nx_font_collection *fonts)
 }
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
-    nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case) {
+    nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case) {
     *action = 0; *leased = 0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
     nx_semantic_desc root = {.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
         .name={"External CPU content fixture",28}};
     int input_controls=input_case&&phase==SCALED_READY;
     const char *status=png_case&&phase==BAD_REJECTED?"PNG decoding failed; image retained.":phase_name(phase);
+    if (pdf_case) {
+        if (phase==READY) status="PDF page 1 of 2.";
+        if (phase==BAD_REJECTED) status="PDF rendering failed; page retained.";
+        if (phase==RECOVERED) status="PDF page 2 of 2.";
+        if (phase==SCALED_READY) status="PDF page 2 of 2 at 2x.";
+    }
     if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts,
         input_controls?input_name(input_phase):status, info.width) != NX_OK ||
         button(context,fonts,input_controls?16u:10u,input_controls?"Enter content":"Replace tab",16,48,112,
             input_controls?input_phase!=INPUT_DISCONNECTED:phase==WAITING,action)!=NX_OK ||
         button(context,fonts,input_controls?17u:11u,input_controls?"Release input":"Release old",136,48,112,
             input_controls?input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING:phase==REPLACED,action)!=NX_OK ||
-        button(context,fonts,input_controls?18u:12u,input_controls?"Disconnect":"Publish frame",256,48,128,
-            input_controls?input_phase!=INPUT_DISCONNECTED:phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT,action)!=NX_OK ||
-        button(context,fonts,13,"Bad frame",16,88,112,phase==READY,action)!=NX_OK ||
+        button(context,fonts,input_controls?18u:12u,input_controls?"Disconnect":
+            pdf_case&&(phase==BAD_REJECTED||phase==PDF_PAGE1_SCALED)?"Next page":"Publish frame",256,48,128,
+            input_controls?input_phase!=INPUT_DISCONNECTED:phase==OLD_REJECTED||phase==BAD_REJECTED||
+            phase==SCALED_WAIT||phase==PDF_PAGE1_SCALED,action)!=NX_OK ||
+        button(context,fonts,13,pdf_case&&phase==SCALED_READY?"Previous page":"Bad frame",16,88,112,
+            phase==READY||(pdf_case&&phase==SCALED_READY),action)!=NX_OK ||
         button(context,fonts,14,"Scale 2x",136,88,112,phase==RECOVERED,action)!=NX_OK ||
         button(context,fonts,15,"Close",256,88,128,1,action)!=NX_OK) return 0;
     if(input_controls&&input_hint(context,fonts)!=NX_OK) return 0;
+    const char *name=pdf_case?"PDF page image":"Fixture frame";
     nx_viewport_desc desc = {.id=100,.parent_id=1,.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
-        .name={"Fixture frame",13},.scale=scale};
+        .name={name,strlen(name)},.scale=scale};
     nx_interaction_state interaction;
     *content_result = content_surface_draw(surface, context, &desc, &interaction);
     *leased = *content_result == NX_OK && desc.bounds.width>0 && desc.bounds.height>0;
@@ -94,6 +106,8 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         uint64_t id = phase==WAITING?10u:phase==REPLACED?11u:
             phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT?12u:
             phase==READY?13u:phase==RECOVERED?14u:15u;
+        if (pdf_case&&phase==SCALED_READY) id=13u;
+        if (phase==PDF_PAGE1_SCALED) id=12u;
         if (nx_focus_set(context,id)!=NX_OK) return 0;
     }
     return nx_end_frame(context)==NX_OK;
@@ -104,14 +118,19 @@ int main(void) {
     const char *path=getenv("NEXAUI_CONTENT_TEST_FONT"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if (!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!path||!test_case||
-        (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"input")&&
+        (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
     int png_case=!strcmp(test_case,"png");
-    const char *png_dir=png_case?getenv("NEXAUI_CONTENT_TEST_PNG"):NULL;
+    int pdf_case=!strcmp(test_case,"pdf");
+    const char *encoded_dir=(png_case||pdf_case)?getenv("NEXAUI_CONTENT_TEST_ENCODED"):NULL;
+    const char *pdf_renderer=pdf_case?getenv("NEXAUI_CONTENT_TEST_PDF_RENDERER"):NULL;
 #ifndef CONTENT_NATIVE_PNG
     if (png_case) return 2;
 #endif
-    if (png_case&&!png_dir) return 2;
+#ifndef CONTENT_NATIVE_PDF
+    if (pdf_case) return 2;
+#endif
+    if (((png_case||pdf_case)&&!encoded_dir)||(pdf_case&&!pdf_renderer)) return 2;
     int result=1,leased=0,worker_ready=0;
     nx_snapshot_exchange *exchange=NULL; content_surface *surface=NULL;
     nx_window *window=NULL; nx_software_view *software=NULL; nx_context *context=NULL;
@@ -122,13 +141,14 @@ int main(void) {
     size_t bytes=0; uint8_t *data=read_font(path,&bytes);
     enum phase phase=PREPARING,last_phase=FAILED;
     unsigned frames=0,action=0; int need_frame=1,initial_job=0; double scale=1;
+    unsigned nav_completion=0; enum phase nav_target=FAILED;
     uint64_t logged_generation=0,logged_resize=0,logged_sequence=0;
     const nx_window_desc desc={.title_utf8="External CPU content fixture",.width=480,.height=360};
     if (!data||nx_font_open(data,bytes,NULL,&font)!=NX_OK||nx_font_collection_create(NULL,&fonts)!=NX_OK||
         nx_font_collection_add(fonts,font)!=NX_OK||nx_snapshot_exchange_create(NULL,&exchange)!=NX_OK||
         content_surface_create(exchange,1,4u*1024u*1024u,NULL,&surface)!=NX_OK||
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
-        nx_software_view_open(window,&software)!=NX_OK||native_worker_open(&worker,exchange,png_dir)) goto done;
+        nx_software_view_open(window,&software)!=NX_OK||native_worker_open(&worker,exchange,encoded_dir,pdf_renderer)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     for (;;) {
@@ -173,14 +193,14 @@ int main(void) {
         }
         native_worker_state state=native_state(&worker);
         if (phase==PREPARING&&state.prepared) { phase=WAITING; need_frame=1; }
-        int decode_rejected=png_case&&state.completed==3&&state.result==NX_ERROR_ARGUMENT;
+        int decode_rejected=(png_case||pdf_case)&&state.completed==3&&state.result==NX_ERROR_ARGUMENT;
         if (state.result!=NX_OK&&!decode_rejected&&phase!=FAILED) { phase=FAILED; need_frame=1; }
         if (info.should_close) { result=0; break; }
         if (!need_frame&&!routed&&!ready) continue;
         need_frame=0;
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
         if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
-            &content_result,&leased,input_case,input_phase,png_case)) goto done;
+            &content_result,&leased,input_case,input_phase,png_case,pdf_case)) goto done;
         if (phase!=last_phase) need_frame=1;
         last_phase=drawn;
         if (nx_key_pressed(context,NX_KEY_ESCAPE)) { result=0; break; }
@@ -194,8 +214,11 @@ int main(void) {
             need_frame=1;
         }
         if (phase==BAD_PENDING&&state.completed==3) {
-            int rejected=png_case?decode_rejected&&content_result==NX_OK:content_result==NX_ERROR_UNSUPPORTED;
+            int rejected=(png_case||pdf_case)?decode_rejected&&content_result==NX_OK:content_result==NX_ERROR_UNSUPPORTED;
             phase=rejected?BAD_REJECTED:FAILED; need_frame=1;
+        }
+        if (phase==PDF_PAGE_PENDING&&state.completed==nav_completion) {
+            phase=content_result==NX_OK?nav_target:FAILED; need_frame=1;
         }
         if (nx_window_publish_semantics(window,context)!=NX_OK) goto done;
         const nx_command *commands=NULL; size_t count=0; nx_software_view_outcome outcome=NX_SOFTWARE_VIEW_READY;
@@ -233,6 +256,13 @@ int main(void) {
             if (!native_schedule(&worker,(native_job){status.request,2,2,0})) goto done;
             phase=BAD_PENDING; need_frame=1;
         } else if (action==14&&phase==RECOVERED) { scale=2; phase=SCALED_WAIT; need_frame=1; }
+        else if (pdf_case&&((action==13&&phase==SCALED_READY)||(action==12&&phase==PDF_PAGE1_SCALED))) {
+            if (status.sequence==UINT64_MAX||state.completed==UINT_MAX) goto done;
+            nav_target=action==13?PDF_PAGE1_SCALED:SCALED_READY;
+            native_job job={status.request,status.sequence+1,action==13?5u:4u,0};
+            if (!native_schedule(&worker,job)) goto done;
+            nav_completion=state.completed+1; phase=PDF_PAGE_PENDING; need_frame=1;
+        }
         if(input) {
             if(action==16&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_ACTIVE) {
                 input_phase=INPUT_PENDING;
@@ -275,10 +305,12 @@ done:
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
     unsigned expected=(!strcmp(test_case,"full")||input_case||png_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
-    unsigned published=expected-(unsigned)png_case;
+    if (pdf_case) expected=6;
+    unsigned published=expected-(unsigned)(png_case||pdf_case);
     unsigned discarded=!strcmp(test_case,"pending-close")?1u:0u;
     if (!worker_ready||worker.completed!=expected||worker.publications!=published||worker.discarded!=discarded||
         atomic_load(&worker.disposals)!=published||((expected==5u)&&phase!=SCALED_READY)||
+        (pdf_case&&phase!=PDF_PAGE1_SCALED)||
         (!strcmp(test_case,"rejected-close")&&phase!=OLD_REJECTED)||(!strcmp(test_case,"pending-close")&&phase!=WAITING)) result=1;
     if(input_case) {
         if(receiver.downs!=6||receiver.ups!=6||receiver.pointer_downs!=3||receiver.pointer_ups!=3||

@@ -124,7 +124,8 @@ static int save_ppm(XImage *image,int left,int top,int width,int height,const ch
     if(fclose(file))okay=0;return okay;
 }
 static int capture(Display *display,Window window,unsigned long rgb,const char *name) {
-    int recovered = !strcmp(name,"recovered");
+    int pdf_patch = !strcmp(name,"pdf-page2") || !strcmp(name,"pdf-page2-scaled");
+    int recovered = !strcmp(name,"recovered") || pdf_patch;
     for(unsigned attempt=0;attempt<80;++attempt){
         XWindowAttributes info;if(!XGetWindowAttributes(display,window,&info)||info.width<1||info.height<1||info.width>2048||info.height>2048)return 0;
         XImage *image=XGetImage(display,window,0,0,(unsigned)info.width,(unsigned)info.height,AllPlanes,ZPixmap);
@@ -139,7 +140,8 @@ static int capture(Display *display,Window window,unsigned long rgb,const char *
         if (match && recovered) {
             for (int y=0;match && y<208;++y) {
                 for (int x=0;x<448;++x) {
-                    unsigned long expected = x>=224 && x<336 && y>=104 && y<156 ? 0x47a31fu : rgb;
+                    unsigned long expected = x>=224 && x<336 && y>=104 && y<156 ?
+                        (pdf_patch?0x00ff00u:0x47a31fu) : rgb;
                     if ((XGetPixel(image,min_x+x,min_y+y)&0xffffffu)!=expected) {
                         match=0;
                         break;
@@ -224,9 +226,12 @@ int main(int argc,char **argv) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*wayland=getenv("WAYLAND_DISPLAY"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
-        (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"input")&&
+        (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     int png_case=!strcmp(test_case,"png");
+    int pdf_case=!strcmp(test_case,"pdf");
+    const char *viewport=pdf_case?"PDF page image":"Fixture frame";
+    unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
     AtspiComponent *old_component=NULL;Display *display=NULL;FILE *host_log=NULL;
@@ -248,30 +253,37 @@ int main(int argc,char **argv) {
     CHECK(observe(app,"Replacement waiting.",0)&&focus(app,"Release old")&&drive("key","Return"));
     CHECK(observe(app,"Old frame rejected.",0)&&capture(display,outer,0xe3e7efu,"rejected"));
     if(!strcmp(test_case,"rejected-close")){CHECK(focus(app,"Close")&&drive("key","Return"));goto closed;}
-    CHECK(press(app,"Publish frame")&&observe(app,"Frame ready.",0));
-    CHECK((retired=find(app,"Fixture frame",0))&&dimensions(retired));
+    CHECK(press(app,"Publish frame")&&observe(app,pdf_case?"PDF page 1 of 2.":"Frame ready.",0));
+    CHECK((retired=find(app,viewport,0))&&dimensions(retired));
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
-    CHECK(capture(display,outer,0x1753c5u,"fresh"));
+    CHECK(capture(display,outer,blue,"fresh"));
     CHECK(press(app,"Bad frame"));
-    if(png_case) {
-        CHECK(observe(app,"PNG decoding failed; image retained.",0));
+    if(png_case||pdf_case) {
+        CHECK(observe(app,pdf_case?"PDF rendering failed; page retained.":"PNG decoding failed; image retained.",0));
         CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
-        CHECK(capture(display,outer,0x1753c5u,"bad-retained"));
+        CHECK(capture(display,outer,blue,"bad-retained"));
     } else {
         CHECK(observe(app,"Frame format unavailable.",0));
         CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
         CHECK(capture(display,outer,0xe3e7efu,"bad"));
     }
-    CHECK(press(app,"Publish frame")&&observe(app,"Frame recovered.",0));
-    if(!png_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
-    CHECK((fresh=find(app,"Fixture frame",0))&&dimensions(fresh));
-    CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
-    CHECK(capture(display,outer,0x1753c5u,"recovered"));
-    CHECK(focus(app,"Fixture frame")&&drive("key","Tab")&&observe(app,"Scale 2x",1)&&drive("key","Return"));
+    CHECK(press(app,pdf_case?"Next page":"Publish frame")&&observe(app,pdf_case?"PDF page 2 of 2.":"Frame recovered.",0));
+    if(!png_case&&!pdf_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
+    CHECK((fresh=find(app,viewport,0))&&dimensions(fresh));
+    CHECK(host_marker(host_log,pdf_case?
+        "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
+        "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
+    CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
+    CHECK(focus(app,viewport)&&drive("key","Tab")&&observe(app,"Scale 2x",1)&&drive("key","Return"));
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
-    CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,"Scaled frame ready.",0));
+    CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
-    CHECK(capture(display,outer,0xbf3f89u,"scaled"));
+    CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
+    if(pdf_case) {
+        CHECK(focus(app,"Previous page")&&drive("key","Return")&&observe(app,"PDF page 1 of 2 at 2x.",0));
+        CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=2 copied=4"));
+        CHECK(capture(display,outer,blue,"pdf-previous"));
+    }
     if(!strcmp(test_case,"input")) CHECK(input_workflow(app,display,id,host_log));
     CHECK(focus(app,"Close")&&drive("key","Return"));
 closed: ;

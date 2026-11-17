@@ -29,14 +29,47 @@ def write_png_fixtures(directory):
         print(f'PNG_FIXTURE {kind} sha256={hashlib.sha256(image).hexdigest()}', flush=True)
 
 
+def write_pdf_fixtures(directory):
+    def document(pages):
+        kids = ' '.join(f'{3+2*i} 0 R' for i in range(len(pages)))
+        objects = [b'<< /Type /Catalog /Pages 2 0 R >>',
+                   f'<< /Type /Pages /Kids [{kids}] /Count {len(pages)} >>'.encode()]
+        for i, drawing in enumerate(pages):
+            objects.append(
+                f'<< /Type /Page /Parent 2 0 R /MediaBox [0 0 112 52] /Resources <<>> /Contents {4+2*i} 0 R >>'.encode())
+            objects.append(f'<< /Length {len(drawing)} >>\nstream\n'.encode() + drawing + b'endstream')
+        result = bytearray(b'%PDF-1.4\n%\xe2\xe3\xcf\xd3\n')
+        offsets = []
+        for i, obj in enumerate(objects, 1):
+            offsets.append(len(result))
+            result.extend(f'{i} 0 obj\n'.encode() + obj + b'\nendobj\n')
+        index = len(result)
+        result.extend(f'xref\n0 {len(objects)+1}\n0000000000 65535 f \n'.encode())
+        for offset in offsets:
+            result.extend(f'{offset:010d} 00000 n \n'.encode())
+        result.extend(f'trailer\n<< /Size {len(objects)+1} /Root 1 0 R >>\nstartxref\n{index}\n%%EOF\n'.encode())
+        return result
+
+    blue = b'0 0 1 rg 0 0 112 52 re f\n'
+    fixtures = {'old.pdf': document([b'1 0 0 rg 0 0 112 52 re f\n']),
+                'document.pdf': document([blue, blue + b'0 1 0 rg 56 13 28 13 re f\n']),
+                'bad.pdf': b'%PDF-1.4\n1 0 obj\n'}
+    for name, data in fixtures.items():
+        (directory / name).write_bytes(data)
+        print(f'PDF_FIXTURE {name} sha256={hashlib.sha256(data).hexdigest()}', flush=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build-dir', type=Path, required=True)
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
-    parser.add_argument('--case', choices=('full', 'png', 'input', 'pending-close', 'rejected-close'), default='full')
+    parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'pending-close', 'rejected-close'), default='full')
+    parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
     args = parser.parse_args()
+    if args.case == 'pdf' and not args.pdf_renderer:
+        parser.error('--case pdf requires --pdf-renderer')
     for key in ('build_dir', 'font', 'registry'):
         setattr(args, key, getattr(args, key).resolve(strict=True))
     args.work_dir = args.work_dir.resolve()
@@ -55,10 +88,14 @@ def main():
                '--timeout', '60', '--', sys.executable, str(repo / 'tests/run_atspi_native.py'),
                str(args.registry), str(args.build_dir / 'content_atspi_peer'),
                str(args.build_dir / 'content_native_host')]
-    if args.case == 'png':
-        with tempfile.TemporaryDirectory(prefix='nexaui-content-png-') as directory:
-            write_png_fixtures(Path(directory))
-            env['NEXAUI_CONTENT_TEST_PNG'] = directory
+    if args.case in ('png', 'pdf'):
+        with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
+            env['NEXAUI_CONTENT_TEST_ENCODED'] = directory
+            if args.case == 'png':
+                write_png_fixtures(Path(directory))
+            else:
+                env['NEXAUI_CONTENT_TEST_PDF_RENDERER'] = str(args.pdf_renderer.resolve(strict=True))
+                write_pdf_fixtures(Path(directory))
             return subprocess.run(command, env=env, timeout=90).returncode
     return subprocess.run(command, env=env, timeout=90).returncode
 
