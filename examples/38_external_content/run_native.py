@@ -11,20 +11,35 @@ import tempfile
 import zlib
 
 
-def write_png_fixtures(directory):
+def write_png_fixtures(directory, viewer=False):
     def chunk(tag, data):
         return struct.pack('>I', len(data)) + tag + data + struct.pack('>I', zlib.crc32(tag + data))
+
+    def encode(width, height, pixel):
+        rows = b''.join(b'\0' + b''.join(bytes(pixel(x, y)) for x in range(width)) for y in range(height))
+        return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
+                + chunk(b'IDAT', zlib.compress(rows)) + chunk(b'IEND', b''))
 
     width, height = 112, 52
     colors = ((211, 79, 31, 255), (23, 83, 197, 255), (127, 127, 127, 255),
               (71, 163, 31, 255), (191, 63, 137, 255))
+
+    def portrait(x, y):
+        if 192 <= y < 224:
+            return (255, 206, 86, 255) if y % 2 else (223, 36, 55, 255)
+        if 150 <= x < 202 and 80 <= y < 116:
+            return (255, 255, 255, 128)
+        return colors[1] if y < 192 else colors[3]
+
+    portrait_bytes = encode(208, 416, portrait) if viewer else None
     for kind, color in enumerate(colors):
-        image = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
-        if kind != 2:
-            rows = b''.join(b'\0' + b''.join(
-                bytes(color if kind != 3 or (56 <= x < 84 and 26 <= y < 39) else colors[1])
-                for x in range(width)) for y in range(height))
-            image += chunk(b'IDAT', zlib.compress(rows)) + chunk(b'IEND', b'')
+        if kind == 2:
+            image = b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', struct.pack('>IIBBBBB', width, height, 8, 6, 0, 0, 0))
+        elif viewer and kind in (3, 4):
+            image = portrait_bytes
+        else:
+            image = encode(width, height,
+                           lambda x, y: color if kind != 3 or (56 <= x < 84 and 26 <= y < 39) else colors[1])
         (directory / f'{kind}.png').write_bytes(image)
         print(f'PNG_FIXTURE {kind} sha256={hashlib.sha256(image).hexdigest()}', flush=True)
 
@@ -138,9 +153,12 @@ def main():
     parser.add_argument('--pdf-properties', action='store_true', help='Exercise the PDF properties dialog')
     parser.add_argument('--pdf-detail', action='store_true', help='Exercise higher-resolution PDF zoom rendering')
     parser.add_argument('--pdf-export', action='store_true', help='Export the current PDF page viewport to PNG')
+    parser.add_argument('--png-viewer', action='store_true', help='View landscape and portrait PNGs, including zoom and pan')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
+    if args.png_viewer and args.case != 'png':
+        parser.error('--png-viewer requires --case png')
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
@@ -188,6 +206,8 @@ def main():
         env['NEXAUI_CONTENT_TEST_PDF_DETAIL'] = '1'
     if args.pdf_export:
         env['NEXAUI_CONTENT_TEST_EXPORT_PATH'] = str(args.work_dir / 'exported-page.png')
+    if args.png_viewer:
+        env['NEXAUI_CONTENT_TEST_PNG_VIEWER'] = '1'
     if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:
@@ -214,7 +234,7 @@ def main():
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory
             if args.case == 'png':
-                write_png_fixtures(Path(directory))
+                write_png_fixtures(Path(directory),args.png_viewer)
             else:
                 renderer = args.pdf_renderer.resolve(strict=True)
                 reader = args.pdf_text_reader or renderer.with_name('pdftotext')

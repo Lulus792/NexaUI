@@ -258,7 +258,7 @@ static int probe_detail_cache(void) {
     int ok=0;
     pdf_detail_select(&detail,base,image,2,1);
     pdf_detail_key first=detail.wanted;
-    nx_rect destination=pdf_detail_destination(base,image);
+    nx_rect destination=content_image_destination(base,image);
     if (!pdf_detail_missing(&detail) || first.edge!=624 || destination.x!=-72 || destination.y!=90 ||
         destination.width!=624 || destination.height!=300 || !detail_completion(&detail,first,1)) goto done;
     const uint8_t *first_pixels=detail.visible.bitmap.pixels;

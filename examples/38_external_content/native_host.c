@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include "native_input.h"
 #include "pdf_selection.h"
-#include "pdf_camera.h"
+#include "content_camera.h"
 
 enum input_phase { INPUT_IDLE, INPUT_PENDING, INPUT_ACTIVE, INPUT_RELEASED, INPUT_FOCUS_LOST, INPUT_DISCONNECTED };
 static const char *input_name(enum input_phase phase) {
@@ -85,7 +85,7 @@ enum { PDF_SELECT_BUTTON=36, PDF_TEXT_NODE=101 };
 
 static nx_result pdf_text_semantics(nx_context *context, content_surface *surface,
     const nx_viewport_desc *viewport, pdf_text_view *text_view, pdf_selection *selection,
-    nx_window *window, int enabled, pdf_camera_view view, int *redraw) {
+    nx_window *window, int enabled, content_camera_view view, int *redraw) {
     content_surface_status status;
     nx_result result = content_surface_get_status(surface, &status);
     if (result != NX_OK) return result;
@@ -108,7 +108,7 @@ static nx_result pdf_text_semantics(nx_context *context, content_surface *surfac
     size_t visible=0;
     for (size_t i=0;i<word_count;++i) {
         nx_rect bounds;
-        if (pdf_camera_visible(view,words[i].bounds,&bounds))
+        if (content_camera_visible(view,words[i].bounds,&bounds))
             boxes[visible++]=(nx_text_document_box){words[i].start_byte,words[i].end_byte,bounds};
     }
     if (selection->active) return pdf_selection_record(selection,context,window,node,text_view->identity,
@@ -120,7 +120,7 @@ static nx_result pdf_text_semantics(nx_context *context, content_surface *surfac
 }
 
 static nx_result pdf_link_widgets(nx_context *context, content_surface *surface,
-    const nx_viewport_desc *viewport, uint64_t frame_identity, int enabled, pdf_camera_view view, unsigned *destination,
+    const nx_viewport_desc *viewport, uint64_t frame_identity, int enabled, content_camera_view view, unsigned *destination,
     char address[CONTENT_PDF_URI_LIMIT+1u]) {
     const content_frame_link *links;
     size_t count;
@@ -133,7 +133,7 @@ static nx_result pdf_link_widgets(nx_context *context, content_surface *surface,
         if (links[i].target_page) snprintf(title,sizeof(title),"PDF link to page %u",links[i].target_page);
         else snprintf(title,sizeof(title),"External PDF link");
         nx_rect bounds;
-        if (!pdf_camera_visible(view,links[i].bounds,&bounds)) continue;
+        if (!content_camera_visible(view,links[i].bounds,&bounds)) continue;
         nx_widget_desc widget = {
             .semantic={.id=first_id+i,.parent_id=viewport->id,.role=NX_ROLE_BUTTON,
                 .bounds=bounds,.name={title,strlen(title)},.state=enabled?0:NX_SEM_DISABLED,
@@ -534,7 +534,7 @@ static nx_result pdf_document_find(nx_context *context, const nx_font_collection
 #endif
 
 static nx_result pdf_find_results(nx_context *context, const nx_font_collection *fonts,
-    nx_text_field *field, const content_surface *surface, pdf_camera_view view) {
+    nx_text_field *field, const content_surface *surface, content_camera_view view) {
     nx_utf8_span query, text = {0};
     nx_result result = nx_text_field_text(field,&query);
     if (result != NX_OK || !query.length) return result;
@@ -566,7 +566,7 @@ static nx_result pdf_find_results(nx_context *context, const nx_font_collection 
                 if (word->end_byte <= start) continue;
                 ++highlighted;
                 nx_rect bounds;
-                if (pdf_camera_visible(view,word->bounds,&bounds)) {
+                if (content_camera_visible(view,word->bounds,&bounds)) {
                     result=nx_fill_rect(context,bounds,(nx_color){1,0.73f,0.14f,0.42f});
                     if (result!=NX_OK) return result;
                 }
@@ -586,7 +586,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
     unsigned *linked_page, pdf_selection *selection, int *redraw,
     char link_address[CONTENT_PDF_URI_LIMIT+1u], pdf_url_view *preview, int can_open_url,
-    const pdf_camera *camera, pdf_camera_view *page_view) {
+    const content_camera *camera, content_camera_view *page_view) {
     *action = 0; *leased = 0; *linked_page=0;
     link_address[0]=0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
@@ -607,12 +607,14 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     }
     int search = find_visible(query,phase,info.width);
     int hit_page = pdf_case&&pdf_hit_page(phase);
+    int zoom_visible=(pdf_case||png_case)&&info.width>=480&&pdf_can_navigate(phase)&&!selection->active;
     int pages_visible=pdf_case&&pdf_can_navigate(phase)&&(document->pages||document->properties.enabled||document->export_enabled)&&
         info.width>=480&&info.height>=248&&
         !selection->active;
     if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts, 2,
-        input_controls?input_name(input_phase):status, (nx_rect){16,12,info.width-(pages_visible?262:32),24},
-        pages_visible&&phase==BAD_REJECTED?13:15) != NX_OK ||
+        input_controls?input_name(input_phase):status,
+        (nx_rect){16,12,info.width-(pages_visible?262:zoom_visible?201:32),24},
+        (pages_visible||png_case)&&phase==BAD_REJECTED?13:15) != NX_OK ||
         (search && pdf_find_field(context,window,fonts,query)!=NX_OK) ||
         (!search && (button(context,fonts,input_controls?16u:10u,input_controls?"Enter content":"Replace tab",16,48,112,
             input_controls?input_phase!=INPUT_DISCONNECTED:phase==WAITING,action)!=NX_OK ||
@@ -634,13 +636,13 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     }
     if(input_controls&&input_hint(context,fonts)!=NX_OK) return 0;
     if (pages_visible&&button(context,fonts,PDF_PAGES,"Pages",info.width-234,8,58,1,action)!=NX_OK) return 0;
-    if (pdf_case&&info.width>=480&&pdf_can_navigate(phase)&&!selection->active) {
+    if (zoom_visible) {
         char zoom[16];
         snprintf(zoom,sizeof(zoom),"%u%%",camera->percent);
         float x=info.width-169;
-        if (scoped_button(context,fonts,PDF_ZOOM_OUT,1,"Zoom out","−",x,8,44,camera->percent>100,action)!=NX_OK ||
-            scoped_button(context,fonts,PDF_ZOOM_FIT,1,"Fit page",zoom,x+50,8,61,camera->percent!=100,action)!=NX_OK ||
-            scoped_button(context,fonts,PDF_ZOOM_IN,1,"Zoom in","+",x+117,8,36,camera->percent<PDF_ZOOM_MAX,action)!=NX_OK)
+        if (scoped_button(context,fonts,CONTENT_ZOOM_OUT,1,"Zoom out","−",x,8,44,camera->percent>100,action)!=NX_OK ||
+            scoped_button(context,fonts,CONTENT_ZOOM_FIT,1,png_case?"Fit image":"Fit page",zoom,x+50,8,61,camera->percent!=100,action)!=NX_OK ||
+            scoped_button(context,fonts,CONTENT_ZOOM_IN,1,"Zoom in","+",x+117,8,36,camera->percent<CONTENT_ZOOM_MAX,action)!=NX_OK)
             return 0;
     }
 #ifdef CONTENT_NATIVE_PDF
@@ -649,13 +651,31 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         if (button(context,fonts,PDF_NEXT_HIT,"Next hit",392,48,72,pdf_can_navigate(phase),action)!=NX_OK) return 0;
     }
 #endif
-    const char *name=pdf_case?"PDF page image":"Fixture frame";
+    const char *name=pdf_case?"PDF page image":png_case?"PNG image":"Fixture frame";
     nx_viewport_desc desc = {.id=100,.parent_id=1,.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
         .name={name,strlen(name)},.scale=scale};
-    *page_view=pdf_camera_place(camera,desc.bounds);
     nx_interaction_state interaction;
     *content_result = content_surface_draw(surface, context, &desc, &interaction);
     *leased = *content_result == NX_OK && desc.bounds.width>0 && desc.bounds.height>0;
+    nx_rect fitted={0,0,1,1};
+    if (*leased && (png_case||pdf_case)) {
+        content_surface_status accepted;
+        if (content_surface_get_status(surface,&accepted)!=NX_OK) return 0;
+        fitted=content_image_destination(accepted,fitted);
+        *page_view=content_camera_place(camera,desc.bounds,fitted);
+        if (png_case && accepted.image.source_width) {
+            char description[64];
+            snprintf(description,sizeof(description),"PNG image, %u × %u pixels",
+                accepted.image.source_width,accepted.image.source_height);
+            if (label(context,fonts,0,description,(nx_rect){16,122,desc.bounds.width,14},11)!=NX_OK) return 0;
+            nx_rect bounds;
+            if (content_camera_visible(*page_view,fitted,&bounds)) {
+                nx_semantic_desc image={.id=72,.parent_id=desc.id,.role=NX_ROLE_IMAGE,.bounds=bounds,
+                    .name={description,strlen(description)}};
+                if (nx_semantics_add(context,&image,NULL)!=NX_OK) return 0;
+            }
+        }
+    } else *page_view=content_camera_place(camera,desc.bounds,fitted);
     if (pdf_case && *leased && pdf_text_semantics(context,surface,&desc,text_view,selection,window,
         pdf_can_navigate(phase),*page_view,redraw)!=NX_OK) return 0;
     if (pdf_case&&*leased&&selection->active&&selection->copy_status!=PDF_COPY_IDLE&&info.width>=480 &&
@@ -722,6 +742,9 @@ int main(void) {
     content_input *input=NULL; native_input_receiver receiver={.generation=1};
     int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
+#ifdef CONTENT_NATIVE_PNG
+    native_png_source png_source={0};
+#endif
     size_t bytes=0; uint8_t *data=read_font(path,&bytes);
     enum phase phase=PREPARING,last_phase=FAILED;
     unsigned frames=0,action=0,linked_page=0; int need_frame=1,initial_job=0; double scale=1;
@@ -730,8 +753,8 @@ int main(void) {
     pdf_document_view document={.properties.enabled=pdf_link_reader!=NULL,.export_enabled=pdf_export_case};
     pdf_text_view text_view={0};
     pdf_selection selection={0};
-    pdf_camera camera;
-    pdf_camera_fit(&camera);
+    content_camera camera;
+    content_camera_fit(&camera);
     pdf_url_view preview={0};
     uint64_t uri_serial=0;
 #ifdef CONTENT_NATIVE_PDF
@@ -877,7 +900,7 @@ int main(void) {
         int had_preview=preview.uri[0]!=0;
         int had_pages=document.thumbnails.open;
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
-        pdf_camera_view page_view;
+        content_camera_view page_view;
         if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
             &content_result,&leased,input_case,input_phase,png_case,pdf_case,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view)) goto done;
@@ -936,6 +959,15 @@ int main(void) {
         if (content_surface_get_status(surface,&status)!=NX_OK) goto done;
         nx_rect image=page_view.image;
         const nx_bitmap_view *detail_bitmap=NULL;
+#ifdef CONTENT_NATIVE_PNG
+        if (png_case) {
+            native_png_take(&worker,&png_source,status);
+            if (leased && camera.percent>100 && png_source.bitmap.pixels && png_source.sequence==status.sequence) {
+                image=content_image_destination(status,image);
+                detail_bitmap=&png_source.bitmap;
+            }
+        }
+#endif
 #ifdef CONTENT_NATIVE_PDF
         if (pdf_case) {
             pdf_detail_select(&document.detail,status,image,leased&&camera.percent>100?document.page:0,info.scale);
@@ -949,12 +981,12 @@ int main(void) {
                 fflush(stdout);
             }
             if (document.detail.visible.bitmap.pixels) {
-                image=pdf_detail_destination(status,image);
+                image=content_image_destination(status,image);
                 detail_bitmap=&document.detail.visible.bitmap;
             }
         }
 #endif
-        if (pdf_case&&leased&&camera.percent>100 &&
+        if ((pdf_case||png_case)&&leased&&camera.percent>100 &&
             content_surface_map_commands(surface,commands,count,image,detail_bitmap,&commands)!=NX_OK) goto done;
         if (nx_software_view_render(software,commands,count,(nx_color){1,1,1,1},&outcome)!=NX_OK) goto done;
         /* The presenter borrows commands only until return. Discard this
@@ -974,8 +1006,8 @@ int main(void) {
             initial_job=1;
         }
         if (action==15) { result=0; break; }
-        if (pdf_case&&!had_pages&&!preview.uri[0]&&!had_preview&&content_result==NX_OK&&pdf_can_navigate(drawn)) {
-            if (pdf_camera_update(&camera,context,page_view.viewport,100,action,&need_frame)!=NX_OK) goto done;
+        if ((pdf_case||png_case)&&!had_pages&&!preview.uri[0]&&!had_preview&&content_result==NX_OK&&pdf_can_navigate(drawn)) {
+            if (content_camera_update(&camera,context,page_view,100,action,&need_frame)!=NX_OK) goto done;
         } else camera.dragging=0;
 #ifdef CONTENT_NATIVE_PDF
         if (action==PDF_PAGES && !had_pages && !had_preview && content_result==NX_OK && document.page) {
@@ -988,7 +1020,7 @@ int main(void) {
                 int scheduled=0;
                 if (content_result==NX_OK && status.sequence && status.image.width && status.image.height && export_serial!=UINT64_MAX) {
                     native_export_job job={.ticket=++export_serial,.generation=status.request.generation,
-                        .page=document.page,.view={.viewport=page_view.viewport,.page=pdf_detail_destination(status,page_view.image),
+                        .page=document.page,.view={.viewport=page_view.viewport,.page=content_image_destination(status,page_view.image),
                             .width=641,.height=361,.scale=1.25}};
                     scheduled=native_schedule_export(&worker,job);
                     if (scheduled) document.export_ticket=job.ticket;
@@ -1071,7 +1103,7 @@ int main(void) {
 #endif
             if(input) { if(content_input_rebind(input,2)!=NX_OK) goto done; receiver.generation=2; }
             selection=(pdf_selection){0};
-            pdf_camera_fit(&camera);
+            content_camera_fit(&camera);
             phase=REPLACED; need_frame=1;
         } else if (action==11&&phase==REPLACED) { native_release(&worker); phase=RELEASED; need_frame=1; }
         else if (action==12&&(phase==OLD_REJECTED||phase==BAD_REJECTED||phase==SCALED_WAIT)) {
@@ -1141,6 +1173,9 @@ done:
     if (leased&&content_surface_complete(surface)!=NX_OK) result=1;
     if (window&&nx_window_publish_semantics(window,NULL)!=NX_OK) result=1;
     if (software&&nx_software_view_close(&software)!=NX_OK) result=1;
+#ifdef CONTENT_NATIVE_PNG
+    free((void *)png_source.bitmap.pixels);
+#endif
     if (content_surface_destroy(&surface)!=NX_OK) result=1;
     nx_context_destroy(context);
     nx_text_field_destroy(query);

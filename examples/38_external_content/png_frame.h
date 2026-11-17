@@ -23,6 +23,10 @@ typedef struct content_png_fit {
     uint32_t x, y, width, height;
 } content_png_fit;
 
+/* Fit a borrowed packed RGBA8 decode. The caller retains the original. */
+nx_result content_png_fit_bitmap(nx_bitmap_view bitmap,content_request request,
+    uint64_t sequence,void **out,size_t *out_size,content_png_fit *fit);
+
 /* Also return the actual fitted image rectangle in physical frame pixels. */
 nx_result content_png_frame_fit(const void *encoded, size_t encoded_size, content_request request,
     uint64_t sequence, void **out, size_t *out_size, content_png_fit *fit);

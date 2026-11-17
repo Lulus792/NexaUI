@@ -279,6 +279,12 @@ nx_result content_surface_get_status(const content_surface *surface, content_sur
     return NX_OK;
 }
 
+nx_rect content_image_destination(content_surface_status base,nx_rect canvas) {
+    if (!base.image.width || !base.image.height || !base.request.width || !base.request.height) return canvas;
+    float sx=canvas.width/(float)base.request.width, sy=canvas.height/(float)base.request.height;
+    return (nx_rect){canvas.x+base.image.x*sx,canvas.y+base.image.y*sy,base.image.width*sx,base.image.height*sy};
+}
+
 nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span *out) {
     if (!surface || !out) return NX_ERROR_ARGUMENT;
     const char *text = surface->metadata ?

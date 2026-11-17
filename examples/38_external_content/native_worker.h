@@ -26,6 +26,11 @@ typedef struct native_job {
     int held;
     unsigned page; /* Zero uses the existing scenario's page. */
 } native_job;
+typedef struct native_png_source {
+    content_request request;
+    uint64_t sequence;
+    nx_bitmap_view bitmap;
+} native_png_source;
 typedef struct native_pdf_index_result {
     uint64_t generation;
     content_pdf_index *index;
@@ -62,6 +67,7 @@ typedef struct native_worker {
     native_job job;
     unsigned completed, publications, discarded;
     nx_result result;
+    native_png_source png_source;
     int pdf_file;
     uint64_t pdf_generation, indexed_generation;
     native_pdf_index_result pdf_index;
@@ -139,7 +145,8 @@ static void *native_pixels(native_job job, size_t *bytes) {
 }
 
 #ifdef CONTENT_NATIVE_PNG
-static nx_result native_png(const char *directory, native_job job, void **data, size_t *bytes) {
+static nx_result native_png(const char *directory, native_job job, void **data, size_t *bytes,
+    native_png_source *original) {
     char path[4096];
     int written = snprintf(path, sizeof(path), "%s/%u.png", directory, job.kind);
     if (written < 0 || (size_t)written >= sizeof(path)) return NX_ERROR_LIMIT;
@@ -154,17 +161,21 @@ static nx_result native_png(const char *directory, native_job job, void **data, 
             encoded = malloc((size_t)length);
             if (!encoded) result = NX_ERROR_MEMORY;
             else if (fread(encoded, 1, (size_t)length, file) == (size_t)length)
-                result = content_png_frame(encoded, (size_t)length, job.request, job.sequence, data, bytes);
+                result = content_png_bitmap(encoded,(size_t)length,&original->bitmap);
         }
     }
     free(encoded);
     fclose(file);
+    if (result==NX_OK) result=content_png_fit_bitmap(original->bitmap,job.request,job.sequence,data,bytes,NULL);
     if (result == NX_OK) {
+        original->request=job.request;
+        original->sequence=job.sequence;
         content_frame_header header;
         memcpy(&header, *data, sizeof(header));
         /* The recovery PNG changes only the declared quarter rectangle at
            exact multiples of the fixture size. Other sizes send full frames. */
-        if (job.request.width % 112u == 0 && job.request.height % 52u == 0 &&
+        if (original->bitmap.width==112 && original->bitmap.height==52 &&
+            job.request.width % 112u == 0 && job.request.height % 52u == 0 &&
             job.request.width / 112u == job.request.height / 52u)
             native_damage(job, &header);
         memcpy(*data, &header, sizeof(header));
@@ -324,13 +335,14 @@ static void *native_worker_entry(void *user) {
         pthread_mutex_unlock(&worker->mutex);
         size_t bytes = 0;
         void *data = NULL;
+        native_png_source original={0};
         nx_result result;
 #ifdef CONTENT_NATIVE_PDF
         if (worker->pdf_renderer) result = native_pdf(worker, job, &data, &bytes);
         else
 #endif
 #ifdef CONTENT_NATIVE_PNG
-        if (worker->encoded_dir) result = native_png(worker->encoded_dir, job, &data, &bytes);
+        if (worker->encoded_dir) result = native_png(worker->encoded_dir, job, &data, &bytes,&original);
         else
 #endif
         {
@@ -347,14 +359,20 @@ static void *native_worker_entry(void *user) {
         int stop = worker->stop;
         if (stop && data) ++worker->discarded;
         pthread_mutex_unlock(&worker->mutex);
-        if (stop) { free(data); break; }
+        if (stop) { free(data);free((void *)original.bitmap.pixels);break; }
         if (result == NX_OK) result = nx_snapshot_exchange_publish(worker->exchange, data, bytes,
             native_dispose, &worker->disposals);
         if (result != NX_OK) free(data);
         pthread_mutex_lock(&worker->mutex);
         worker->prepared = 0; worker->working = 0; ++worker->completed; worker->result = result;
         if (result == NX_OK) ++worker->publications;
+        if (result==NX_OK && original.bitmap.pixels) {
+            free((void *)worker->png_source.bitmap.pixels);
+            worker->png_source=original;
+            original=(native_png_source){0};
+        }
         pthread_mutex_unlock(&worker->mutex);
+        free((void *)original.bitmap.pixels);
         native_wake(worker,NATIVE_FRAME_READY);
 #ifdef CONTENT_NATIVE_PDF
         if (result == NX_OK) native_index_pdf(worker,job);
@@ -373,6 +391,7 @@ static int native_worker_close(native_worker *worker) {
         if (pthread_join(worker->thread, NULL)) _Exit(1);
         worker->started = 0;
     }
+    free((void *)worker->png_source.bitmap.pixels);
 #ifdef CONTENT_NATIVE_PDF
     content_pdf_index_destroy(worker->pdf_index.index);
     free(worker->thumbnail_result.frame);
@@ -412,6 +431,24 @@ static native_worker_state native_state(native_worker *worker) {
     pthread_mutex_unlock(&worker->mutex);
     return state;
 }
+
+#ifdef CONTENT_NATIVE_PNG
+static void native_png_take(native_worker *worker,native_png_source *cache,content_surface_status base) {
+    pthread_mutex_lock(&worker->mutex);
+    native_png_source source=worker->png_source;
+    worker->png_source=(native_png_source){0};
+    pthread_mutex_unlock(&worker->mutex);
+    if (source.bitmap.pixels) {
+        free((void *)cache->bitmap.pixels);
+        *cache=source;
+    }
+    if (cache->request.generation!=base.request.generation || cache->request.resize!=base.request.resize ||
+        cache->sequence<base.sequence) {
+        free((void *)cache->bitmap.pixels);
+        *cache=(native_png_source){0};
+    }
+}
+#endif
 
 #ifdef CONTENT_NATIVE_PDF
 static native_pdf_index_result native_take_pdf_index(native_worker *worker) {

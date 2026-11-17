@@ -22,7 +22,6 @@ typedef struct pdf_detail {
 /* Called between synchronous presentations. Pan affects placement only. */
 void pdf_detail_select(pdf_detail *detail, content_surface_status base, nx_rect image,
     unsigned page, double output_scale);
-nx_rect pdf_detail_destination(content_surface_status base, nx_rect image);
 int pdf_detail_missing(const pdf_detail *detail);
 /* Transfers or frees the completion. Failed requests leave the fallback
    usable and are retried only after a change in the desired raster. */

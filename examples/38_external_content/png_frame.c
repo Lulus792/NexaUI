@@ -31,22 +31,28 @@ done:
     return result;
 }
 
-nx_result content_png_frame_fit(const void *encoded, size_t encoded_size, content_request request,
-    uint64_t sequence, void **out, size_t *out_size, content_png_fit *fit) {
-    if (!encoded || !encoded_size || !out || !out_size || !request.generation || !request.resize ||
+static nx_result check_frame(content_request request,uint64_t sequence,void **out,size_t *out_size) {
+    if (!out || !out_size || !request.generation || !request.resize ||
         !request.width || !request.height || !sequence) return NX_ERROR_ARGUMENT;
     if (request.width > NX_VIEWPORT_MAX_DIMENSION || request.height > NX_VIEWPORT_MAX_DIMENSION)
         return NX_ERROR_LIMIT;
-    size_t stride=(size_t)request.width*4u;
-    if (stride>CONTENT_PNG_PIXEL_LIMIT/request.height) return NX_ERROR_LIMIT;
-    nx_bitmap_view bitmap;
-    nx_result result=content_png_bitmap(encoded,encoded_size,&bitmap);
-    if (result!=NX_OK) return result;
+    return (size_t)request.width*4u>CONTENT_PNG_PIXEL_LIMIT/request.height?NX_ERROR_LIMIT:NX_OK;
+}
+
+nx_result content_png_fit_bitmap(nx_bitmap_view bitmap,content_request request,
+    uint64_t sequence,void **out,size_t *out_size,content_png_fit *fit) {
+    nx_result checked=check_frame(request,sequence,out,out_size);
+    if (checked!=NX_OK) return checked;
     uint32_t width=bitmap.width,height=bitmap.height;
+    if (!bitmap.pixels || bitmap.format!=NX_BITMAP_RGBA8 || !width || !height ||
+        width>CONTENT_PNG_SOURCE_DIMENSION || height>CONTENT_PNG_SOURCE_DIMENSION ||
+        bitmap.stride_bytes!=(size_t)width*4u || bitmap.stride_bytes>CONTENT_PNG_PIXEL_LIMIT/height)
+        return NX_ERROR_ARGUMENT;
+    size_t stride=(size_t)request.width*4u;
 
     size_t bytes = sizeof(content_frame_header) + stride * request.height;
     uint8_t *data = calloc(1, bytes);
-    if (!data) { free((void *)bitmap.pixels);return NX_ERROR_MEMORY; }
+    if (!data) return NX_ERROR_MEMORY;
 
     uint32_t fit_width = request.width, fit_height = request.height;
     /* Dimension bounds keep products below UINT32_MAX. */
@@ -70,8 +76,21 @@ nx_result content_png_frame_fit(const void *encoded, size_t encoded_size, conten
     *out = data;
     *out_size = bytes;
     if (fit) *fit = (content_png_fit){width, height, x_offset, y_offset, fit_width, fit_height};
-    free((void *)bitmap.pixels);
     return NX_OK;
+}
+
+nx_result content_png_frame_fit(const void *encoded, size_t encoded_size, content_request request,
+    uint64_t sequence, void **out, size_t *out_size, content_png_fit *fit) {
+    if (!encoded || !encoded_size) return NX_ERROR_ARGUMENT;
+    nx_result result=check_frame(request,sequence,out,out_size);
+    if (result!=NX_OK) return result;
+    nx_bitmap_view bitmap;
+    result=content_png_bitmap(encoded,encoded_size,&bitmap);
+    if (result==NX_OK) {
+        result=content_png_fit_bitmap(bitmap,request,sequence,out,out_size,fit);
+        free((void *)bitmap.pixels);
+    }
+    return result;
 }
 
 nx_result content_png_frame(const void *encoded, size_t encoded_size, content_request request,

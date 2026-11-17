@@ -78,6 +78,8 @@ nx_result content_surface_map_commands(content_surface *surface,
     const nx_bitmap_view *replacement, const nx_command **out);
 nx_result content_surface_get_status(const content_surface *surface,
     content_surface_status *out);
+/* Place the fitted pixels inside the transformed padded canvas. */
+nx_rect content_image_destination(content_surface_status base,nx_rect canvas);
 /* Borrow the accepted frame's text until the next draw/resize or destroy. */
 nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span *out);
 /* Same borrow lifetime as text. Byte endpoints refer to that text. */

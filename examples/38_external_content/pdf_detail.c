@@ -12,16 +12,11 @@ static int same_request(pdf_detail_key a, pdf_detail_key b) {
     return same_page(a,b) && a.edge==b.edge;
 }
 
-nx_rect pdf_detail_destination(content_surface_status base, nx_rect image) {
-    float sx=image.width/(float)base.request.width, sy=image.height/(float)base.request.height;
-    return (nx_rect){image.x+base.image.x*sx,image.y+base.image.y*sy,base.image.width*sx,base.image.height*sy};
-}
-
 void pdf_detail_select(pdf_detail *detail, content_surface_status base, nx_rect image,
     unsigned page, double output_scale) {
     pdf_detail_key wanted={0};
     if (base.sequence && page && base.image.width && base.image.height) {
-        nx_rect area=pdf_detail_destination(base,image);
+        nx_rect area=content_image_destination(base,image);
         double size=ceil(fmin(CONTENT_PDF_RASTER_EDGE,fmax(area.width,area.height)*output_scale));
         double staged=fmax(base.image.width,base.image.height);
         double source=fmax(base.image.source_width,base.image.source_height);

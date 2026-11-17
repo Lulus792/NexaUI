@@ -219,6 +219,46 @@ static int pdf_zoom_pixels(Display *display,Window window,int patch_x,const char
     return 0;
 }
 
+static int png_portrait_pixels(Display *display,Window window,int zoomed,int pan,const char *name) {
+    int left=zoomed?146:172,right=448-left;
+    for (unsigned attempt=0;attempt<100;++attempt) {
+        XImage *image=XGetImage(display,window,content_left,content_top,448,208,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        unsigned long margin=XGetPixel(image,left-1,170)&0xffffffu;
+        int ok=margin!=0x47a31fu&&(XGetPixel(image,right,170)&0xffffffu)==margin&&
+            (XGetPixel(image,left,170)&0xffffffu)==0x47a31fu&&(XGetPixel(image,right-1,170)&0xffffffu)==0x47a31fu;
+        for (int y=2;ok&&y<206;++y) {
+            int source=zoomed?(4*(y+52+pan)+2)/3:2*y;
+            if (!zoomed&&source>=192&&source<224) continue;
+            unsigned long expected=source<192?0x1753c5u:source>=224?0x47a31fu:
+                source%2?0xffce56u:0xdf2437u;
+            ok=(XGetPixel(image,224,y)&0xffffffu)==expected;
+        }
+        if (ok) ok=save_ppm(image,0,0,448,208,name);
+        XDestroyImage(image);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int png_portrait_semantics(AtspiAccessible *app,int zoomed) {
+    const char *name="PNG image, 208 × 416 pixels";
+    for (unsigned i=0;i<100;++i) {
+        AtspiAccessible *node=find(app,name,0);
+        AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
+        AtspiRect *rect=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+        int ok=rect&&atspi_accessible_get_role(node,NULL)==ATSPI_ROLE_IMAGE&&
+            abs(rect->x-(zoomed?162:188))<=1&&rect->y==136&&abs(rect->width-(zoomed?156:104))<=1&&rect->height==208;
+        g_free(rect);
+        if (component) g_object_unref(component);
+        if (node) g_object_unref(node);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
 static int pdf_detail_capture(Display *display,Window window,int mode,const char *name) {
     for (unsigned attempt=0;attempt<100;++attempt) {
         XImage *image=XGetImage(display,window,content_left,content_top,448,208,AllPlanes,ZPixmap);
@@ -604,6 +644,7 @@ int main(int argc,char **argv) {
     const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int png_case=!strcmp(test_case,"png");
+    int png_viewer=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_VIEWER");
     int pdf_case=!strcmp(test_case,"pdf");
     int compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
     int links=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER");
@@ -614,7 +655,7 @@ int main(int argc,char **argv) {
     const char *export_path=pdf_case?getenv("NEXAUI_CONTENT_TEST_EXPORT_PATH"):NULL;
     int thumbnails=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     int properties=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
-    const char *viewport=pdf_case?"PDF page image":"Fixture frame";
+    const char *viewport=pdf_case?"PDF page image":png_case?"PNG image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
@@ -653,6 +694,7 @@ int main(int argc,char **argv) {
     CHECK((retired=find(app,viewport,0))&&dimensions(retired));
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
     CHECK(capture(display,outer,blue,"fresh"));
+    if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0)&&press(app,"Zoom in"));
     if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n"))&&pdf_word_geometry(first_text,120,6,195));
     if(links) CHECK((old_link=find(app,"PDF link to page 2",0))&&pdf_link_bounds(old_link)&&
         atspi_accessible_get_child_count(retired,NULL)==3);
@@ -677,6 +719,7 @@ int main(int argc,char **argv) {
         CHECK(observe(app,pdf_case?"PDF rendering failed; page retained.":"PNG decoding failed; image retained.",0));
         CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
         CHECK(capture(display,outer,blue,"bad-retained"));
+        if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0));
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
             pdf_word_geometry(first_text,120,6,195));
         if(links) CHECK(!state(old_link,ATSPI_STATE_DEFUNCT)&&pdf_link_bounds(old_link));
@@ -730,9 +773,21 @@ int main(int argc,char **argv) {
         thumbnails?"PDF page 2 of 7.":pdf_case?"PDF page 2 of 2.":"Frame recovered.",0));
     if(!png_case&&!pdf_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
     CHECK((fresh=find(app,viewport,0))&&dimensions(fresh));
-    CHECK(host_marker(host_log,pdf_case?
+    CHECK(host_marker(host_log,(pdf_case||png_viewer)?
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
+    if (png_viewer) {
+        CHECK(png_portrait_semantics(app,1)&&png_portrait_pixels(display,outer,1,0,"png-portrait-center"));
+        CHECK(focus(app,viewport)&&drive("key","Right")&&png_portrait_pixels(display,outer,1,0,"png-portrait-axis-locked"));
+        CHECK(drive("key","Down")&&png_portrait_pixels(display,outer,1,48,"png-portrait-panned"));
+        CHECK(press(app,"Scale 2x")&&observe(app,"Waiting for scaled frame.",0));
+        CHECK(press(app,"Publish frame")&&observe(app,"Scaled frame ready.",0));
+        CHECK(png_portrait_semantics(app,1)&&png_portrait_pixels(display,outer,1,48,"png-portrait-scaled"));
+        CHECK(focus(app,viewport)&&drive("key","ctrl+0")&&png_portrait_semantics(app,0));
+        CHECK(png_portrait_pixels(display,outer,0,0,"png-portrait-fit")&&focus(app,"Close")&&drive("key","Return"));
+        puts("PNG_VIEWER verified: original samples, fitted image bounds, locked axis, pan, metadata and backing scale");
+        goto closed;
+    }
     if (detail_case) CHECK(pdf_detail_capture(display,outer,0,"pdf-detail-fit-before"));
     else CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
