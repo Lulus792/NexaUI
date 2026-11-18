@@ -37,6 +37,7 @@ def main():
         return 2
     registry, client, host = sys.argv[1:4]
     discovery = len(sys.argv) == 5
+    client_timeout = int(os.environ.get('NEXAUI_TEST_ATSPI_CLIENT_TIMEOUT', '35'))
     with tempfile.TemporaryDirectory(prefix="nexaui-atspi-") as directory:
         address = f"unix:path={directory}/bus"
         bus_env = os.environ.copy()
@@ -114,7 +115,7 @@ def main():
             if client == "--optional" and "NEXAUI_TEST_DBUS_LIBRARY_DIR" in env:
                 client_env["LD_LIBRARY_PATH"] = env["NEXAUI_TEST_DBUS_LIBRARY_DIR"]
             client_process = subprocess.Popen(arguments, env=client_env, start_new_session=True)
-            result = client_process.wait(timeout=35)
+            result = client_process.wait(timeout=client_timeout)
             if result:
                 print(f"AT-SPI client exited with {result}", file=sys.stderr)
             return result

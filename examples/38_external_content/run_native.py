@@ -471,9 +471,12 @@ def main():
             env.update(NEXAUI_CONTENT_TEST_PDF_URL='1',
                        NEXAUI_CONTENT_TEST_URI_LAUNCHER=str(args.build_dir / 'content_atspi_peer'),
                        NEXAUI_CONTENT_TEST_URI_RECEIPT=str(args.work_dir / 'uri-receipt.txt'))
+    if args.guest_microphone:
+        env['NEXAUI_TEST_ATSPI_CLIENT_TIMEOUT'] = '75'
     command = ['xvfb-run', '-a', '-s', '-screen 0 1600x1200x24', sys.executable,
                str(repo / 'tests/run_weston_native.py'), '--work-dir', str(args.work_dir),
-               '--timeout', '60', '--', sys.executable, str(repo / 'tests/run_atspi_native.py'),
+               '--timeout', '82' if args.guest_microphone else '60', '--',
+               sys.executable, str(repo / 'tests/run_atspi_native.py'),
                str(args.registry), str(args.build_dir / 'content_atspi_peer'),
                str(args.build_dir / 'content_native_host')]
     if args.pdf_compose or args.browser_input or args.browser_pointer:
