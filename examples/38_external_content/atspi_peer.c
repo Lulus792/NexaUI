@@ -8,6 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
@@ -604,15 +605,38 @@ static int guest_resource_counter(AtspiAccessible *app,const char *prefix,unsign
 }
 
 typedef struct guest_reset_scope { char environment[33], checkpoint[65]; } guest_reset_scope;
-static int read_guest_reset_scope(AtspiAccessible *app,guest_reset_scope *scope) {
+static int read_guest_reset_scope(AtspiAccessible *app,guest_reset_scope *scope,const char *directory) {
     const char *dialog="Reset preview", *hex="0123456789abcdef";
+    char grant[128];
+    snprintf(grant,sizeof(grant),"Host files stay: %s",directory?directory:"");
     return observe(app,"Checkpoint SHA-256",0)&&observe(app,"Work disk: 16777216 bytes",0)&&
-        observe(app,"Work disk changes would be replaced.",0)&&observe(app,"No external write grants.",0)&&
+        observe(app,"Work disk changes would be replaced.",0)&&observe(app,directory?grant:"No external write grants.",0)&&
         guest_inspector_text(app,dialog,"Environment ",scope->environment,sizeof(scope->environment))&&
         guest_inspector_text(app,dialog,"Checkpoint 1 of 2 ",scope->checkpoint,33)&&
         guest_inspector_text(app,dialog,"Checkpoint 2 of 2 ",scope->checkpoint+32,33)&&
         strlen(scope->environment)==32&&strspn(scope->environment,hex)==32&&
         strlen(scope->checkpoint)==64&&strspn(scope->checkpoint,hex)==64;
+}
+
+static int read_guest_sharing(AtspiAccessible *app,const char *directory) {
+    char row[128];
+    snprintf(row,sizeof(row),"Host directory: %s",directory?directory:"");
+    return observe(app,"Guest sharing",0)&&observe(app,"Clipboard: unavailable",0)&&
+        observe(app,directory?"Files: read/write":"Files: unavailable",0)&&observe(app,"Network: unavailable",0)&&
+        observe(app,"Microphone: unavailable",0)&&observe(app,"Devices: unavailable",0)&&(!directory||observe(app,row,0));
+}
+
+static int read_guest_export(const char *directory, struct stat *info) {
+    char path[128];
+    snprintf(path,sizeof(path),"%s/guest-export.txt",directory);
+    int fd=open(path,O_RDONLY|O_NOFOLLOW|O_NONBLOCK);
+    if (fd<0) return 0;
+    static const char expected[]="NexaUI guest export\n";
+    char data[sizeof(expected)];
+    int ok=!fstat(fd,info)&&S_ISREG(info->st_mode)&&info->st_size==(off_t)(sizeof(expected)-1)&&
+        read(fd,data,sizeof(data))==(ssize_t)(sizeof(expected)-1)&&!memcmp(expected,data,sizeof(expected)-1);
+    close(fd);
+    return ok;
 }
 
 static AtspiAccessible *pdf_text(AtspiAccessible *app, const char *expected) {
@@ -1158,7 +1182,18 @@ int main(int argc,char **argv) {
         puts("BROWSER_ATSPI verified: document hierarchy, Unicode text, clipped image, retirement and native action");
     } else if (guest_desktop) {
         CHECK(guest_video(app,1)&&input_chrome(display,id,"guest-desktop-scaled"));
-        CHECK(observe(app,"Host sharing unavailable: clipboard, files, network, microphone, devices.",0));
+        CHECK(observe(app,"Review host access in Sharing.",0));
+        const char *directory=NULL;
+        char shared[100];
+        if (getenv("NEXAUI_CONTENT_TEST_FILE_SHARE")) {
+            const char *address=getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET");
+            const char *end=address?strrchr(address,'/'):NULL;
+            CHECK(end&&end-address<80);
+            snprintf(shared,sizeof(shared),"%.*s/host-export",(int)(end-address),address);
+            directory=shared;
+        }
+        CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory)&&
+            input_chrome(display,id,"guest-sharing")&&drive("key","Escape")&&observe(app,"Sharing",1));
         unsigned long long reads=0, before=0, after=0;
         guest_reset_scope baseline={0}, preview={0};
         CHECK(focus(app,"Resources")&&drive("key","Return")&&observe(app,"Guest resources",0)&&
@@ -1170,7 +1205,7 @@ int main(int argc,char **argv) {
         } else CHECK(observe(app,"No persistent disk attached",0));
         CHECK(input_chrome(display,id,"guest-resources-first")&&drive("key","Escape")&&observe(app,"Resources",1));
         if (guest_storage) {
-            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&baseline)&&
+            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&baseline,directory)&&
                 input_chrome(display,id,"guest-reset-first"));
             CHECK(drive("key","Escape")&&observe(app,"Review reset",1));
         }
@@ -1185,9 +1220,14 @@ int main(int argc,char **argv) {
         CHECK(drive("mouseup","1")&&drive("keyup","shift")&&drive("keyup","ctrl"));
         CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
+        if (directory) {
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory)&&
+                focus(app,"Close sharing")&&drive("key","Return")&&observe(app,"Sharing",1));
+            puts("GUEST_SHARING_NATIVE verified: exact File grant and four unavailable channels across disconnect");
+        }
         puts("GUEST_DESKTOP_NATIVE verified: fitted live Linux desktop, guest terminal typing, host escape and retained disconnect");
         if (guest_storage) {
-            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&preview)&&
+            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&preview,directory)&&
                 !strcmp(baseline.environment,preview.environment)&&!strcmp(baseline.checkpoint,preview.checkpoint)&&
                 input_chrome(display,id,"guest-reset-after-save"));
             CHECK(focus(app,"Close reset preview")&&drive("key","Return")&&observe(app,"Review reset",1)&&
@@ -1200,11 +1240,18 @@ int main(int argc,char **argv) {
             printf("GUEST_STORAGE_NATIVE before=%llu after=%llu\n",before,after);
             CHECK(drive("key","Escape")&&observe(app,"Resources",1)&&browser_pixel(display,outer,156,43,0x00a800u));
             if (guest_reset) {
-                CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&preview)&&
+                struct stat before_reset={0}, after_reset={0};
+                if (directory) CHECK(read_guest_export(directory,&before_reset));
+                CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&preview,directory)&&
                     !strcmp(baseline.environment,preview.environment)&&!strcmp(baseline.checkpoint,preview.checkpoint)&&
                     observe(app,"Stops the guest. The previous disk is kept.",0));
                 CHECK(focus(app,"Restore checkpoint")&&drive("key","Return")&&
                     observe(app,"Checkpoint restored. Guest stopped.",0)&&input_chrome(display,id,"guest-reset-applied"));
+                if (directory) {
+                    CHECK(read_guest_export(directory,&after_reset)&&before_reset.st_dev==after_reset.st_dev&&
+                        before_reset.st_ino==after_reset.st_ino);
+                    puts("GUEST_SHARING_NATIVE verified: host file bytes and identity preserved by reset");
+                }
                 CHECK(focus(app,"Close reset preview")&&drive("key","Return")&&observe(app,"Review reset",1));
                 CHECK(drive("key","Return")&&observe(app,"Checkpoint restored. Guest stopped.",0)&&
                     focus(app,"Close reset preview")&&drive("key","Return")&&observe(app,"Review reset",1));

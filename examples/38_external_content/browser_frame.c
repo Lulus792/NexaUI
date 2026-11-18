@@ -86,7 +86,7 @@ static uint64_t wire_u64(const uint8_t *bytes) {
     return ((uint64_t)wire_u32(bytes)<<32)|wire_u32(bytes+4);
 }
 
-enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64, GUEST_ACTION_BYTES=5 };
+enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64, GUEST_ACTION_BYTES=5, GUEST_SHARING_BYTES=8 };
 static nx_result read_guest_resources(const uint8_t *wire,size_t bytes,content_guest_resources *out) {
     if (bytes!=GUEST_RESOURCE_BYTES||memcmp(wire,"NXR1",4)) return NX_ERROR_ARGUMENT;
     content_guest_resources value={wire[4],wire[5],wire_u16(wire+6),wire_u64(wire+8),
@@ -99,12 +99,37 @@ static nx_result read_guest_resources(const uint8_t *wire,size_t bytes,content_g
     return NX_OK;
 }
 
+static nx_result read_guest_share_path(const uint8_t *path,size_t length,char out[GUEST_SHARE_PATH_LIMIT+1]) {
+    if (length>GUEST_SHARE_PATH_LIMIT || (length&&path[0]!='/')) return NX_ERROR_ARGUMENT;
+    for (size_t i=0;i<length;++i) {
+        uint8_t c=path[i];
+        if (!((c>='a'&&c<='z')||(c>='A'&&c<='Z')||(c>='0'&&c<='9')||
+              c=='_'||c=='-'||c=='.'||c=='/')) return NX_ERROR_ARGUMENT;
+    }
+    memcpy(out,path,length);
+    out[length]=0;
+    return NX_OK;
+}
+
+static nx_result read_guest_sharing(const uint8_t *wire,size_t bytes,content_guest_sharing *out) {
+    if (bytes==1&&wire[0]=='U') return NX_ERROR_STATE;
+    if (bytes<GUEST_SHARING_BYTES||memcmp(wire,"NXS1",4)||wire_u32(wire+4)!=bytes-GUEST_SHARING_BYTES)
+        return NX_ERROR_ARGUMENT;
+    content_guest_sharing value={0};
+    nx_result result=read_guest_share_path(wire+GUEST_SHARING_BYTES,bytes-GUEST_SHARING_BYTES,value.file_share);
+    if (result==NX_OK) *out=value;
+    return result;
+}
+
 static nx_result read_guest_preview(const uint8_t *wire,size_t bytes,content_guest_reset_preview *out) {
     if (bytes==1&&wire[0]=='U') return NX_ERROR_STATE;
     static const uint8_t zero[32]={0};
-    if (bytes!=GUEST_PREVIEW_BYTES||memcmp(wire,"NXV1",4)||wire_u32(wire+60)||
+    if (bytes<GUEST_PREVIEW_BYTES||wire_u32(wire+60)!=bytes-GUEST_PREVIEW_BYTES||
+        memcmp(wire,bytes==GUEST_PREVIEW_BYTES?"NXV1":"NXV2",4)||
         !memcmp(wire+4,zero,16)||!memcmp(wire+20,zero,32)||!wire_u64(wire+52)) return NX_ERROR_ARGUMENT;
     content_guest_reset_preview value={.capacity=wire_u64(wire+52)};
+    nx_result result=read_guest_share_path(wire+GUEST_PREVIEW_BYTES,bytes-GUEST_PREVIEW_BYTES,value.file_share);
+    if (result!=NX_OK) return result;
     memcpy(value.environment,wire+4,sizeof(value.environment));
     memcpy(value.checkpoint,wire+20,sizeof(value.checkpoint));
     *out=value;
@@ -176,7 +201,8 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     }
     if (!send_request(fd,line,send_size,deadline)) goto done;
     size_t prefix=edit?8u:0;
-    size_t capacity=guest_report?(scope?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:GUEST_PREVIEW_BYTES)+1u:
+    size_t capacity=guest_report?(scope?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:
+        (kind==CONTENT_GUEST_SHARING?GUEST_SHARING_BYTES:GUEST_PREVIEW_BYTES)+GUEST_SHARE_PATH_LIMIT)+1u:
         prefix+(accessible?4u+BROWSER_AX_WIRE_LIMIT:0)+CONTENT_PNG_ENCODED_LIMIT+1u;
     encoded=malloc(capacity);
     if (!encoded) { result=NX_ERROR_MEMORY;goto done; }
@@ -187,8 +213,11 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
             if (size!=GUEST_ACTION_BYTES || memcmp(encoded,"NXA1",4) ||
                 encoded[4]<GUEST_RESET_APPLIED || encoded[4]>GUEST_RESET_UNREQUESTED) result=NX_ERROR_ARGUMENT;
             else *(unsigned *)guest_report=encoded[4];
-        } else if (result==NX_OK) result=kind==CONTENT_GUEST_RESOURCES?read_guest_resources(encoded,size,guest_report):
-            read_guest_preview(encoded,size,guest_report);
+        } else if (result==NX_OK) {
+            if (kind==CONTENT_GUEST_RESOURCES) result=read_guest_resources(encoded,size,guest_report);
+            else if (kind==CONTENT_GUEST_SHARING) result=read_guest_sharing(encoded,size,guest_report);
+            else result=read_guest_preview(encoded,size,guest_report);
+        }
         goto done;
     }
     if (result==NX_OK && input && kind==2 && size==1u && encoded[0]=='P')
@@ -290,6 +319,11 @@ nx_result content_guest_frame(const char *path,content_request request,uint64_t 
 nx_result content_guest_read_resources(const char *path,content_request request,content_guest_resources *out) {
     if (!out) return NX_ERROR_ARGUMENT;
     return transfer(path,request,1,CONTENT_GUEST_RESOURCES,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL);
+}
+
+nx_result content_guest_read_sharing(const char *path,content_request request,content_guest_sharing *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    return transfer(path,request,1,CONTENT_GUEST_SHARING,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL);
 }
 
 nx_result content_guest_read_reset_preview(const char *path,content_request request,content_guest_reset_preview *out) {

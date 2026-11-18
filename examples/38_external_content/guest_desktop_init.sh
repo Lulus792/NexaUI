@@ -44,6 +44,16 @@ if [ -n "$work" ]; then
         printf '%s\n' 'NEXAUI_STORAGE fresh' >/dev/ttyS0
     fi
 fi
+case " $(cat /proc/cmdline) " in
+    *" nexaui.export=write "*)
+        modprobe 9pnet_virtio
+        modprobe 9p
+        mkdir -p /mnt/export
+        mount -t 9p -o trans=virtio,version=9p2000.L,nodev,nosuid,noexec nexaui-export /mnt/export
+        : >/run/file-export
+        printf '%s\n' 'NEXAUI_FILE_SHARE mounted' >/dev/ttyS0
+        ;;
+esac
 for event in /dev/input/event*; do
     if udevadm info -q property "$event" | grep -qx ID_INPUT_MOUSE=1; then
         evtest "$event" >/dev/ttyS0 2>&1 &
@@ -93,6 +103,11 @@ printf 'NexaUI console test\r\n'
 printf '%s\n' NEXAUI_DESKTOP_READY >/dev/ttyS0
 while IFS= read -r line; do
     if [ "$line" = nexa ]; then
+        if [ -f /run/file-export ]; then
+            printf '%s\n' 'NexaUI guest export' >/mnt/export/guest-export.txt || exit 1
+            sync
+            printf '%s\n' 'NEXAUI_FILE_SHARE saved' >/dev/ttyS0
+        fi
         if [ -f /run/work-writable ]; then
             printf '%s\n' 'NexaUI persisted guest data' >/mnt/work/state.txt || exit 1
             sync

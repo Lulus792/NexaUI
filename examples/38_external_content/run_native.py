@@ -4,6 +4,7 @@ import hashlib
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import struct
 import sys
@@ -214,10 +215,21 @@ def verify_guest_disk(engine, firmware, boot, initrd, disk, root, reset=False):
     print(f'{label} mode=readonly bytes={capacity} read={read} written={written} sha256={before}',flush=True)
 
 
-def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False):
+def verify_guest_export(path):
+    expected = b'NexaUI guest export\n'
+    fd = os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+    with os.fdopen(fd,'rb') as exported:
+        info = os.fstat(exported.fileno())
+        if not stat.S_ISREG(info.st_mode) or info.st_size!=len(expected) or exported.read(len(expected)+1)!=expected:
+            raise RuntimeError('Unexpected guest-written host file')
+    return info.st_dev,info.st_ino,hashlib.sha256(expected).hexdigest()
+
+
+def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False,
+              sharing=False):
     engine = str(engine.resolve(strict=True))
     firmware = str(firmware.resolve(strict=True))
-    with tempfile.TemporaryDirectory(prefix='nexaui-guest-') as directory:
+    with tempfile.TemporaryDirectory(prefix='nexaui-guest-',dir='/tmp' if sharing else None) as directory:
         root = Path(directory)
         if kernel:
             boot=kernel.resolve(strict=True)
@@ -240,6 +252,11 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
             print(f'GUEST_BOOT sector_sha256={hashlib.sha256(code).hexdigest()}',flush=True)
         address=root/'guest.sock'
         env['NEXAUI_CONTENT_TEST_GUEST_SOCKET']=str(address)
+        env.pop('NEXAUI_CONTENT_TEST_FILE_SHARE',None)
+        if sharing:
+            (root/'host-export').mkdir(mode=0o700)
+            env['NEXAUI_CONTENT_TEST_FILE_SHARE']='1'
+            print(f'GUEST_FILE_SHARE_GRANTED path={root / "host-export"}',flush=True)
         args=[sys.executable,str(Path(__file__).with_name('guest_fixture.py')),
               engine,firmware,str(boot),str(address)]
         if initrd:
@@ -279,7 +296,13 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
                     raise RuntimeError('The retained disk is missing the guest-written content')
                 print(f'GUEST_RESET_RETAINED sha256={retained.hex()} bytes={len(contents)}',flush=True)
             # The engine inherits the private runtime environment for both boots.
+            export = root/'host-export'/'guest-export.txt'
+            before = verify_guest_export(export) if sharing else None
             verify_guest_disk(engine,firmware,str(boot),str(initrd),disk,root,reset=reset)
+            if sharing:
+                if verify_guest_export(export)!=before:
+                    raise RuntimeError('The external guest write changed during baseline verification')
+                print(f'GUEST_FILE_SHARE_VERIFIED path={export} sha256={before[2]}',flush=True)
         return result
 
 
@@ -313,6 +336,7 @@ def main():
     parser.add_argument('--guest-kernel', type=Path, help='Linux kernel for --case guest-desktop')
     parser.add_argument('--guest-initrd', type=Path, help='Alpine/Weston initramfs for --case guest-desktop')
     parser.add_argument('--guest-owner-restart', action='store_true', help='Replace the guest owner after a committed reset')
+    parser.add_argument('--guest-file-share', action='store_true', help='Grant the reset guest one private writable export')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -327,6 +351,8 @@ def main():
     desktop_guest=args.case in ('guest-desktop','guest-storage','guest-reset')
     if args.guest_owner_restart and args.case!='guest-reset':
         parser.error('--guest-owner-restart requires --case guest-reset')
+    if args.guest_file_share and args.case!='guest-reset':
+        parser.error('--guest-file-share requires --case guest-reset')
     if (desktop_guest or args.case=='guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
         parser.error('guest cases require --guest-engine and --guest-firmware')
     if desktop_guest != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
@@ -421,7 +447,7 @@ def main():
     if args.guest_engine:
         return run_guest(command,env,args.guest_engine,args.guest_firmware,args.guest_kernel,args.guest_initrd,
                          storage=args.case in ('guest-storage','guest-reset'),reset=args.case=='guest-reset',
-                         restart=args.guest_owner_restart)
+                         restart=args.guest_owner_restart,sharing=args.guest_file_share)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

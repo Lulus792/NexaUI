@@ -91,13 +91,14 @@ static nx_result button(nx_context *context, const nx_font_collection *fonts, ui
     const char *text, float x, float y, float width, int enabled, unsigned *action) {
     return scoped_button(context,fonts,id,1,text,text,x,y,width,enabled,action);
 }
-static nx_result input_hint(nx_context *context,const nx_font_collection *fonts,int guest_case) {
-    const char *hint=guest_case?"Host sharing unavailable: clipboard, files, network, microphone, devices.":
+static nx_result input_hint(nx_context *context,const nx_font_collection *fonts,int guest_case,int sharing) {
+    const char *hint=sharing?"Review host access in Sharing.":guest_case?
+        "Host sharing unavailable: clipboard, files, network, microphone, devices.":
         "Physical input fixture; exit: Ctrl+Shift+F12";
     return label(context,fonts,3,hint,(nx_rect){16,122,448,14},11);
 }
 enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INSPECT_CLOSE,
-       GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS };
+       GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS, GUEST_INSPECT_SHARING };
 typedef struct guest_inspector {
     uint64_t ticket;
     unsigned open, request;
@@ -126,8 +127,9 @@ static void guest_hex(const uint8_t *value,size_t bytes,char *out) {
 static nx_result guest_inspector_overlay(nx_context *context,const nx_font_collection *fonts,
     nx_window_info info,const guest_inspector *view,int disconnected,unsigned *action) {
     int preview=view->open==CONTENT_GUEST_RESET_PREVIEW;
-    const char *title=preview?"Reset preview":"Guest resources";
-    const char *close=preview?"Close reset preview":"Close resources";
+    int sharing=view->open==CONTENT_GUEST_SHARING;
+    const char *title=preview?"Reset preview":sharing?"Guest sharing":"Guest resources";
+    const char *close=preview?"Close reset preview":sharing?"Close sharing":"Close resources";
     float width=info.width<448?info.width-32:416;
     int awaiting=guest_reset_pending(view);
     nx_rect panel={(info.width-width)/2,44,width,preview?(view->can_apply?304:272):232};
@@ -143,7 +145,7 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         (nx_rect){x,y,width-128,24},17,ink);
     if (result==NX_OK) result=scoped_button(context,fonts,GUEST_INSPECT_CLOSE,GUEST_INSPECT_PANEL,
         close,"Close",panel.x+width-86,y-4,70,!awaiting,action);
-    char lines[9][96];
+    char lines[9][GUEST_SHARE_PATH_LIMIT+40];
     unsigned count=1;
     if (view->reset_started) {
         const char *status="Reset status unknown.";
@@ -156,9 +158,9 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
             result=scoped_button(context,fonts,GUEST_INSPECT_STATUS,GUEST_INSPECT_PANEL,"Check reset status",
                 "Check reset status",x,y+244,168,1,action);
     } else if (view->report.ticket!=view->ticket) {
-        strcpy(lines[0],preview?"Reading reset scope":"Reading guest resources");
+        strcpy(lines[0],preview?"Reading reset scope":sharing?"Reading guest sharing":"Reading guest resources");
     } else if (view->report.result!=NX_OK) {
-        strcpy(lines[0],preview?"Reset preview unavailable":"Guest resources unavailable");
+        strcpy(lines[0],preview?"Reset preview unavailable":sharing?"Guest sharing status unavailable":"Guest resources unavailable");
     } else if (preview) {
         const content_guest_reset_preview *scope=&view->report.preview;
         char environment[33], first[33], second[33];
@@ -172,7 +174,8 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         snprintf(lines[4],sizeof(lines[4]),"Checkpoint 1 of 2 %s",first);
         snprintf(lines[5],sizeof(lines[5]),"Checkpoint 2 of 2 %s",second);
         strcpy(lines[6],"Work disk changes would be replaced.");
-        strcpy(lines[7],"No external write grants.");
+        if (scope->file_share[0]) snprintf(lines[7],sizeof(lines[7]),"Host files stay: %s",scope->file_share);
+        else strcpy(lines[7],"No external write grants.");
         count=8;
         if (view->can_apply && disconnected) {
             strcpy(lines[count++],"Stops the guest. The previous disk is kept.");
@@ -180,6 +183,15 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
                 result=scoped_button(context,fonts,GUEST_INSPECT_RESTORE,GUEST_INSPECT_PANEL,"Restore checkpoint",
                     "Restore checkpoint",x,y+255,168,1,action);
         }
+    } else if (sharing) {
+        const char *directory=view->report.sharing.file_share;
+        strcpy(lines[0],"Clipboard: unavailable");
+        strcpy(lines[1],directory[0]?"Files: read/write":"Files: unavailable");
+        strcpy(lines[2],"Network: unavailable");
+        strcpy(lines[3],"Microphone: unavailable");
+        strcpy(lines[4],"Devices: unavailable");
+        count=5;
+        if (directory[0]) snprintf(lines[count++],sizeof(lines[0]),"Host directory: %s",directory);
     } else {
         const content_guest_resources *r=&view->report.resources;
         snprintf(lines[0],sizeof(lines[0]),"Guest %s",r->state==GUEST_RESOURCE_RUNNING?"running":"paused");
@@ -774,7 +786,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     const char *guest_status=inspector->reset_started?"Console disconnected.":guest_input_name(input_phase);
     if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts, 2,
         input_controls?(guest_case?guest_status:input_name(input_phase)):status,
-        (nx_rect){16,12,info.width-(pages_visible?262:zoom_visible?201:32),24},
+        (nx_rect){16,12,info.width-(pages_visible?262:zoom_visible?201:inspector->enabled?128:32),24},
         (pages_visible||png_case)&&phase==BAD_REJECTED?13:15) != NX_OK ||
         (search && pdf_find_field(context,window,fonts,query)!=NX_OK) ||
         (!gallery&&!search && (button(context,fonts,input_controls||browser_status?16u:10u,
@@ -795,7 +807,8 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
             phase==RECOVERED||(hit_page&&scale==1)||(gallery&&document->page&&pdf_hit_page(phase)),action)!=NX_OK) ||
         button(context,fonts,15,"Close",256,88,(pdf_case||inspector->enabled)&&info.width>=480?112:128,1,action)!=NX_OK) return 0;
     if (inspector->enabled&&!inspector->reset_started&&phase==SCALED_READY&&info.width>=480&&
-        button(context,fonts,GUEST_INSPECT,"Resources",376,88,88,1,action)!=NX_OK) return 0;
+        (button(context,fonts,GUEST_INSPECT,"Resources",376,88,88,1,action)!=NX_OK ||
+         button(context,fonts,GUEST_INSPECT_SHARING,"Sharing",376,8,88,1,action)!=NX_OK)) return 0;
     if (inspector->reset_enabled&&phase==SCALED_READY&&info.width>=480&&
         scoped_button(context,fonts,GUEST_INSPECT_RESET,1,"Review reset","Reset…",392,48,72,1,action)!=NX_OK)
         return 0;
@@ -805,7 +818,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
             button(context,fonts,PDF_SELECT_BUTTON,selection->active?"Done":"Select text",376,88,88,
                 text.length!=0,action)!=NX_OK) return 0;
     }
-    if(input_controls&&input_hint(context,fonts,guest_case)!=NX_OK) return 0;
+    if(input_controls&&input_hint(context,fonts,guest_case,inspector->enabled)!=NX_OK) return 0;
     if (pages_visible&&button(context,fonts,PDF_PAGES,gallery?"Gallery":"Pages",info.width-234,8,58,1,action)!=NX_OK) return 0;
     if (zoom_visible) {
         char zoom[16];
@@ -1300,11 +1313,12 @@ int main(void) {
             initial_job=1;
         }
         if (action==15) { result=0; break; }
-        if (!inspector.open&&((action==GUEST_INSPECT&&inspector.enabled&&!inspector.reset_started)||
+        if (!inspector.open&&(((action==GUEST_INSPECT||action==GUEST_INSPECT_SHARING)&&inspector.enabled&&!inspector.reset_started)||
                              (action==GUEST_INSPECT_RESET&&inspector.reset_enabled))) {
             if (content_input_release(input)!=NX_OK) goto done;
             if (input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING) input_phase=INPUT_RELEASED;
-            inspector.open=action==GUEST_INSPECT?CONTENT_GUEST_RESOURCES:CONTENT_GUEST_RESET_PREVIEW;
+            inspector.open=action==GUEST_INSPECT?CONTENT_GUEST_RESOURCES:
+                action==GUEST_INSPECT_SHARING?CONTENT_GUEST_SHARING:CONTENT_GUEST_RESET_PREVIEW;
             if (!inspector.reset_started) {
                 if (inspector.ticket==UINT64_MAX) goto done;
                 ++inspector.ticket;

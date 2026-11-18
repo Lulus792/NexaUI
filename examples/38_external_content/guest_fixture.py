@@ -24,6 +24,8 @@ INPUT_RECORD_SIZE = 5
 INPUT_KEY, INPUT_BUTTON, INPUT_MOTION = 1, 2, 3
 QMP_LIMIT = 16384
 RESET_RESTART_EXIT = 86
+SHARE_PATH_LIMIT = 96
+FILE_EXPORT_ID = 'nexaui-export'
 KEY_CODES = {k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
                   7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
@@ -34,7 +36,7 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
-                 reset_enabled=False):
+                 reset_enabled=False, file_share=None):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -42,6 +44,14 @@ class Guest:
         self.reset_enabled = reset_enabled
         self.reset_state = RESET_UNREQUESTED
         self.close_result = None
+        self.file_share = file_share
+        if self.file_share:
+            if not (reset_enabled and self.disk and self.file_share==self.disk.parent/'host-export'):
+                raise ValueError('File sharing requires the private reset fixture export')
+            self.share_path = os.fsencode(self.file_share)
+            if len(self.share_path)>SHARE_PATH_LIMIT or not re.fullmatch(rb'/[a-zA-Z0-9_./-]+',self.share_path):
+                raise ValueError('Invalid private export path')
+            self.share_identity = self.export_identity()
         if self.checkpoint:
             if not (self.desktop and self.disk and writable):
                 raise ValueError('Reset preview requires an owned writable disk')
@@ -64,6 +74,8 @@ class Guest:
             cmdline = 'console=ttyS0 quiet rootfstype=ramfs'
             if disk:
                 cmdline += ' nexaui.work=' + ('rw' if writable else 'ro')
+            if self.file_share:
+                cmdline += ' nexaui.export=write'
             boot_options = [
                 '-m', '768', '-device', 'virtio-vga,id=guest-gpu,xres=800,yres=600',
                 '-kernel', boot, '-initrd', initrd, '-append', cmdline,
@@ -72,6 +84,10 @@ class Guest:
                 node = {'driver':'raw','node-name':'work','read-only':not writable,
                         'file':{'driver':'file','filename':str(disk)}}
                 boot_options += ['-blockdev',json.dumps(node),'-device','virtio-blk-pci,drive=work,id=work-disk']
+            if self.file_share:
+                boot_options += [
+                    '-fsdev',f'local,id={FILE_EXPORT_ID},path={self.file_share},security_model=mapped-xattr,writeout=immediate',
+                    '-device',f'virtio-9p-pci,id={FILE_EXPORT_ID},fsdev={FILE_EXPORT_ID},mount_tag={FILE_EXPORT_ID}']
         else:
             boot_options = [
                 '-m', '32', '-device', 'VGA', '-serial', 'none',
@@ -261,6 +277,28 @@ class Guest:
               f'capacity={capacity} read={read} written={written}',flush=True)
         return struct.pack('>4sBBHQQQQ',b'NXR1',state,flags,cpus,ram,capacity,read,written)
 
+    def export_identity(self):
+        info = self.file_share.stat(follow_symlinks=False)
+        if not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode)!=0o700 or info.st_uid!=os.geteuid():
+            raise ValueError('File sharing requires the private export directory')
+        return info.st_dev, info.st_ino
+
+    def file_share_scope(self):
+        if not self.file_share:
+            return b''
+        if self.export_identity()!=self.share_identity or self.command('qom-get',
+                path=f'/machine/peripheral/{FILE_EXPORT_ID}', property='mount_tag')!=FILE_EXPORT_ID:
+            raise ValueError('The file grant changed')
+        return self.share_path
+
+    def sharing(self):
+        try:
+            path = self.file_share_scope()
+        except (OSError,ValueError,RuntimeError):
+            return b'U'
+        print(f'GUEST_SHARING files={path.decode() or "unavailable"}',flush=True)
+        return struct.pack('>4sI',b'NXS1',len(path))+path
+
     def check_reset_scope(self):
         if not self.checkpoint:
             raise ValueError('The owner has no reset baseline')
@@ -272,17 +310,18 @@ class Guest:
                 image_digest(self.checkpoint)!=self.checkpoint_hash or
                 image_identity(self.checkpoint.stat(follow_symlinks=False))!=self.checkpoint_identity):
             raise ValueError('The reset baseline or work disk changed')
+        return self.file_share_scope()
 
     def reset_preview(self):
         try:
-            self.check_reset_scope()
+            export = self.check_reset_scope()
         except (OSError,ValueError,KeyError,RuntimeError):
             print('GUEST_RESET_PREVIEW unavailable',flush=True)
             return b'U'
-        # The fixed offline fixture has no host-sharing channels or write grants.
         print(f'GUEST_RESET_PREVIEW environment={self.environment.hex()} checkpoint={self.checkpoint_hash.hex()} '
-              f'capacity={WORK_DISK_BYTES} grants=0',flush=True)
-        return struct.pack('>4s16s32sQ4x',b'NXV1',self.environment,self.checkpoint_hash,WORK_DISK_BYTES)
+              f'capacity={WORK_DISK_BYTES} grants={int(bool(export))}',flush=True)
+        magic = b'NXV2' if export else b'NXV1'
+        return struct.pack('>4s16s32sQI',magic,self.environment,self.checkpoint_hash,WORK_DISK_BYTES,len(export))+export
 
     def reset_matches(self, scope):
         return self.reset_enabled and scope==self.environment+self.checkpoint_hash
@@ -323,6 +362,8 @@ class Guest:
                 raise RuntimeError('The old guest failed to stop')
             if image_identity(self.disk.stat(follow_symlinks=False))!=self.disk_identity:
                 raise ValueError('The stopped work disk changed identity')
+            if self.file_share and self.export_identity()!=self.share_identity:
+                raise ValueError('The stopped guest export changed identity')
             previous=self.disk.with_name('work-before-reset.img')
             os.link(self.disk,previous,follow_symlinks=False)
             saved_identity, saved = image_snapshot(previous)
@@ -362,6 +403,8 @@ class Guest:
                               f'left={b"".join(buttons).decode()}',flush=True)
                         for storage in re.findall(rb'^NEXAUI_STORAGE (\w+)\r?$',output,re.M):
                             print(f'GUEST_STORAGE {storage.decode()}',flush=True)
+                        for export in re.findall(rb'^NEXAUI_FILE_SHARE (\w+)\r?$',output,re.M):
+                            print(f'GUEST_FILE_SHARE {export.decode()}',flush=True)
                     print(f'GUEST_CLOSE status={status} held={len(self.held)} buttons={len(self.buttons)} '
                           f'trace={self.trace_cursor.decode()}',flush=True)
                     self.command('quit')
@@ -393,7 +436,7 @@ def read_request(peer, desktop):
         generation, resize, width, height, kind = fields[:5]
         if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                 0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                kind in range(11 if desktop else 6) and len(fields)==(6 if kind in (5,9,10) else 5)):
+                kind in range(12 if desktop else 6) and len(fields)==(6 if kind in (5,9,10) else 5)):
             raise ValueError('Guest request outside the fixture limits')
         size = fields[5] if len(fields)==6 else 0
         if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
@@ -424,9 +467,10 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
         if (reset_mode not in ('drop-response','restart-before-reply') or not disk or not checkpoint or
                 Path(disk)!=address.parent/'work.img' or Path(checkpoint)!=address.parent/'baseline.img'):
             raise ValueError('Reset requires the private test harness images')
+    file_share = address.parent/'host-export' if reset_mode and os.environ.get('NEXAUI_CONTENT_TEST_FILE_SHARE')=='1' else None
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
-                      reset_enabled=bool(reset_mode))
+                      reset_enabled=bool(reset_mode),file_share=file_share)
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()
@@ -475,6 +519,9 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                             continue
                         if kind == 8:
                             peer.sendall(guest.reset_preview())
+                            continue
+                        if kind == 11:
+                            peer.sendall(guest.sharing())
                             continue
                         image = guest.frame()
                         peer.sendall(image)
