@@ -1613,3 +1613,61 @@ The backend supports one owner-prepared private test directory and
 requires Linux FUSE. Revocation covers I/O attempted after the owner
 confirms cutoff. Aetheri's production grant authority, the remaining
 sharing channels and guest accessibility remain open.
+
+## Native QEMU host-to-guest clipboard, 2026-11-18
+
+The tested consumer source is `1e0a2b64c41efce2477b751980d6344667745ebe`.
+Its selected Git archive has SHA-256
+`eac47404334edbb1b134332eb7e9a03dfdf8a8da427e87d1e89427708236f22e`.
+The Release and sanitizer Wayland-only SDK libraries came from
+`266404bf1743248f16eb289c0a1c0d99701cc395`. The SDK sources, build
+configuration and data match the consumer revision. The audit verifies
+both library hashes and compares the executable `/init` in the boot
+image with its archived Git source. The test uses QEMU 11.0.3,
+Weston 14.0.2 and Alpine wl-clipboard 2.2.1-r1.
+
+With `--guest-clipboard`, Sharing lists **Clipboard: one-time text to
+guest** independently of the file grant. **Review clipboard text**
+uses the public nonblocking Wayland read API on the host window.
+The owned review accepts up to 192 UTF-8 bytes, four LF-delimited lines
+and 32 scalars per line. It rejects invalid UTF-8, NUL and the fixture's
+disallowed control characters. Escape and window focus loss discard
+an unconfirmed review. **Copy text to guest** submits the exact
+displayed snapshot to the private owner.
+
+The owner checks the VM identity, a monotonic ticket and running
+guest state. Its private serial channel sends bounded text and a
+digest. In the guest, wl-copy offers the text over Wayland and wl-paste
+checks the exact bytes before the guest reports receipt. An independent
+Wayland client then reads the selection again when the native peer
+enters the guest. A transport deadline or mismatched reply retires the stream.
+The owner reports uncertain outcomes and refuses duplicate tickets. Normal logs contain state and
+receipt evidence without the text itself.
+[QEMU character devices](https://qemu.readthedocs.io/en/v11.0.0/system/invocation.html#character-device-options)
+[wl-clipboard clipboard source](https://github.com/bugaevc/wl-clipboard/blob/v2.2.1/src/wl-copy.c)
+
+Release and ASan/UBSan with leak detection passed the clipboard-only
+workflow. The peer exercises the oversized selection, Escape
+cancellation, native focus restoration, exact multiline review,
+explicit keyboard send and return to the guest. A combined Release
+run covers clipboard plus a separate runtime file grant, forced file
+cutoff and reset-owner replacement. The guest observes exactly one
+accepted clipboard transfer in each run. The review and confirmation
+status rows measured 12.85:1 in each tested profile.
+
+The first native pass received the guest acknowledgement but missed a
+specific terminal color. The final fixture focuses the guest terminal
+and uses the independent Wayland readback receipt as its acceptance
+criterion. The bundle includes the initial log and screenshots. The
+audited run passed 54 CTests across four profiles, 12 native
+runs and 106 focused checks. The focused checks cover stale, malformed
+and missing wire replies, bounded deadlines, source validation and
+existing file grant and reset behavior.
+
+The local evidence bundle `nexaui-qemu-clipboard461.tar.gz` has SHA-256
+`fdc62e91d92277fe273b60fe08e37dfb9d269301cfb871965b1e2d1e09930f52`. The companion `qemu-clipboard461-final.json` records the
+source, boot artifacts, tool hashes, test outcomes and archived hashes.
+
+The proof covers explicit host-to-guest text within the private VM
+fixture. Guest-to-host transfers, Aetheri production grant authority,
+the other sharing channels and guest accessibility remain open.
