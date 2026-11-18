@@ -1,10 +1,16 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
-The guest AT-SPI reader and frame composition advance A05/D08/R06 at `d50f6ed`.
-A QEMU guest supplies real GTK roles, Unicode text and bounds. The host
-maps them with the guest raster and retires the old semantic identifiers.
-Continuous relay and a native host assistive-client walkthrough remain open.
-[Guest accessibility snapshot evidence](external-content-report.md#qemu-guest-accessibility-snapshots-2026-11-18)
+The QEMU console pointer workflow advances I08/D08/P07 at `ca0cd7b`.
+The guest Linux input device receives both wheel axes and both side buttons.
+Host escape and exit into the letterbox release the held buttons. Guest app
+behavior, other guest platforms and Aetheri compositor acceptance remain open.
+[QEMU console pointer evidence](external-content-report.md#native-qemu-explorer-pointer-2026-11-18)
+
+The live guest accessibility workflow advances A05/D08/R06/I08/P07 at `f3e290d`.
+A native host AT-SPI client reads the selected GTK window through the
+QEMU console and observes its subtree retire on guest exit and disconnect.
+Multiple windows, guest actions, and screen-reader acceptance remain open.
+[Guest accessibility relay evidence](external-content-report.md#native-qemu-guest-accessibility-relay-2026-11-18)
 
 The emulated QEMU USB workflow advances D07/D08/I08/L11/P07 at `fadb4ca`.
 The host scopes an explicit read-only disk grant to the current VM. Independent

@@ -1942,3 +1942,74 @@ the exact guest binary, images and source hashes.
 The proven path covers a selected fullscreen window. Continuous transport,
 publication through the native host AT-SPI bridge, other window geometries,
 guest actions and a screen-reader walkthrough remain open.
+
+## Native QEMU guest accessibility relay, 2026-11-18
+
+The tested source is `f3e290df03a307914a7cdcf3c41c68ec978e7f25` on installed
+SDK `266404bf1743248f16eb289c0a1c0d99701cc395`. The optional
+`--guest-ax` workflow connects the selected fullscreen GTK window to the
+Wayland console through a private QEMU serial channel. The owner compares
+native AT-SPI snapshots around the QEMU screenshot. Missing or invalid
+metadata leaves a valid raster with an empty guest subtree.
+[QEMU serial options](https://www.qemu.org/docs/master/system/invocation.html)
+
+An independent host AT-SPI client reads the fixture's Unicode text, button
+roles and disabled state. It checks fitted bounds at 2× and observes the
+text change through the same AT-SPI object after native keyboard input.
+The password field is absent. Guest window exit invalidates the old objects,
+then reopening exposes a new subtree. Console disconnect retires those
+objects and leaves the last video frame visible.
+
+Forty CTests and four native runs passed. The runs cover Release, ASan/UBSan
+with leak detection, guest accessibility with both clipboard directions,
+and the baseline graphical guest. Ten transport cases, seven worker cases
+and six reset-receipt tests passed in each of two build profiles.
+
+The guest initramfs SHA-256 is
+`9294a9863d01893c9dcb5b0a831d3f3c9f1cf1b5be140271a26c3afbb024040c`.
+The archive `nexaui-qemu-ax-live467.tar.gz` SHA-256 is
+`1ac384d8762e3347afdf021ea3dfc1d3a2c131b4e1b45d1f3a41ab752b205fc0`.
+Its manifest records 37 verified members, including the matching source and
+the exact guest overlay.
+
+Several windows, other window geometries, guest action forwarding,
+screen-reader acceptance and Aetheri compositor adoption remain open.
+
+## Native QEMU Explorer pointer, 2026-11-18
+
+The tested source is `ca0cd7b7eb86de0420fa930962075fa4a55bfa05` on installed
+SDK `266404bf1743248f16eb289c0a1c0d99701cc395`. The graphical
+`--guest-pointer` profile requires the Linux guest to report a PS/2
+Explorer mouse with two wheel axes and two side buttons. It uses the
+existing host focus gate, fitted bounds and private QMP input path.
+The adapter accumulates sub-tick movement during the current input
+session and limits each native event to seven ticks per axis. The owner
+sends separate QMP input commands for the two axes.
+[QEMU 11.0.3 PS/2 packet handling](https://github.com/qemu/qemu/blob/v11.0.3/hw/input/ps2.c)
+[Linux 6.18 PS/2 input decoding](https://github.com/torvalds/linux/blob/v6.18/drivers/input/mouse/psmouse-base.c)
+
+An independent native peer sends four Wayland wheel directions and both
+side-button presses from a private Weston seat. The guest's `evtest`
+trace reports all four signed wheel changes. The host escape releases
+both held side buttons. After re-entering, movement into the letterbox
+releases a held side button again. Host wheel input and physical button
+releases after exit produce no additional guest events.
+
+Forty CTests passed across Release, ASan/UBSan with leak detection and the
+default build. Both instrumented and Release native pointer workflows
+passed. The VGA workflow passed with its three-button profile. A combined
+run first passed its pointer checks and timed out waiting for the GTK
+startup marker. An unchanged retry passed the combined pointer and
+accessibility workflow. The evidence includes both outcomes.
+
+A focused C probe covers fractional ticks, saturation, focus retirement,
+and rollback when the input queue is full. Seven owner protocol cases and
+six reset-receipt tests passed in each of two profiles. The audit retains
+the exact source and 27 verified evidence members in
+`nexaui-qemu-pointer468.tar.gz`, SHA-256
+`1e5f6ea351973d033f836ef61980dad990db7511c0f25e08efd76b99cb19d972`.
+The guest uses the same kernel and initramfs as the accessibility relay.
+
+The verified scope reaches the guest Linux input device. Guest application
+reactions, physical mice and touchpads, other guest operating systems,
+and Aetheri compositor acceptance remain open.
