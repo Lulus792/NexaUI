@@ -1792,3 +1792,57 @@ members.
 The fixture covers a single private TCP service. General network
 policy and Aetheri's production authorization, microphone and device
 sharing, and guest accessibility remain open.
+
+## Native QEMU synthetic microphone grant, 2026-11-18
+
+The tested consumer revision is `9dddad76365b076e5f479ceba638738fbe6fe4c5`.
+Its selected Git archive has SHA-256
+`6f9af0c805f6cd32ed026b9eee04520ce3928e705a198183d9bd17e30c0a740f`.
+The installed Wayland-only Release and sanitizer SDK libraries came from
+`266404bf1743248f16eb289c0a1c0d99701cc395`. The core source, public headers,
+build configuration and data match the consumer revision. The guest uses
+QEMU 11.0.3, Alpine Linux `6.18.63-0-virt` and Weston 14.0.2. The guest
+image includes ALSA utilities and the generic HDA codec driver.
+
+The optional `--guest-microphone` profile supplies one synthetic tone
+through a private ALSA configuration and an inherited nonblocking PCM
+descriptor. Playback uses the ALSA null device. The source starts silent.
+The host checks the current VM scope, input release and running state before
+granting access. Revocation stops new tone samples and drains the owner pipe
+before confirming the source state. QEMU may still deliver samples that it
+already consumed. The owner retires the feed and joins its worker on close.
+The `NXS5` reply adds the microphone state to the existing file, clipboard
+and network snapshot. The earlier wire formats still describe their channels.
+[QEMU 11.0.3 ALSA audio options](https://raw.githubusercontent.com/qemu/qemu/v11.0.3/qapi/audio.json)
+[ALSA PCM input plugin](https://www.alsa-project.org/alsa-doc/alsa-lib/pcm_plugins.html)
+
+The host dialog exposes **Enable test tone** and **Revoke test tone**. The
+independent AT-SPI client verifies the state, moves to each action with Tab,
+activates with Enter, and checks focus restoration on Escape. The guest opens
+one real ALSA capture before consent and keeps it open across the grant and
+revocation. Each window spans one second of stereo capture at 48 kHz. The
+guest checks both tone polarities in eight 10 ms slices of the active window.
+It compares all 96,000 samples in each of the pre-grant, post-revocation and
+freshly reopened windows byte for byte with silence. The held post-revocation
+window starts after a settling interval. Exact audio latency and worst-case
+drain time remain open.
+
+The Release and ASan/UBSan runs passed with the installed SDK. The combined
+run passed with both clipboard directions, the private TCP service and the
+reset owner replacement. The wider run that also enabled file sharing stopped
+at the file workflow before reaching the audio assertions. That combination
+remains open. The audited checks cover 54 CTests across four build profiles,
+six reset-receipt tests, nine native runs and 22 dedicated wire cases in both
+Release and sanitizer builds. The direct VM run checks foreign scope, paused
+and held-input rejection, idempotent replies and owner shutdown. The active
+and revoked status rows measured 12.85:1 in all three audio runs.
+
+The guest initramfs has SHA-256
+`1fc2c27764cb2c5fc8065be448e738f6e468bd6fc4a1a868b5957c9309ce1b96`.
+The local evidence archive `nexaui-qemu-microphone464.tar.gz` has SHA-256
+`5c8c3db719a86b5295365038ee905d90d7a80cf641bf179dbe5a2c65709935aa`.
+`qemu-microphone464-final.json` records the source, SDK and guest image
+hashes, measured windows, native results and 187 verified archive members.
+
+Physical microphone selection, production consent policy, hardware device
+sharing and the guest accessibility tree remain open.

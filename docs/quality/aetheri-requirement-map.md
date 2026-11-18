@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+The synthetic QEMU microphone fixture advances D07/D08/I08/L11/P07 at `9dddad7`.
+The host dialog grants one test input to the current VM. The independent ALSA
+capture verifies silence before consent and on held and new captures after
+revocation. Physical input, production consent and guest semantics remain open.
+[Microphone grant evidence](external-content-report.md#native-qemu-synthetic-microphone-grant-2026-11-18)
+
 The QEMU guest fixture advances R06/I08/L11/D08/P07 at `9692666` on SDK `85f5d1c`.
 It presents a real VGA raster, confirms pause and resume through QMP,
 and verifies guest key release, retained console state and orderly close.
