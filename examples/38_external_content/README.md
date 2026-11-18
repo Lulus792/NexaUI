@@ -590,6 +590,14 @@ The native test observes both GTK scroll adjustments and the resulting
 video, then verifies that the guest application receives both side-button
 releases after the host escape shortcut.
 
+With `--guest-ax --guest-compose`, F6 opens a separate GTK entry with
+`GtkIMContextSimple`. The native test enters one Unicode character using
+Ctrl+Shift+U and Return, then cancels a second composition with Escape.
+It checks the entry's preedit and committed text independently. It also
+checks the buffer after sending a host keystroke with guest input released.
+F5 returns to the accessibility view. The GTK input method runs inside the
+guest. Host input-method forwarding and guest candidate UI remain open.
+
 `content_guest_frame_with_ax` combines the snapshot with a corresponding
 guest PNG when the selected window fills the raster. It uses the same fit
 as the pixels, including letterboxing. The fixture checks for matching

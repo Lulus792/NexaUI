@@ -380,6 +380,7 @@ def main():
     parser.add_argument('--guest-microphone', action='store_true', help='Grant and revoke the synthetic guest microphone tone')
     parser.add_argument('--guest-usb', action='store_true', help='Attach and detach a read-only emulated guest USB test drive')
     parser.add_argument('--guest-ax', action='store_true', help='Read the selected fullscreen guest through native AT-SPI')
+    parser.add_argument('--guest-compose', action='store_true', help='Exercise Unicode composition in the fullscreen GTK guest')
     parser.add_argument('--guest-pointer', action='store_true', help='Exercise the graphical guest wheel and side buttons')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF or guest clipboard cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
@@ -413,6 +414,8 @@ def main():
         parser.error('--guest-usb requires a graphical guest')
     if args.guest_ax and not desktop_guest:
         parser.error('--guest-ax requires a graphical guest')
+    if args.guest_compose and not args.guest_ax:
+        parser.error('--guest-compose requires --guest-ax')
     if args.guest_pointer and not desktop_guest:
         parser.error('--guest-pointer requires a graphical guest')
     if (desktop_guest or args.case=='guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
@@ -490,6 +493,9 @@ def main():
                        NEXAUI_CONTENT_TEST_URI_LAUNCHER=str(args.build_dir / 'content_atspi_peer'),
                        NEXAUI_CONTENT_TEST_URI_RECEIPT=str(args.work_dir / 'uri-receipt.txt'))
     extended_guest = args.guest_microphone or args.guest_usb or args.guest_ax
+    env.pop('NEXAUI_CONTENT_TEST_GUEST_COMPOSE', None)
+    if args.guest_compose:
+        env['NEXAUI_CONTENT_TEST_GUEST_COMPOSE'] = '1'
     if extended_guest:
         env['NEXAUI_TEST_ATSPI_CLIENT_TIMEOUT'] = '75'
     command = ['xvfb-run', '-a', '-s', '-screen 0 1600x1200x24', sys.executable,

@@ -646,14 +646,18 @@ static int read_guest_sharing(AtspiAccessible *app,const char *directory,const c
         (!directory||observe(app,row,0));
 }
 
-static int guest_command(const char *command) {
+static int guest_type_keys(const char *keys) {
     const struct timespec input_interval={0,45000000};
-    for (const char *key=command;*key;++key) {
+    for (const char *key=keys;*key;++key) {
         char name[2]={*key,0};
         if (!drive("key",name)) return 0;
         nanosleep(&input_interval,NULL);
     }
-    return drive("key","Return");
+    return 1;
+}
+
+static int guest_command(const char *command) {
+    return guest_type_keys(command)&&drive("key","Return");
 }
 
 static int release_guest_keys(AtspiAccessible *app) {
@@ -785,6 +789,24 @@ static int guest_ax_key(AtspiAccessible *app,const char *key,const char *marker)
         drive("key",key)&&await_guest_marker(marker,600)&&release_guest_keys(app);
 }
 
+static int guest_view_compose(AtspiAccessible *app) {
+    CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+        observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&
+        drive("key","F6")&&await_guest_marker("NEXAUI_GUEST_TEXT_READY",600));
+    CHECK(drive("key","ctrl+shift+u")&&guest_type_keys("00e9")&&
+        await_guest_marker("NEXAUI_GUEST_TEXT_PREEDIT",200));
+    CHECK(drive("key","Return")&&await_guest_marker("NEXAUI_GUEST_TEXT_COMMIT",200));
+    CHECK(drive("key","ctrl+shift+u")&&guest_type_keys("00f1")&&
+        await_guest_marker("NEXAUI_GUEST_TEXT_CANCEL_PREEDIT",200));
+    CHECK(drive("key","Escape")&&await_guest_marker("NEXAUI_GUEST_TEXT_CANCELLED",200));
+    CHECK(release_guest_keys(app)&&drive("key","x")&&
+        guest_ax_key(app,"F5","NEXAUI_GUEST_TEXT_UNCHANGED"));
+    puts("GUEST_VIEW_COMPOSE verified: GTK preedit, one Unicode commit, Escape cancels, and host keys after release do not edit the guest");
+    return 1;
+done:
+    return 0;
+}
+
 static int guest_view_pointer(AtspiAccessible *app,Display *display,Window outer,const char *window) {
     /* The guest marker can arrive before the worker's next bounded frame transfer. */
     const unsigned frame_attempts=600;
@@ -865,7 +887,8 @@ static int guest_ax_retired(AtspiAccessible *app,AtspiAccessible *old) {
     return 0;
 }
 
-static int guest_ax_flow(AtspiAccessible *app,Display *display,Window outer,const char *window,int pointer_view) {
+static int guest_ax_flow(AtspiAccessible *app,Display *display,Window outer,const char *window,
+                         int pointer_view,int compose_view) {
     const char *ready="Gaststatus – bereit",*updated="Gaststatus – fertig";
     AtspiAccessible *label=NULL,*second=NULL;
     AtspiAccessible *early=find(app,"Guest accessibility check",0);
@@ -880,6 +903,7 @@ static int guest_ax_flow(AtspiAccessible *app,Display *display,Window outer,cons
         guest_video(app,1)&&input_chrome(display,window,"guest-ax-ready"));
     CHECK(guest_ax_key(app,"F8","NEXAUI_GUEST_AX_UPDATED")&&observe(app,updated,0)&&
         !state(label,ATSPI_STATE_DEFUNCT)&&pdf_text_is(label,updated)&&input_chrome(display,window,"guest-ax-updated"));
+    if (compose_view) CHECK(guest_view_compose(app));
     if (pointer_view) CHECK(guest_view_pointer(app,display,outer,window));
     CHECK(guest_ax_key(app,"F9","NEXAUI_GUEST_AX_APP_EXITED")&&guest_ax_retired(app,label));
     CHECK(guest_console_marker(app,window,"axopen","NEXAUI_GUEST_AX_OPEN"));
@@ -1095,6 +1119,7 @@ int main(int argc,char **argv) {
     const char *pointer_profile=getenv("NEXAUI_CONTENT_TEST_GUEST_POINTER");
     int guest_pointer=guest_desktop&&pointer_profile&&!strcmp(pointer_profile,"1");
     int guest_ax=guest_desktop&&getenv("NEXAUI_CONTENT_TEST_GUEST_AX");
+    int guest_compose=guest_ax&&getenv("NEXAUI_CONTENT_TEST_GUEST_COMPOSE");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
     int browser_ax=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_AX");
@@ -1646,7 +1671,7 @@ int main(int argc,char **argv) {
             puts("GUEST_USB_NATIVE verified: read-only disk and detached for held and fresh reads");
         }
         if (guest_pointer) CHECK(guest_pointer_flow(app,id));
-        if (guest_ax) CHECK(guest_ax_flow(app,display,outer,id,guest_pointer));
+        if (guest_ax) CHECK(guest_ax_flow(app,display,outer,id,guest_pointer,guest_compose));
         else CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
         if (directory) {

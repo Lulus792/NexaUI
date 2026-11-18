@@ -1,4 +1,4 @@
-"""A fullscreen GTK test window that exports native guest semantics."""
+"""A fullscreen GTK test window for native guest semantics and input."""
 
 import sys
 
@@ -24,6 +24,63 @@ entry.set_visibility(False)
 entry.set_text('private-example-entry')
 for widget in (status, button, disabled, entry):
     box.pack_start(widget, True, True, 0)
+
+
+def show_text_view():
+    view = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
+    view.set_margin_top(60)
+    view.set_margin_start(80)
+    view.set_margin_end(80)
+    view.pack_start(Gtk.Label(label='Guest Unicode composition'), False, False, 0)
+    field = Gtk.Entry()
+    field.set_property('im-module', 'gtk-im-context-simple')
+    view.pack_start(field, False, False, 0)
+
+    changes = 0
+    preedit = ''
+    composed = '\u00e9'
+
+    def report(stage):
+        print(f'NEXAUI_GUEST_TEXT_{stage}', flush=True)
+
+    def changed(widget):
+        nonlocal changes
+        changes += 1
+        if changes == 1 and widget.get_text() == composed:
+            report('COMMIT')
+
+    def preedit_changed(widget, text):
+        nonlocal preedit
+        value = widget.get_text()
+        if text == 'u00e9' and changes == 0 and value == '':
+            report('PREEDIT')
+        elif text == 'u00f1' and changes == 1 and value == composed:
+            report('CANCEL_PREEDIT')
+        elif preedit == 'u00f1' and text == '' and changes == 1 and value == composed:
+            report('CANCELLED')
+        preedit = text
+
+    def leave(_window, event):
+        if event.keyval != Gdk.KEY_F5:
+            return False
+        window.disconnect(handler)
+        if changes == 1 and preedit == '' and field.get_text() == composed:
+            report('UNCHANGED')
+        else:
+            report('UNEXPECTED_EDIT')
+        window.remove(view)
+        window.add(box)
+        box.show_all()
+        return True
+
+    field.connect('changed', changed)
+    field.connect('preedit-changed', preedit_changed)
+    handler = window.connect('key-press-event', leave)
+    window.remove(box)
+    window.add(view)
+    view.show_all()
+    field.grab_focus()
+    report('READY')
 
 
 def show_pointer_view():
@@ -94,6 +151,9 @@ def show_pointer_view():
 
 
 def press(_window, event):
+    if event.keyval == Gdk.KEY_F6 and window.get_child() == box:
+        show_text_view()
+        return True
     if event.keyval == Gdk.KEY_F7 and window.get_child() == box:
         show_pointer_view()
         return True
