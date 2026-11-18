@@ -2,6 +2,7 @@
 
 import base64
 import json
+import math
 import os
 from pathlib import Path
 import signal
@@ -18,7 +19,7 @@ PNG_LIMIT = 4 * 1024 * 1024
 
 
 class Chromium:
-    def __init__(self, engine, profile):
+    def __init__(self, engine, profile, accessible=False):
         self.buffer = bytearray()
         self.serial = 0
         self.session = None
@@ -26,6 +27,9 @@ class Chromium:
         self.buttons = 0
         self.cancelled = 0
         self.mouse_inside = False
+        self.accessible = accessible
+        self.document_loaded = False
+        self.ax_buttons = set()
         self.socket, child = socket.socketpair()
         try:
             with (profile / 'chromium.stderr').open('wb') as log:
@@ -81,9 +85,13 @@ class Chromium:
         self.buttons = 0
         self.cancelled = 0
         self.mouse_inside = False
+        self.document_loaded = False
+        self.ax_buttons.clear()
         self.command('Network.enable')
         self.command('Network.emulateNetworkConditions', {'offline': True, 'latency': 0,
                          'downloadThroughput': 0, 'uploadThroughput': 0})
+        if self.accessible:
+            self.command('Accessibility.enable')
 
     def capture(self, width, height, kind):
         scale = 2 if kind == 4 else 1
@@ -97,9 +105,110 @@ class Chromium:
                 '<style>html,body{margin:0;width:100%;height:100%;overflow:hidden;background:' + color +
                 '} main{width:100%;height:100%} i{position:absolute;left:50%;top:50%;width:25%;height:25%;'
                 'background:#47a31f}</style><main aria-label="Engine fixture">' + patch + '</main>')
+        if self.accessible:
+            if self.document_loaded:
+                self.value(f"document.body.style.background = '{color}'; true")
+                return self.screenshot(width,height,scale)
+            title = {0:'Retired guide',1:'Browser guide',3:'Recovered guide',4:'Recovered guide'}[kind]
+            html = f"""<!doctype html><meta charset=utf-8><title>{title}</title>
+                <style>
+                html,body {{margin:0;width:100%;height:100%;overflow:hidden;background:{color};color:white;font:16px sans-serif}}
+                main {{position:absolute;inset:0}}
+                h1,p,button,img {{position:absolute;margin:0}}
+                h1 {{left:24px;top:14px;font-size:23px}}
+                #summary {{left:24px;top:56px}}
+                button {{left:24px;top:96px;width:125px;height:32px}}
+                #notes {{left:24px;top:148px}}
+                img {{left:436px;top:70px;width:32px;height:24px;background:#ffca49}}
+                </style><main aria-label="Guide content">
+                <h1>{title}</h1><p id="summary">Grün, café and 👋.</p>
+                <button id="show">Show notes</button><p id="notes">Notes closed.</p>
+                <img alt="Guide illustration" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7">
+                <p hidden>Hidden fixture marker</p>
+                </main><script>
+                document.querySelector('#show').onclick = () => {{
+                    document.querySelector('#notes').textContent = 'Notes opened ✓.';
+                    document.querySelector('#show').style.background = '#21bb71';
+                }};
+                </script>"""
         frame = self.command('Page.getFrameTree')['frameTree']['frame']['id']
         self.command('Page.setDocumentContent', {'frameId': frame, 'html': html})
+        self.document_loaded = True
         return self.screenshot(width,height,scale)
+
+    def ax_packet(self, epoch, width, height, scale):
+        nodes = self.command('Accessibility.getFullAXTree', {'depth': 18})['nodes']
+        if not nodes or len(nodes)>256 or not 0 < epoch <= 65535:
+            raise ValueError('Chromium accessibility tree exceeds fixture limits')
+        by_id = {node['nodeId']: node for node in nodes}
+        if len(by_id)!=len(nodes):
+            raise ValueError('Duplicate Chromium AX identity')
+        roles = {'RootWebArea':1, 'main':1, 'group':1, 'heading':2, 'paragraph':2, 'image':3, 'button':4}
+        rows, buttons, seen = [], set(), set()
+
+        def name(node):
+            return node.get('name', {}).get('value', '')
+
+        def rectangle(backend):
+            quads = self.command('DOM.getContentQuads', {'backendNodeId': backend})['quads']
+            if not quads:
+                return None
+            xs = [x*scale for quad in quads for x in quad[::2]]
+            ys = [y*scale for quad in quads for y in quad[1::2]]
+            if not all(math.isfinite(v) for v in xs+ys):
+                raise ValueError('Invalid Chromium accessibility rectangle')
+            left,top=max(0,math.floor(min(xs))),max(0,math.floor(min(ys)))
+            right,bottom=min(width,math.ceil(max(xs))),min(height,math.ceil(max(ys)))
+            return (left,top,right-left,bottom-top) if right>left and bottom>top else None
+
+        def visit(node, parent):
+            key=node['nodeId']
+            if key in seen:
+                raise ValueError('Cyclic Chromium AX tree')
+            seen.add(key)
+            semantic = node.get('role', {}).get('value')
+            kids = [by_id[child] for child in node.get('childIds', []) if child in by_id]
+            role = 0 if node['ignored'] else roles.get(semantic, 0)
+            backend = node.get('backendDOMNodeId', 0)
+            if role and backend:
+                title = name(node)
+                if semantic=='paragraph' and not title:
+                    title=''.join(name(child) for child in kids
+                                 if not child['ignored'] and child.get('role', {}).get('value')=='StaticText')
+                bounds = (0,0,width,height) if semantic=='RootWebArea' else rectangle(backend)
+                if bounds and (role != 2 or title):
+                    value=title.encode('utf-8')
+                    if len(rows)==32 or len(value)>256 or b'\0' in value:
+                        raise ValueError('Chromium accessibility snapshot exceeds the transport limit')
+                    disabled=any(p['name']=='disabled' and p['value'].get('value') for p in node.get('properties', []))
+                    rows.append(struct.pack('>II7H',backend,parent,role,int(disabled),*bounds,len(value))+value)
+                    if role==4 and not disabled:
+                        buttons.add(backend)
+                    parent=backend
+            for child in kids:
+                visit(child,parent)
+
+        visit(nodes[0],0)
+        if not rows:
+            raise ValueError('Chromium accessibility snapshot has no visible nodes')
+        self.ax_buttons=buttons
+        packet=struct.pack('>HH',epoch,len(rows))+b''.join(rows)
+        print(f'BROWSER_AX epoch={epoch} nodes={len(rows)} buttons={len(buttons)} pixels={width}x{height}',flush=True)
+        return struct.pack('>I',len(packet))+packet
+
+    def press_ax(self, node):
+        if node not in self.ax_buttons:
+            raise ValueError('Stale browser accessibility action')
+        handle=self.command('DOM.resolveNode', {'backendNodeId': node})['object']['objectId']
+        try:
+            result=self.command('Runtime.callFunctionOn', {'objectId':handle,
+                'functionDeclaration':'function() { if (this.disabled || !this.isConnected) return false; this.click(); return true; }',
+                'returnByValue':True})
+            if result.get('result',{}).get('value') is not True:
+                raise ValueError('Chromium could not activate the browser control')
+        finally:
+            self.command('Runtime.releaseObject', {'objectId':handle})
+        print('BROWSER_AX press applied',flush=True)
 
     def value(self, expression):
         result = self.command('Runtime.evaluate', {'expression': expression, 'returnByValue': True, 'awaitPromise': True})
@@ -274,17 +383,19 @@ class Chromium:
             self.socket.close()
 
 
-def serve(engine, socket_path):
+def serve(engine, socket_path, accessible=False):
     def interrupt(*_):
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, interrupt)
     with tempfile.TemporaryDirectory(prefix='chromium-profile-', dir=socket_path.parent) as temp:
         profile = Path(temp)
-        browser = Chromium(engine, profile)
+        browser = Chromium(engine, profile,accessible)
         try:
             version = browser.command('Browser.getVersion', browser=True)['product']
             generation = 0
+            epoch = 0
+            captured = None
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
                 listener.bind(str(socket_path))
                 listener.listen(1)
@@ -300,7 +411,9 @@ def serve(engine, socket_path):
                             fields = list(map(int, line.split()))
                             tab, resize, width, height, kind = fields[:5]
                             raw = b''
-                            if kind >= 5:
+                            if kind == 14:
+                                requested_epoch,node = fields[5:]
+                            elif kind >= 5:
                                 begin,end,size = fields[5:]
                                 if not 0 <= size <= 256:
                                     raise ValueError('Browser edit exceeds fixture limit')
@@ -310,25 +423,36 @@ def serve(engine, socket_path):
                             if request.read(1):
                                 raise ValueError('Unexpected browser request bytes')
                         if not (0 < tab < 2**64 and 0 < resize < 2**64 and 0 < width <= 2048 and
-                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 13):
+                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 14):
                             raise ValueError('Browser request exceeds fixture limits')
                         if kind == 2:
                             result = browser.crash()
                             browser = None
                             print(f'BROWSER_CRASH generation={tab} resize={resize} exit={result}', flush=True)
                             continue
+                        if kind==14 and (not accessible or browser is None or requested_epoch!=epoch or
+                                        captured!=(tab,resize,width,height)):
+                            raise ValueError('Stale browser accessibility action')
                         if browser is None:
                             replacement = profile / 'replacement'
                             replacement.mkdir()
-                            browser = Chromium(engine, replacement)
+                            browser = Chromium(engine, replacement,accessible)
                             restored = browser.command('Browser.getVersion', browser=True)['product']
                             if restored != version:
                                 raise RuntimeError('Replacement engine version differs')
                             generation = 0
                             print(f'BROWSER_RESTART {restored}', flush=True)
                         if tab != generation:
+                            if kind==14:
+                                raise ValueError('Stale browser accessibility generation')
                             browser.open_target()
                             generation = tab
+                            epoch+=1
+                        if kind==14:
+                            browser.press_ax(node)
+                            png,_=browser.screenshot(width,height,2)
+                            peer.sendall(browser.ax_packet(epoch,width,height,2)+png)
+                            continue
                         if kind >= 5:
                             prefix,(focused,preedit,committed,expected) = browser.edit(kind,raw,begin,end)
                             png,_ = browser.screenshot(width,height,2)
@@ -339,7 +463,10 @@ def serve(engine, socket_path):
                                 browser.pointer_receipt(kind)
                             continue
                         png, (css_w, css_h, dpr) = browser.capture(width, height, kind)
+                        if accessible:
+                            peer.sendall(browser.ax_packet(epoch,width,height,dpr))
                         peer.sendall(png)
+                        captured=(tab,resize,width,height)
                         print(f'BROWSER_FRAME generation={tab} resize={resize} kind={kind} '
                               f'css={css_w}x{css_h} dpr={dpr} pixels={width}x{height}', flush=True)
         except KeyboardInterrupt:
@@ -369,4 +496,4 @@ if __name__ == '__main__':
             os.close(fd)
         os.execv(sys.argv[3], sys.argv[3:])
     else:
-        serve(sys.argv[1], Path(sys.argv[2]))
+        serve(sys.argv[1], Path(sys.argv[2]), '--ax' in sys.argv[3:])

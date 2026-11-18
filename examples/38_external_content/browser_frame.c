@@ -51,8 +51,38 @@ static nx_result read_frame(int fd,uint8_t *encoded,size_t capacity,size_t *size
     return NX_ERROR_PLATFORM;
 }
 
+#define BROWSER_AX_WIRE_LIMIT (4u+CONTENT_AX_NODE_LIMIT*(22u+CONTENT_AX_NAME_LIMIT))
+
+static uint32_t wire_u16(const uint8_t *bytes) { return ((uint32_t)bytes[0]<<8)|bytes[1]; }
+static uint32_t wire_u32(const uint8_t *bytes) { return (wire_u16(bytes)<<16)|wire_u16(bytes+2); }
+
+static nx_result read_ax_packet(const uint8_t *data,size_t bytes,content_request request,
+    content_ax_action action,content_ax_node nodes[CONTENT_AX_NODE_LIMIT],uint32_t *count,uint32_t *epoch) {
+    if (bytes<4) return NX_ERROR_ARGUMENT;
+    uint32_t id=wire_u16(data),total=wire_u16(data+2);
+    if (!id || !total || total>CONTENT_AX_NODE_LIMIT || (action.node && action.epoch!=id))
+        return NX_ERROR_ARGUMENT;
+    size_t offset=4;
+    for (uint32_t i=0;i<total;++i) {
+        if (bytes-offset<22u) return NX_ERROR_ARGUMENT;
+        const uint8_t *row=data+offset;
+        uint32_t x=wire_u16(row+12),y=wire_u16(row+14),w=wire_u16(row+16),h=wire_u16(row+18),n=wire_u16(row+20);
+        if (!w || !h || x+w>request.width || y+h>request.height ||
+            n>CONTENT_AX_NAME_LIMIT || n>bytes-offset-22u) return NX_ERROR_ARGUMENT;
+        nodes[i]=(content_ax_node){.id=wire_u32(row),.parent=wire_u32(row+4),
+            .role=(uint16_t)wire_u16(row+8),.state=(uint16_t)wire_u16(row+10),.name_bytes=(uint16_t)n,
+            .x=(uint16_t)x,.y=(uint16_t)y,.width=(uint16_t)w,.height=(uint16_t)h};
+        memcpy(nodes[i].name,row+22,n);
+        offset+=22u+n;
+    }
+    if (offset!=bytes) return NX_ERROR_ARGUMENT;
+    *count=total;
+    *epoch=id;
+    return NX_OK;
+}
+
 static nx_result transfer(const char *socket_path,content_request request,uint64_t sequence,unsigned kind,
-    const content_browser_edit *edit,void **out,size_t *bytes,nx_rect *caret) {
+    const content_browser_edit *edit,int accessible,content_ax_action action,void **out,size_t *bytes,nx_rect *caret) {
     struct sockaddr_un address={.sun_family=AF_UNIX};
     if (!socket_path || socket_path[0]!='/' || strlen(socket_path)>=sizeof(address.sun_path) ||
         !request.generation || !request.resize || !request.width || !request.height || !sequence ||
@@ -83,6 +113,10 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
         send_size+=(size_t)length;
         memcpy(line+send_size,payload,body);
         send_size+=body;
+    } else if (action.node) {
+        length=snprintf(line+send_size,sizeof(line)-send_size," %u %u\n",action.epoch,action.node);
+        if (length<=0 || (size_t)length>=sizeof(line)-send_size) return NX_ERROR_LIMIT;
+        send_size+=(size_t)length;
     } else line[send_size++]='\n';
     int64_t start=monotonic_ms();
     int fd=socket(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK,0);
@@ -99,12 +133,23 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
         if (getsockopt(fd,SOL_SOCKET,SO_ERROR,&error,&size) || error) goto done;
     }
     if (!send_request(fd,line,send_size,deadline)) goto done;
-    size_t prefix=edit?8u:0,capacity=prefix+CONTENT_PNG_ENCODED_LIMIT+1u;
+    size_t prefix=edit?8u:0;
+    size_t capacity=prefix+(accessible?4u+BROWSER_AX_WIRE_LIMIT:0)+CONTENT_PNG_ENCODED_LIMIT+1u;
     encoded=malloc(capacity);
     if (!encoded) { result=NX_ERROR_MEMORY;goto done; }
     size_t size=0;
     result=read_frame(fd,encoded,capacity,&size,deadline);
     nx_rect candidate={0};
+    content_ax_node ax[CONTENT_AX_NODE_LIMIT];
+    uint32_t ax_count=0,epoch=0;
+    if (result==NX_OK && accessible) {
+        uint32_t metadata=size>=4?wire_u32(encoded):0;
+        if (!metadata || metadata>BROWSER_AX_WIRE_LIMIT || metadata>size-4u) result=NX_ERROR_ARGUMENT;
+        else {
+            prefix=4u+metadata;
+            result=read_ax_packet(encoded+4,metadata,request,action,ax,&ax_count,&epoch);
+        }
+    }
     if (result==NX_OK && size<=prefix) result=NX_ERROR_ARGUMENT;
     if (result==NX_OK && edit) {
         uint32_t x=((uint32_t)encoded[0]<<8)|encoded[1],y=((uint32_t)encoded[2]<<8)|encoded[3];
@@ -116,7 +161,25 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     if (result==NX_OK) result=content_png_bitmap(encoded+prefix,size-prefix,&bitmap);
     if (result==NX_OK) {
         if (bitmap.width!=request.width || bitmap.height!=request.height) result=NX_ERROR_ARGUMENT;
-        else result=content_png_fit_bitmap(bitmap,request,sequence,out,bytes,NULL);
+        else {
+            void *frame=NULL;
+            size_t frame_bytes=0;
+            result=content_png_fit_bitmap(bitmap,request,sequence,&frame,&frame_bytes,NULL);
+            if (result==NX_OK && ax_count) {
+                size_t tail=(size_t)ax_count*sizeof(*ax);
+                void *extended=realloc(frame,frame_bytes+tail);
+                if (!extended) { free(frame);result=NX_ERROR_MEMORY; }
+                else {
+                    frame=extended;
+                    content_frame_header *header=frame;
+                    header->ax_count=ax_count;
+                    header->ax_epoch=epoch;
+                    memcpy((uint8_t *)frame+frame_bytes,ax,tail);
+                    frame_bytes+=tail;
+                }
+            }
+            if (result==NX_OK) { *out=frame;*bytes=frame_bytes; }
+        }
     }
     if (result==NX_OK && edit) *caret=candidate;
 done:
@@ -129,7 +192,7 @@ done:
 nx_result content_browser_frame(const char *socket_path,content_request request,
     uint64_t sequence,unsigned kind,void **out,size_t *bytes) {
     if (kind>4) return NX_ERROR_ARGUMENT;
-    return transfer(socket_path,request,sequence,kind,NULL,out,bytes,NULL);
+    return transfer(socket_path,request,sequence,kind,NULL,0,(content_ax_action){0},out,bytes,NULL);
 }
 
 nx_result content_browser_edit_frame(const char *socket_path,content_request request,
@@ -154,5 +217,11 @@ nx_result content_browser_edit_frame(const char *socket_path,content_request req
             (pointer->modifiers & ~(NX_MOD_SHIFT|NX_MOD_CONTROL|NX_MOD_ALT|NX_MOD_SUPER)))
             return NX_ERROR_ARGUMENT;
     }
-    return transfer(socket_path,request,sequence,edit->kind,edit,out,bytes,caret);
+    return transfer(socket_path,request,sequence,edit->kind,edit,0,(content_ax_action){0},out,bytes,caret);
+}
+
+nx_result content_browser_ax_frame(const char *socket_path,content_request request,
+    uint64_t sequence,unsigned kind,content_ax_action action,void **out,size_t *bytes) {
+    if (kind>4 || (!!action.epoch!=!!action.node) || action.epoch>UINT16_MAX) return NX_ERROR_ARGUMENT;
+    return transfer(socket_path,request,sequence,action.node?14u:kind,NULL,1,action,out,bytes,NULL);
 }

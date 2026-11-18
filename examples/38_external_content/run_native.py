@@ -150,12 +150,16 @@ os.execv(renderer, [renderer, *sys.argv[1:]])
     return path
 
 
-def run_browser(command, env, engine):
+def run_browser(command, env, engine, accessible=False):
     with tempfile.TemporaryDirectory(prefix='nexaui-browser-') as directory:
         address = Path(directory) / 'engine.sock'
         env['NEXAUI_CONTENT_TEST_BROWSER_SOCKET'] = str(address)
-        service = subprocess.Popen([sys.executable, str(Path(__file__).with_name('browser_fixture.py')),
-                                    str(engine.resolve(strict=True)), str(address)], env=env)
+        args = [sys.executable, str(Path(__file__).with_name('browser_fixture.py')),
+                str(engine.resolve(strict=True)), str(address)]
+        if accessible:
+            args.append('--ax')
+            env['NEXAUI_CONTENT_TEST_BROWSER_AX'] = '1'
+        service = subprocess.Popen(args, env=env)
         try:
             deadline = time.monotonic() + 8
             while not address.exists():
@@ -198,6 +202,7 @@ def main():
     parser.add_argument('--browser-engine', type=Path, help='Chromium headless shell for the offline browser frame workflow')
     parser.add_argument('--browser-input', action='store_true', help='Exercise native keyboard and Weston Compose in Chromium')
     parser.add_argument('--browser-pointer', action='store_true', help='Exercise native pointer and wheel routing in Chromium')
+    parser.add_argument('--browser-accessibility', action='store_true', help='Exercise the browser document subtree through native AT-SPI')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -213,6 +218,8 @@ def main():
         parser.error('Browser input workflows require the browser case and Weston simple-IME')
     if args.browser_input and args.browser_pointer:
         parser.error('Run browser pointer and text input workflows separately')
+    if args.browser_accessibility and (not args.browser_engine or args.browser_input or args.browser_pointer):
+        parser.error('--browser-accessibility is a separate browser workflow')
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
@@ -293,7 +300,7 @@ def main():
         if args.browser_input:
             env['NEXAUI_CONTENT_TEST_BROWSER_WIRE']=str(args.work_dir.resolve() / 'browser-ime.wire')
     if args.browser_engine:
-        return run_browser(command, env, args.browser_engine)
+        return run_browser(command, env, args.browser_engine,args.browser_accessibility)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

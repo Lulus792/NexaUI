@@ -12,6 +12,8 @@ struct content_surface {
     uint8_t *pixels;
     uint8_t *metadata;
     size_t text_bytes, word_count, link_count;
+    size_t ax_count;
+    uint32_t ax_epoch;
     nx_command *mapped;
     size_t mapped_capacity;
     int leased;
@@ -25,11 +27,13 @@ static void clear_metadata(content_surface *surface) {
     if (surface->metadata)
         surface->allocator.deallocate(surface->allocator.user, surface->metadata,
             surface->text_bytes + surface->word_count * sizeof(content_frame_word) +
-            surface->link_count * sizeof(content_frame_link));
+            surface->link_count * sizeof(content_frame_link) + surface->ax_count * sizeof(content_ax_node));
     surface->metadata = NULL;
     surface->text_bytes = 0;
     surface->word_count = 0;
     surface->link_count = 0;
+    surface->ax_count = 0;
+    surface->ax_epoch = 0;
 }
 
 static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
@@ -87,6 +91,30 @@ static int valid_links(const uint8_t *links, size_t count) {
     return 1;
 }
 
+static int valid_ax(const uint8_t *source,size_t count,content_request request) {
+    uint32_t ids[CONTENT_AX_NODE_LIMIT];
+    for (size_t i=0;i<count;++i) {
+        content_ax_node node;
+        memcpy(&node,source+i*sizeof(node),sizeof(node));
+        if (!node.id || (i==0 && (node.role!=CONTENT_AX_GROUP || node.parent)) ||
+            (i!=0 && !node.parent) || node.role<CONTENT_AX_GROUP || node.role>CONTENT_AX_BUTTON ||
+            node.state&~CONTENT_AX_DISABLED || !node.width || !node.height ||
+            (uint32_t)node.x+node.width>request.width || (uint32_t)node.y+node.height>request.height ||
+            node.name_bytes>sizeof(node.name) ||
+            ((node.role==CONTENT_AX_TEXT||node.role==CONTENT_AX_BUTTON) && !node.name_bytes) ||
+            memchr(node.name,0,node.name_bytes) || nx_utf8_validate(node.name,node.name_bytes,NULL)!=NX_OK)
+            return 0;
+        int parent=i==0;
+        for (size_t j=0;j<i;++j) {
+            if (ids[j]==node.id) return 0;
+            if (ids[j]==node.parent) parent=1;
+        }
+        if (!parent) return 0;
+        ids[i]=node.id;
+    }
+    return 1;
+}
+
 static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     if (view->bytes < sizeof(content_frame_header)) return NX_ERROR_ARGUMENT;
     content_frame_header header;
@@ -111,11 +139,14 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     if (payload > surface->max_bytes) return NX_ERROR_LIMIT;
     size_t body = view->bytes - sizeof(header);
     if (header.text_bytes > CONTENT_FRAME_TEXT_LIMIT || header.word_count > CONTENT_FRAME_WORD_LIMIT ||
-        header.link_count > CONTENT_PDF_LINK_LIMIT)
+        header.link_count > CONTENT_PDF_LINK_LIMIT || header.ax_count > CONTENT_AX_NODE_LIMIT ||
+        header.ax_epoch>UINT16_MAX)
         return NX_ERROR_LIMIT;
+    if (!!header.ax_count!=!!header.ax_epoch) return NX_ERROR_ARGUMENT;
     size_t word_bytes = (size_t)header.word_count * sizeof(content_frame_word);
     size_t link_bytes = (size_t)header.link_count * sizeof(content_frame_link);
-    size_t metadata_bytes = word_bytes + link_bytes + header.text_bytes;
+    size_t ax_bytes = (size_t)header.ax_count * sizeof(content_ax_node);
+    size_t metadata_bytes = ax_bytes + word_bytes + link_bytes + header.text_bytes;
     if (body < payload || body - payload != metadata_bytes) return NX_ERROR_ARGUMENT;
     if (header.damage_base) {
         if (header.damage_base >= header.sequence ||
@@ -136,17 +167,20 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     const char *text = (const char *)(pixels + payload);
     const uint8_t *words = (const uint8_t *)text + header.text_bytes;
     const uint8_t *links = words + word_bytes;
+    const uint8_t *ax=links+link_bytes;
     uint8_t *metadata = NULL;
     if (metadata_bytes) {
         if (memchr(text, 0, header.text_bytes) || nx_utf8_validate(text, header.text_bytes, NULL) != NX_OK)
             return NX_ERROR_ARGUMENT;
         if (!valid_words(text, header.text_bytes, words, header.word_count)) return NX_ERROR_ARGUMENT;
         if (!valid_links(links,header.link_count)) return NX_ERROR_ARGUMENT;
+        if (!valid_ax(ax,header.ax_count,*request)) return NX_ERROR_ARGUMENT;
         metadata = surface->allocator.allocate(surface->allocator.user, metadata_bytes);
         if (!metadata) return NX_ERROR_MEMORY;
-        memcpy(metadata, words, word_bytes);
-        memcpy(metadata + word_bytes, links, link_bytes);
-        memcpy(metadata + word_bytes + link_bytes, text, header.text_bytes);
+        memcpy(metadata,ax,ax_bytes);
+        memcpy(metadata + ax_bytes, words, word_bytes);
+        memcpy(metadata + ax_bytes + word_bytes, links, link_bytes);
+        memcpy(metadata + ax_bytes + word_bytes + link_bytes, text, header.text_bytes);
     }
     size_t row = (size_t)request->width * 4u;
     /* Publication can replace an unseen snapshot. A mismatched base requires
@@ -164,6 +198,8 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     surface->text_bytes = header.text_bytes;
     surface->word_count = header.word_count;
     surface->link_count = header.link_count;
+    surface->ax_count=header.ax_count;
+    surface->ax_epoch=header.ax_epoch;
     surface->status.sequence = header.sequence;
     surface->status.image = image;
     surface->status.jpeg = header.jpeg;
@@ -293,7 +329,8 @@ nx_rect content_image_destination(content_surface_status base,nx_rect canvas) {
 nx_result content_surface_get_text(const content_surface *surface, nx_utf8_span *out) {
     if (!surface || !out) return NX_ERROR_ARGUMENT;
     const char *text = surface->metadata ?
-        (const char *)(surface->metadata + surface->word_count * sizeof(content_frame_word) +
+        (const char *)(surface->metadata + surface->ax_count*sizeof(content_ax_node) +
+            surface->word_count * sizeof(content_frame_word) +
             surface->link_count * sizeof(content_frame_link)) : NULL;
     *out = (nx_utf8_span){text, surface->text_bytes};
     return NX_OK;
@@ -304,6 +341,7 @@ nx_result content_surface_get_links(const content_surface *surface,
     if (!surface || !links || !count) return NX_ERROR_ARGUMENT;
     *count = surface->link_count;
     *links = surface->link_count ? (const content_frame_link *)(surface->metadata +
+        surface->ax_count*sizeof(content_ax_node) +
         surface->word_count * sizeof(content_frame_word)) : NULL;
     return NX_OK;
 }
@@ -312,6 +350,16 @@ nx_result content_surface_get_words(const content_surface *surface,
     const content_frame_word **words, size_t *count) {
     if (!surface || !words || !count) return NX_ERROR_ARGUMENT;
     *count = surface->word_count;
-    *words = surface->word_count ? (const content_frame_word *)surface->metadata : NULL;
+    *words = surface->word_count ? (const content_frame_word *)(surface->metadata+
+        surface->ax_count*sizeof(content_ax_node)) : NULL;
+    return NX_OK;
+}
+
+nx_result content_surface_get_ax(const content_surface *surface,const content_ax_node **nodes,
+    size_t *count,uint32_t *epoch) {
+    if (!surface || !nodes || !count || !epoch) return NX_ERROR_ARGUMENT;
+    *count=surface->ax_count;
+    *epoch=surface->ax_epoch;
+    *nodes=surface->ax_count?(const content_ax_node *)surface->metadata:NULL;
     return NX_OK;
 }

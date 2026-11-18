@@ -2,6 +2,7 @@
 #define EXAMPLE_CONTENT_SURFACE_H
 #include <nexaui/nexaui.h>
 #include "pdf_links.h"
+#include "browser_ax.h"
 
 typedef struct content_surface content_surface;
 typedef struct content_request {
@@ -29,7 +30,8 @@ typedef struct content_jpeg_size {
 } content_jpeg_size;
 /* In-process owned snapshot layout. The header is followed by height*stride
    bytes of straight-alpha RGBA8, then optional UTF-8 text and unaligned
-   content_frame_word and content_frame_link records for the same frame.
+   content_frame_word, content_frame_link and content_ax_node records for
+   the same frame.
    The producer finishes writing before publishing and supplies the disposer. */
 typedef struct content_frame_header {
     content_request request;
@@ -44,6 +46,7 @@ typedef struct content_frame_header {
     uint32_t word_count, link_count;
     content_image_area image;
     content_jpeg_size jpeg;
+    uint32_t ax_count,ax_epoch;
 } content_frame_header;
 typedef struct content_surface_status {
     content_request request;
@@ -93,4 +96,6 @@ nx_result content_surface_get_words(const content_surface *surface,
     const content_frame_word **words, size_t *count);
 nx_result content_surface_get_links(const content_surface *surface,
     const content_frame_link **links, size_t *count);
+nx_result content_surface_get_ax(const content_surface *surface,const content_ax_node **nodes,
+    size_t *count,uint32_t *epoch);
 #endif

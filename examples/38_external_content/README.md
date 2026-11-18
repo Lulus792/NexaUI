@@ -319,10 +319,17 @@ the active viewport and coalesces consecutive queued moves. The peer
 verifies a button click, scrolled content, release with a held button,
 and a fresh click after re-entry.
 
-The input fixtures use one offline page and editable element. Browser
-accessibility subtree mapping, regular website navigation and GPU
-buffer ownership remain separate work. The browser executable is a
-fixture input.
+Use `--browser-accessibility` to read the offline fixture's Chromium
+accessibility tree through AT-SPI. The worker publishes accessible
+groups, text, images and buttons with the corresponding raster.
+**Show notes** sends a native action to Chromium and updates both
+the page pixels and the readable text. Document replacement retires
+the prior subtree. An accessible snapshot contains at most 32 nodes
+with up to 256 UTF-8 bytes per name.
+
+The browser executable is a fixture input. General website navigation,
+additional HTML roles, editable page accessibility and GPU buffer
+ownership remain separate work.
 
 ## Optional PDF producer on Linux
 

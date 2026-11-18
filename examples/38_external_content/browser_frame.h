@@ -28,5 +28,7 @@ nx_result content_browser_frame(const char *socket_path,content_request request,
     uint64_t sequence,unsigned kind,void **out,size_t *bytes);
 nx_result content_browser_edit_frame(const char *socket_path,content_request request,
     uint64_t sequence,const content_browser_edit *edit,void **out,size_t *bytes,nx_rect *caret);
+nx_result content_browser_ax_frame(const char *socket_path,content_request request,
+    uint64_t sequence,unsigned kind,content_ax_action action,void **out,size_t *bytes);
 
 #endif

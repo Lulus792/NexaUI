@@ -83,6 +83,21 @@ static int text_matches(const content_surface *surface, const char *expected) {
     return content_surface_get_text(surface, &text) == NX_OK && text.length == strlen(expected) &&
         (!text.length || !memcmp(text.data, expected, text.length));
 }
+static int publish_ax(nx_snapshot_exchange *exchange,content_request request,uint64_t sequence,
+    const content_ax_node nodes[2],_Atomic unsigned *disposals) {
+    size_t bytes;
+    void *data=make_frame(request,sequence,request.width*4u,50,&bytes);
+    if (!data) return 0;
+    uint8_t *extended=realloc(data,bytes+2u*sizeof(*nodes));
+    if (!extended) { free(data);return 0; }
+    content_frame_header *header=(content_frame_header *)extended;
+    header->ax_count=2;
+    header->ax_epoch=9;
+    memcpy(extended+bytes,nodes,2u*sizeof(*nodes));
+    nx_result result=nx_snapshot_exchange_publish(exchange,extended,bytes+2u*sizeof(*nodes),dispose,disposals);
+    if (result!=NX_OK) free(extended);
+    return result==NX_OK;
+}
 static int host_button(nx_context *context) {
     nx_control_desc button = {.id = 1, .bounds = {0, 0, 32, 12}, .name = {"Host controls", 13}};
     nx_interaction_state state;
@@ -413,6 +428,37 @@ int main(int argc, char **argv) {
         desc.scale = 2;
         CHECK(record(surface, exchange, context, &desc, NX_ERROR_STATE, &leased));
         CHECK(text_matches(surface, "") && content_surface_get_status(surface, &status) == NX_OK && status.sequence == 0);
+    } else if (!strcmp(argv[1], "ax")) {
+        const content_ax_node frames[]={
+            {.id=3,.role=CONTENT_AX_GROUP,.width=16,.height=12,.name_bytes=5,.name="Guide"},
+            {.id=4,.parent=3,.role=CONTENT_AX_TEXT,.x=2,.y=3,.width=7,.height=4,.name_bytes=5,.name="Grün"}
+        };
+        const content_ax_node *nodes=NULL;
+        size_t count=0;
+        uint32_t epoch=0;
+        CHECK(publish_ax(exchange,request,1,frames,&disposals));
+        CHECK(record(surface,exchange,context,&desc,NX_OK,&leased)&&
+            content_surface_get_ax(surface,&nodes,&count,&epoch)==NX_OK&&count==2&&epoch==9&&
+            nodes[1].parent==3&&nodes[1].name_bytes==5&&!memcmp(nodes[1].name,"Grün",5));
+        CHECK(content_surface_complete(surface)==NX_OK);leased=0;
+        for (unsigned i=0;i<5;++i) {
+            content_ax_node malformed[]={frames[0],frames[1]};
+            switch (i) {
+                case 0: malformed[1].id=3;break;
+                case 1: malformed[1].parent=4;break;
+                case 2: malformed[1].width=16;break;
+                case 3: malformed[1].name[0]=(char)0xc3;break;
+                case 4: malformed[1].role=99;break;
+            }
+            CHECK(publish_ax(exchange,request,2+i,malformed,&disposals));
+            CHECK(record(surface,exchange,context,&desc,NX_ERROR_ARGUMENT,&leased));
+            CHECK(content_surface_get_ax(surface,&nodes,&count,&epoch)==NX_OK&&count==2&&epoch==9&&
+                !memcmp(nodes[1].name,"Grün",5));
+            CHECK(content_surface_get_status(surface,&status)==NX_OK&&status.sequence==1);
+        }
+        desc.scale=2;
+        CHECK(record(surface,exchange,context,&desc,NX_ERROR_STATE,&leased));
+        CHECK(content_surface_get_ax(surface,&nodes,&count,&epoch)==NX_OK&&!count&&!epoch&&!nodes);
     } else if (!strcmp(argv[1], "worker")) {
         worker.exchange = exchange; worker.request = request; worker.disposals = &disposals;
         CHECK(start(&thread, &worker)); started = 1;

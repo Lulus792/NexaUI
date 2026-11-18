@@ -532,6 +532,39 @@ static int pdf_text_is(AtspiAccessible *node, const char *expected) {
     return ok;
 }
 
+static int browser_ax_parent(AtspiAccessible *node,const char *name) {
+    AtspiAccessible *parent=atspi_accessible_get_parent(node,NULL);
+    gchar *actual=parent?atspi_accessible_get_name(parent,NULL):NULL;
+    int ok=actual&&!strcmp(actual,name);
+    g_free(actual);
+    if (parent) g_object_unref(parent);
+    return ok;
+}
+
+static int browser_ax_document(AtspiAccessible *node,const char *title) {
+    AtspiAccessible *group=atspi_accessible_get_parent(node,NULL);
+    AtspiAccessible *document=group?atspi_accessible_get_parent(group,NULL):NULL;
+    int ok=group&&document&&browser_ax_parent(node,"Guide content")&&browser_ax_parent(group,title)&&
+        browser_ax_parent(document,"Browser content");
+    if (document) g_object_unref(document);
+    if (group) g_object_unref(group);
+    return ok;
+}
+
+static int browser_ax_image(AtspiAccessible *app) {
+    AtspiAccessible *node=find(app,"Guide illustration",0);
+    AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
+    AtspiRect *bounds=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+    int ok=bounds&&atspi_accessible_get_role(node,NULL)==ATSPI_ROLE_IMAGE&&browser_ax_parent(node,"Guide content")&&
+        bounds->x==452&&bounds->y==206&&bounds->width==12&&bounds->height==24;
+    if (bounds&&!ok) fprintf(stderr,"Browser AX image bounds %d,%d %dx%d role=%d\n",
+        bounds->x,bounds->y,bounds->width,bounds->height,(int)atspi_accessible_get_role(node,NULL));
+    if (bounds) g_free(bounds);
+    if (component) g_object_unref(component);
+    if (node) g_object_unref(node);
+    return ok;
+}
+
 static AtspiAccessible *pdf_text(AtspiAccessible *app, const char *expected) {
     for(unsigned i=0;i<200;++i) {
         AtspiAccessible *node=find(app,"PDF page text",0);
@@ -705,6 +738,7 @@ int main(int argc,char **argv) {
     int browser_case=!strcmp(test_case,"browser");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
+    int browser_ax=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_AX");
     int png_case=browser_case||!strcmp(test_case,"png");
     int png_viewer=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_VIEWER");
     int gallery=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
@@ -786,6 +820,7 @@ int main(int argc,char **argv) {
     CHECK(drive("key","shift+Tab")&&observe(app,"Replace tab",1)&&drive("key","Return"));
     CHECK(observe(app,"Replacement waiting.",0)&&focus(app,"Release old")&&drive("key","Return"));
     CHECK(observe(app,"Old frame rejected.",0)&&capture(display,outer,0xe3e7efu,"rejected"));
+    if (browser_ax) CHECK(!find(app,"Retired guide",0));
     if(pdf_case) {
         AtspiAccessible *old_text=find(app,"PDF page text",0);
         int absent=old_text==NULL;
@@ -796,7 +831,13 @@ int main(int argc,char **argv) {
     CHECK(press(app,"Publish frame")&&observe(app,thumbnails?"PDF page 1 of 7.":pdf_case?"PDF page 1 of 2.":"Frame ready.",0));
     CHECK((retired=find(app,viewport,0))&&dimensions(retired));
     CHECK((old_component=atspi_accessible_get_component_iface(retired)));
-    CHECK(capture(display,outer,blue,"fresh"));
+    if (browser_ax) {
+        const char *value="Grün, café and 👋.";
+        CHECK(observe(app,"Browser guide",0)&&(first_text=find(app,value,0)));
+        CHECK(pdf_text_is(first_text,value)&&browser_ax_document(first_text,"Browser guide"));
+        CHECK(browser_ax_image(app)&&!find(app,"Hidden fixture marker",0));
+        CHECK(browser_pixel(display,outer,410,82,blue)&&input_chrome(display,id,"browser-ax-fresh"));
+    } else CHECK(capture(display,outer,blue,"fresh"));
     if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0)&&press(app,"Zoom in"));
     if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n"))&&pdf_word_geometry(first_text,120,6,195));
     if(links) CHECK((old_link=find(app,"PDF link to page 2",0))&&pdf_link_bounds(old_link)&&
@@ -823,7 +864,10 @@ int main(int argc,char **argv) {
             browser_case?"Browser engine unavailable; view retained.":"PNG decoding failed; image retained.";
         CHECK(observe(app,failure,0));
         CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
-        CHECK(capture(display,outer,blue,"bad-retained"));
+        if (browser_ax) {
+            CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Grün, café and 👋.")&&
+                browser_pixel(display,outer,410,82,blue)&&input_chrome(display,id,"browser-ax-retained"));
+        } else CHECK(capture(display,outer,blue,"bad-retained"));
         if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0));
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
             pdf_word_geometry(first_text,120,6,195));
@@ -893,7 +937,12 @@ int main(int argc,char **argv) {
         puts("PNG_VIEWER verified: original samples, fitted image bounds, locked axis, pan, metadata and backing scale");
         goto closed;
     }
-    if (detail_case) CHECK(pdf_detail_capture(display,outer,0,"pdf-detail-fit-before"));
+    if (browser_ax) {
+        CHECK(state(first_text,ATSPI_STATE_DEFUNCT)&&observe(app,"Recovered guide",0)&&
+            (second_text=find(app,"Grün, café and 👋.",0))&&pdf_text_is(second_text,"Grün, café and 👋.")&&
+            browser_ax_document(second_text,"Recovered guide")&&
+            browser_ax_image(app));
+    } else if (detail_case) CHECK(pdf_detail_capture(display,outer,0,"pdf-detail-fit-before"));
     else CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
         pdf_word_geometry(second_text,72,4,145)&&observe(app,"0 matches on page",0));
@@ -1032,7 +1081,14 @@ int main(int argc,char **argv) {
     if(pdf_case)CHECK(state(second_text,ATSPI_STATE_DEFUNCT));
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
-    CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
+    if (browser_ax) {
+        CHECK(state(second_text,ATSPI_STATE_DEFUNCT)&&browser_ax_image(app)&&browser_pixel(display,outer,410,82,0xbf3f89u));
+        CHECK((scaled_text=find(app,"Notes closed.",0))&&pdf_text_is(scaled_text,"Notes closed.")&&
+            focus(app,"Show notes")&&observe(app,"Show notes",1)&&press(app,"Show notes"));
+        CHECK(observe(app,"Notes opened ✓.",0)&&!state(scaled_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(scaled_text,"Notes opened ✓."));
+        CHECK(browser_pixel(display,outer,32,104,0x21bb71u)&&input_chrome(display,id,"browser-ax-activated"));
+        puts("BROWSER_ATSPI verified: document hierarchy, Unicode text, clipped image, retirement and native action");
+    } else CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
     if (browser_case) puts("BROWSER_NATIVE verified: retired tab, engine failure, host recovery, 2x backing and native controls");
     if (browser_input) {
         CHECK(focus(app,"Enter page")&&drive("key","Return")&&

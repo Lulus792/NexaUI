@@ -31,6 +31,7 @@ typedef struct native_job {
     unsigned page; /* Zero uses the existing scenario's page. */
 #ifdef CONTENT_NATIVE_BROWSER
     content_browser_edit edit;
+    content_ax_action ax_action;
 #endif
 } native_job;
 typedef struct native_png_source {
@@ -65,6 +66,7 @@ typedef struct native_worker {
     nx_snapshot_exchange *exchange;
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
     const char *browser_socket;
+    int browser_ax;
     const char *uri_launcher;
     const char *export_path;
     const png_gallery *gallery;
@@ -361,7 +363,9 @@ static void *native_worker_entry(void *user) {
         nx_rect browser_caret={0};
 #ifdef CONTENT_NATIVE_BROWSER
         if (worker->browser_socket) {
-            if (job.edit.kind)
+            if (worker->browser_ax)
+                result=content_browser_ax_frame(worker->browser_socket,job.request,job.sequence,job.kind,job.ax_action,&data,&bytes);
+            else if (job.edit.kind)
                 result=content_browser_edit_frame(worker->browser_socket,job.request,job.sequence,&job.edit,&data,&bytes,&browser_caret);
             else result=content_browser_frame(worker->browser_socket,job.request,job.sequence,job.kind,&data,&bytes);
         }
@@ -442,7 +446,7 @@ static int native_worker_close(native_worker *worker) {
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
     const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader,
-    const char *uri_launcher, const char *export_path,const png_gallery *gallery,const char *browser_socket) {
+    const char *uri_launcher, const char *export_path,const png_gallery *gallery,const char *browser_socket,int browser_ax) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
@@ -452,6 +456,7 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
     worker->export_path = export_path;
     worker->gallery = gallery;
     worker->browser_socket = browser_socket;
+    worker->browser_ax = browser_ax;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;

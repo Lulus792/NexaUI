@@ -8,6 +8,7 @@
 #include "content_camera.h"
 #ifdef CONTENT_NATIVE_BROWSER
 #include "native_browser.h"
+#include "native_browser_ax.h"
 #endif
 
 enum input_phase { INPUT_IDLE, INPUT_PENDING, INPUT_ACTIVE, INPUT_RELEASED, INPUT_FOCUS_LOST, INPUT_DISCONNECTED };
@@ -606,8 +607,13 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
     unsigned *linked_page, pdf_selection *selection, int *redraw,
     char link_address[CONTENT_PDF_URI_LIMIT+1u], pdf_url_view *preview, int can_open_url,
-    const content_camera *camera, content_camera_view *page_view,const char *browser_status,int browser_enter) {
+    const content_camera *camera, content_camera_view *page_view,const char *browser_status,int browser_enter,
+    int browser_ax_ready,content_ax_action *browser_action) {
     *action = 0; *leased = 0; *linked_page=0;
+    *browser_action=(content_ax_action){0};
+#ifndef CONTENT_NATIVE_BROWSER
+    (void)browser_ax_ready;
+#endif
     link_address[0]=0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
     nx_semantic_desc root = {.id=1,.role=NX_ROLE_WINDOW,.bounds={0,0,info.width,info.height},
@@ -714,6 +720,10 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
             }
         }
     } else *page_view=content_camera_place(camera,desc.bounds,fitted);
+#ifdef CONTENT_NATIVE_BROWSER
+    if (browser_case && *leased && browser_ax_semantics(context,surface,&desc,browser_ax_ready,browser_action)!=NX_OK)
+        return 0;
+#endif
     if (pdf_case && *leased && pdf_text_semantics(context,surface,&desc,text_view,selection,window,
         pdf_can_navigate(phase),*page_view,redraw)!=NX_OK) return 0;
     if (pdf_case&&*leased&&selection->active&&selection->copy_status!=PDF_COPY_IDLE&&info.width>=480 &&
@@ -760,6 +770,7 @@ int main(void) {
 #endif
     int browser_pointer_case=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
     int browser_text_case=browser_pointer_case||(browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT"));
+    int browser_ax_case=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_AX");
     int gallery_case=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
     int pdf_case=!strcmp(test_case,"pdf");
     int pdf_select_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
@@ -830,7 +841,7 @@ int main(void) {
         (pdf_case&&nx_text_field_create("",0,4096,&query)!=NX_OK)||
         nx_software_view_open(window,&software)!=NX_OK||
         native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher,export_path,
-            document.gallery,browser_socket)) goto done;
+            document.gallery,browser_socket,browser_ax_case)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     if(browser_text_case&&nx_window_set_ime_transaction_events(window,1)!=NX_OK) goto done;
@@ -987,6 +998,7 @@ int main(void) {
         content_camera_view page_view;
         const char *browser_status=NULL;
         int browser_enter=0;
+        content_ax_action browser_action;
 #ifdef CONTENT_NATIVE_BROWSER
         if (browser_text_case&&phase==SCALED_READY) {
             browser_enter=editor.phase==BROWSER_HOST;
@@ -999,7 +1011,8 @@ int main(void) {
         if (++frames>(browser_pointer_case?220u:150u)||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
             &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view,
-            browser_status,browser_enter)) goto done;
+            browser_status,browser_enter,browser_ax_case&&phase==SCALED_READY&&!state.working&&!state.pending,
+            &browser_action)) goto done;
         int search_focused=nx_focus_id(context)==PDF_FIND_FIELD;
         if (!had_pages&&!had_preview&&!preview.uri[0]&&find_visible(query,drawn,info.width)) {
             if (pdf_find_shortcut(context,leased,&find_pressed,&need_frame)!=NX_OK) goto done;
@@ -1113,6 +1126,16 @@ int main(void) {
         }
         if (action==15) { result=0; break; }
 #ifdef CONTENT_NATIVE_BROWSER
+        if (browser_action.node && !action && phase==SCALED_READY && content_result==NX_OK) {
+            const content_ax_node *nodes;
+            size_t count;
+            uint32_t epoch;
+            if (content_surface_get_ax(surface,&nodes,&count,&epoch)!=NX_OK || !count ||
+                epoch!=browser_action.epoch || status.sequence==UINT64_MAX ||
+                !native_schedule(&worker,(native_job){.request=status.request,.sequence=status.sequence+1u,
+                    .ax_action=browser_action})) goto done;
+            need_frame=1;
+        }
         if (browser_status) {
             if (browser_enter&&action==16) {
                 nx_rect bounds={16,136,info.width-32,info.height-152};
@@ -1336,6 +1359,7 @@ done:
         if (expected<10u || editor.awaiting || editor.count || editor.phase!=BROWSER_HOST ||
             editor.revision<(browser_pointer_case?1u:3u)) result=1;
     }
+    if (browser_ax_case) expected=6u;
 #endif
     if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case||pdf_detail_case||pdf_export_case)?4u:
         pdf_zoom_case?5u:content_thumbnails_case?6u:pdf_link_reader?10u:8u;
