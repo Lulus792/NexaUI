@@ -227,6 +227,8 @@ def verify_guest_export(path):
 
 def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False,
               sharing=False, revoke=False):
+    from guest_fixture import DESKTOP_BOOT_TIMEOUT
+
     engine = str(engine.resolve(strict=True))
     firmware = str(firmware.resolve(strict=True))
     with tempfile.TemporaryDirectory(prefix='nexaui-guest-',dir='/tmp' if sharing else None) as directory:
@@ -286,7 +288,7 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
             args.extend((str(disk),str(checkpoint)))
             if reset:
                 args.append('restart-before-reply' if restart else 'drop-response')
-        result=run_content_service(command,env,address,args,startup_timeout=36 if initrd else 12,
+        result=run_content_service(command,env,address,args,startup_timeout=DESKTOP_BOOT_TIMEOUT+12 if initrd else 12,
                                    ready=address.with_suffix('.ready') if restart else None)
         if storage and result==0:
             if image_digest(checkpoint)!=baseline_hash or (image_digest(disk)==baseline_hash)!=reset:

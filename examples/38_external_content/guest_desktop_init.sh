@@ -6,6 +6,7 @@ export PATH=/usr/sbin:/usr/bin:/sbin:/bin
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs devtmpfs /dev
+exec >/dev/ttyS0 2>&1
 mount -t tmpfs tmpfs /run
 mkdir -p /dev/pts /run/desktop
 mount -t devpts devpts /dev/pts
@@ -24,7 +25,10 @@ if [ -n "$work" ]; then
 fi
 udevd --daemon
 udevadm trigger --action=add
-udevadm settle --timeout=5
+if ! udevadm settle --timeout=30; then
+    printf '%s\n' 'NEXAUI_STARTUP_FAILED udev settlement timed out'
+    exit 1
+fi
 if [ -n "$work" ]; then
     mkdir -p /mnt/work
     if [ "$work" = ro ]; then

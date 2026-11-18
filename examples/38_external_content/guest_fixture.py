@@ -23,6 +23,7 @@ INPUT_LIMIT = 128
 INPUT_RECORD_SIZE = 5
 INPUT_KEY, INPUT_BUTTON, INPUT_MOTION = 1, 2, 3
 QMP_LIMIT = 16384
+DESKTOP_BOOT_TIMEOUT = 120
 RESET_RESTART_EXIT = 86
 SHARE_PATH_LIMIT = 96
 FILE_EXPORT_ID = 'nexaui-export'
@@ -125,13 +126,15 @@ class Guest:
         self.version = self.message(deadline)['QMP']['version']['qemu']
         self.command('qmp_capabilities')
         if self.desktop:
-            deadline = time.monotonic() + 28
+            deadline = time.monotonic() + DESKTOP_BOOT_TIMEOUT
             while True:
                 if self.trace.exists():
                     with self.trace.open('rb') as stream:
                         data=stream.read(65537)
                     if b'NEXAUI_DESKTOP_READY\r\n' in data or b'NEXAUI_DESKTOP_READY\n' in data:
                         break
+                    if b'NEXAUI_STARTUP_FAILED ' in data or b'Kernel panic - not syncing' in data:
+                        raise RuntimeError('Guest startup failed before desktop readiness')
                     if len(data) > 65536:
                         raise RuntimeError('Guest boot output exceeded its limit')
                 self.progress(deadline)
