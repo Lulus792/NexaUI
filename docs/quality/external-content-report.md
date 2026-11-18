@@ -1498,3 +1498,62 @@ The verified path requires a guest that releases its mount. Runtime
 grant creation, an enforced cutoff when the guest keeps a mount,
 Aetheri product authority, other sharing channels and guest accessibility
 remain open.
+
+## Native QEMU runtime file grant, 2026-11-18
+
+The consumer was compiled from `0ccbde8433bcbcd6d0634ae7ddcd1cb9743ad9cd`.
+The selected Git archive has SHA-256
+`92c806ddb2ac7a3c2d22c468ff60da79636969c810d26eff18711032c953a394`.
+The Wayland-only Release and sanitizer SDK libraries were reused from
+`266404bf1743248f16eb289c0a1c0d99701cc395`. The SDK sources, build
+configuration and data are identical at the consumer revision. The
+audit compares both libraries to the previous evidence receipts and
+compares the boot image's executable `/init` with the archived source.
+The native environment uses Alpine/Weston 14.0.2, QEMU 11.0.3 and
+Clang 22.1.3.
+
+With `--case guest-reset --guest-file-grant`, the private owner registers
+one prepared directory at VM startup. Sharing shows its exact path
+and **Files: access off**. The independent peer uses the keyboard to
+activate **Grant file access**. The owner asks QMP to attach one VirtIO
+9p device. **Check sharing status** reads the result and exposes
+**Files: read/write** when the named device and mount tag agree. An
+uncertain reply preserves the pending or unknown result until it can
+be observed. The owner issues a single attach request for this grant.
+[QEMU 11.0.3 device command contract](https://github.com/qemu/qemu/blob/v11.0.3/qapi/qdev.json)
+
+The guest's first mount attempt fails and the prepared directory starts
+empty. The guest mounts the channel after approval and writes a file
+through it. The reset review carries a scope binding that changes when
+the owner admits the grant. A direct run against QEMU kept the same
+environment and checkpoint, observed the changed scope and confirmed that
+the owner rejected the earlier review. A fresh review lists the external
+directory where previous writes are retained. The keyboard workflow then
+revokes consent with guest cooperation, verifies remount denial and
+restores the checkpoint. The replacement owner observes one completed
+reset. A read-only guest boot verifies the checkpoint, and the host
+compares the exported file's bytes and inode before and after reset.
+
+The test set passed 54 CTests across four build profiles, 10 native
+runs and 75 focused checks. Release and ASan/UBSan with leak detection
+covered the grant, its revocation, and reset-owner replacement. The
+host AT-SPI peer checked action availability, status and focus restoration.
+The captured **activation pending** and **read/write** rows measured
+12.85:1 in both profiles.
+
+The first runs of two launch-grant controls missed the expected guest
+terminal color after the write. The controls passed on retry with
+the same source, binaries and boot artifacts. The revocation retry also
+ran with owner replacement, as in the preceding checkpoint. The
+evidence bundle includes the unsuccessful runs.
+
+The local evidence bundle `nexaui-qemu-file-grant459.tar.gz` has SHA-256
+`67acb7920c7536b21c1f3e18be6fb8e37589d2ab533dc96566c001a8f90bd401`.
+The matching `qemu-file-grant459-final.json` records scope, profile
+counts, and hashes for the selected source, boot artifacts,
+SDK libraries, native captures and archived members.
+
+The test owner supports one runtime grant for a prepared private
+directory. Aetheri's production grant authority, forced revocation
+while a guest keeps its mount, the remaining sharing channels and
+the guest's accessibility tree remain open.

@@ -453,8 +453,23 @@ device has left the VM. The guest's `probe` command attempts to mount
 the channel again and the harness verifies the host file is unchanged.
 The reset dialog still identifies the directory where prior writes stay.
 
+Use `--case guest-reset --guest-file-grant` for a running guest whose
+private export is registered at startup. Sharing shows **Files: access
+off** and the exact host directory. **Grant file access** sends one
+scoped device attachment request. The owner reports **activation
+pending** until a status read confirms the device and its mount tag.
+The guest's `probe` confirms access is unavailable before the grant.
+After confirmation, `attach` mounts the export and `nexa` writes the
+test file. The workflow then exercises revocation and reset.
+
+Each runtime grant changes the confirmation bound to the reset preview.
+The displayed environment and checkpoint remain stable. A fresh review
+includes the external directory, and the owner rejects pre-grant reset
+confirmations. The reset status owner can read the committed result
+when `--guest-owner-restart` is also enabled.
+
 Production disk enrollment, recovery when storage is unavailable,
-runtime grant creation, forced revocation when a guest keeps the mount,
+forced revocation when a guest keeps the mount, production grant policy,
 the other sharing channels and guest accessibility remain open.
 
 ## Optional PDF producer on Linux
