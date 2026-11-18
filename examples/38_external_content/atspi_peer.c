@@ -638,7 +638,8 @@ static int read_guest_sharing(AtspiAccessible *app,const char *directory,const c
     return observe(app,"Guest sharing",0)&&observe(app,clipboard,0)&&
         observe(app,status?status:directory?"Files: read/write":"Files: unavailable",0)&&
         observe(app,network?network:"Network: unavailable",0)&&
-        observe(app,microphone?microphone:"Microphone: unavailable",0)&&observe(app,"Devices: unavailable",0)&&
+        observe(app,microphone?microphone:"Microphone: unavailable",0)&&
+        (getenv("NEXAUI_CONTENT_TEST_GUEST_USB")||observe(app,"Devices: unavailable",0))&&
         (!directory||observe(app,row,0));
 }
 
@@ -1433,6 +1434,25 @@ int main(int argc,char **argv) {
                 guest_microphone_review(app,id,"miccheck","NEXAUI_MICROPHONE_RECORD_CUTOFF","NEXAUI_MICROPHONE_CUTOFF")&&
                 drive("key","Escape")&&observe(app,"Sharing",1));
             puts("GUEST_MICROPHONE_NATIVE verified: held and fresh ALSA capture silent after tone cutoff");
+        }
+        if (getenv("NEXAUI_CONTENT_TEST_GUEST_USB")) {
+            const char *file=revoke?"Files: revoked":NULL;
+            CHECK(guest_console_marker(app,id,"usboff","NEXAUI_USB_OFF"));
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,file,network,microphone)&&
+                observe(app,"Devices: read-only USB off",0)&&focus(app,"Close sharing")&&drive("key","Tab")&&
+                observe(app,"Attach test disk",1)&&drive("key","Return")&&observe(app,"Devices: USB attach pending",0));
+            CHECK(focus(app,"Check device status")&&drive("key","Return")&&observe(app,"Devices: USB disk read-only",0)&&
+                input_chrome(display,id,"guest-usb-active")&&drive("key","Escape")&&observe(app,"Sharing",1)&&
+                guest_console_marker(app,id,"usbopen","NEXAUI_USB_ACTIVE_RO"));
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&observe(app,"Devices: USB disk read-only",0)&&
+                focus(app,"Close sharing")&&drive("key","Tab")&&observe(app,"Detach test disk",1)&&drive("key","Return")&&
+                observe(app,"Devices: USB detach pending",0)&&input_chrome(display,id,"guest-usb-pending")&&
+                drive("key","Escape")&&observe(app,"Sharing",1)&&
+                guest_console_marker(app,id,"usbcheck","NEXAUI_USB_REVOKED_HELD_AND_FRESH"));
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,file,network,microphone)&&
+                observe(app,"Devices: USB disk detached",0)&&input_chrome(display,id,"guest-usb-revoked")&&
+                drive("key","Escape")&&observe(app,"Sharing",1));
+            puts("GUEST_USB_NATIVE verified: read-only disk and detached for held and fresh reads");
         }
         CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));

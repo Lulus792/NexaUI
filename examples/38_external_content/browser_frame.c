@@ -87,7 +87,7 @@ static uint64_t wire_u64(const uint8_t *bytes) {
 }
 
 enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64, GUEST_PREVIEW_V3=80,
-       GUEST_ACTION_BYTES=5, GUEST_SHARING_V1=8, GUEST_SHARING_V2=28,
+       GUEST_ACTION_BYTES=5, GUEST_SHARING_V1=8, GUEST_SHARING_V2=28, GUEST_SHARING_V6=32,
        GUEST_CLIPBOARD_SCOPE=24, GUEST_CLIPBOARD_HEADER=32 };
 static nx_result read_guest_resources(const uint8_t *wire,size_t bytes,content_guest_resources *out) {
     if (bytes!=GUEST_RESOURCE_BYTES||memcmp(wire,"NXR1",4)) return NX_ERROR_ARGUMENT;
@@ -118,23 +118,27 @@ static nx_result read_guest_sharing(const uint8_t *wire,size_t bytes,content_gue
     content_guest_sharing value={0};
     size_t prefix=GUEST_SHARING_V1;
     if (bytes<GUEST_SHARING_V1) return NX_ERROR_ARGUMENT;
+    int usb=!memcmp(wire,"NXS6",4);
     int microphone=!memcmp(wire,"NXS5",4);
     int network=!memcmp(wire,"NXS4",4);
-    int clipboard=microphone||network||!memcmp(wire,"NXS3",4);
+    int clipboard=usb||microphone||network||!memcmp(wire,"NXS3",4);
     if (clipboard||!memcmp(wire,"NXS2",4)) {
         static const uint8_t zero[16]={0};
-        prefix=GUEST_SHARING_V2;
+        prefix=usb?GUEST_SHARING_V6:GUEST_SHARING_V2;
         if (bytes<prefix||wire[4]>GUEST_SHARE_ATTACHING||((wire[4]||!clipboard)&&bytes==prefix)||
             (!clipboard&&!wire[4])||(!clipboard&&wire[5])||
             (wire[5]&~(GUEST_CLIPBOARD_SEND|GUEST_CLIPBOARD_READ))||
-            (microphone?(wire[7]<GUEST_MICROPHONE_OFF||wire[7]>GUEST_MICROPHONE_UNKNOWN):wire[7]!=0)||
+            (microphone&&wire[7]<GUEST_MICROPHONE_OFF)||wire[7]>GUEST_MICROPHONE_UNKNOWN||
+            (!usb&&!microphone&&wire[7])||
             (network&&wire[6]<GUEST_NETWORK_OFF)||wire[6]>GUEST_NETWORK_UNKNOWN||
-            (!microphone&&!network&&wire[6])||
+            (!usb&&!microphone&&!network&&wire[6])||
+            (usb&&(wire[24]<GUEST_USB_OFF||wire[24]>GUEST_USB_UNKNOWN||wire[25]||wire[26]||wire[27]))||
             !memcmp(wire+8,zero,sizeof(zero))) return NX_ERROR_ARGUMENT;
         value.state=wire[4];
         value.clipboard=wire[5];
         value.network=wire[6];
         value.microphone=wire[7];
+        if (usb) value.usb=wire[24];
         memcpy(value.environment,wire+8,sizeof(value.environment));
     } else if (memcmp(wire,"NXS1",4)) return NX_ERROR_ARGUMENT;
     if (wire_u32(wire+prefix-4)!=bytes-prefix) return NX_ERROR_ARGUMENT;
@@ -242,12 +246,12 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     size_t prefix=edit?8u:0;
     int reset_action=kind==CONTENT_GUEST_RESET_APPLY||kind==CONTENT_GUEST_RESET_STATUS;
     int sharing=(kind>=CONTENT_GUEST_SHARING&&kind<=CONTENT_GUEST_GRANT_FILES)||
-        (kind>=CONTENT_GUEST_GRANT_NETWORK&&kind<=CONTENT_GUEST_REVOKE_MICROPHONE);
+        (kind>=CONTENT_GUEST_GRANT_NETWORK&&kind<=CONTENT_GUEST_REVOKE_USB);
     int clipboard=guest_report&&kind==CONTENT_GUEST_CLIPBOARD;
     int clipboard_read=guest_report&&kind==CONTENT_GUEST_CLIPBOARD_READ;
     size_t capacity=guest_report?(clipboard_read?GUEST_CLIPBOARD_HEADER+GUEST_CLIPBOARD_LIMIT:
         clipboard?1u:reset_action?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:
-        (sharing?GUEST_SHARING_V2:GUEST_PREVIEW_V3)+GUEST_SHARE_PATH_LIMIT)+1u:
+        (sharing?GUEST_SHARING_V6:GUEST_PREVIEW_V3)+GUEST_SHARE_PATH_LIMIT)+1u:
         prefix+(accessible?4u+BROWSER_AX_WIRE_LIMIT:0)+CONTENT_PNG_ENCODED_LIMIT+1u;
     encoded=malloc(capacity);
     if (!encoded) { result=NX_ERROR_MEMORY;goto done; }
@@ -386,6 +390,7 @@ static nx_result guest_sharing_action(const char *path,content_request request,u
     unsigned channel=observed.state;
     if (kind==CONTENT_GUEST_GRANT_NETWORK||kind==CONTENT_GUEST_REVOKE_NETWORK) channel=observed.network;
     if (kind==CONTENT_GUEST_GRANT_MICROPHONE||kind==CONTENT_GUEST_REVOKE_MICROPHONE) channel=observed.microphone;
+    if (kind==CONTENT_GUEST_GRANT_USB||kind==CONTENT_GUEST_REVOKE_USB) channel=observed.usb;
     if (!channel||
         memcmp(observed.environment,environment,sizeof(observed.environment)))
         return NX_ERROR_STATE;
@@ -408,6 +413,12 @@ nx_result content_guest_network_action(const char *path,content_request request,
 nx_result content_guest_microphone_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
     content_guest_sharing *out) {
     if (kind!=CONTENT_GUEST_GRANT_MICROPHONE&&kind!=CONTENT_GUEST_REVOKE_MICROPHONE) return NX_ERROR_ARGUMENT;
+    return guest_sharing_action(path,request,kind,environment,out);
+}
+
+nx_result content_guest_usb_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
+    content_guest_sharing *out) {
+    if (kind!=CONTENT_GUEST_GRANT_USB&&kind!=CONTENT_GUEST_REVOKE_USB) return NX_ERROR_ARGUMENT;
     return guest_sharing_action(path,request,kind,environment,out);
 }
 

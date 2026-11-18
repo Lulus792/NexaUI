@@ -19,6 +19,7 @@ from guest_clipboard import CLIPBOARD_LIMIT, GuestClipboard
 from guest_export import GuestExport, private_export_identity
 from guest_microphone import GuestMicrophone
 from guest_network import GuestNetwork
+from guest_usb import GuestUSB, USB_CONTROLLER
 from guest_reset import (RESET_APPLIED, RESET_REJECTED, RESET_SCOPE_BYTES, RESET_UNKNOWN, RESET_UNREQUESTED,
                          WORK_DISK_BYTES, image_digest, image_identity, image_snapshot, observe_reset,
                          record_reset, sync_directory)
@@ -45,7 +46,7 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
                  reset_enabled=False, file_share=None, revoke_share=False, grant_share=False, export=None,
-                 clipboard=False, network=False, microphone=False):
+                 clipboard=False, network=False, microphone=False, usb=False):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -61,10 +62,13 @@ class Guest:
             raise ValueError('Network requires the desktop guest')
         if microphone and not self.desktop:
             raise ValueError('Microphone requires the desktop guest')
+        if usb and not self.desktop:
+            raise ValueError('USB sharing requires the desktop guest')
         self.clipboard = GuestClipboard(root) if clipboard else None
         self.network = GuestNetwork(root) if network else None
         self.microphone = None
-        if self.clipboard or self.network or microphone or self.checkpoint:
+        self.usb = GuestUSB(root) if usb else None
+        if self.clipboard or self.network or microphone or self.usb or self.checkpoint:
             self.environment = os.urandom(16)
         if self.export and (not grant_share or self.export.source!=file_share):
             raise ValueError('The file backend requires the private runtime grant')
@@ -111,12 +115,16 @@ class Guest:
                 cmdline += ' nexaui.network=probe'
             if microphone:
                 cmdline += ' nexaui.microphone=probe'
+            if self.usb:
+                cmdline += ' nexaui.usb=probe'
             if self.file_share:
                 cmdline += ' nexaui.export=' + ('grantable' if grant_share else 'revocable' if revoke_share else 'write')
             boot_options = [
                 '-m', '768', '-device', 'virtio-vga,id=guest-gpu,xres=800,yres=600',
                 '-kernel', boot, '-initrd', initrd, '-append', cmdline,
                 '-serial', f'file:{self.trace}']
+            if self.usb:
+                boot_options += ['-device',f'qemu-xhci,id={USB_CONTROLLER}']
             if self.clipboard:
                 boot_options += ['-chardev',f'socket,id=clipboard,path={self.clipboard.address},server=on,wait=off',
                                  '-serial','chardev:clipboard']
@@ -183,7 +191,8 @@ class Guest:
                     lines = data.splitlines()
                     if (b'NEXAUI_DESKTOP_READY' in lines and
                             (not self.clipboard or b'NEXAUI_CLIPBOARD_READY' in lines) and
-                            (not self.microphone or b'NEXAUI_MICROPHONE_READY' in lines)):
+                            (not self.microphone or b'NEXAUI_MICROPHONE_READY' in lines) and
+                            (not self.usb or b'NEXAUI_USB_READY' in lines)):
                         if self.clipboard:
                             self.clipboard.can_read = b'NEXAUI_CLIPBOARD_READ_READY' in lines
                         break
@@ -235,6 +244,8 @@ class Guest:
         self.peer.sendall(json.dumps(packet, separators=(',', ':')).encode() + b'\n')
         while True:
             reply = self.message(deadline)
+            if self.usb:
+                self.usb.event(reply)
             if reply.get('event')=='DEVICE_DELETED':
                 data = reply.get('data',{})
                 if data.get('device')==FILE_EXPORT_ID and data.get('path')==FILE_EXPORT_QOM:
@@ -419,6 +430,11 @@ class Guest:
     def sharing_reply(self, state):
         path = self.share_path if self.file_share else b''
         clipboard = self.clipboard.capabilities() if self.clipboard else 0
+        if self.usb:
+            network = self.network.state if self.network else 0
+            microphone = self.microphone.snapshot() if self.microphone else 0
+            return struct.pack('>4sBBBB16sB3xI',b'NXS6',state,clipboard,network,microphone,
+                               self.environment,self.usb.state,len(path))+path
         if self.microphone:
             network = self.network.state if self.network else 0
             return struct.pack('>4sBBBB16sI',b'NXS5',state,clipboard,network,self.microphone.snapshot(),
@@ -430,9 +446,11 @@ class Guest:
             return struct.pack('>4sBB2x16sI',b'NXS3',state,clipboard,self.environment,len(path))+path
         return struct.pack('>4sB3x16sI',b'NXS2',state,self.environment,len(path))+path
 
-    def sharing(self, observe_network=True):
+    def sharing(self, observe_network=True, observe_usb=True):
         if self.network and observe_network:
             self.network.observe(self.command)
+        if self.usb and observe_usb:
+            self.usb.observe(self.command)
         try:
             if self.file_share and self.revoke_share and self.share_state!=SHARE_ACTIVE:
                 if self.export_identity()!=self.share_identity:
@@ -444,7 +462,7 @@ class Guest:
         print(f'GUEST_SHARING files={path.decode() or "unavailable"}',flush=True)
         if self.file_share and self.revoke_share:
             return self.sharing_reply(self.share_state)
-        if self.clipboard or self.network or self.microphone:
+        if self.clipboard or self.network or self.microphone or self.usb:
             return self.sharing_reply(0)
         return struct.pack('>4sI',b'NXS1',len(path))+path
 
@@ -466,17 +484,31 @@ class Guest:
         if not self.microphone or scope!=self.environment:
             return b'U'
         if grant:
-            if self.held or self.buttons:
-                return b'U'
-            try:
-                if self.command('query-status')['status']!='running':
-                    return b'U'
-            except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            if not self.sharing_grant_ready():
                 return b'U'
             self.microphone.grant()
         else:
             self.microphone.revoke()
         return self.sharing(observe_network=False)
+
+    def sharing_grant_ready(self):
+        if self.held or self.buttons:
+            return False
+        try:
+            return self.command('query-status')['status']=='running'
+        except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            return False
+
+    def usb_action(self, scope, grant):
+        if not self.usb or scope!=self.environment:
+            return b'U'
+        if grant:
+            if not self.sharing_grant_ready():
+                return b'U'
+            self.usb.grant(self.command)
+        else:
+            self.usb.revoke(self.command)
+        return self.sharing(observe_network=False,observe_usb=False)
 
     def clipboard_ticket(self, payload):
         if not self.clipboard or payload[:16]!=self.environment:
@@ -693,15 +725,15 @@ def read_request(peer, desktop):
         generation, resize, width, height, kind = fields[:5]
         if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                 0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                kind in range(20 if desktop else 6) and
-                len(fields)==(6 if kind in (5,9,10,12,13,14,15,16,17,18,19) else 5)):
+                kind in range(22 if desktop else 6) and
+                len(fields)==(6 if kind in (5,9,10,12,13,14,15,16,17,18,19,20,21) else 5)):
             raise ValueError('Guest request outside the fixture limits')
         size = fields[5] if len(fields)==6 else 0
         if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
             raise ValueError('Guest input batch too large')
         if kind in (9,10) and size!=RESET_SCOPE_BYTES:
             raise ValueError('Invalid guest reset scope length')
-        if kind in (12,13,16,17,18,19) and size!=16:
+        if kind in (12,13,16,17,18,19,20,21) and size!=16:
             raise ValueError('Invalid sharing grant environment length')
         if kind==14 and not 24<size<=24+CLIPBOARD_LIMIT:
             raise ValueError('Invalid guest clipboard length')
@@ -735,7 +767,8 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
     clipboard = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD')=='1'
     network = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_NETWORK')=='1'
     microphone = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_MICROPHONE')=='1'
-    if clipboard or network or microphone:
+    usb = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_USB')=='1'
+    if clipboard or network or microphone or usb:
         require_reset_root(address)
     grant = bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_GRANT')=='1')
     bindfs = os.environ.get('NEXAUI_CONTENT_TEST_FILE_BINDFS')
@@ -746,7 +779,7 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
                       reset_enabled=bool(reset_mode),file_share=file_share,
                       revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'),
-                      grant_share=grant,export=export,clipboard=clipboard,network=network,microphone=microphone)
+                      grant_share=grant,export=export,clipboard=clipboard,network=network,microphone=microphone,usb=usb)
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()
@@ -812,9 +845,9 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                             except (BrokenPipeError,ConnectionResetError):
                                 pass
                             continue
-                        if kind in (16,17,18,19):
-                            outcome = (guest.network_action(payload,grant=kind==16) if kind<18 else
-                                       guest.microphone_action(payload,grant=kind==18))
+                        if kind in (16,17,18,19,20,21):
+                            action = (guest.network_action,guest.microphone_action,guest.usb_action)[(kind-16)//2]
+                            outcome = action(payload,grant=kind%2==0)
                             try:
                                 peer.sendall(outcome)
                             except (BrokenPipeError,ConnectionResetError):

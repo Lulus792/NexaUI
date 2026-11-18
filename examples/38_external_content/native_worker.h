@@ -383,7 +383,7 @@ static void *native_worker_entry(void *user) {
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
 #ifdef CONTENT_NATIVE_GUEST
-        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_REVOKE_MICROPHONE) {
+        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_REVOKE_USB) {
             native_guest_report report={.ticket=job.sequence,.kind=job.kind};
             if (job.kind==CONTENT_GUEST_RESOURCES)
                 report.result=content_guest_read_resources(worker->guest_socket,job.request,&report.resources);
@@ -403,6 +403,9 @@ static void *native_worker_entry(void *user) {
                     job.share_scope.environment,&report.sharing);
             else if (job.kind==CONTENT_GUEST_GRANT_MICROPHONE||job.kind==CONTENT_GUEST_REVOKE_MICROPHONE)
                 report.result=content_guest_microphone_action(worker->guest_socket,job.request,job.kind,
+                    job.share_scope.environment,&report.sharing);
+            else if (job.kind==CONTENT_GUEST_GRANT_USB||job.kind==CONTENT_GUEST_REVOKE_USB)
+                report.result=content_guest_usb_action(worker->guest_socket,job.request,job.kind,
                     job.share_scope.environment,&report.sharing);
             else if (job.kind==CONTENT_GUEST_RESET_PREVIEW)
                 report.result=content_guest_read_reset_preview(worker->guest_socket,job.request,&report.preview);

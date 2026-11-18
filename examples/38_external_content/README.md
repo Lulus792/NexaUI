@@ -538,9 +538,23 @@ the same open capture after approval and silence on held and fresh
 captures after revocation. The owner closes the source when it stops
 the VM. Ordinary logs contain sample counts and state only.
 
+Use `--case guest-desktop --guest-usb` to attach a read-only emulated USB
+test disk. QEMU needs the xHCI controller and USB mass-storage device. The
+guest initramfs needs `xhci_pci`, `usb_storage` and `sd_mod`. The fixture
+starts with an empty USB controller and creates the disk image in its
+private directory.
+
+In **Sharing**, **Attach test disk** grants this disk to the current VM.
+**Check device status** reads the actual attachment and checks its serial,
+port and read-only backing image. **Detach test disk** requests removal. The
+owner waits for the matching QEMU deletion event, then closes the backing
+node and checks that it is gone. The guest test checks the exact disk contents,
+rejected writes and unavailable data on both an open descriptor and a new
+attempt after removal.
+
 Production disk enrollment, recovery when storage is unavailable,
-production grant policy, broader networking, physical microphone and
-device sharing, and guest accessibility remain open.
+production grant policy, broader networking, physical microphone and USB
+passthrough, and guest accessibility remain open.
 
 ## Optional PDF producer on Linux
 

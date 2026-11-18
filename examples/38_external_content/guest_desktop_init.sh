@@ -20,6 +20,16 @@ case " $(cat /proc/cmdline) " in
     *" nexaui.work=ro "*) work=ro ;;
     *) work= ;;
 esac
+case " $(cat /proc/cmdline) " in
+    *" nexaui.usb=probe "*)
+        if ! modprobe xhci_pci || ! modprobe usb_storage || ! modprobe sd_mod; then
+            printf '%s\n' 'NEXAUI_STARTUP_FAILED USB test drive setup'
+            exit 1
+        fi
+        : >/run/usb-enabled
+        printf '%s\n' NEXAUI_USB_READY
+        ;;
+esac
 if [ -n "$work" ]; then
     modprobe virtio_blk
 fi
@@ -203,6 +213,24 @@ network_new_reply() {
 network_read() {
     timeout 2 sh -c 'IFS= read -r reply <&5 && [ "$reply" = "$1" ]' reply "$1"
 }
+usb_target() {
+    for path in /sys/bus/usb/devices/*; do
+        if [ -f "$path/serial" ] && [ "$(cat "$path/serial")" = NexaUI-TestDisk ]; then
+            readlink -f "$path"
+            return
+        fi
+    done
+    return 1
+}
+usb_block() {
+    target=$(usb_target) || return 1
+    for path in /sys/class/block/sd*; do
+        case "$(readlink -f "$path")" in
+            "$target"/*) printf '/dev/%s\n' "${path##*/}"; return ;;
+        esac
+    done
+    return 1
+}
 microphone_window() {
     dd if="$1" bs=192000 skip="$2" count=1 of=/run/microphone-window.raw 2>/dev/null || return 1
     [ "$(stat -c %s /run/microphone-window.raw)" -eq 192000 ] || return 1
@@ -238,6 +266,7 @@ microphone_held_window() {
         kill -0 "$microphone_client" && microphone_window /run/microphone-held.raw "$1" "$2"
 }
 microphone_client=
+usb_disk=
 while IFS= read -r line; do
     if [ "$line" = nexa ]; then
         if [ -f /run/file-export ]; then
@@ -255,6 +284,41 @@ while IFS= read -r line; do
         sleep .4
         paint 42 'Guest keyboard input received'
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
+    elif [ -f /run/usb-enabled ] && [ "$line" = usboff ]; then
+        if ! usb_target >/dev/null; then printf '%s\n' NEXAUI_USB_OFF >/dev/ttyS0; fi
+    elif [ -f /run/usb-enabled ] && [ "$line" = usbopen ] && [ -z "$usb_disk" ]; then
+        tries=0
+        until usb_disk=$(usb_block); do
+            tries=$((tries+1))
+            [ "$tries" -lt 35 ] || break
+            sleep .1
+        done
+        printf '%s\n' 'NexaUI private USB test disk' >/run/usb-expected
+        if [ -b "$usb_disk" ] && [ "$(cat "/sys/class/block/${usb_disk##*/}/ro")" = 1 ] &&
+            cmp -n 29 /run/usb-expected "$usb_disk" &&
+            ! dd if=/dev/zero of="$usb_disk" bs=512 count=1 2>/dev/null; then
+            exec 9<"$usb_disk"
+            printf '%s\n' NEXAUI_USB_ACTIVE_RO >/dev/ttyS0
+        else
+            usb_disk=
+        fi
+    elif [ -n "$usb_disk" ] && [ "$line" = usbcheck ]; then
+        tries=0
+        while usb_target >/dev/null || [ -e "$usb_disk" ]; do
+            tries=$((tries+1))
+            [ "$tries" -lt 35 ] || break
+            sleep .1
+        done
+        # The held descriptor has never read the second marker at sector 1000.
+        dd bs=512 skip=1000 count=1 <&9 >/run/usb-held-late 2>/dev/null || :
+        dd if="$usb_disk" bs=512 count=1 >/run/usb-fresh-late 2>/dev/null || :
+        if ! usb_target >/dev/null && [ ! -e "$usb_disk" ] &&
+            [ ! -s /run/usb-held-late ] && [ ! -s /run/usb-fresh-late ]; then
+            printf '%s\n' NEXAUI_USB_REVOKED_HELD_AND_FRESH >/dev/ttyS0
+        fi
+        exec 9<&-
+        usb_disk=
+        rm -f /run/usb-expected /run/usb-held-late /run/usb-fresh-late
     elif [ -f /run/microphone-enabled ] && [ "$line" = micoff ] && [ ! -f /run/microphone-held.raw ]; then
         printf '%s\n' NEXAUI_MICROPHONE_RECORD_START >/dev/ttyS0
         arecord -q -D hw:0,0 -t raw -f S16_LE -c 2 -r 48000 -d 50 /run/microphone-held.raw </dev/null 2>/dev/ttyS0 &
