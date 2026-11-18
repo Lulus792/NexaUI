@@ -776,10 +776,11 @@ int main(void) {
     if (!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!path||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
-        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&
+        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
     int browser_case=!strcmp(test_case,"browser");
-    int guest_case=!strcmp(test_case,"guest");
+    int guest_desktop=!strcmp(test_case,"guest-desktop");
+    int guest_case=guest_desktop||!strcmp(test_case,"guest");
     const char *guest_socket=guest_case?getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET"):NULL;
 #ifndef CONTENT_NATIVE_GUEST
     if (guest_case) return 2;
@@ -875,7 +876,8 @@ int main(void) {
     if(browser_text_case&&nx_window_set_ime_transaction_events(window,1)!=NX_OK) goto done;
     for (;;) {
         uint32_t ready=0; size_t routed=0; nx_window_info info;
-        if (nx_window_poll_with_fd_events(window,need_frame?0:200,worker.wake[0],NX_WINDOW_FD_READABLE,&ready)!=NX_OK||
+        int wait_ms=guest_desktop&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED?80:200;
+        if (nx_window_poll_with_fd_events(window,need_frame?0:wait_ms,worker.wake[0],NX_WINDOW_FD_READABLE,&ready)!=NX_OK||
             nx_window_get_info(window,&info)!=NX_OK) goto done;
         if(input) {
             /* Drain native events first; pending native AX actions still use
@@ -1020,7 +1022,19 @@ int main(void) {
             state.completed==nav_completion&&state.result!=NX_OK;
         if (!gallery_case&&state.result!=NX_OK&&!decode_rejected&&!navigation_error&&phase!=FAILED) { phase=FAILED; need_frame=1; }
         if (info.should_close) { result=0; break; }
-        if (!need_frame&&!routed&&!worker_frame) continue;
+        if (!need_frame&&!routed&&!worker_frame) {
+#ifdef CONTENT_NATIVE_GUEST
+            if (guest_desktop&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&
+                input_phase!=INPUT_DISCONNECTING&&!state.working&&!state.pending) {
+                content_surface_status current;
+                if (content_surface_get_status(surface,&current)!=NX_OK||!current.sequence||
+                    current.sequence==UINT64_MAX||
+                    !native_schedule(&worker,(native_job){.request=current.request,.sequence=current.sequence+1,.kind=6}))
+                    goto done;
+            }
+#endif
+            continue;
+        }
         need_frame=0;
         int had_preview=preview.uri[0]!=0;
         int had_pages=document.thumbnails.open;
@@ -1038,7 +1052,9 @@ int main(void) {
                 editor.revision?"Page input released.":"Scaled frame ready.";
         }
 #endif
-        if (++frames>((browser_pointer_case||guest_case)?220u:150u)||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
+        ++frames;
+        if ((!guest_desktop&&frames>((browser_pointer_case||guest_case)?220u:150u))||
+            !frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
             &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,guest_case,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view,
             browser_status,browser_enter,browser_ax_case&&phase==SCALED_READY&&!state.working&&!state.pending,

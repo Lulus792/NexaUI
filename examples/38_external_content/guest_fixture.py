@@ -2,6 +2,7 @@
 
 import json
 from pathlib import Path
+import re
 import signal
 import socket
 import struct
@@ -25,8 +26,9 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 
 class Guest:
-    def __init__(self, engine, firmware, boot, root):
+    def __init__(self, engine, firmware, boot, root, initrd=None):
         self.root = root
+        self.desktop = initrd is not None
         self.trace = root / 'guest.trace'
         self.address = root / 'qmp.sock'
         self.held = set()
@@ -36,15 +38,23 @@ class Guest:
         self.serial = 0
         self.peer = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.stream = None
+        if self.desktop:
+            boot_options = [
+                '-m', '768', '-device', 'virtio-vga,id=guest-gpu,xres=800,yres=600',
+                '-kernel', boot, '-initrd', initrd, '-append', 'console=ttyS0 quiet rootfstype=ramfs',
+                '-serial', f'file:{self.trace}']
+        else:
+            boot_options = [
+                '-m', '32', '-device', 'VGA', '-serial', 'none',
+                '-drive', f'file={boot},if=floppy,format=raw,readonly=on', '-boot', 'order=a',
+                '-debugcon', f'file:{self.trace}']
         try:
             with (root / 'qemu.stderr').open('wb') as log:
                 self.process = subprocess.Popen(
                     [engine, '-L', firmware, '-machine', 'pc', '-accel', 'tcg',
-                     '-m', '32', '-no-user-config', '-nodefaults', '-no-reboot',
+                     '-no-user-config', '-nodefaults', '-no-reboot',
                      '-nic', 'none', '-display', 'none', '-monitor', 'none',
-                     '-serial', 'none', '-parallel', 'none', '-device', 'VGA',
-                     '-drive', f'file={boot},if=floppy,format=raw,readonly=on', '-boot', 'order=a',
-                     '-debugcon', f'file:{self.trace}',
+                     '-parallel', 'none', *boot_options,
                      '-qmp', f'unix:{self.address},server=on,wait=off'],
                     stdin=subprocess.DEVNULL, stdout=log, stderr=log)
         except BaseException:
@@ -60,15 +70,37 @@ class Guest:
         self.stream = self.peer.makefile('rb')
         self.version = self.message(deadline)['QMP']['version']['qemu']
         self.command('qmp_capabilities')
-        self.wait_trace(b'R')
+        if self.desktop:
+            deadline = time.monotonic() + 28
+            while True:
+                if self.trace.exists():
+                    with self.trace.open('rb') as stream:
+                        data=stream.read(65537)
+                    if b'NEXAUI_DESKTOP_READY\r\n' in data or b'NEXAUI_DESKTOP_READY\n' in data:
+                        break
+                    if len(data) > 65536:
+                        raise RuntimeError('Guest boot output exceeded its limit')
+                self.progress(deadline)
+            # A Wayland client can start before the DRM page flip reaches QEMU.
+            # Wait for the visible terminal decoration on the designated head.
+            header = b'P6\n800 600\n255\n'
+            sample = len(header) + (42*800+200)*3
+            while True:
+                frame = self.capture('ppm')
+                if (frame.startswith(header) and len(frame)==len(header)+800*600*3 and
+                        min(frame[sample:sample+3]) >= 240):
+                    break
+                self.progress(deadline, .08)
+        else:
+            self.wait_trace(b'R')
         return self.command('query-status')['status']
 
-    def progress(self, deadline):
+    def progress(self, deadline, interval=.01):
         if self.process.poll() is not None:
             raise RuntimeError(f'QEMU exited with status {self.process.returncode}')
         if time.monotonic() >= deadline:
             raise TimeoutError('QEMU guest response')
-        time.sleep(.01)
+        time.sleep(interval)
 
     def message(self, deadline):
         remaining = deadline - time.monotonic()
@@ -154,18 +186,26 @@ class Guest:
             if time.monotonic() >= deadline:
                 raise TimeoutError('Guest input batch response')
             self.command('input-send-event', events=events)
-            self.wait_trace(token)
+            if not self.desktop:
+                self.wait_trace(token)
         self.held, self.buttons = keys, buttons
         print(f'GUEST_INPUT count={len(payload)//INPUT_RECORD_SIZE} held={len(keys)} '
               f'buttons={len(buttons)} trace={self.trace_cursor.decode()}', flush=True)
 
-    def frame(self):
-        path = self.root / 'screen.png'
+    def capture(self, format):
+        path = self.root / f'screen.{format}'
         path.unlink(missing_ok=True)
-        self.command('screendump', filename=str(path), format='png')
+        display = {'device':'guest-gpu','head':0} if self.desktop else {}
+        self.command('screendump', filename=str(path), format=format, **display)
         with path.open('rb') as stream:
             data = stream.read(PNG_LIMIT + 1)
-        if not data.startswith(b'\x89PNG\r\n\x1a\n') or len(data) > PNG_LIMIT:
+        if len(data) > PNG_LIMIT:
+            raise ValueError('Invalid guest screendump')
+        return data
+
+    def frame(self):
+        data = self.capture('png')
+        if not data.startswith(b'\x89PNG\r\n\x1a\n'):
             raise ValueError('Invalid guest screendump')
         return data
 
@@ -174,6 +214,14 @@ class Guest:
             if self.process.poll() is None and self.stream:
                 try:
                     status = self.command('query-status')['status']
+                    if self.desktop and self.trace.exists():
+                        with self.trace.open('rb') as boot_log:
+                            output = boot_log.read(65536)
+                        typed = output.count(b'NEXAUI_DESKTOP_INPUT')
+                        motion = len(re.findall(rb'\(EV_REL\).*\(REL_[XY]\), value -?\d+', output))
+                        buttons = re.findall(rb'\(BTN_LEFT\), value ([01])', output)
+                        print(f'GUEST_DESKTOP_INPUT terminal={typed} motion={motion} '
+                              f'left={b"".join(buttons).decode()}',flush=True)
                     print(f'GUEST_CLOSE status={status} held={len(self.held)} buttons={len(self.buttons)} '
                           f'trace={self.trace_cursor.decode()}',flush=True)
                     self.command('quit')
@@ -194,19 +242,20 @@ class Guest:
             self.peer.close()
 
 
-def serve(engine, firmware, boot, address):
+def serve(engine, firmware, boot, address, initrd=None):
     def interrupt(*_):
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, interrupt)
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
-        guest = Guest(engine, firmware, boot, Path(temp))
+        guest = Guest(engine, firmware, boot, Path(temp), initrd)
         try:
             status = guest.wait_ready()
             if status != 'running':
                 raise RuntimeError(f'Unexpected guest state {status}')
             version = '.'.join(str(guest.version[k]) for k in ('major','minor','micro'))
-            print(f'GUEST_READY qemu={version} status={status} trace=R nic=none boot=readonly ram=32MiB', flush=True)
+            identity = 'desktop nic=none ram=768MiB' if guest.desktop else 'trace=R nic=none boot=readonly ram=32MiB'
+            print(f'GUEST_READY qemu={version} status={status} {identity}', flush=True)
             with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
                 listener.bind(str(address))
                 listener.listen(1)
@@ -222,7 +271,7 @@ def serve(engine, firmware, boot, address):
                             generation,resize,width,height,kind = fields[:5]
                             if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                                     0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                                    kind in range(6) and len(fields)==(6 if kind==5 else 5)):
+                                    kind in range(7 if guest.desktop else 6) and len(fields)==(6 if kind==5 else 5)):
                                 raise ValueError('Guest request outside the fixture limits')
                             size = fields[5] if kind == 5 else 0
                             if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
@@ -250,6 +299,9 @@ def serve(engine, firmware, boot, address):
         except KeyboardInterrupt:
             pass
         except Exception:
+            if guest.desktop and guest.trace.exists():
+                with guest.trace.open('rb') as boot_log:
+                    print(boot_log.read(65536).decode(errors='replace'),file=sys.stderr)
             with (guest.root/'qemu.stderr').open('rb') as log:
                 length = log.seek(0, 2)
                 log.seek(max(0, length - 4000))
@@ -264,4 +316,4 @@ def serve(engine, firmware, boot, address):
 
 
 if __name__ == '__main__':
-    serve(*sys.argv[1:4], Path(sys.argv[4]))
+    serve(*sys.argv[1:4], Path(sys.argv[4]), *sys.argv[5:])

@@ -240,7 +240,7 @@ nx_result content_browser_ax_frame(const char *socket_path,content_request reque
 
 nx_result content_guest_frame(const char *path,content_request request,uint64_t sequence,
     unsigned kind,const content_guest_batch *input,void **out,size_t *bytes) {
-    if (!input || input->count>CONTENT_GUEST_INPUT_LIMIT || kind>5 || (!!input->count!=(kind==5)))
+    if (!input || input->count>CONTENT_GUEST_INPUT_LIMIT || kind>6 || (!!input->count!=(kind==5)))
         return NX_ERROR_ARGUMENT;
     return transfer(path,request,sequence,kind,NULL,0,(content_ax_action){0},input,out,bytes,NULL);
 }

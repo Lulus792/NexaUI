@@ -355,8 +355,32 @@ the last image while QEMU stays running. The owner joins QEMU on
 fixture close.
 
 The host advertises clipboard, file, network, microphone and device
-sharing as unavailable. A full guest desktop, persistent storage and
-reset confirmation remain separate work.
+sharing as unavailable in both workflows.
+
+Use `--case guest-desktop` with the same QEMU arguments and add
+`--guest-kernel /absolute/path/to/vmlinuz` and
+`--guest-initrd /absolute/path/to/initramfs.cpio.gz` to exercise a
+graphical Linux guest. The fixture uses TCG, 768 MiB RAM, VirtIO VGA
+and a guest root in RAM. The private QMP owner waits for Weston's
+visible terminal before supplying frames. The example pulls frames
+on idle with an 80 ms wait between requests so later guest paints can
+appear without another host action. The fixture starts with a desktop
+panel and a maximized Wayland terminal. Type **nexa** and press
+**Enter** to trigger the delayed guest paint.
+
+To prepare the guest, use a verified Alpine x86-64 minirootfs in an
+isolated staging directory. Install the `linux-virt`, `kmod`,
+`weston`, `weston-backend-drm`, `weston-shell-desktop`,
+`weston-terminal`, `eudev`, `seatd`, `dbus`, `font-dejavu`,
+`xkeyboard-config` and `evtest` packages there from Alpine's signed
+repositories. With package scripts disabled, run `depmod` for the
+staged kernel version. Install `guest_desktop_init.sh` as executable
+`/init`, export `/boot/vmlinuz-virt` separately and archive the remaining
+root as a gzip-compressed `newc` initramfs. Use the matching QEMU VirtIO
+VGA modules for distributions that package them separately.
+
+Persistent storage, reset review, sharing grants and the guest's
+accessibility tree are separate work.
 
 ## Optional PDF producer on Linux
 

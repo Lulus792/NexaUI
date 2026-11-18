@@ -565,12 +565,12 @@ static int browser_ax_image(AtspiAccessible *app) {
     return ok;
 }
 
-static int guest_video(AtspiAccessible *app) {
-    AtspiAccessible *node=find(app,"Guest video, 640 × 400 pixels",0);
+static int guest_video(AtspiAccessible *app, int desktop) {
+    AtspiAccessible *node=find(app,desktop?"Guest video, 800 × 600 pixels":"Guest video, 640 × 400 pixels",0);
     AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
     AtspiRect *rect=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
     int ok=rect&&atspi_accessible_get_role(node,NULL)==ATSPI_ROLE_IMAGE&&browser_ax_parent(node,"Guest display")&&
-        abs(rect->x-74)<=1&&rect->y==136&&abs(rect->width-332)<=1&&rect->height==208;
+        abs(rect->x-(desktop?101:74))<=1&&rect->y==136&&abs(rect->width-(desktop?277:332))<=1&&rect->height==208;
     if (rect&&!ok) fprintf(stderr,"Guest image geometry %d,%d %dx%d\n",rect->x,rect->y,rect->width,rect->height);
     g_free(rect);
     if (component) g_object_unref(component);
@@ -744,12 +744,13 @@ int main(int argc,char **argv) {
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
-        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&
+        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int browser_case=!strcmp(test_case,"browser");
-    int guest_case=!strcmp(test_case,"guest");
+    int guest_desktop=!strcmp(test_case,"guest-desktop");
+    int guest_case=guest_desktop||!strcmp(test_case,"guest");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
     int browser_ax=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_AX");
@@ -853,7 +854,9 @@ int main(int argc,char **argv) {
         CHECK(browser_ax_image(app)&&!find(app,"Hidden fixture marker",0));
         CHECK(browser_pixel(display,outer,410,82,blue)&&input_chrome(display,id,"browser-ax-fresh"));
     } else if (guest_case) {
-        CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu)&&input_chrome(display,id,"guest-fresh"));
+        CHECK(guest_video(app,guest_desktop)&&
+            browser_pixel(display,outer,guest_desktop?156:224,guest_desktop?14:104,
+                guest_desktop?0xffffffu:0x0000ffu)&&input_chrome(display,id,"guest-fresh"));
     } else CHECK(capture(display,outer,blue,"fresh"));
     if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0)&&press(app,"Zoom in"));
     if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n"))&&pdf_word_geometry(first_text,120,6,195));
@@ -886,7 +889,9 @@ int main(int argc,char **argv) {
             CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Grün, café and 👋.")&&
                 browser_pixel(display,outer,410,82,blue)&&input_chrome(display,id,"browser-ax-retained"));
         } else if (guest_case) {
-            CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu)&&input_chrome(display,id,"guest-paused"));
+            CHECK(guest_video(app,guest_desktop)&&
+                browser_pixel(display,outer,guest_desktop?156:224,guest_desktop?14:104,
+                    guest_desktop?0xffffffu:0x0000ffu)&&input_chrome(display,id,"guest-paused"));
         } else CHECK(capture(display,outer,blue,"bad-retained"));
         if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0));
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
@@ -963,7 +968,7 @@ int main(int argc,char **argv) {
             browser_ax_document(second_text,"Recovered guide")&&
             browser_ax_image(app));
     } else if (guest_case) {
-        CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu));
+        CHECK(guest_video(app,guest_desktop)&&(guest_desktop||browser_pixel(display,outer,224,104,0x0000ffu)));
     } else if (detail_case) CHECK(pdf_detail_capture(display,outer,0,"pdf-detail-fit-before"));
     else CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
@@ -1111,8 +1116,25 @@ int main(int argc,char **argv) {
         CHECK(observe(app,"Notes opened ✓.",0)&&!state(scaled_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(scaled_text,"Notes opened ✓."));
         CHECK(browser_pixel(display,outer,32,104,0x21bb71u)&&input_chrome(display,id,"browser-ax-activated"));
         puts("BROWSER_ATSPI verified: document hierarchy, Unicode text, clipped image, retirement and native action");
+    } else if (guest_desktop) {
+        CHECK(guest_video(app,1)&&input_chrome(display,id,"guest-desktop-scaled"));
+        CHECK(observe(app,"Host sharing unavailable: clipboard, files, network, microphone, devices.",0));
+        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+            observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0));
+        CHECK(point_at(id,140,90)&&host_marker(host_log,"x=157 y=259")&&
+            point_at(id,155,100)&&drive("mousedown","1"));
+        CHECK(drive("key","n")&&drive("key","e")&&drive("key","x")&&drive("key","a")&&drive("key","Return"));
+        CHECK(browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-typed"));
+        CHECK(drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
+            observe(app,"Guest input released.",0)&&observe(app,"Close",1));
+        CHECK(drive("mouseup","1")&&drive("keyup","shift")&&drive("keyup","ctrl"));
+        CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
+            browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
+        puts("GUEST_DESKTOP_NATIVE verified: fitted live Linux desktop, guest terminal typing, host escape and retained disconnect");
+        CHECK(point_at(id,274,-38)&&drive("click","1"));
+        goto closed;
     } else if (guest_case) {
-        CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu));
+        CHECK(guest_video(app,0)&&browser_pixel(display,outer,224,104,0x0000ffu));
         CHECK(observe(app,"Host sharing unavailable: clipboard, files, network, microphone, devices.",0));
         const char *active="Guest input active: Ctrl+Shift+F12 exits.";
         const char *released="Guest input released.";

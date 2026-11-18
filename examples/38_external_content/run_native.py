@@ -150,10 +150,10 @@ os.execv(renderer, [renderer, *sys.argv[1:]])
     return path
 
 
-def run_content_service(command, env, address, args):
+def run_content_service(command, env, address, args, startup_timeout=12):
     service = subprocess.Popen(args, env=env)
     try:
-        deadline = time.monotonic() + 12
+        deadline = time.monotonic() + startup_timeout
         while not address.exists():
             if service.poll() is not None or time.monotonic() >= deadline:
                 raise RuntimeError('Content frame service did not start')
@@ -183,27 +183,35 @@ def run_browser(command, env, engine, accessible=False):
         return run_content_service(command,env,address,args)
 
 
-def run_guest(command, env, engine, firmware):
+def run_guest(command, env, engine, firmware, kernel=None, initrd=None):
     with tempfile.TemporaryDirectory(prefix='nexaui-guest-') as directory:
         root = Path(directory)
-        sector,boot = root/'boot.o',root/'boot.img'
-        assembler,objcopy=shutil.which('clang'),shutil.which('objcopy')
-        if not assembler or not objcopy:
-            raise RuntimeError('The boot fixture requires clang and objcopy')
-        source = Path(__file__).with_name('guest_boot.S')
-        subprocess.run([assembler,'-target','i386-linux-musl','-c',str(source),'-o',str(sector)],check=True,timeout=15)
-        subprocess.run([objcopy,'-O','binary','-j','.text',str(sector),str(boot)],check=True,timeout=15)
-        code=boot.read_bytes()
-        if len(code)!=512 or code[-2:]!=b'\x55\xaa':
-            raise RuntimeError('Invalid fixture boot sector')
-        with boot.open('ab') as file:
-            file.truncate(1474560)
-        print(f'GUEST_BOOT sector_sha256={hashlib.sha256(code).hexdigest()}',flush=True)
+        if kernel:
+            boot=kernel.resolve(strict=True)
+            initrd=initrd.resolve(strict=True)
+            if not boot.is_file() or not initrd.is_file():
+                raise ValueError('Guest kernel and initrd must be files')
+        else:
+            sector,boot = root/'boot.o',root/'boot.img'
+            assembler,objcopy=shutil.which('clang'),shutil.which('objcopy')
+            if not assembler or not objcopy:
+                raise RuntimeError('The boot fixture requires clang and objcopy')
+            source = Path(__file__).with_name('guest_boot.S')
+            subprocess.run([assembler,'-target','i386-linux-musl','-c',str(source),'-o',str(sector)],check=True,timeout=15)
+            subprocess.run([objcopy,'-O','binary','-j','.text',str(sector),str(boot)],check=True,timeout=15)
+            code=boot.read_bytes()
+            if len(code)!=512 or code[-2:]!=b'\x55\xaa':
+                raise RuntimeError('Invalid fixture boot sector')
+            with boot.open('ab') as file:
+                file.truncate(1474560)
+            print(f'GUEST_BOOT sector_sha256={hashlib.sha256(code).hexdigest()}',flush=True)
         address=root/'guest.sock'
         env['NEXAUI_CONTENT_TEST_GUEST_SOCKET']=str(address)
         args=[sys.executable,str(Path(__file__).with_name('guest_fixture.py')),
               str(engine.resolve(strict=True)),str(firmware.resolve(strict=True)),str(boot),str(address)]
-        return run_content_service(command,env,address,args)
+        if initrd:
+            args.append(str(initrd))
+        return run_content_service(command,env,address,args,startup_timeout=36 if initrd else 12)
 
 
 def main():
@@ -212,7 +220,8 @@ def main():
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
-    parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'browser', 'guest', 'pending-close', 'rejected-close'), default='full')
+    parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'browser', 'guest', 'guest-desktop',
+                                           'pending-close', 'rejected-close'), default='full')
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
     parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
     parser.add_argument('--pdf-link-reader', type=Path, help='Optional content_pdf_link_reader path')
@@ -232,6 +241,8 @@ def main():
     parser.add_argument('--browser-accessibility', action='store_true', help='Exercise the browser document subtree through native AT-SPI')
     parser.add_argument('--guest-engine', type=Path, help='QEMU system x86-64 executable for --case guest')
     parser.add_argument('--guest-firmware', type=Path, help='QEMU packaged firmware directory for --case guest')
+    parser.add_argument('--guest-kernel', type=Path, help='Linux kernel for --case guest-desktop')
+    parser.add_argument('--guest-initrd', type=Path, help='Alpine/Weston initramfs for --case guest-desktop')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -243,8 +254,10 @@ def main():
         parser.error('--jpeg-gallery requires --png-gallery')
     if (args.case == 'browser') != bool(args.browser_engine):
         parser.error('--case browser and --browser-engine must be used together')
-    if (args.case == 'guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
-        parser.error('--case guest requires both --guest-engine and --guest-firmware')
+    if (args.case in ('guest','guest-desktop')) != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
+        parser.error('guest cases require --guest-engine and --guest-firmware')
+    if (args.case == 'guest-desktop') != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
+        parser.error('--case guest-desktop requires --guest-kernel and --guest-initrd')
     if (args.browser_input or args.browser_pointer) and (not args.browser_engine or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('Browser input workflows require the browser case and Weston simple-IME')
     if args.browser_input and args.browser_pointer:
@@ -333,7 +346,7 @@ def main():
     if args.browser_engine:
         return run_browser(command, env, args.browser_engine,args.browser_accessibility)
     if args.guest_engine:
-        return run_guest(command,env,args.guest_engine,args.guest_firmware)
+        return run_guest(command,env,args.guest_engine,args.guest_firmware,args.guest_kernel,args.guest_initrd)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory
