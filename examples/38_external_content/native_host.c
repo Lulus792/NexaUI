@@ -60,12 +60,11 @@ static uint8_t *read_font(const char *path, size_t *bytes) {
     fclose(file); return data;
 }
 static nx_result scoped_label(nx_context *context, const nx_font_collection *fonts,
-    uint64_t id, uint64_t parent, const char *text, nx_rect bounds, double em) {
+    uint64_t id, uint64_t parent, const char *text, nx_rect bounds, double em,nx_color color) {
     nx_text_layout *layout = NULL;
     nx_result result = nx_text_layout_create(fonts, text, strlen(text), NX_BIDI_AUTO, em, bounds.width, &layout);
     if (result == NX_OK) {
         nx_point origin = {bounds.x,bounds.y};
-        nx_color color = {0.05f,0.07f,0.1f,1};
         result = id ? nx_label(context,id,parent,bounds,layout,origin,color,65536) :
             nx_draw_text_layout(context,layout,origin,color,65536);
     }
@@ -73,7 +72,7 @@ static nx_result scoped_label(nx_context *context, const nx_font_collection *fon
 }
 static nx_result label(nx_context *context,const nx_font_collection *fonts,
     uint64_t id,const char *text,nx_rect bounds,double em) {
-    return scoped_label(context,fonts,id,1,text,bounds,em);
+    return scoped_label(context,fonts,id,1,text,bounds,em,(nx_color){0.05f,0.07f,0.1f,1});
 }
 static nx_result scoped_button(nx_context *context, const nx_font_collection *fonts, uint64_t id, uint64_t parent,
     const char *text, const char *caption, float x, float y, float width, int enabled, unsigned *action) {
@@ -115,8 +114,11 @@ static nx_result guest_resources_overlay(nx_context *context,const nx_font_colle
     int dismissed;
     nx_result result=nx_modal_begin(context,&overlay,&dismissed);
     if (result!=NX_OK) return result;
+    nx_color ink;
+    result=nx_theme_color(context,NX_COLOR_TEXT,&ink);
     float x=panel.x+16, y=panel.y+12;
-    result=label(context,fonts,0,title,(nx_rect){x,y,width-128,24},17);
+    if (result==NX_OK) result=scoped_label(context,fonts,0,GUEST_INSPECT_PANEL,title,
+        (nx_rect){x,y,width-128,24},17,ink);
     if (result==NX_OK) result=scoped_button(context,fonts,GUEST_INSPECT_CLOSE,GUEST_INSPECT_PANEL,
         "Close resources","Close",panel.x+width-86,y-4,70,1,action);
     char lines[5][96];
@@ -142,7 +144,7 @@ static nx_result guest_resources_overlay(nx_context *context,const nx_font_colle
     }
     for (unsigned i=0;result==NX_OK&&i<count;++i)
         result=scoped_label(context,fonts,GUEST_INSPECT_ROW+i,GUEST_INSPECT_PANEL,lines[i],
-            (nx_rect){x,y+42+24*i,width-32,20},14);
+            (nx_rect){x,y+42+24*i,width-32,20},14,ink);
     nx_result ended=nx_overlay_end(context);
     if (dismissed) *action=GUEST_INSPECT_CLOSE;
     return result==NX_OK?ended:result;
