@@ -584,6 +584,10 @@ initramfs with `guest_desktop_init.sh` as `/init`, the executable
 and PyGObject. The VM owner connects a private QEMU serial channel for
 accessibility. The guest test terminal's `axopen` command opens the
 fullscreen GTK test app. F8 changes its status and F9 closes it.
+With `--guest-pointer --guest-ax`, F7 opens the fixture's scroll view.
+The native test observes both GTK scroll adjustments and the resulting
+video, then verifies that the guest application receives both side-button
+releases after the host escape shortcut.
 
 `content_guest_frame_with_ax` combines the snapshot with a corresponding
 guest PNG when the selected window fills the raster. It uses the same fit

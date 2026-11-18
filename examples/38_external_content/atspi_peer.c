@@ -782,6 +782,43 @@ static int guest_ax_key(AtspiAccessible *app,const char *key,const char *marker)
         drive("key",key)&&await_guest_marker(marker,600)&&release_guest_keys(app);
 }
 
+static int guest_view_pointer(AtspiAccessible *app,Display *display,Window outer,const char *window) {
+    static const struct {
+        const char *wheel,*marker;
+        unsigned long color;
+    } scroll[]={
+        {"5","NEXAUI_GUEST_VIEW_Y_INCREASE",0xa14929u},
+        {"4","NEXAUI_GUEST_VIEW_Y_DECREASE",0x676023u},
+        {"7","NEXAUI_GUEST_VIEW_X_INCREASE",0x235e9bu},
+        {"6","NEXAUI_GUEST_VIEW_X_DECREASE",0x146d74u}
+    };
+    CHECK(guest_ax_key(app,"F7","NEXAUI_GUEST_VIEW_READY")&&browser_pixel(display,outer,112,25,0x292b40u)&&
+        browser_pixel(display,outer,230,198,0x324968u)&&browser_pixel(display,outer,350,100,0x324968u));
+    CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+        observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(window,155,100));
+    for (size_t i=0;i<sizeof(scroll)/sizeof(scroll[0]);++i) {
+        CHECK(drive("click",scroll[i].wheel)&&await_guest_marker(scroll[i].marker,200)&&
+            browser_pixel(display,outer,112,25,scroll[i].color));
+        if (i==0) CHECK(browser_pixel(display,outer,230,198,0x2d6055u)&&
+            input_chrome(display,window,"guest-view-scroll-y"));
+        if (i==2) CHECK(browser_pixel(display,outer,350,100,0x5a375eu)&&
+            input_chrome(display,window,"guest-view-scroll-x"));
+    }
+    CHECK(browser_pixel(display,outer,230,198,0x324968u)&&browser_pixel(display,outer,350,100,0x324968u));
+    CHECK(drive("mousedown","8")&&await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_8_DOWN",200)&&
+        browser_pixel(display,outer,112,25,0x963182u));
+    CHECK(drive("mousedown","9")&&await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_9_DOWN",200)&&
+        browser_pixel(display,outer,112,25,0x9c4228u));
+    CHECK(release_guest_keys(app)&&await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_8_UP",200)&&
+        await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_9_UP",200)&&browser_pixel(display,outer,112,25,0x286940u)&&
+        input_chrome(display,window,"guest-view-release"));
+    CHECK(drive("mouseup","8")&&drive("mouseup","9"));
+    puts("GUEST_VIEW_POINTER verified: both GTK scroll adjustments, rendered feedback and release of both held side buttons");
+    return 1;
+done:
+    return 0;
+}
+
 static int guest_ax_tree(AtspiAccessible *app,AtspiAccessible *label) {
     AtspiAccessible *view=find(app,"Guest display",0);
     AtspiAccessible *root=view?find(view,"Guest accessibility check",0):NULL;
@@ -821,7 +858,7 @@ static int guest_ax_retired(AtspiAccessible *app,AtspiAccessible *old) {
     return 0;
 }
 
-static int guest_ax_flow(AtspiAccessible *app,Display *display,const char *window) {
+static int guest_ax_flow(AtspiAccessible *app,Display *display,Window outer,const char *window,int pointer_view) {
     const char *ready="Gaststatus – bereit",*updated="Gaststatus – fertig";
     AtspiAccessible *label=NULL,*second=NULL;
     int ok=0;
@@ -832,6 +869,7 @@ static int guest_ax_flow(AtspiAccessible *app,Display *display,const char *windo
         guest_video(app,1)&&input_chrome(display,window,"guest-ax-ready"));
     CHECK(guest_ax_key(app,"F8","NEXAUI_GUEST_AX_UPDATED")&&observe(app,updated,0)&&
         !state(label,ATSPI_STATE_DEFUNCT)&&pdf_text_is(label,updated)&&input_chrome(display,window,"guest-ax-updated"));
+    if (pointer_view) CHECK(guest_view_pointer(app,display,outer,window));
     CHECK(guest_ax_key(app,"F9","NEXAUI_GUEST_AX_APP_EXITED")&&guest_ax_retired(app,label));
     CHECK(guest_console_marker(app,window,"axopen","NEXAUI_GUEST_AX_OPEN"));
     for (unsigned attempt=0;attempt<12&&!second;++attempt) {
@@ -1597,7 +1635,7 @@ int main(int argc,char **argv) {
             puts("GUEST_USB_NATIVE verified: read-only disk and detached for held and fresh reads");
         }
         if (guest_pointer) CHECK(guest_pointer_flow(app,id));
-        if (guest_ax) CHECK(guest_ax_flow(app,display,id));
+        if (guest_ax) CHECK(guest_ax_flow(app,display,outer,id,guest_pointer));
         else CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
         if (directory) {
