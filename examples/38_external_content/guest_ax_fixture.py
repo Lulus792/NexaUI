@@ -10,6 +10,7 @@ from gi.repository import Gdk, Gtk
 
 
 window = Gtk.Window(title='Guest accessibility check', decorated=False)
+views = Gtk.Stack(homogeneous=False)
 box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=20)
 box.set_margin_top(60)
 box.set_margin_bottom(60)
@@ -26,7 +27,7 @@ for widget in (status, button, disabled, entry):
     box.pack_start(widget, True, True, 0)
 
 
-def show_text_view():
+def create_text_view():
     view = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=16)
     view.set_margin_top(60)
     view.set_margin_start(80)
@@ -61,26 +62,30 @@ def show_text_view():
         preedit = text
 
     def leave(_window, event):
-        if event.keyval != Gdk.KEY_F5:
+        if event.keyval != Gdk.KEY_F5 or views.get_visible_child() != view:
             return False
-        window.disconnect(handler)
         if changes == 1 and preedit == '' and field.get_text() == composed:
             report('UNCHANGED')
         else:
             report('UNEXPECTED_EDIT')
-        window.remove(view)
-        window.add(box)
-        box.show_all()
+        views.set_visible_child(box)
+        button.grab_focus()
         return True
+
+    def show():
+        nonlocal changes, preedit
+        field.set_text('')
+        changes = 0
+        preedit = ''
+        views.set_visible_child(view)
+        field.grab_focus()
+        report('READY')
 
     field.connect('changed', changed)
     field.connect('preedit-changed', preedit_changed)
-    handler = window.connect('key-press-event', leave)
-    window.remove(box)
-    window.add(view)
-    view.show_all()
-    field.grab_focus()
-    report('READY')
+    window.connect('key-press-event', leave)
+    views.add_named(view, 'composition')
+    return show
 
 
 def show_pointer_view():
@@ -142,19 +147,19 @@ def show_pointer_view():
 
     window.connect('button-press-event', pointer_button)
     window.connect('button-release-event', pointer_button)
-    window.remove(box)
-    window.add(overlay)
+    views.add_named(overlay, 'pointer')
     overlay.show_all()
+    views.set_visible_child(overlay)
     watch_axis(viewport.get_hadjustment(), 'X', '#235e9b', '#146d74')
     watch_axis(viewport.get_vadjustment(), 'Y', '#a14929', '#676023')
     show_state('READY', '#292b40')
 
 
 def press(_window, event):
-    if event.keyval == Gdk.KEY_F6 and window.get_child() == box:
+    if event.keyval == Gdk.KEY_F6 and views.get_visible_child() == box:
         show_text_view()
         return True
-    if event.keyval == Gdk.KEY_F7 and window.get_child() == box:
+    if event.keyval == Gdk.KEY_F7 and views.get_visible_child() == box:
         show_pointer_view()
         return True
     if event.keyval == Gdk.KEY_F8:
@@ -168,7 +173,9 @@ def press(_window, event):
     return False
 
 
-window.add(box)
+views.add_named(box, 'accessibility')
+show_text_view = create_text_view()
+window.add(views)
 window.add_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK)
 window.connect('key-press-event', press)
 with open('/run/nexaui-guest-ax-prepared', 'xb'):
