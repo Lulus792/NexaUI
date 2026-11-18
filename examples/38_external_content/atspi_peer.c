@@ -578,23 +578,41 @@ static int guest_video(AtspiAccessible *app, int desktop) {
     return ok;
 }
 
-static int guest_resource_counter(AtspiAccessible *app,const char *prefix,unsigned long long *value) {
-    AtspiAccessible *panel=find(app,"Guest resources",0);
+static int guest_inspector_text(AtspiAccessible *app,const char *dialog,const char *prefix,char *value,size_t size) {
+    AtspiAccessible *panel=find(app,dialog,0);
     if (!panel) return 0;
     int count=atspi_accessible_get_child_count(panel,NULL), found=0;
     size_t length=strlen(prefix);
     for (int i=0;i<count&&!found;++i) {
         AtspiAccessible *row=atspi_accessible_get_child_at_index(panel,i,NULL);
         char *name=row?atspi_accessible_get_name(row,NULL):NULL;
-        if (name&&!strncmp(name,prefix,length)) {
-            char suffix[7]={0}, end=0;
-            found=sscanf(name+length,"%llu %6s%c",value,suffix,&end)==2&&!strcmp(suffix,"bytes");
+        if (name&&!strncmp(name,prefix,length)&&strlen(name+length)<size) {
+            strcpy(value,name+length);
+            found=1;
         }
         g_free(name);
         if (row) g_object_unref(row);
     }
     g_object_unref(panel);
     return found;
+}
+
+static int guest_resource_counter(AtspiAccessible *app,const char *prefix,unsigned long long *value) {
+    char line[40],suffix[7]={0},end=0;
+    return guest_inspector_text(app,"Guest resources",prefix,line,sizeof(line))&&
+        sscanf(line,"%llu %6s%c",value,suffix,&end)==2&&!strcmp(suffix,"bytes");
+}
+
+typedef struct guest_reset_scope { char environment[33], checkpoint[65]; } guest_reset_scope;
+static int read_guest_reset_scope(AtspiAccessible *app,guest_reset_scope *scope) {
+    const char *dialog="Reset preview", *hex="0123456789abcdef";
+    return observe(app,"Checkpoint SHA-256",0)&&observe(app,"Work disk: 16777216 bytes",0)&&
+        observe(app,"Work disk changes would be replaced.",0)&&observe(app,"No external write grants.",0)&&
+        guest_inspector_text(app,dialog,"Environment ",scope->environment,sizeof(scope->environment))&&
+        guest_inspector_text(app,dialog,"Checkpoint 1 of 2 ",scope->checkpoint,33)&&
+        guest_inspector_text(app,dialog,"Checkpoint 2 of 2 ",scope->checkpoint+32,33)&&
+        strlen(scope->environment)==32&&strspn(scope->environment,hex)==32&&
+        strlen(scope->checkpoint)==64&&strspn(scope->checkpoint,hex)==64;
 }
 
 static AtspiAccessible *pdf_text(AtspiAccessible *app, const char *expected) {
@@ -1140,6 +1158,7 @@ int main(int argc,char **argv) {
         CHECK(guest_video(app,1)&&input_chrome(display,id,"guest-desktop-scaled"));
         CHECK(observe(app,"Host sharing unavailable: clipboard, files, network, microphone, devices.",0));
         unsigned long long reads=0, before=0, after=0;
+        guest_reset_scope baseline={0}, preview={0};
         CHECK(focus(app,"Resources")&&drive("key","Return")&&observe(app,"Guest resources",0)&&
             observe(app,"1 vCPU, 768 MiB RAM assigned",0)&&observe(app,"Guest running",0));
         if (guest_storage) {
@@ -1148,6 +1167,11 @@ int main(int argc,char **argv) {
                 guest_resource_counter(app,"Device wrote ",&before));
         } else CHECK(observe(app,"No persistent disk attached",0));
         CHECK(input_chrome(display,id,"guest-resources-first")&&drive("key","Escape")&&observe(app,"Resources",1));
+        if (guest_storage) {
+            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&baseline)&&
+                input_chrome(display,id,"guest-reset-first"));
+            CHECK(drive("key","Escape")&&observe(app,"Review reset",1));
+        }
         CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
             observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0));
         CHECK(point_at(id,140,90)&&host_marker(host_log,"x=157 y=259")&&
@@ -1161,6 +1185,12 @@ int main(int argc,char **argv) {
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
         puts("GUEST_DESKTOP_NATIVE verified: fitted live Linux desktop, guest terminal typing, host escape and retained disconnect");
         if (guest_storage) {
+            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&preview)&&
+                !strcmp(baseline.environment,preview.environment)&&!strcmp(baseline.checkpoint,preview.checkpoint)&&
+                input_chrome(display,id,"guest-reset-after-save"));
+            CHECK(focus(app,"Close reset preview")&&drive("key","Return")&&observe(app,"Review reset",1)&&
+                browser_pixel(display,outer,156,43,0x00a800u));
+            printf("GUEST_RESET_NATIVE environment=%s checkpoint=%s\n",preview.environment,preview.checkpoint);
             CHECK(focus(app,"Resources")&&drive("key","Return")&&observe(app,"Guest running",0)&&
                 observe(app,"Work disk: 16 MiB, read/write",0)&&
                 guest_resource_counter(app,"Device wrote ",&after)&&after>before&&

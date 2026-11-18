@@ -391,8 +391,16 @@ exits. A new QEMU process mounts the same bytes read-only and verifies
 the saved file. The harness checks the disk's SHA-256 before and after
 that read-only boot.
 
-Production disk ownership, reset review, sharing grants and the guest's
-accessibility tree remain open.
+The work-disk case also offers **Reset…**. The owner creates a separate
+baseline from the freshly formatted disk, verifies its SHA-256 and
+checks that QMP still identifies the expected work disk. The preview
+shows the environment ID, full baseline hash, the work disk that
+would be replaced, and the external-write grant status. Escape and
+Close dismiss the preview and restore focus to its button. This
+workflow only reads the scope.
+
+Production disk ownership, reset execution and recovery, sharing
+grants and the guest's accessibility tree remain open.
 
 ## Optional PDF producer on Linux
 

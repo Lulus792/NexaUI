@@ -1,21 +1,26 @@
 """Private QEMU guest owner for the native console workflow."""
 
+import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import signal
 import socket
+import stat
 import struct
 import subprocess
 import sys
 import tempfile
 import time
+import uuid
 
 PNG_LIMIT = 4 * 1024 * 1024
 INPUT_LIMIT = 128
 INPUT_RECORD_SIZE = 5
 INPUT_KEY, INPUT_BUTTON, INPUT_MOTION = 1, 2, 3
 QMP_LIMIT = 16384
+WORK_DISK_BYTES = 16*1024*1024
 KEY_CODES = {k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
                   7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
@@ -24,12 +29,44 @@ KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_
 KEY_CODES.update({63+n:f'f{n}' for n in range(1,13)})
 BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
+def image_identity(info):
+    if not stat.S_ISREG(info.st_mode) or info.st_size != WORK_DISK_BYTES:
+        raise ValueError('Unexpected work image')
+    return info.st_dev,info.st_ino,info.st_size
+
+
+def image_digest(path):
+    fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
+    with os.fdopen(fd,'rb') as image:
+        image_identity(os.fstat(image.fileno()))
+        digest=hashlib.sha256()
+        remaining=WORK_DISK_BYTES
+        while remaining:
+            data=image.read(min(remaining,256*1024))
+            if not data:
+                raise ValueError('Work image became shorter')
+            digest.update(data)
+            remaining-=len(data)
+        if image.read(1):
+            raise ValueError('Work image grew')
+        return digest.digest()
+
 
 class Guest:
-    def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False):
+    def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None):
         self.root = root
         self.desktop = initrd is not None
-        self.disk = disk is not None
+        self.disk = Path(disk) if disk else None
+        self.checkpoint = Path(checkpoint) if checkpoint else None
+        if self.checkpoint:
+            if not (self.desktop and self.disk and writable):
+                raise ValueError('Reset preview requires an owned writable disk')
+            self.environment = uuid.uuid4()
+            self.disk_identity = image_identity(self.disk.stat(follow_symlinks=False))
+            self.checkpoint_identity = image_identity(self.checkpoint.stat(follow_symlinks=False))
+            self.checkpoint_hash = image_digest(self.checkpoint)
+            if self.checkpoint_identity==self.disk_identity or self.checkpoint_hash!=image_digest(self.disk):
+                raise ValueError('Work disk and baseline are inconsistent')
         self.trace = root / 'guest.trace'
         self.address = root / 'qmp.sock'
         self.held = set()
@@ -217,6 +254,11 @@ class Guest:
             raise ValueError('Invalid guest screendump')
         return data
 
+    def work_device(self):
+        device, = [entry for entry in self.command('query-block')
+                   if entry.get('inserted',{}).get('node-name')=='work']
+        return device
+
     def resources(self):
         state = {'running':1,'paused':2}[self.command('query-status')['status']]
         cpus = len(self.command('query-cpus-fast'))
@@ -224,8 +266,7 @@ class Guest:
         ram = memory['base-memory'] + memory.get('plugged-memory',0)
         flags = capacity = read = written = 0
         if self.disk:
-            device, = [entry for entry in self.command('query-block')
-                        if entry.get('inserted',{}).get('node-name')=='work']
+            device = self.work_device()
             block = device['inserted']
             stats, = [entry['stats'] for entry in self.command('query-blockstats')
                       if entry.get('qdev')==device['qdev']]
@@ -235,6 +276,26 @@ class Guest:
         print(f'GUEST_RESOURCES state={state} flags={flags} cpus={cpus} ram={ram} '
               f'capacity={capacity} read={read} written={written}',flush=True)
         return struct.pack('>4sBBHQQQQ',b'NXR1',state,flags,cpus,ram,capacity,read,written)
+
+    def reset_preview(self):
+        try:
+            if not self.checkpoint:
+                raise ValueError('The owner has no reset baseline')
+            block = self.work_device()['inserted']
+            if (block['ro'] or block['drv']!='raw' or block['image']['filename']!=str(self.disk) or
+                    block['image']['virtual-size']!=WORK_DISK_BYTES or
+                    image_identity(self.disk.stat(follow_symlinks=False))!=self.disk_identity or
+                    image_identity(self.checkpoint.stat(follow_symlinks=False))!=self.checkpoint_identity or
+                    image_digest(self.checkpoint)!=self.checkpoint_hash or
+                    image_identity(self.checkpoint.stat(follow_symlinks=False))!=self.checkpoint_identity):
+                raise ValueError('The reset baseline or work disk changed')
+        except (OSError,ValueError,KeyError,RuntimeError):
+            print('GUEST_RESET_PREVIEW unavailable',flush=True)
+            return b'U'
+        # The fixed offline fixture has no host-sharing channels or write grants.
+        print(f'GUEST_RESET_PREVIEW environment={self.environment.hex} checkpoint={self.checkpoint_hash.hex()} '
+              f'capacity={WORK_DISK_BYTES} grants=0',flush=True)
+        return struct.pack('>4s16s32sQ4x',b'NXV1',self.environment.bytes,self.checkpoint_hash,WORK_DISK_BYTES)
 
     def close(self):
         try:
@@ -271,13 +332,13 @@ class Guest:
             self.peer.close()
 
 
-def serve(engine, firmware, boot, address, initrd=None, disk=None):
+def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=None):
     def interrupt(*_):
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, interrupt)
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
-        guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk))
+        guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint)
         try:
             status = guest.wait_ready()
             if status != 'running':
@@ -300,7 +361,7 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None):
                             generation,resize,width,height,kind = fields[:5]
                             if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                                     0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                                    kind in range(8 if guest.desktop else 6) and len(fields)==(6 if kind==5 else 5)):
+                                    kind in range(9 if guest.desktop else 6) and len(fields)==(6 if kind==5 else 5)):
                                 raise ValueError('Guest request outside the fixture limits')
                             size = fields[5] if kind == 5 else 0
                             if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
@@ -324,6 +385,9 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None):
                             guest.input(payload)
                         if kind == 7:
                             peer.sendall(guest.resources())
+                            continue
+                        if kind == 8:
+                            peer.sendall(guest.reset_preview())
                             continue
                         image = guest.frame()
                         peer.sendall(image)

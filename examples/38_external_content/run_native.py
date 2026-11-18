@@ -244,16 +244,26 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
             args.append(str(initrd))
         disk = root/'work.img'
         if storage:
+            from guest_fixture import WORK_DISK_BYTES, image_digest
+
             formatter=shutil.which('mke2fs')
             if not formatter:
                 raise RuntimeError('The guest storage fixture requires mke2fs')
             with disk.open('xb') as image:
-                image.truncate(16*1024*1024)
+                image.truncate(WORK_DISK_BYTES)
             subprocess.run([formatter,'-q','-F','-t','ext4','-L','nexaui-work','-E',
                             'lazy_itable_init=0,lazy_journal_init=0',str(disk)],check=True,timeout=15)
-            args.append(str(disk))
+            checkpoint = root/'baseline.img'
+            with disk.open('rb') as image, checkpoint.open('xb') as baseline:
+                shutil.copyfileobj(image,baseline)
+            checkpoint.chmod(0o400)
+            baseline_hash = image_digest(checkpoint)
+            print(f'GUEST_RESET_BASELINE sha256={baseline_hash.hex()} capacity={WORK_DISK_BYTES}',flush=True)
+            args.extend((str(disk),str(checkpoint)))
         result=run_content_service(command,env,address,args,startup_timeout=36 if initrd else 12)
         if storage and result==0:
+            if image_digest(checkpoint)!=baseline_hash or image_digest(disk)==baseline_hash:
+                raise RuntimeError('The retained work and baseline images are inconsistent')
             # The engine inherits the private runtime environment for both boots.
             verify_guest_disk(engine,firmware,str(boot),str(initrd),disk,root)
         return result

@@ -97,20 +97,32 @@ static nx_result input_hint(nx_context *context,const nx_font_collection *fonts,
     return label(context,fonts,3,hint,(nx_rect){16,122,448,14},11);
 }
 enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INSPECT_CLOSE,
-       GUEST_INSPECT_ROW };
+       GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630 };
 typedef struct guest_inspector {
     uint64_t ticket;
-    int enabled, open, pending;
+    unsigned open;
+    int enabled, reset_enabled, pending;
     native_guest_report report;
 } guest_inspector;
 
-static nx_result guest_resources_overlay(nx_context *context,const nx_font_collection *fonts,
+static void guest_hex(const uint8_t *value,size_t bytes,char *out) {
+    static const char digits[]="0123456789abcdef";
+    for (size_t i=0;i<bytes;++i) {
+        out[2*i]=digits[value[i]>>4];
+        out[2*i+1]=digits[value[i]&15u];
+    }
+    out[2*bytes]=0;
+}
+
+static nx_result guest_inspector_overlay(nx_context *context,const nx_font_collection *fonts,
     nx_window_info info,const guest_inspector *view,unsigned *action) {
-    static const char title[]="Guest resources";
+    int preview=view->open==CONTENT_GUEST_RESET_PREVIEW;
+    const char *title=preview?"Reset preview":"Guest resources";
+    const char *close=preview?"Close reset preview":"Close resources";
     float width=info.width<448?info.width-32:416;
-    nx_rect panel={(info.width-width)/2,44,width,232};
+    nx_rect panel={(info.width-width)/2,44,width,preview?272:232};
     nx_overlay_desc overlay={.panel={.id=GUEST_INSPECT_PANEL,.parent_id=1,.bounds=panel,
-        .name={title,sizeof(title)-1u}},.backdrop_id=GUEST_INSPECT_BACKDROP,.dismiss_on_escape=1};
+        .name={title,strlen(title)}},.backdrop_id=GUEST_INSPECT_BACKDROP,.dismiss_on_escape=1};
     int dismissed;
     nx_result result=nx_modal_begin(context,&overlay,&dismissed);
     if (result!=NX_OK) return result;
@@ -120,13 +132,28 @@ static nx_result guest_resources_overlay(nx_context *context,const nx_font_colle
     if (result==NX_OK) result=scoped_label(context,fonts,0,GUEST_INSPECT_PANEL,title,
         (nx_rect){x,y,width-128,24},17,ink);
     if (result==NX_OK) result=scoped_button(context,fonts,GUEST_INSPECT_CLOSE,GUEST_INSPECT_PANEL,
-        "Close resources","Close",panel.x+width-86,y-4,70,1,action);
-    char lines[5][96];
+        close,"Close",panel.x+width-86,y-4,70,1,action);
+    char lines[8][96];
     unsigned count=1;
     if (view->report.ticket!=view->ticket) {
-        strcpy(lines[0],"Reading guest resources");
+        strcpy(lines[0],preview?"Reading reset scope":"Reading guest resources");
     } else if (view->report.result!=NX_OK) {
-        strcpy(lines[0],"Guest resources unavailable");
+        strcpy(lines[0],preview?"Reset preview unavailable":"Guest resources unavailable");
+    } else if (preview) {
+        const content_guest_reset_preview *scope=&view->report.preview;
+        char environment[33], first[33], second[33];
+        guest_hex(scope->environment,16,environment);
+        guest_hex(scope->checkpoint,16,first);
+        guest_hex(scope->checkpoint+16,16,second);
+        strcpy(lines[0],"Alpine desktop");
+        snprintf(lines[1],sizeof(lines[1]),"Environment %s",environment);
+        snprintf(lines[2],sizeof(lines[2]),"Work disk: %llu bytes",(unsigned long long)scope->capacity);
+        strcpy(lines[3],"Checkpoint SHA-256");
+        snprintf(lines[4],sizeof(lines[4]),"Checkpoint 1 of 2 %s",first);
+        snprintf(lines[5],sizeof(lines[5]),"Checkpoint 2 of 2 %s",second);
+        strcpy(lines[6],"Work disk changes would be replaced.");
+        strcpy(lines[7],"No external write grants.");
+        count=8;
     } else {
         const content_guest_resources *r=&view->report.resources;
         snprintf(lines[0],sizeof(lines[0]),"Guest %s",r->state==GUEST_RESOURCE_RUNNING?"running":"paused");
@@ -742,6 +769,9 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         button(context,fonts,15,"Close",256,88,(pdf_case||inspector->enabled)&&info.width>=480?112:128,1,action)!=NX_OK) return 0;
     if (inspector->enabled&&phase==SCALED_READY&&info.width>=480&&
         button(context,fonts,GUEST_INSPECT,"Resources",376,88,88,1,action)!=NX_OK) return 0;
+    if (inspector->reset_enabled&&phase==SCALED_READY&&info.width>=480&&
+        scoped_button(context,fonts,GUEST_INSPECT_RESET,1,"Review reset","Reset…",392,48,72,1,action)!=NX_OK)
+        return 0;
     if (pdf_case&&info.width>=480&&pdf_can_navigate(phase)) {
         nx_utf8_span text;
         if (content_surface_get_text(surface,&text)!=NX_OK ||
@@ -825,7 +855,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
 #ifdef CONTENT_NATIVE_PNG
     if (document->thumbnails.open && content_pages_dialog(context,fonts,info,document,action,linked_page)!=NX_OK) return 0;
 #endif
-    if (inspector->open&&guest_resources_overlay(context,fonts,info,inspector,action)!=NX_OK) return 0;
+    if (inspector->open&&guest_inspector_overlay(context,fonts,info,inspector,action)!=NX_OK) return 0;
     return nx_end_frame(context)==NX_OK;
 }
 
@@ -886,7 +916,7 @@ int main(void) {
     native_guest_input guest={.ledger.generation=1};
 #endif
     int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
-    guest_inspector inspector={.enabled=guest_desktop};
+    guest_inspector inspector={.enabled=guest_desktop,.reset_enabled=!strcmp(test_case,"guest-storage")};
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
 #ifdef CONTENT_NATIVE_BROWSER
     browser_editor editor={.pointer_enabled=browser_pointer_case};
@@ -1232,11 +1262,13 @@ int main(void) {
             initial_job=1;
         }
         if (action==15) { result=0; break; }
-        if (action==GUEST_INSPECT&&inspector.enabled&&!inspector.open) {
+        if (!inspector.open&&((action==GUEST_INSPECT&&inspector.enabled)||
+                             (action==GUEST_INSPECT_RESET&&inspector.reset_enabled))) {
             if (inspector.ticket==UINT64_MAX||content_input_release(input)!=NX_OK) goto done;
             if (input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING) input_phase=INPUT_RELEASED;
             ++inspector.ticket;
-            inspector.open=inspector.pending=1;
+            inspector.open=action==GUEST_INSPECT?CONTENT_GUEST_RESOURCES:CONTENT_GUEST_RESET_PREVIEW;
+            inspector.pending=1;
             need_frame=1;
         } else if (action==GUEST_INSPECT_CLOSE&&inspector.open) {
             inspector.open=inspector.pending=0;
@@ -1458,9 +1490,9 @@ int main(void) {
             } else if (input_phase==INPUT_DISCONNECTING) {
                 input_phase=INPUT_DISCONNECTED;
                 need_frame=1;
-            } else if (inspector.pending) {
+            } else if (inspector.pending&&inspector.open) {
                 if (!native_schedule(&worker,(native_job){.request=status.request,.sequence=inspector.ticket,
-                        .kind=CONTENT_GUEST_RESOURCES})) goto done;
+                        .kind=inspector.open})) goto done;
                 inspector.pending=0;
             }
         }

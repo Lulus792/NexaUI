@@ -69,7 +69,10 @@ typedef struct native_uri_result {
 typedef struct native_guest_report {
     uint64_t ticket;
     nx_result result;
-    content_guest_resources resources;
+    union {
+        content_guest_resources resources;
+        content_guest_reset_preview preview;
+    };
 } native_guest_report;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
@@ -369,9 +372,12 @@ static void *native_worker_entry(void *user) {
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
 #ifdef CONTENT_NATIVE_GUEST
-        if (worker->guest_socket&&job.kind==CONTENT_GUEST_RESOURCES) {
+        if (worker->guest_socket&&(job.kind==CONTENT_GUEST_RESOURCES||job.kind==CONTENT_GUEST_RESET_PREVIEW)) {
             native_guest_report report={.ticket=job.sequence};
-            report.result=content_guest_read_resources(worker->guest_socket,job.request,&report.resources);
+            if (job.kind==CONTENT_GUEST_RESOURCES)
+                report.result=content_guest_read_resources(worker->guest_socket,job.request,&report.resources);
+            else
+                report.result=content_guest_read_reset_preview(worker->guest_socket,job.request,&report.preview);
             pthread_mutex_lock(&worker->mutex);
             worker->guest_report=report;
             worker->working=0;

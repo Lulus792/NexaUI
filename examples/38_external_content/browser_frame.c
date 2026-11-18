@@ -86,7 +86,7 @@ static uint64_t wire_u64(const uint8_t *bytes) {
     return ((uint64_t)wire_u32(bytes)<<32)|wire_u32(bytes+4);
 }
 
-enum { GUEST_RESOURCE_BYTES=40 };
+enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64 };
 static nx_result read_guest_resources(const uint8_t *wire,size_t bytes,content_guest_resources *out) {
     if (bytes!=GUEST_RESOURCE_BYTES||memcmp(wire,"NXR1",4)) return NX_ERROR_ARGUMENT;
     content_guest_resources value={wire[4],wire[5],wire_u16(wire+6),wire_u64(wire+8),
@@ -99,13 +99,25 @@ static nx_result read_guest_resources(const uint8_t *wire,size_t bytes,content_g
     return NX_OK;
 }
 
+static nx_result read_guest_preview(const uint8_t *wire,size_t bytes,content_guest_reset_preview *out) {
+    if (bytes==1&&wire[0]=='U') return NX_ERROR_STATE;
+    static const uint8_t zero[32]={0};
+    if (bytes!=GUEST_PREVIEW_BYTES||memcmp(wire,"NXV1",4)||wire_u32(wire+60)||
+        !memcmp(wire+4,zero,16)||!memcmp(wire+20,zero,32)||!wire_u64(wire+52)) return NX_ERROR_ARGUMENT;
+    content_guest_reset_preview value={.capacity=wire_u64(wire+52)};
+    memcpy(value.environment,wire+4,sizeof(value.environment));
+    memcpy(value.checkpoint,wire+20,sizeof(value.checkpoint));
+    *out=value;
+    return NX_OK;
+}
+
 static nx_result transfer(const char *socket_path,content_request request,uint64_t sequence,unsigned kind,
     const content_browser_edit *edit,int accessible,content_ax_action action,const content_guest_batch *input,
-    void **out,size_t *bytes,nx_rect *caret,content_guest_resources *resources) {
+    void **out,size_t *bytes,nx_rect *caret,void *guest_report) {
     struct sockaddr_un address={.sun_family=AF_UNIX};
     if (!socket_path || socket_path[0]!='/' || strlen(socket_path)>=sizeof(address.sun_path) ||
         !request.generation || !request.resize || !request.width || !request.height || !sequence ||
-        (!resources&&(!out||!bytes))) return NX_ERROR_ARGUMENT;
+        (!guest_report&&(!out||!bytes))) return NX_ERROR_ARGUMENT;
     if (request.width>CONTENT_PNG_SOURCE_DIMENSION || request.height>CONTENT_PNG_SOURCE_DIMENSION ||
         request.width*4u>CONTENT_PNG_PIXEL_LIMIT/request.height) return NX_ERROR_LIMIT;
     strcpy(address.sun_path,socket_path);
@@ -161,14 +173,15 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     }
     if (!send_request(fd,line,send_size,deadline)) goto done;
     size_t prefix=edit?8u:0;
-    size_t capacity=resources?GUEST_RESOURCE_BYTES+1u:
+    size_t capacity=guest_report?(kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:GUEST_PREVIEW_BYTES)+1u:
         prefix+(accessible?4u+BROWSER_AX_WIRE_LIMIT:0)+CONTENT_PNG_ENCODED_LIMIT+1u;
     encoded=malloc(capacity);
     if (!encoded) { result=NX_ERROR_MEMORY;goto done; }
     size_t size=0;
     result=read_frame(fd,encoded,capacity,&size,deadline);
-    if (resources) {
-        if (result==NX_OK) result=read_guest_resources(encoded,size,resources);
+    if (guest_report) {
+        if (result==NX_OK) result=kind==CONTENT_GUEST_RESOURCES?read_guest_resources(encoded,size,guest_report):
+            read_guest_preview(encoded,size,guest_report);
         goto done;
     }
     if (result==NX_OK && input && kind==2 && size==1u && encoded[0]=='P')
@@ -270,4 +283,9 @@ nx_result content_guest_frame(const char *path,content_request request,uint64_t 
 nx_result content_guest_read_resources(const char *path,content_request request,content_guest_resources *out) {
     if (!out) return NX_ERROR_ARGUMENT;
     return transfer(path,request,1,CONTENT_GUEST_RESOURCES,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out);
+}
+
+nx_result content_guest_read_reset_preview(const char *path,content_request request,content_guest_reset_preview *out) {
+    if (!out) return NX_ERROR_ARGUMENT;
+    return transfer(path,request,1,CONTENT_GUEST_RESET_PREVIEW,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out);
 }
