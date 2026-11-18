@@ -23,6 +23,10 @@ typedef struct content_image_area {
     uint32_t x, y, width, height;
     uint32_t source_width, source_height;
 } content_image_area;
+/* Oriented dimensions before decode scaling. Both are zero for non-JPEG frames. */
+typedef struct content_jpeg_size {
+    uint32_t width, height;
+} content_jpeg_size;
 /* In-process owned snapshot layout. The header is followed by height*stride
    bytes of straight-alpha RGBA8, then optional UTF-8 text and unaligned
    content_frame_word and content_frame_link records for the same frame.
@@ -39,6 +43,7 @@ typedef struct content_frame_header {
     uint32_t text_bytes; /* Unpadded length, without a NUL terminator. */
     uint32_t word_count, link_count;
     content_image_area image;
+    content_jpeg_size jpeg;
 } content_frame_header;
 typedef struct content_surface_status {
     content_request request;
@@ -46,6 +51,7 @@ typedef struct content_surface_status {
     size_t staging_bytes;
     size_t last_copy_bytes; /* Bytes copied for sequence, excluding row padding. */
     content_image_area image;
+    content_jpeg_size jpeg;
 } content_surface_status;
 
 #define CONTENT_FRAME_LIMIT (64u * 1024u * 1024u)

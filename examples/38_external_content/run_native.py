@@ -44,11 +44,16 @@ def write_png_fixtures(directory, viewer=False):
         print(f'PNG_FIXTURE {kind} sha256={hashlib.sha256(image).hexdigest()}', flush=True)
 
 
-def write_png_gallery(directory):
+def write_png_gallery(directory, jpeg_fixture=None):
     write_png_fixtures(directory)
     names = ('Meer.png', 'Defekt.png', 'Wald.png', 'Abend.png', 'Morgen.png', 'Himmel.png', 'Küste.png')
     for name, kind in zip(names, (1, 2, 3, 4, 0, 1, 0)):
         shutil.copyfile(directory / f'{kind}.png', directory / name)
+    if jpeg_fixture:
+        names = (names[0], 'Defekt.jpg', *names[2:-1], 'Küste.jpg')
+        photo = directory / names[-1]
+        subprocess.run([str(jpeg_fixture), str(photo)], check=True, timeout=15)
+        (directory / names[1]).write_bytes(photo.read_bytes()[:-2])
     (directory / 'gallery.txt').write_text('\n'.join(names),encoding='utf-8')
 
 
@@ -163,6 +168,7 @@ def main():
     parser.add_argument('--pdf-export', action='store_true', help='Export the current PDF page viewport to PNG')
     parser.add_argument('--png-viewer', action='store_true', help='View landscape and portrait PNGs, including zoom and pan')
     parser.add_argument('--png-gallery', action='store_true', help='Open the host-owned ordered PNG gallery')
+    parser.add_argument('--jpeg-gallery', action='store_true', help='Include an EXIF-oriented JPEG in --png-gallery')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -170,6 +176,8 @@ def main():
         parser.error('--png-viewer requires --case png')
     if args.png_gallery and (args.case != 'png' or args.png_viewer):
         parser.error('--png-gallery requires --case png and runs separately from --png-viewer')
+    if args.jpeg_gallery and not args.png_gallery:
+        parser.error('--jpeg-gallery requires --png-gallery')
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
@@ -221,6 +229,8 @@ def main():
         env['NEXAUI_CONTENT_TEST_PNG_VIEWER'] = '1'
     if args.png_gallery:
         env['NEXAUI_CONTENT_TEST_PNG_GALLERY'] = '1'
+    if args.jpeg_gallery:
+        env['NEXAUI_CONTENT_TEST_JPEG_GALLERY'] = '1'
     if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:
@@ -248,7 +258,7 @@ def main():
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory
             if args.case == 'png':
                 if args.png_gallery:
-                    write_png_gallery(Path(directory))
+                    write_png_gallery(Path(directory), args.build_dir / 'content_jpeg_test' if args.jpeg_gallery else None)
                 else:
                     write_png_fixtures(Path(directory),args.png_viewer)
             else:

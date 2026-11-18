@@ -50,6 +50,7 @@ static nx_result resize_source(void *user, uint32_t width, uint32_t height) {
     surface->status.sequence = 0;
     surface->status.last_copy_bytes = 0;
     surface->status.image = (content_image_area){0};
+    surface->status.jpeg = (content_jpeg_size){0};
     ++surface->status.request.resize;
     surface->status.request.width = width;
     surface->status.request.height = height;
@@ -101,6 +102,9 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
             image.x>=request->width || image.y>=request->height ||
             image.width>request->width-image.x || image.height>request->height-image.y) return NX_ERROR_ARGUMENT;
     }
+    if ((header.jpeg.width || header.jpeg.height) && (!image.width ||
+        header.jpeg.width < image.source_width || header.jpeg.height < image.source_height))
+        return NX_ERROR_ARGUMENT;
     if (header.format != NX_BITMAP_RGBA8) return NX_ERROR_UNSUPPORTED;
     if (request->height > SIZE_MAX / header.stride) return NX_ERROR_LIMIT;
     size_t payload = (size_t)request->height * header.stride;
@@ -162,6 +166,7 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
     surface->link_count = header.link_count;
     surface->status.sequence = header.sequence;
     surface->status.image = image;
+    surface->status.jpeg = header.jpeg;
     surface->status.last_copy_bytes = copy_bytes * rows;
     ++surface->status.copied_frames;
     return NX_OK;

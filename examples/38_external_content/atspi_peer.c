@@ -242,8 +242,7 @@ static int png_portrait_pixels(Display *display,Window window,int zoomed,int pan
     return 0;
 }
 
-static int png_portrait_semantics(AtspiAccessible *app,int zoomed) {
-    const char *name="PNG image, 208 × 416 pixels";
+static int portrait_semantics(AtspiAccessible *app,const char *name,int zoomed) {
     for (unsigned i=0;i<100;++i) {
         AtspiAccessible *node=find(app,name,0);
         AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
@@ -253,6 +252,26 @@ static int png_portrait_semantics(AtspiAccessible *app,int zoomed) {
         g_free(rect);
         if (component) g_object_unref(component);
         if (node) g_object_unref(node);
+        if (ok) return 1;
+        pump();
+    }
+    return 0;
+}
+
+static int jpeg_quadrants(Display *display,Window window,int x,int y,int spread,const char *name) {
+    static const unsigned long expected[]={0x193cdcu,0xe61e28u,0xe1cd23u,0x23d237u};
+    int extent=2*spread+1;
+    for (unsigned attempt=0;attempt<100;++attempt) {
+        XImage *image=XGetImage(display,window,x-spread,y-spread,(unsigned)extent,(unsigned)extent,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        int ok=1;
+        for (int i=0;ok&&i<4;++i) {
+            unsigned long pixel=XGetPixel(image,i%2?extent-1:0,i/2?extent-1:0);
+            for (unsigned shift=0;shift<24;shift+=8)
+                if (abs((int)((pixel>>shift)&255u)-(int)((expected[i]>>shift)&255u))>4) ok=0;
+        }
+        if (ok) ok=save_ppm(image,0,0,extent,extent,name);
+        XDestroyImage(image);
         if (ok) return 1;
         pump();
     }
@@ -401,6 +420,17 @@ static int gallery_preview(AtspiAccessible *app,const char *name,const char *sta
     if (!node) return 0;
     int ok=atspi_accessible_get_role(node,NULL)==ATSPI_ROLE_PUSH_BUTTON&&state(node,ATSPI_STATE_SELECTED)==selected;
     g_object_unref(node);
+    return ok;
+}
+static int jpeg_gallery_preview(AtspiAccessible *app,Display *display,Window window,const char *name) {
+    AtspiAccessible *node=await_preview(app,name,"Preview ready");
+    AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
+    AtspiRect *rect=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+    int ok=rect && jpeg_quadrants(display,window,content_left-16+rect->x+rect->width/2,
+        content_top-136+rect->y+48,10,"jpeg-preview");
+    g_free(rect);
+    if (component) g_object_unref(component);
+    if (node) g_object_unref(node);
     return ok;
 }
 static int pdf_preview_ready(AtspiAccessible *app,unsigned page) {
@@ -656,6 +686,7 @@ int main(int argc,char **argv) {
     int png_case=!strcmp(test_case,"png");
     int png_viewer=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_VIEWER");
     int gallery=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
+    int jpeg_gallery=gallery&&getenv("NEXAUI_CONTENT_TEST_JPEG_GALLERY");
     int pdf_case=!strcmp(test_case,"pdf");
     int compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
     int links=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER");
@@ -688,21 +719,35 @@ int main(int argc,char **argv) {
     desktop=atspi_get_desktop(0);CHECK(desktop&&(app=application(desktop,child)));
     CHECK(drive("windowfocus",id)&&drive("park",NULL));
     if (gallery) {
+        const char *broken=jpeg_gallery?"Defekt.jpg":"Defekt.png";
         CHECK(observe(app,"Image 1 of 7.",0)&&observe(app,"Gallery",1)&&capture(display,outer,blue,"png-gallery-first"));
         CHECK(drive("key","Return")&&observe(app,"Image gallery",0));
-        CHECK(gallery_preview(app,"Meer.png","Preview ready",1)&&gallery_preview(app,"Defekt.png","Preview unavailable",0)&&
+        CHECK(gallery_preview(app,"Meer.png","Preview ready",1)&&gallery_preview(app,broken,"Preview unavailable",0)&&
             gallery_preview(app,"Wald.png","Preview ready",0)&&input_chrome(display,id,"png-gallery-previews"));
         CHECK(drive("key","Escape")&&observe(app,"Gallery",1)&&drive("key","Return"));
-        CHECK(gallery_preview(app,"Wald.png","Preview ready",0)&&press(app,"Defekt.png"));
-        CHECK(observe(app,"PNG decoding failed; image retained.",0)&&capture(display,outer,blue,"png-gallery-retained"));
+        CHECK(gallery_preview(app,"Wald.png","Preview ready",0)&&press(app,broken));
+        CHECK(observe(app,"Image decoding failed; image retained.",0)&&capture(display,outer,blue,"png-gallery-retained"));
         CHECK(press(app,"Scale 2x")&&observe(app,"Image 1 of 7.",0)&&press(app,"Gallery"));
         CHECK(gallery_preview(app,"Meer.png","Preview ready",1)&&gallery_preview(app,"Wald.png","Preview ready",0));
         CHECK(input_chrome(display,id,"png-gallery-previews-scaled")&&press(app,"Next previews"));
         CHECK(gallery_preview(app,"Abend.png","Preview ready",0)&&gallery_preview(app,"Morgen.png","Preview ready",0)&&
             gallery_preview(app,"Himmel.png","Preview ready",0)&&press(app,"Next previews"));
-        CHECK(gallery_preview(app,"Küste.png","Preview ready",0)&&!press(app,"Next previews"));
-        CHECK(focus(app,"Küste.png")&&drive("key","Return")&&observe(app,"Image 7 of 7.",0));
-        CHECK(observe(app,"PNG image, 112 × 52 pixels",0)&&capture(display,outer,0xd34f1fu,"png-gallery-last"));
+        const char *last=jpeg_gallery?"Küste.jpg":"Küste.png";
+        CHECK(gallery_preview(app,last,"Preview ready",0)&&!press(app,"Next previews"));
+        if (jpeg_gallery) CHECK(jpeg_gallery_preview(app,display,outer,last));
+        CHECK(focus(app,last)&&drive("key","Return")&&observe(app,"Image 7 of 7.",0));
+        if (jpeg_gallery) {
+            const char *name="JPEG image, 2048 × 4096 pixels";
+            CHECK(portrait_semantics(app,name,0)&&jpeg_quadrants(display,outer,content_left+224,content_top+104,30,"jpeg-fit"));
+            CHECK(press(app,"Zoom in")&&portrait_semantics(app,name,1)&&
+                jpeg_quadrants(display,outer,content_left+224,content_top+104,60,"jpeg-zoom"));
+            CHECK(press(app,"Gallery")&&press(app,"Previous previews")&&press(app,"Previous previews")&&
+                focus(app,"Meer.png")&&drive("key","Return")&&observe(app,"Image 1 of 7.",0)&&
+                observe(app,"PNG image, 112 × 52 pixels",0)&&capture(display,outer,blue,"jpeg-return-to-png"));
+            puts("JPEG_GALLERY verified: oriented preview, fit, zoom, original dimensions and return to PNG");
+        } else {
+            CHECK(observe(app,"PNG image, 112 × 52 pixels",0)&&capture(display,outer,0xd34f1fu,"png-gallery-last"));
+        }
         CHECK(focus(app,"Close")&&drive("key","Return"));
         puts("PNG_GALLERY verified: named files, pixel previews, failed image, keyboard, retained cache and backing change");
         goto closed;
@@ -808,13 +853,13 @@ int main(int argc,char **argv) {
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
     if (png_viewer) {
-        CHECK(png_portrait_semantics(app,1)&&png_portrait_pixels(display,outer,1,0,"png-portrait-center"));
+        CHECK(portrait_semantics(app,"PNG image, 208 × 416 pixels",1)&&png_portrait_pixels(display,outer,1,0,"png-portrait-center"));
         CHECK(focus(app,viewport)&&drive("key","Right")&&png_portrait_pixels(display,outer,1,0,"png-portrait-axis-locked"));
         CHECK(drive("key","Down")&&png_portrait_pixels(display,outer,1,48,"png-portrait-panned"));
         CHECK(press(app,"Scale 2x")&&observe(app,"Waiting for scaled frame.",0));
         CHECK(press(app,"Publish frame")&&observe(app,"Scaled frame ready.",0));
-        CHECK(png_portrait_semantics(app,1)&&png_portrait_pixels(display,outer,1,48,"png-portrait-scaled"));
-        CHECK(focus(app,viewport)&&drive("key","ctrl+0")&&png_portrait_semantics(app,0));
+        CHECK(portrait_semantics(app,"PNG image, 208 × 416 pixels",1)&&png_portrait_pixels(display,outer,1,48,"png-portrait-scaled"));
+        CHECK(focus(app,viewport)&&drive("key","ctrl+0")&&portrait_semantics(app,"PNG image, 208 × 416 pixels",0));
         CHECK(png_portrait_pixels(display,outer,0,0,"png-portrait-fit")&&focus(app,"Close")&&drive("key","Return"));
         puts("PNG_VIEWER verified: original samples, fitted image bounds, locked axis, pan, metadata and backing scale");
         goto closed;

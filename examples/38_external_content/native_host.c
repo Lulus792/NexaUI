@@ -625,7 +625,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     }
     if (gallery) {
         if (phase==PDF_PAGE_PENDING||phase==SCALED_WAIT) status="Loading image.";
-        else if (phase==PDF_HIT_FAILED) status=document->page?"PNG decoding failed; image retained.":"PNG image unavailable.";
+        else if (phase==PDF_HIT_FAILED) status=document->page?"Image decoding failed; image retained.":"Image unavailable.";
         else {
             snprintf(pdf_status,sizeof(pdf_status),"Image %u of %u.",document->page,document->pages);
             status=pdf_status;
@@ -678,7 +678,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         if (button(context,fonts,PDF_NEXT_HIT,"Next hit",392,48,72,pdf_can_navigate(phase),action)!=NX_OK) return 0;
     }
 #endif
-    const char *name=pdf_case?"PDF page image":png_case?"PNG image":"Fixture frame";
+    const char *name=pdf_case?"PDF page image":gallery?"Image view":png_case?"PNG image":"Fixture frame";
     nx_viewport_desc desc = {.id=100,.parent_id=1,.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
         .name={name,strlen(name)},.scale=scale};
     nx_interaction_state interaction;
@@ -692,8 +692,11 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         *page_view=content_camera_place(camera,desc.bounds,fitted);
         if (png_case && accepted.image.source_width) {
             char description[64];
-            snprintf(description,sizeof(description),"PNG image, %u × %u pixels",
-                accepted.image.source_width,accepted.image.source_height);
+            if (accepted.jpeg.width)
+                snprintf(description,sizeof(description),"JPEG image, %u × %u pixels",accepted.jpeg.width,accepted.jpeg.height);
+            else
+                snprintf(description,sizeof(description),"PNG image, %u × %u pixels",
+                    accepted.image.source_width,accepted.image.source_height);
             if (label(context,fonts,0,description,(nx_rect){16,122,desc.bounds.width,14},11)!=NX_OK) return 0;
             nx_rect bounds;
             if (content_camera_visible(*page_view,fitted,&bounds)) {

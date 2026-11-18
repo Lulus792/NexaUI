@@ -251,7 +251,7 @@ resize and sequence. Fit image uses the fitted raster.
 Use `--case png --png-viewer` to check a landscape image, a truncated PNG,
 and a portrait with fine stripes and straight alpha at both backing sizes.
 
-### PNG gallery
+### Image gallery
 
 The host can supply an ordered collection through `gallery.txt` in its
 selected directory. The file contains one distinct UTF-8 filename per
@@ -269,6 +269,19 @@ The same group reuses its cache until the group, collection or raster
 density changes.
 
 Use `--case png --png-gallery` to run the seven-file native workflow.
+
+Enable `-DNEXAUI_CONTENT_BUILD_JPEG=ON` alongside
+`-DNEXAUI_CONTENT_BUILD_PNG=ON` to support ordinary 8-bit lossy JPEGs in
+the same manifest. This optional path requires TurboJPEG 3.0.2 or newer
+and libexif. It identifies JPEG by the encoded signature and applies
+EXIF orientation to the preview, fitted view and zoom raster. The size
+label and AT-SPI image report the oriented original dimensions.
+
+The input file limit remains 4 MiB. The decoder accepts up to 64 Mi
+source pixels and chooses the largest supported downscale that fits the
+shared 2048-pixel edge and 4 MiB RGBA budgets. Zoom uses that bounded
+raster. Use `--case png --png-gallery --jpeg-gallery` to check a mixed
+collection with a truncated JPEG and an EXIF-rotated progressive photo.
 
 ## Optional PDF producer on Linux
 

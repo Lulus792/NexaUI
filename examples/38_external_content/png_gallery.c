@@ -1,5 +1,8 @@
 #define _POSIX_C_SOURCE 200809L
 #include "png_gallery.h"
+#ifdef CONTENT_NATIVE_JPEG
+#include "jpeg_frame.h"
+#endif
 #include "png_frame.h"
 
 #include <errno.h>
@@ -117,9 +120,19 @@ nx_result png_gallery_frame(const png_gallery *gallery,unsigned image,content_re
         offset+=(size_t)n;
     }
     nx_bitmap_view bitmap={0};
-    nx_result result=offset==size&&unchanged(entry)?content_png_bitmap(encoded,size,&bitmap):NX_ERROR_STATE;
+    content_jpeg_size jpeg={0};
+    nx_result result=NX_ERROR_STATE;
+    if (offset==size&&unchanged(entry)) {
+#ifdef CONTENT_NATIVE_JPEG
+        if (size>=2 && encoded[0]==0xff && encoded[1]==0xd8)
+            result=content_jpeg_bitmap(encoded,size,&bitmap,&jpeg);
+        else
+#endif
+            result=content_png_bitmap(encoded,size,&bitmap);
+    }
     free(encoded);
     if (result==NX_OK) result=content_png_fit_bitmap(bitmap,request,sequence,out,bytes,NULL);
+    if (result==NX_OK && jpeg.width) ((content_frame_header *)*out)->jpeg=jpeg;
     if (result==NX_OK&&original) *original=bitmap;
     else free((void *)bitmap.pixels);
     return result;
