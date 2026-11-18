@@ -402,9 +402,9 @@ static int input_chrome(Display *display,const char *window,const char *name) {
     int saved=save_ppm(image,content_left-16,content_top-136,480,360,name);
     XDestroyImage(image);return saved;
 }
-static int browser_pixel(Display *display,Window window,int x,int y,unsigned long color) {
+static int wait_content_pixel(Display *display,Window window,int x,int y,unsigned long color,unsigned attempts) {
     unsigned long actual=0;
-    for (unsigned i=0;i<150;++i) {
+    for (unsigned i=0;i<attempts;++i) {
         XImage *image=XGetImage(display,window,content_left+x,content_top+y,1,1,AllPlanes,ZPixmap);
         if (!image) return 0;
         actual=XGetPixel(image,0,0)&0xffffffu;
@@ -414,6 +414,9 @@ static int browser_pixel(Display *display,Window window,int x,int y,unsigned lon
     }
     fprintf(stderr,"Browser pixel %d,%d got %06lx expected %06lx\n",x,y,actual,color);
     return 0;
+}
+static int browser_pixel(Display *display,Window window,int x,int y,unsigned long color) {
+    return wait_content_pixel(display,window,x,y,color,150);
 }
 static AtspiAccessible *await_preview(AtspiAccessible *app,const char *name,const char *status) {
     for (unsigned i=0;i<200;++i) {
@@ -783,6 +786,8 @@ static int guest_ax_key(AtspiAccessible *app,const char *key,const char *marker)
 }
 
 static int guest_view_pointer(AtspiAccessible *app,Display *display,Window outer,const char *window) {
+    /* The guest marker can arrive before the worker's next bounded frame transfer. */
+    const unsigned frame_attempts=600;
     static const struct {
         const char *wheel,*marker;
         unsigned long color;
@@ -792,13 +797,14 @@ static int guest_view_pointer(AtspiAccessible *app,Display *display,Window outer
         {"7","NEXAUI_GUEST_VIEW_X_INCREASE",0x235e9bu},
         {"6","NEXAUI_GUEST_VIEW_X_DECREASE",0x146d74u}
     };
-    CHECK(guest_ax_key(app,"F7","NEXAUI_GUEST_VIEW_READY")&&browser_pixel(display,outer,112,25,0x292b40u)&&
+    CHECK(guest_ax_key(app,"F7","NEXAUI_GUEST_VIEW_READY")&&
+        wait_content_pixel(display,outer,112,25,0x292b40u,frame_attempts)&&
         browser_pixel(display,outer,230,198,0x324968u)&&browser_pixel(display,outer,350,100,0x324968u));
     CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
         observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(window,155,100));
     for (size_t i=0;i<sizeof(scroll)/sizeof(scroll[0]);++i) {
         CHECK(drive("click",scroll[i].wheel)&&await_guest_marker(scroll[i].marker,200)&&
-            browser_pixel(display,outer,112,25,scroll[i].color));
+            wait_content_pixel(display,outer,112,25,scroll[i].color,frame_attempts));
         if (i==0) CHECK(browser_pixel(display,outer,230,198,0x2d6055u)&&
             input_chrome(display,window,"guest-view-scroll-y"));
         if (i==2) CHECK(browser_pixel(display,outer,350,100,0x5a375eu)&&
@@ -806,11 +812,12 @@ static int guest_view_pointer(AtspiAccessible *app,Display *display,Window outer
     }
     CHECK(browser_pixel(display,outer,230,198,0x324968u)&&browser_pixel(display,outer,350,100,0x324968u));
     CHECK(drive("mousedown","8")&&await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_8_DOWN",200)&&
-        browser_pixel(display,outer,112,25,0x963182u));
+        wait_content_pixel(display,outer,112,25,0x963182u,frame_attempts));
     CHECK(drive("mousedown","9")&&await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_9_DOWN",200)&&
-        browser_pixel(display,outer,112,25,0x9c4228u));
+        wait_content_pixel(display,outer,112,25,0x9c4228u,frame_attempts));
     CHECK(release_guest_keys(app)&&await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_8_UP",200)&&
-        await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_9_UP",200)&&browser_pixel(display,outer,112,25,0x286940u)&&
+        await_guest_marker("NEXAUI_GUEST_VIEW_BUTTON_9_UP",200)&&
+        wait_content_pixel(display,outer,112,25,0x286940u,frame_attempts)&&
         input_chrome(display,window,"guest-view-release"));
     CHECK(drive("mouseup","8")&&drive("mouseup","9"));
     puts("GUEST_VIEW_POINTER verified: both GTK scroll adjustments, rendered feedback and release of both held side buttons");
