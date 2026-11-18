@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+The QEMU GTK guest composition test advances I08/D08 at `ea5b0a8`.
+The guest entry reports preedit, one Unicode commit and cancellation, then
+keeps the same buffer across host escape and re-entry. Aetheri can reuse this
+profile where the guest owns composition. Host IME forwarding, candidate
+placement and compositor acceptance remain open.
+[GTK guest composition evidence](external-content-report.md#native-qemu-gtk-guest-composition-2026-11-18)
+
 The QEMU GTK application workflow advances I08/R06/D08/A05/P07 at `823e4b4`.
 Both wheel axes move real guest application content and change pixels in
 the Wayland console. Both side-button releases reach GTK after host escape.

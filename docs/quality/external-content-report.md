@@ -2052,3 +2052,46 @@ The test uses a private Weston seat, QEMU 11.0.3, the Alpine
 `6.18.63-0-virt` guest kernel and GTK 3.24.52. It covers this guest
 application under virtual input. Other applications and guest platforms,
 physical input and Aetheri compositor acceptance remain open.
+
+## Native QEMU GTK guest composition, 2026-11-18
+
+Source `ea5b0a80c826fc5370264d4ed282dfa397ff25ff` uses installed Wayland-only
+SDK `266404bf1743248f16eb289c0a1c0d99701cc395`. The independent native peer
+runs `--case guest-desktop --guest-ax --guest-compose` in a private Weston
+14.0.2 seat with QEMU 11.0.3, Alpine Linux `6.18.63-0-virt` and GTK 3.24.52
+in the guest. The native host uses the existing input gate and QMP physical
+key forwarding. GTK applies its own `GtkIMContextSimple` to the fixture's
+editable field. [GTK Unicode compose](https://docs.gtk.org/gtk3/class.IMContextSimple.html)
+[GTK entry preedit signal](https://docs.gtk.org/gtk3/signal.Entry.preedit-changed.html)
+
+The guest checks a full `u00e9` preedit while its entry buffer is empty,
+then checks one buffer change to U+00E9 on Return. Escape clears the
+second `u00f1` preedit, keeping the first character as the only buffer
+change. After the host escape shortcut, the peer sends a key outside the
+input gate, re-enters and checks the same buffer and change count. The
+guest serial receipt contains fixed status markers for these synthetic
+assertions. F5 returns to the accessibility view.
+
+The first Release run reached all composition assertions and reported an
+ATK state-set error after the fixture removed and reattached its views.
+The revision above keeps the views attached to a GTK stack. An early
+negative attempt timed out in AT-SPI before reaching the text view.
+
+Forty CTests passed across Release (14), ASan/UBSan with leak detection
+(14) and the default fixture (12). The corrected native runs passed in
+Release with guest pointer and accessibility, under ASan/UBSan with guest
+accessibility, and in a Release reference run with pointer and accessibility.
+The corrected runs produced no ATK state-set error. With the entry's GTK
+input method disabled, the native peer reached the text view and exited
+with status 1 at the missing preedit assertion.
+
+The tested guest initramfs SHA-256 is
+`f84bf93dfcad19e21d2474fd7bc09624aa7ef0fdd4e3ebf3d2b4e5440cf24000`.
+The compact archive `nexaui-qemu-compose473.tar.gz` has SHA-256
+`0c412bef8a79c429f7bb81f1b6e8b9cf73c9a274939126a1ad76423212098ccc`.
+The audit read back all 32 members, including the exact source export,
+both guest overlays, JUnit results, and positive and negative native receipts.
+
+This scope covers guest-owned composition through the QEMU console.
+Host IME forwarding, candidate placement, broader guest platforms and
+Aetheri compositor adoption still require their own acceptance evidence.
