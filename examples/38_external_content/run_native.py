@@ -44,6 +44,14 @@ def write_png_fixtures(directory, viewer=False):
         print(f'PNG_FIXTURE {kind} sha256={hashlib.sha256(image).hexdigest()}', flush=True)
 
 
+def write_png_gallery(directory):
+    write_png_fixtures(directory)
+    names = ('Meer.png', 'Defekt.png', 'Wald.png', 'Abend.png', 'Morgen.png', 'Himmel.png', 'Küste.png')
+    for name, kind in zip(names, (1, 2, 3, 4, 0, 1, 0)):
+        shutil.copyfile(directory / f'{kind}.png', directory / name)
+    (directory / 'gallery.txt').write_text('\n'.join(names),encoding='utf-8')
+
+
 def write_pdf_fixtures(directory, include_links=False, thumbnails=False, properties=False, detail=False):
     def document(pages, properties=None):
         annotated = include_links and len(pages) == 2
@@ -154,11 +162,14 @@ def main():
     parser.add_argument('--pdf-detail', action='store_true', help='Exercise higher-resolution PDF zoom rendering')
     parser.add_argument('--pdf-export', action='store_true', help='Export the current PDF page viewport to PNG')
     parser.add_argument('--png-viewer', action='store_true', help='View landscape and portrait PNGs, including zoom and pan')
+    parser.add_argument('--png-gallery', action='store_true', help='Open the host-owned ordered PNG gallery')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
     if args.png_viewer and args.case != 'png':
         parser.error('--png-viewer requires --case png')
+    if args.png_gallery and (args.case != 'png' or args.png_viewer):
+        parser.error('--png-gallery requires --case png and runs separately from --png-viewer')
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
@@ -208,6 +219,8 @@ def main():
         env['NEXAUI_CONTENT_TEST_EXPORT_PATH'] = str(args.work_dir / 'exported-page.png')
     if args.png_viewer:
         env['NEXAUI_CONTENT_TEST_PNG_VIEWER'] = '1'
+    if args.png_gallery:
+        env['NEXAUI_CONTENT_TEST_PNG_GALLERY'] = '1'
     if args.pdf_select or args.pdf_external:
         reader = args.clipboard_reader or shutil.which('wl-paste')
         if not reader:
@@ -234,7 +247,10 @@ def main():
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory
             if args.case == 'png':
-                write_png_fixtures(Path(directory),args.png_viewer)
+                if args.png_gallery:
+                    write_png_gallery(Path(directory))
+                else:
+                    write_png_fixtures(Path(directory),args.png_viewer)
             else:
                 renderer = args.pdf_renderer.resolve(strict=True)
                 reader = args.pdf_text_reader or renderer.with_name('pdftotext')

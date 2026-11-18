@@ -13,7 +13,8 @@
 #include <stdio.h>
 #endif
 #include "pdf_frame.h"
-#include "pdf_thumbnails.h"
+#include "content_thumbnails.h"
+#include "png_gallery.h"
 #include "pdf_detail.h"
 #include "pdf_export.h"
 
@@ -59,6 +60,7 @@ typedef struct native_worker {
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
     const char *uri_launcher;
     const char *export_path;
+    const png_gallery *gallery;
     pthread_mutex_t mutex;
     pthread_cond_t condition;
     pthread_t thread;
@@ -72,7 +74,7 @@ typedef struct native_worker {
     uint64_t pdf_generation, indexed_generation;
     native_pdf_index_result pdf_index;
     native_pdf_properties_result pdf_properties;
-    pdf_thumbnail thumbnail, thumbnail_result;
+    content_thumbnail thumbnail, thumbnail_result;
     int thumbnail_working;
     pdf_detail_key detail;
     pdf_detail_result detail_result;
@@ -266,10 +268,18 @@ static void native_render_detail(native_worker *worker, pdf_detail_key key) {
     native_wake(worker,NATIVE_FRAME_READY);
 }
 
-static void native_render_thumbnail(native_worker *worker, pdf_thumbnail thumbnail) {
+#endif
+
+#ifdef CONTENT_NATIVE_PNG
+static void native_render_thumbnail(native_worker *worker, content_thumbnail thumbnail) {
+    if (worker->gallery)
+        (void)png_gallery_frame(worker->gallery,thumbnail.page,thumbnail.request,1,&thumbnail.frame,&thumbnail.bytes,NULL);
+#ifdef CONTENT_NATIVE_PDF
+    else
     if (worker->pdf_generation==thumbnail.request.generation)
         (void)content_pdf_render_thumbnail(worker->pdf_renderer,worker->pdf_link_reader!=NULL,
             worker->pdf_file,thumbnail.page,thumbnail.request,&thumbnail.frame,&thumbnail.bytes);
+#endif
     pthread_mutex_lock(&worker->mutex);
     worker->thumbnail_result=thumbnail;
     worker->thumbnail_working=0;
@@ -321,9 +331,11 @@ static void *native_worker_entry(void *user) {
             native_render_detail(worker,key);
             continue;
         }
+#endif
+#ifdef CONTENT_NATIVE_PNG
         if (!worker->pending && worker->thumbnail.page) {
-            pdf_thumbnail thumbnail=worker->thumbnail;
-            worker->thumbnail=(pdf_thumbnail){0};
+            content_thumbnail thumbnail=worker->thumbnail;
+            worker->thumbnail=(content_thumbnail){0};
             worker->thumbnail_working=1;
             pthread_mutex_unlock(&worker->mutex);
             native_render_thumbnail(worker,thumbnail);
@@ -342,7 +354,10 @@ static void *native_worker_entry(void *user) {
         else
 #endif
 #ifdef CONTENT_NATIVE_PNG
-        if (worker->encoded_dir) result = native_png(worker->encoded_dir, job, &data, &bytes,&original);
+        if (worker->gallery) {
+            result=png_gallery_frame(worker->gallery,job.page,job.request,job.sequence,&data,&bytes,&original.bitmap);
+            if (result==NX_OK) { original.request=job.request;original.sequence=job.sequence; }
+        } else if (worker->encoded_dir) result = native_png(worker->encoded_dir, job, &data, &bytes,&original);
         else
 #endif
         {
@@ -392,9 +407,9 @@ static int native_worker_close(native_worker *worker) {
         worker->started = 0;
     }
     free((void *)worker->png_source.bitmap.pixels);
+    free(worker->thumbnail_result.frame);
 #ifdef CONTENT_NATIVE_PDF
     content_pdf_index_destroy(worker->pdf_index.index);
-    free(worker->thumbnail_result.frame);
     free((void *)worker->detail_result.bitmap.pixels);
     if (worker->pdf_renderer && worker->pdf_file >= 0 && close(worker->pdf_file)) result = -1;
 #endif
@@ -408,7 +423,7 @@ static int native_worker_close(native_worker *worker) {
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
     const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader,
-    const char *uri_launcher, const char *export_path) {
+    const char *uri_launcher, const char *export_path,const png_gallery *gallery) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
@@ -416,6 +431,7 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
     worker->pdf_link_reader = pdf_link_reader;
     worker->uri_launcher = uri_launcher;
     worker->export_path = export_path;
+    worker->gallery = gallery;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;
@@ -467,26 +483,30 @@ static native_pdf_properties_result native_take_pdf_properties(native_worker *wo
     return result;
 }
 
+#endif
+#ifdef CONTENT_NATIVE_PNG
 static int native_schedule_thumbnail(native_worker *worker, content_request request, unsigned page) {
     pthread_mutex_lock(&worker->mutex);
     int accepted=!worker->stop && !worker->pending && !worker->working && !worker->uri_ticket &&
         !worker->thumbnail.page && !worker->thumbnail_result.page && !worker->thumbnail_working;
     if (accepted) {
-        worker->thumbnail=(pdf_thumbnail){.request=request,.page=page};
+        worker->thumbnail=(content_thumbnail){.request=request,.page=page};
         pthread_cond_signal(&worker->condition);
     }
     pthread_mutex_unlock(&worker->mutex);
     return accepted;
 }
 
-static pdf_thumbnail native_take_thumbnail(native_worker *worker) {
+static content_thumbnail native_take_thumbnail(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
-    pdf_thumbnail result=worker->thumbnail_result;
-    worker->thumbnail_result=(pdf_thumbnail){0};
+    content_thumbnail result=worker->thumbnail_result;
+    worker->thumbnail_result=(content_thumbnail){0};
     pthread_mutex_unlock(&worker->mutex);
     return result;
 }
+#endif
 
+#ifdef CONTENT_NATIVE_PDF
 static void native_schedule_detail(native_worker *worker, pdf_detail_key key) {
     pthread_mutex_lock(&worker->mutex);
     if (!worker->stop && !worker->pending && !worker->working && !worker->uri_ticket &&

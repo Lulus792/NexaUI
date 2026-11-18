@@ -379,19 +379,29 @@ static int input_chrome(Display *display,const char *window,const char *name) {
     int saved=save_ppm(image,content_left-16,content_top-136,480,360,name);
     XDestroyImage(image);return saved;
 }
-static AtspiAccessible *pdf_ready_preview(AtspiAccessible *app,unsigned page) {
-    char name[24];
-    snprintf(name,sizeof(name),"Page %u",page);
+static AtspiAccessible *await_preview(AtspiAccessible *app,const char *name,const char *status) {
     for (unsigned i=0;i<200;++i) {
         AtspiAccessible *node=find(app,name,0);
         char *description=node?atspi_accessible_get_description(node,NULL):NULL;
-        int ready=description&&!strcmp(description,"Preview ready");
+        int ready=description&&!strcmp(description,status);
         g_free(description);
         if (ready) return node;
         if (node) g_object_unref(node);
         pump();
     }
     return NULL;
+}
+static AtspiAccessible *pdf_ready_preview(AtspiAccessible *app,unsigned page) {
+    char name[24];
+    snprintf(name,sizeof(name),"Page %u",page);
+    return await_preview(app,name,"Preview ready");
+}
+static int gallery_preview(AtspiAccessible *app,const char *name,const char *status,int selected) {
+    AtspiAccessible *node=await_preview(app,name,status);
+    if (!node) return 0;
+    int ok=atspi_accessible_get_role(node,NULL)==ATSPI_ROLE_PUSH_BUTTON&&state(node,ATSPI_STATE_SELECTED)==selected;
+    g_object_unref(node);
+    return ok;
 }
 static int pdf_preview_ready(AtspiAccessible *app,unsigned page) {
     AtspiAccessible *node=pdf_ready_preview(app,page);
@@ -645,6 +655,7 @@ int main(int argc,char **argv) {
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int png_case=!strcmp(test_case,"png");
     int png_viewer=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_VIEWER");
+    int gallery=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
     int pdf_case=!strcmp(test_case,"pdf");
     int compose=pdf_case&&getenv("NEXAUI_CONTENT_PDF_COMPOSE");
     int links=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_LINK_READER");
@@ -676,6 +687,26 @@ int main(int argc,char **argv) {
     CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);
     desktop=atspi_get_desktop(0);CHECK(desktop&&(app=application(desktop,child)));
     CHECK(drive("windowfocus",id)&&drive("park",NULL));
+    if (gallery) {
+        CHECK(observe(app,"Image 1 of 7.",0)&&observe(app,"Gallery",1)&&capture(display,outer,blue,"png-gallery-first"));
+        CHECK(drive("key","Return")&&observe(app,"Image gallery",0));
+        CHECK(gallery_preview(app,"Meer.png","Preview ready",1)&&gallery_preview(app,"Defekt.png","Preview unavailable",0)&&
+            gallery_preview(app,"Wald.png","Preview ready",0)&&input_chrome(display,id,"png-gallery-previews"));
+        CHECK(drive("key","Escape")&&observe(app,"Gallery",1)&&drive("key","Return"));
+        CHECK(gallery_preview(app,"Wald.png","Preview ready",0)&&press(app,"Defekt.png"));
+        CHECK(observe(app,"PNG decoding failed; image retained.",0)&&capture(display,outer,blue,"png-gallery-retained"));
+        CHECK(press(app,"Scale 2x")&&observe(app,"Image 1 of 7.",0)&&press(app,"Gallery"));
+        CHECK(gallery_preview(app,"Meer.png","Preview ready",1)&&gallery_preview(app,"Wald.png","Preview ready",0));
+        CHECK(input_chrome(display,id,"png-gallery-previews-scaled")&&press(app,"Next previews"));
+        CHECK(gallery_preview(app,"Abend.png","Preview ready",0)&&gallery_preview(app,"Morgen.png","Preview ready",0)&&
+            gallery_preview(app,"Himmel.png","Preview ready",0)&&press(app,"Next previews"));
+        CHECK(gallery_preview(app,"Küste.png","Preview ready",0)&&!press(app,"Next previews"));
+        CHECK(focus(app,"Küste.png")&&drive("key","Return")&&observe(app,"Image 7 of 7.",0));
+        CHECK(observe(app,"PNG image, 112 × 52 pixels",0)&&capture(display,outer,0xd34f1fu,"png-gallery-last"));
+        CHECK(focus(app,"Close")&&drive("key","Return"));
+        puts("PNG_GALLERY verified: named files, pixel previews, failed image, keyboard, retained cache and backing change");
+        goto closed;
+    }
     CHECK(observe(app,"Waiting for frame.",0)&&observe(app,"Replace tab",1));
     CHECK(capture(display,outer,0xe3e7efu,"pending"));
     CHECK(drive("key","Tab")&&observe(app,"Close",1));
