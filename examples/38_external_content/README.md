@@ -483,8 +483,9 @@ the previously opened descriptor and to create a new file. It checks
 that both attempts fail and that the original file and its inode
 survive reset. The owner unmounts the private FUSE mount after QEMU closes.
 
-Use `--case guest-desktop --guest-clipboard` to exercise a one-time
-host-to-guest text transfer. The independent test needs host `wl-copy`.
+Use `--case guest-desktop --guest-clipboard` to exercise one-time text
+transfers in both directions. The independent test needs host `wl-copy`
+and `wl-paste`.
 Include `wl-clipboard` in the guest initramfs when rebuilding it. Open
 **Sharing**, choose **Review clipboard text**, then choose **Copy text to
 guest** to approve the displayed snapshot. The review accepts up to
@@ -493,15 +494,23 @@ It rejects control characters outside line breaks. Escape closes the
 review and discards the snapshot. Losing window focus invalidates the
 unconfirmed review.
 
-The host reads its Wayland clipboard asynchronously and submits only
-the approved snapshot. The private VM owner binds the request to the
-current environment and a one-time ticket. The guest offers the text
-through its native Wayland clipboard. A second reader checks the exact
+To transfer in the other direction, choose **Review guest text** in
+**Sharing**. The host requests a bounded guest snapshot for review.
+Choose **Copy text to host** to offer it on the host Wayland clipboard.
+Rejection, Escape and focus loss preserve the current host selection.
+The native test uses an independent host reader after rejecting,
+cancelling and approving a transfer.
+
+For host-to-guest transfers, NexaUI reads its Wayland clipboard
+asynchronously and submits the approved snapshot. The private VM owner
+binds the request to the current environment and a one-time ticket.
+The guest offers the text through its native Wayland clipboard.
+A second reader checks the exact
 bytes. Clipboard content stays out of the fixture's ordinary logs.
 
 Production disk enrollment, recovery when storage is unavailable,
-production grant policy, guest-to-host clipboard transfer, further
-sharing channels and guest accessibility remain open.
+production grant policy, further sharing channels and guest accessibility
+remain open.
 
 ## Optional PDF producer on Linux
 
