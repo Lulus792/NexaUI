@@ -1142,3 +1142,55 @@ This fixture supports the three primary buttons with a relative PS/2
 device. Wheel and side buttons, a graphical guest OS, guest accessibility,
 storage and reset review, resource accounting, separate sharing grants
 and a production VM engine decision remain open.
+
+## Native Alpine desktop guest checkpoint, 2026-11-18
+
+Consumer `821f3bcb0d84557cda4288c74290aac0d1224574` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. The optional desktop case
+starts QEMU 11.0.3 in TCG with 768 MiB RAM and an 800 × 600 VirtIO VGA
+output. It boots Alpine 3.24.4 with Linux `6.18.63-0-virt` and Weston
+14.0.2 from a caller-supplied kernel and RAM filesystem. The signed
+Alpine minirootfs and 144-package inventory are recorded locally,
+along with the signatures and hashes of the three matching QEMU
+display module packages.
+[Alpine releases](https://alpinelinux.org/downloads/)
+[QEMU direct Linux boot](https://www.qemu.org/docs/master/system/linuxboot.html)
+[Weston DRM and seat management](https://wayland.pages.freedesktop.org/weston/toc/running-weston.html)
+
+The QMP owner waits for the guest terminal and a visible scanout on
+the selected head. The host fits and identifies the entire guest
+screen at 1× and 2× backing. The guest panel and terminal decoration
+survive pause and resume. Entering the guest enables native keyboard
+and relative pointer input. The guest terminal receives the test line
+and repaints after a delay. The host's idle frame requests bring the
+changed pixels into the NexaUI window without another input action.
+The Linux guest's independent evdev reader observes relative motion
+and a button press. The host shortcut releases the held button.
+Disconnect retains the desktop image. QMP reports the guest running
+with the input ledger drained before fixture close and process exit.
+
+The development attempts identified a separately packaged GPU
+module, the initramfs capacity of the default tmpfs root, an
+unsupported seatd argument and a delay between guest startup and the
+first visible DRM scanout. The native test's first color comparison
+used a different ANSI green than Weston draws. The final probe matches
+the guest's captured RGB value. The first Windows Git archive exported
+the guest init as CRLF. The scoped LF attribute keeps its bytes identical
+to the executable in the tested initramfs with `core.autocrlf=true`.
+
+The exact-source matrix passed 100 CTests across six profiles and 79
+native Weston scenarios. The Alpine desktop and the VGA diagnostic
+workflow both passed on Release, Shared, ASan/UBSan with leak detection,
+and the guest-only build. Each desktop run includes five compositor
+captures and a running guest with no held input before QEMU exits.
+The matrix used private RAM-backed temporary files while the shared
+WSL filesystem remained read-only. The local evidence archive is
+`nexaui-qemu-guest-desktop452.tar.gz` (SHA-256
+`8e57481f216fc746e211bf6570fc5172be6015d57e6328d8ae64fda5386025e2`).
+`qemu-guest-desktop452-final.json` records the archive members and the
+kernel, initramfs and init-script hashes.
+
+The fixture covers a single display, a Wayland desktop shell and its
+terminal. Guest accessibility export, IME, wheel and side buttons,
+production refresh budgets, persistent storage and reset review,
+resource accounting and sharing grants remain open.
