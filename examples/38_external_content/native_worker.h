@@ -37,6 +37,7 @@ typedef struct native_job {
 #ifdef CONTENT_NATIVE_GUEST
     content_guest_batch guest_input;
     content_guest_reset_preview reset_scope;
+    content_guest_sharing share_scope;
 #endif
 } native_job;
 typedef struct native_png_source {
@@ -375,12 +376,14 @@ static void *native_worker_entry(void *user) {
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
 #ifdef CONTENT_NATIVE_GUEST
-        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_SHARING) {
+        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_REVOKE_FILES) {
             native_guest_report report={.ticket=job.sequence};
             if (job.kind==CONTENT_GUEST_RESOURCES)
                 report.result=content_guest_read_resources(worker->guest_socket,job.request,&report.resources);
             else if (job.kind==CONTENT_GUEST_SHARING)
                 report.result=content_guest_read_sharing(worker->guest_socket,job.request,&report.sharing);
+            else if (job.kind==CONTENT_GUEST_REVOKE_FILES)
+                report.result=content_guest_revoke_files(worker->guest_socket,job.request,job.share_scope.environment,&report.sharing);
             else if (job.kind==CONTENT_GUEST_RESET_PREVIEW)
                 report.result=content_guest_read_reset_preview(worker->guest_socket,job.request,&report.preview);
             else report.result=content_guest_reset_action(worker->guest_socket,job.request,job.kind,

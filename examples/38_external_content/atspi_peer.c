@@ -618,12 +618,26 @@ static int read_guest_reset_scope(AtspiAccessible *app,guest_reset_scope *scope,
         strlen(scope->checkpoint)==64&&strspn(scope->checkpoint,hex)==64;
 }
 
-static int read_guest_sharing(AtspiAccessible *app,const char *directory) {
+static int read_guest_sharing(AtspiAccessible *app,const char *directory,const char *status) {
     char row[128];
     snprintf(row,sizeof(row),"Host directory: %s",directory?directory:"");
     return observe(app,"Guest sharing",0)&&observe(app,"Clipboard: unavailable",0)&&
-        observe(app,directory?"Files: read/write":"Files: unavailable",0)&&observe(app,"Network: unavailable",0)&&
+        observe(app,status?status:directory?"Files: read/write":"Files: unavailable",0)&&observe(app,"Network: unavailable",0)&&
         observe(app,"Microphone: unavailable",0)&&observe(app,"Devices: unavailable",0)&&(!directory||observe(app,row,0));
+}
+
+static int guest_command(const char *command) {
+    for (const char *key=command;*key;++key) {
+        char name[2]={*key,0};
+        if (!drive("key",name)) return 0;
+    }
+    return drive("key","Return");
+}
+
+static int release_guest_keys(AtspiAccessible *app) {
+    return drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
+        observe(app,"Guest input released.",0)&&observe(app,"Close",1)&&
+        drive("keyup","shift")&&drive("keyup","ctrl");
 }
 
 static int read_guest_export(const char *directory, struct stat *info) {
@@ -1192,7 +1206,9 @@ int main(int argc,char **argv) {
             snprintf(shared,sizeof(shared),"%.*s/host-export",(int)(end-address),address);
             directory=shared;
         }
-        CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory)&&
+        int revoke=getenv("NEXAUI_CONTENT_TEST_FILE_REVOKE")!=NULL;
+        CHECK(!revoke||directory);
+        CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL)&&
             input_chrome(display,id,"guest-sharing")&&drive("key","Escape")&&observe(app,"Sharing",1));
         unsigned long long reads=0, before=0, after=0;
         guest_reset_scope baseline={0}, preview={0};
@@ -1218,10 +1234,30 @@ int main(int argc,char **argv) {
         CHECK(drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
             observe(app,"Guest input released.",0)&&observe(app,"Close",1));
         CHECK(drive("mouseup","1")&&drive("keyup","shift")&&drive("keyup","ctrl"));
+        if (revoke) {
+            struct stat prior={0}, after_probe={0};
+            const char *pending="Files: revocation pending", *revoked="Files: revoked";
+            CHECK(read_guest_export(directory,&prior));
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL)&&
+                focus(app,"Revoke file access")&&drive("key","Return")&&read_guest_sharing(app,directory,pending)&&
+                input_chrome(display,id,"guest-revoke-pending"));
+            CHECK(focus(app,"Check sharing status")&&drive("key","Return")&&read_guest_sharing(app,directory,pending)&&
+                drive("key","Escape")&&observe(app,"Sharing",1));
+            CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("detach")&&
+                browser_pixel(display,outer,156,43,0x0000a8u)&&release_guest_keys(app));
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoked)&&
+                input_chrome(display,id,"guest-revoked")&&drive("key","Escape")&&observe(app,"Sharing",1));
+            CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("probe")&&
+                browser_pixel(display,outer,156,43,0x00a800u)&&release_guest_keys(app));
+            CHECK(read_guest_export(directory,&after_probe)&&prior.st_dev==after_probe.st_dev&&prior.st_ino==after_probe.st_ino);
+            puts("GUEST_REVOKE_NATIVE verified: pending, confirmed removal, guest denied and prior file retained");
+        }
         CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
         if (directory) {
-            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory)&&
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoke?"Files: revoked":NULL)&&
                 focus(app,"Close sharing")&&drive("key","Return")&&observe(app,"Sharing",1));
             puts("GUEST_SHARING_NATIVE verified: exact File grant and four unavailable channels across disconnect");
         }

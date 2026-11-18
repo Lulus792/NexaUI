@@ -86,7 +86,7 @@ static uint64_t wire_u64(const uint8_t *bytes) {
     return ((uint64_t)wire_u32(bytes)<<32)|wire_u32(bytes+4);
 }
 
-enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64, GUEST_ACTION_BYTES=5, GUEST_SHARING_BYTES=8 };
+enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64, GUEST_ACTION_BYTES=5, GUEST_SHARING_V1=8, GUEST_SHARING_V2=28 };
 static nx_result read_guest_resources(const uint8_t *wire,size_t bytes,content_guest_resources *out) {
     if (bytes!=GUEST_RESOURCE_BYTES||memcmp(wire,"NXR1",4)) return NX_ERROR_ARGUMENT;
     content_guest_resources value={wire[4],wire[5],wire_u16(wire+6),wire_u64(wire+8),
@@ -113,10 +113,19 @@ static nx_result read_guest_share_path(const uint8_t *path,size_t length,char ou
 
 static nx_result read_guest_sharing(const uint8_t *wire,size_t bytes,content_guest_sharing *out) {
     if (bytes==1&&wire[0]=='U') return NX_ERROR_STATE;
-    if (bytes<GUEST_SHARING_BYTES||memcmp(wire,"NXS1",4)||wire_u32(wire+4)!=bytes-GUEST_SHARING_BYTES)
-        return NX_ERROR_ARGUMENT;
     content_guest_sharing value={0};
-    nx_result result=read_guest_share_path(wire+GUEST_SHARING_BYTES,bytes-GUEST_SHARING_BYTES,value.file_share);
+    size_t prefix=GUEST_SHARING_V1;
+    if (bytes<GUEST_SHARING_V1) return NX_ERROR_ARGUMENT;
+    if (!memcmp(wire,"NXS2",4)) {
+        static const uint8_t zero[16]={0};
+        prefix=GUEST_SHARING_V2;
+        if (bytes<=prefix||wire[4]<GUEST_SHARE_ACTIVE||wire[4]>GUEST_SHARE_UNKNOWN||
+            wire[5]||wire[6]||wire[7]||!memcmp(wire+8,zero,sizeof(zero))) return NX_ERROR_ARGUMENT;
+        value.state=wire[4];
+        memcpy(value.environment,wire+8,sizeof(value.environment));
+    } else if (memcmp(wire,"NXS1",4)) return NX_ERROR_ARGUMENT;
+    if (wire_u32(wire+prefix-4)!=bytes-prefix) return NX_ERROR_ARGUMENT;
+    nx_result result=read_guest_share_path(wire+prefix,bytes-prefix,value.file_share);
     if (result==NX_OK) *out=value;
     return result;
 }
@@ -138,7 +147,7 @@ static nx_result read_guest_preview(const uint8_t *wire,size_t bytes,content_gue
 
 static nx_result transfer(const char *socket_path,content_request request,uint64_t sequence,unsigned kind,
     const content_browser_edit *edit,int accessible,content_ax_action action,const content_guest_batch *input,
-    void **out,size_t *bytes,nx_rect *caret,void *guest_report,const content_guest_reset_preview *scope) {
+    void **out,size_t *bytes,nx_rect *caret,void *guest_report,const uint8_t *operation,size_t operation_bytes) {
     struct sockaddr_un address={.sun_family=AF_UNIX};
     if (!socket_path || socket_path[0]!='/' || strlen(socket_path)>=sizeof(address.sun_path) ||
         !request.generation || !request.resize || !request.width || !request.height || !sequence ||
@@ -169,16 +178,13 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
         send_size+=(size_t)length;
         memcpy(line+send_size,payload,body);
         send_size+=body;
-    } else if ((input && input->count) || scope) {
-        size_t body=scope?sizeof(scope->environment)+sizeof(scope->checkpoint):input->count*CONTENT_GUEST_RECORD_SIZE;
+    } else if ((input && input->count) || operation) {
+        size_t body=operation?operation_bytes:input->count*CONTENT_GUEST_RECORD_SIZE;
         length=snprintf(line+send_size,sizeof(line)-send_size," %zu\n",body);
         if (length<=0 || (size_t)length>=sizeof(line)-send_size || body>sizeof(line)-send_size-(size_t)length)
             return NX_ERROR_LIMIT;
         send_size+=(size_t)length;
-        if (scope) {
-            memcpy(line+send_size,scope->environment,sizeof(scope->environment));
-            memcpy(line+send_size+sizeof(scope->environment),scope->checkpoint,sizeof(scope->checkpoint));
-        } else memcpy(line+send_size,input->records,body);
+        memcpy(line+send_size,operation?(const void *)operation:(const void *)input->records,body);
         send_size+=body;
     } else if (action.node) {
         length=snprintf(line+send_size,sizeof(line)-send_size," %u %u\n",action.epoch,action.node);
@@ -201,21 +207,23 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     }
     if (!send_request(fd,line,send_size,deadline)) goto done;
     size_t prefix=edit?8u:0;
-    size_t capacity=guest_report?(scope?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:
-        (kind==CONTENT_GUEST_SHARING?GUEST_SHARING_BYTES:GUEST_PREVIEW_BYTES)+GUEST_SHARE_PATH_LIMIT)+1u:
+    int reset_action=kind==CONTENT_GUEST_RESET_APPLY||kind==CONTENT_GUEST_RESET_STATUS;
+    int sharing=kind==CONTENT_GUEST_SHARING||kind==CONTENT_GUEST_REVOKE_FILES;
+    size_t capacity=guest_report?(reset_action?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:
+        (sharing?GUEST_SHARING_V2:GUEST_PREVIEW_BYTES)+GUEST_SHARE_PATH_LIMIT)+1u:
         prefix+(accessible?4u+BROWSER_AX_WIRE_LIMIT:0)+CONTENT_PNG_ENCODED_LIMIT+1u;
     encoded=malloc(capacity);
     if (!encoded) { result=NX_ERROR_MEMORY;goto done; }
     size_t size=0;
     result=read_frame(fd,encoded,capacity,&size,deadline);
     if (guest_report) {
-        if (result==NX_OK && scope) {
+        if (result==NX_OK && reset_action) {
             if (size!=GUEST_ACTION_BYTES || memcmp(encoded,"NXA1",4) ||
                 encoded[4]<GUEST_RESET_APPLIED || encoded[4]>GUEST_RESET_UNREQUESTED) result=NX_ERROR_ARGUMENT;
             else *(unsigned *)guest_report=encoded[4];
         } else if (result==NX_OK) {
             if (kind==CONTENT_GUEST_RESOURCES) result=read_guest_resources(encoded,size,guest_report);
-            else if (kind==CONTENT_GUEST_SHARING) result=read_guest_sharing(encoded,size,guest_report);
+            else if (sharing) result=read_guest_sharing(encoded,size,guest_report);
             else result=read_guest_preview(encoded,size,guest_report);
         }
         goto done;
@@ -275,7 +283,7 @@ done:
 nx_result content_browser_frame(const char *socket_path,content_request request,
     uint64_t sequence,unsigned kind,void **out,size_t *bytes) {
     if (kind>4) return NX_ERROR_ARGUMENT;
-    return transfer(socket_path,request,sequence,kind,NULL,0,(content_ax_action){0},NULL,out,bytes,NULL,NULL,NULL);
+    return transfer(socket_path,request,sequence,kind,NULL,0,(content_ax_action){0},NULL,out,bytes,NULL,NULL,NULL,0);
 }
 
 nx_result content_browser_edit_frame(const char *socket_path,content_request request,
@@ -300,39 +308,55 @@ nx_result content_browser_edit_frame(const char *socket_path,content_request req
             (pointer->modifiers & ~(NX_MOD_SHIFT|NX_MOD_CONTROL|NX_MOD_ALT|NX_MOD_SUPER)))
             return NX_ERROR_ARGUMENT;
     }
-    return transfer(socket_path,request,sequence,edit->kind,edit,0,(content_ax_action){0},NULL,out,bytes,caret,NULL,NULL);
+    return transfer(socket_path,request,sequence,edit->kind,edit,0,(content_ax_action){0},NULL,out,bytes,caret,NULL,NULL,0);
 }
 
 nx_result content_browser_ax_frame(const char *socket_path,content_request request,
     uint64_t sequence,unsigned kind,content_ax_action action,void **out,size_t *bytes) {
     if (kind>4 || (!!action.epoch!=!!action.node) || action.epoch>UINT16_MAX) return NX_ERROR_ARGUMENT;
-    return transfer(socket_path,request,sequence,action.node?14u:kind,NULL,1,action,NULL,out,bytes,NULL,NULL,NULL);
+    return transfer(socket_path,request,sequence,action.node?14u:kind,NULL,1,action,NULL,out,bytes,NULL,NULL,NULL,0);
 }
 
 nx_result content_guest_frame(const char *path,content_request request,uint64_t sequence,
     unsigned kind,const content_guest_batch *input,void **out,size_t *bytes) {
     if (!input || input->count>CONTENT_GUEST_INPUT_LIMIT || kind>6 || (!!input->count!=(kind==5)))
         return NX_ERROR_ARGUMENT;
-    return transfer(path,request,sequence,kind,NULL,0,(content_ax_action){0},input,out,bytes,NULL,NULL,NULL);
+    return transfer(path,request,sequence,kind,NULL,0,(content_ax_action){0},input,out,bytes,NULL,NULL,NULL,0);
 }
 
 nx_result content_guest_read_resources(const char *path,content_request request,content_guest_resources *out) {
     if (!out) return NX_ERROR_ARGUMENT;
-    return transfer(path,request,1,CONTENT_GUEST_RESOURCES,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL);
+    return transfer(path,request,1,CONTENT_GUEST_RESOURCES,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL,0);
 }
 
 nx_result content_guest_read_sharing(const char *path,content_request request,content_guest_sharing *out) {
     if (!out) return NX_ERROR_ARGUMENT;
-    return transfer(path,request,1,CONTENT_GUEST_SHARING,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL);
+    return transfer(path,request,1,CONTENT_GUEST_SHARING,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL,0);
+}
+
+nx_result content_guest_revoke_files(const char *path,content_request request,const uint8_t environment[16],
+    content_guest_sharing *out) {
+    if (!environment||!out) return NX_ERROR_ARGUMENT;
+    content_guest_sharing observed;
+    nx_result result=transfer(path,request,1,CONTENT_GUEST_REVOKE_FILES,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,
+        &observed,environment,sizeof(observed.environment));
+    if (result!=NX_OK) return result;
+    if (observed.state==GUEST_SHARE_FIXED||memcmp(observed.environment,environment,sizeof(observed.environment)))
+        return NX_ERROR_STATE;
+    *out=observed;
+    return NX_OK;
 }
 
 nx_result content_guest_read_reset_preview(const char *path,content_request request,content_guest_reset_preview *out) {
     if (!out) return NX_ERROR_ARGUMENT;
-    return transfer(path,request,1,CONTENT_GUEST_RESET_PREVIEW,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL);
+    return transfer(path,request,1,CONTENT_GUEST_RESET_PREVIEW,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL,0);
 }
 
 nx_result content_guest_reset_action(const char *path,content_request request,unsigned kind,
     const content_guest_reset_preview *scope,unsigned *out) {
     if (!scope||!out||(kind!=CONTENT_GUEST_RESET_APPLY&&kind!=CONTENT_GUEST_RESET_STATUS)) return NX_ERROR_ARGUMENT;
-    return transfer(path,request,1,kind,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,scope);
+    uint8_t operation[sizeof(scope->environment)+sizeof(scope->checkpoint)];
+    memcpy(operation,scope->environment,sizeof(scope->environment));
+    memcpy(operation+sizeof(scope->environment),scope->checkpoint,sizeof(scope->checkpoint));
+    return transfer(path,request,1,kind,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,operation,sizeof(operation));
 }

@@ -98,17 +98,24 @@ static nx_result input_hint(nx_context *context,const nx_font_collection *fonts,
     return label(context,fonts,3,hint,(nx_rect){16,122,448,14},11);
 }
 enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INSPECT_CLOSE,
-       GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS, GUEST_INSPECT_SHARING };
+       GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS, GUEST_INSPECT_SHARING,
+       GUEST_INSPECT_SHARE_REVOKE, GUEST_INSPECT_SHARE_REFRESH };
 typedef struct guest_inspector {
     uint64_t ticket;
     unsigned open, request;
     int enabled, reset_enabled, can_apply, reset_started, pending;
     content_guest_reset_preview scope;
+    content_guest_sharing share_scope;
     native_guest_report report;
 } guest_inspector;
 
 static int guest_reset_pending(const guest_inspector *view) {
     return view->reset_started && view->report.ticket!=view->ticket;
+}
+
+static int guest_inspector_busy(const guest_inspector *view) {
+    return guest_reset_pending(view)||
+        (view->request==CONTENT_GUEST_REVOKE_FILES&&view->report.ticket!=view->ticket);
 }
 
 static unsigned guest_reset_outcome(const guest_inspector *view) {
@@ -131,8 +138,8 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
     const char *title=preview?"Reset preview":sharing?"Guest sharing":"Guest resources";
     const char *close=preview?"Close reset preview":sharing?"Close sharing":"Close resources";
     float width=info.width<448?info.width-32:416;
-    int awaiting=guest_reset_pending(view);
-    nx_rect panel={(info.width-width)/2,44,width,preview?(view->can_apply?304:272):232};
+    int awaiting=guest_inspector_busy(view);
+    nx_rect panel={(info.width-width)/2,44,width,preview?(view->can_apply?304:272):sharing?256:232};
     nx_overlay_desc overlay={.panel={.id=GUEST_INSPECT_PANEL,.parent_id=1,.bounds=panel,
         .name={title,strlen(title)}},.backdrop_id=GUEST_INSPECT_BACKDROP,.dismiss_on_escape=!awaiting};
     int dismissed;
@@ -158,9 +165,13 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
             result=scoped_button(context,fonts,GUEST_INSPECT_STATUS,GUEST_INSPECT_PANEL,"Check reset status",
                 "Check reset status",x,y+244,168,1,action);
     } else if (view->report.ticket!=view->ticket) {
-        strcpy(lines[0],preview?"Reading reset scope":sharing?"Reading guest sharing":"Reading guest resources");
+        strcpy(lines[0],preview?"Reading reset scope":sharing?(awaiting?"Requesting file access revocation…":"Reading guest sharing"):
+            "Reading guest resources");
     } else if (view->report.result!=NX_OK) {
         strcpy(lines[0],preview?"Reset preview unavailable":sharing?"Guest sharing status unavailable":"Guest resources unavailable");
+        if (sharing&&result==NX_OK)
+            result=scoped_button(context,fonts,GUEST_INSPECT_SHARE_REFRESH,GUEST_INSPECT_PANEL,"Check sharing status",
+                "Check sharing status",x,y+200,168,1,action);
     } else if (preview) {
         const content_guest_reset_preview *scope=&view->report.preview;
         char environment[33], first[33], second[33];
@@ -184,14 +195,25 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
                     "Restore checkpoint",x,y+255,168,1,action);
         }
     } else if (sharing) {
-        const char *directory=view->report.sharing.file_share;
+        const content_guest_sharing *share=&view->report.sharing;
+        const char *directory=share->file_share;
+        const char *file_status=directory[0]?"Files: read/write":"Files: unavailable";
+        if (share->state==GUEST_SHARE_PENDING) file_status="Files: revocation pending";
+        else if (share->state==GUEST_SHARE_REVOKED) file_status="Files: revoked";
+        else if (share->state==GUEST_SHARE_UNKNOWN) file_status="Files: revocation unconfirmed";
         strcpy(lines[0],"Clipboard: unavailable");
-        strcpy(lines[1],directory[0]?"Files: read/write":"Files: unavailable");
+        strcpy(lines[1],file_status);
         strcpy(lines[2],"Network: unavailable");
         strcpy(lines[3],"Microphone: unavailable");
         strcpy(lines[4],"Devices: unavailable");
         count=5;
         if (directory[0]) snprintf(lines[count++],sizeof(lines[0]),"Host directory: %s",directory);
+        if (result==NX_OK&&share->state==GUEST_SHARE_ACTIVE)
+            result=scoped_button(context,fonts,GUEST_INSPECT_SHARE_REVOKE,GUEST_INSPECT_PANEL,"Revoke file access",
+                "Revoke file access",x,y+200,168,1,action);
+        if (result==NX_OK&&(share->state==GUEST_SHARE_PENDING||share->state==GUEST_SHARE_UNKNOWN))
+            result=scoped_button(context,fonts,GUEST_INSPECT_SHARE_REFRESH,GUEST_INSPECT_PANEL,"Check sharing status",
+                "Check sharing status",x,y+200,168,1,action);
     } else {
         const content_guest_resources *r=&view->report.resources;
         snprintf(lines[0],sizeof(lines[0]),"Guest %s",r->state==GUEST_RESOURCE_RUNNING?"running":"paused");
@@ -1341,7 +1363,17 @@ int main(void) {
             ++inspector.ticket;
             inspector.request=CONTENT_GUEST_RESET_STATUS;
             inspector.pending=need_frame=1;
-        } else if (action==GUEST_INSPECT_CLOSE&&inspector.open&&!guest_reset_pending(&inspector)) {
+        } else if (inspector.open==CONTENT_GUEST_SHARING&&inspector.report.ticket==inspector.ticket&&
+                   (action==GUEST_INSPECT_SHARE_REFRESH||(action==GUEST_INSPECT_SHARE_REVOKE&&
+                    inspector.report.result==NX_OK&&inspector.report.sharing.state==GUEST_SHARE_ACTIVE))) {
+            if (inspector.ticket==UINT64_MAX) goto done;
+            ++inspector.ticket;
+            if (action==GUEST_INSPECT_SHARE_REVOKE) {
+                inspector.share_scope=inspector.report.sharing;
+                inspector.request=CONTENT_GUEST_REVOKE_FILES;
+            } else inspector.request=CONTENT_GUEST_SHARING;
+            inspector.pending=need_frame=1;
+        } else if (action==GUEST_INSPECT_CLOSE&&inspector.open&&!guest_inspector_busy(&inspector)) {
             inspector.open=inspector.pending=0;
             nx_result closed=nx_overlay_close(context);
             if (closed!=NX_OK&&closed!=NX_ERROR_STATE) goto done;
@@ -1563,7 +1595,7 @@ int main(void) {
                 need_frame=1;
             } else if (inspector.pending&&inspector.open) {
                 if (!native_schedule(&worker,(native_job){.request=status.request,.sequence=inspector.ticket,
-                        .kind=inspector.request,.reset_scope=inspector.scope})) goto done;
+                        .kind=inspector.request,.reset_scope=inspector.scope,.share_scope=inspector.share_scope})) goto done;
                 inspector.pending=0;
             }
         }

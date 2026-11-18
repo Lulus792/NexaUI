@@ -26,6 +26,8 @@ QMP_LIMIT = 16384
 RESET_RESTART_EXIT = 86
 SHARE_PATH_LIMIT = 96
 FILE_EXPORT_ID = 'nexaui-export'
+FILE_EXPORT_QOM = f'/machine/peripheral/{FILE_EXPORT_ID}'
+SHARE_ACTIVE, SHARE_PENDING, SHARE_REVOKED, SHARE_UNKNOWN = range(1,5)
 KEY_CODES = {k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
                   7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
@@ -36,7 +38,7 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
-                 reset_enabled=False, file_share=None):
+                 reset_enabled=False, file_share=None, revoke_share=False):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -45,6 +47,9 @@ class Guest:
         self.reset_state = RESET_UNREQUESTED
         self.close_result = None
         self.file_share = file_share
+        self.revoke_share = revoke_share
+        self.share_state = SHARE_ACTIVE
+        self.share_deleted = False
         if self.file_share:
             if not (reset_enabled and self.disk and self.file_share==self.disk.parent/'host-export'):
                 raise ValueError('File sharing requires the private reset fixture export')
@@ -75,7 +80,7 @@ class Guest:
             if disk:
                 cmdline += ' nexaui.work=' + ('rw' if writable else 'ro')
             if self.file_share:
-                cmdline += ' nexaui.export=write'
+                cmdline += ' nexaui.export=' + ('revocable' if revoke_share else 'write')
             boot_options = [
                 '-m', '768', '-device', 'virtio-vga,id=guest-gpu,xres=800,yres=600',
                 '-kernel', boot, '-initrd', initrd, '-append', cmdline,
@@ -85,9 +90,13 @@ class Guest:
                         'file':{'driver':'file','filename':str(disk)}}
                 boot_options += ['-blockdev',json.dumps(node),'-device','virtio-blk-pci,drive=work,id=work-disk']
             if self.file_share:
+                device = f'virtio-9p-pci,id={FILE_EXPORT_ID},fsdev={FILE_EXPORT_ID},mount_tag={FILE_EXPORT_ID}'
+                if revoke_share:
+                    device = json.dumps(dict(driver='virtio-9p-pci',id=FILE_EXPORT_ID,fsdev=FILE_EXPORT_ID,
+                                             mount_tag=FILE_EXPORT_ID))
                 boot_options += [
                     '-fsdev',f'local,id={FILE_EXPORT_ID},path={self.file_share},security_model=mapped-xattr,writeout=immediate',
-                    '-device',f'virtio-9p-pci,id={FILE_EXPORT_ID},fsdev={FILE_EXPORT_ID},mount_tag={FILE_EXPORT_ID}']
+                    '-device',device]
         else:
             boot_options = [
                 '-m', '32', '-device', 'VGA', '-serial', 'none',
@@ -169,6 +178,10 @@ class Guest:
         self.peer.sendall(json.dumps(packet, separators=(',', ':')).encode() + b'\n')
         while True:
             reply = self.message(deadline)
+            if reply.get('event')=='DEVICE_DELETED':
+                data = reply.get('data',{})
+                if data.get('device')==FILE_EXPORT_ID and data.get('path')==FILE_EXPORT_QOM:
+                    self.share_deleted = True
             if reply.get('id') == self.serial:
                 if 'error' in reply:
                     raise RuntimeError(f'{method}: {reply["error"]["desc"]}')
@@ -286,18 +299,61 @@ class Guest:
     def file_share_scope(self):
         if not self.file_share:
             return b''
-        if self.export_identity()!=self.share_identity or self.command('qom-get',
-                path=f'/machine/peripheral/{FILE_EXPORT_ID}', property='mount_tag')!=FILE_EXPORT_ID:
+        if self.export_identity()!=self.share_identity:
+            raise ValueError('The file grant changed')
+        if self.share_state!=SHARE_ACTIVE:
+            if self.observe_share_state()!=SHARE_REVOKED:
+                raise ValueError('File access removal is unconfirmed')
+        elif self.command('qom-get',path=FILE_EXPORT_QOM,property='mount_tag')!=FILE_EXPORT_ID:
             raise ValueError('The file grant changed')
         return self.share_path
 
+    def observe_share_state(self):
+        if self.share_state!=SHARE_ACTIVE:
+            devices = self.command('qom-list',path='/machine/peripheral')
+            if self.share_deleted and not any(item['name']==FILE_EXPORT_ID for item in devices):
+                if self.share_state!=SHARE_REVOKED:
+                    print(f'GUEST_SHARE_REMOVED device={FILE_EXPORT_ID}',flush=True)
+                self.share_state = SHARE_REVOKED
+            elif self.share_state==SHARE_REVOKED:
+                self.share_state = SHARE_UNKNOWN
+        return self.share_state
+
+    def sharing_reply(self, state):
+        return struct.pack('>4sB3x16sI',b'NXS2',state,self.environment,len(self.share_path))+self.share_path
+
     def sharing(self):
         try:
+            if self.file_share and self.revoke_share and self.share_state!=SHARE_ACTIVE:
+                if self.export_identity()!=self.share_identity:
+                    return b'U'
+                return self.sharing_reply(self.observe_share_state())
             path = self.file_share_scope()
-        except (OSError,ValueError,RuntimeError):
+        except (OSError,ValueError,RuntimeError,EOFError,KeyError):
             return b'U'
         print(f'GUEST_SHARING files={path.decode() or "unavailable"}',flush=True)
+        if self.file_share and self.revoke_share:
+            return self.sharing_reply(SHARE_ACTIVE)
         return struct.pack('>4sI',b'NXS1',len(path))+path
+
+    def revoke_files(self, environment):
+        if not self.file_share or not self.revoke_share or environment!=self.environment:
+            return b'U'
+        if self.share_state!=SHARE_ACTIVE:
+            return self.sharing()
+        try:
+            self.file_share_scope()
+        except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            return b'U'
+        self.share_state = SHARE_UNKNOWN
+        self.share_deleted = False
+        try:
+            self.command('device_del',id=FILE_EXPORT_ID)
+            self.share_state = SHARE_PENDING
+            print(f'GUEST_SHARE_REVOKE_REQUEST device={FILE_EXPORT_ID}',flush=True)
+        except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            pass
+        return self.sharing_reply(self.share_state)
 
     def check_reset_scope(self):
         if not self.checkpoint:
@@ -315,7 +371,7 @@ class Guest:
     def reset_preview(self):
         try:
             export = self.check_reset_scope()
-        except (OSError,ValueError,KeyError,RuntimeError):
+        except (OSError,ValueError,KeyError,RuntimeError,EOFError):
             print('GUEST_RESET_PREVIEW unavailable',flush=True)
             return b'U'
         print(f'GUEST_RESET_PREVIEW environment={self.environment.hex()} checkpoint={self.checkpoint_hash.hex()} '
@@ -342,7 +398,7 @@ class Guest:
             return RESET_REJECTED
         try:
             self.check_reset_scope()
-        except (OSError,ValueError,KeyError,RuntimeError):
+        except (OSError,ValueError,KeyError,RuntimeError,EOFError):
             return RESET_REJECTED
 
         self.reset_state=RESET_UNKNOWN
@@ -436,13 +492,15 @@ def read_request(peer, desktop):
         generation, resize, width, height, kind = fields[:5]
         if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                 0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                kind in range(12 if desktop else 6) and len(fields)==(6 if kind in (5,9,10) else 5)):
+                kind in range(13 if desktop else 6) and len(fields)==(6 if kind in (5,9,10,12) else 5)):
             raise ValueError('Guest request outside the fixture limits')
         size = fields[5] if len(fields)==6 else 0
         if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
             raise ValueError('Guest input batch too large')
         if kind in (9,10) and size!=RESET_SCOPE_BYTES:
             raise ValueError('Invalid guest reset scope length')
+        if kind==12 and size!=16:
+            raise ValueError('Invalid file grant environment length')
         payload = stream.read(size)
         if len(payload)!=size or stream.read(1):
             raise ValueError('Invalid guest request framing')
@@ -470,7 +528,8 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
     file_share = address.parent/'host-export' if reset_mode and os.environ.get('NEXAUI_CONTENT_TEST_FILE_SHARE')=='1' else None
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
-                      reset_enabled=bool(reset_mode),file_share=file_share)
+                      reset_enabled=bool(reset_mode),file_share=file_share,
+                      revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'))
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()
@@ -522,6 +581,9 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                             continue
                         if kind == 11:
                             peer.sendall(guest.sharing())
+                            continue
+                        if kind == 12:
+                            peer.sendall(guest.revoke_files(payload))
                             continue
                         image = guest.frame()
                         peer.sendall(image)

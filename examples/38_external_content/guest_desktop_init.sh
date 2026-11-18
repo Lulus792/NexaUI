@@ -45,7 +45,7 @@ if [ -n "$work" ]; then
     fi
 fi
 case " $(cat /proc/cmdline) " in
-    *" nexaui.export=write "*)
+    *" nexaui.export=write "*|*" nexaui.export=revocable "*)
         modprobe 9pnet_virtio
         modprobe 9p
         mkdir -p /mnt/export
@@ -53,6 +53,9 @@ case " $(cat /proc/cmdline) " in
         : >/run/file-export
         printf '%s\n' 'NEXAUI_FILE_SHARE mounted' >/dev/ttyS0
         ;;
+esac
+case " $(cat /proc/cmdline) " in
+    *" nexaui.export=revocable "*) : >/run/revocable-export ;;
 esac
 for event in /dev/input/event*; do
     if udevadm info -q property "$event" | grep -qx ID_INPUT_MOUSE=1; then
@@ -101,6 +104,13 @@ cat >/run/console-probe <<'EOF'
 #!/bin/sh
 printf 'NexaUI console test\r\n'
 printf '%s\n' NEXAUI_DESKTOP_READY >/dev/ttyS0
+paint() {
+    printf '\033[%sm\033[2J\033[H' "$1"
+    for row in 1 2 3 4 5 6; do
+        printf '%-60s\r\n' "$2"
+    done
+    printf '\033[0m'
+}
 while IFS= read -r line; do
     if [ "$line" = nexa ]; then
         if [ -f /run/file-export ]; then
@@ -116,12 +126,23 @@ while IFS= read -r line; do
             printf '%s\n' 'NEXAUI_STORAGE saved' >/dev/ttyS0
         fi
         sleep .4
-        printf '\033[42m\033[2J\033[H'
-        for row in 1 2 3 4 5 6; do
-            printf '%-60s\r\n' 'Guest keyboard input received'
-        done
-        printf '\033[0m'
+        paint 42 'Guest keyboard input received'
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
+    elif [ -f /run/revocable-export ] && [ "$line" = detach ]; then
+        umount /mnt/export || continue
+        rm -f /run/file-export
+        printf '%s\n' 'NEXAUI_FILE_SHARE unmounted' >/dev/ttyS0
+        paint 44 'Guest file mount released'
+    elif [ -f /run/revocable-export ] && [ "$line" = probe ]; then
+        if timeout 3 mount -t 9p -o trans=virtio,version=9p2000.L nexaui-export /mnt/export; then
+            printf '%s\n' 'Unexpected guest write' >>/mnt/export/guest-export.txt
+            sync
+            printf '%s\n' 'NEXAUI_FILE_SHARE unexpected' >/dev/ttyS0
+            paint 41 'Guest file transfer still available'
+        else
+            printf '%s\n' 'NEXAUI_FILE_SHARE denied' >/dev/ttyS0
+            paint 42 'Guest could not reopen the host export'
+        fi
     fi
 done
 EOF
