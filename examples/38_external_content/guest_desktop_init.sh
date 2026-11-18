@@ -171,12 +171,13 @@ while IFS= read -r line; do
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
     elif [ -f /run/clipboard-enabled ] && [ "$line" = clipcheck ]; then
         printf '%s\n' 'Grüße aus NexaUI' 'Zweite Zeile' >/run/clipboard-expected
-        timeout 2 wl-paste --no-newline --type 'text/plain;charset=utf-8' 2>/dev/null |
+        timeout 3 wl-paste --no-newline --type 'text/plain;charset=utf-8' 2>/dev/null |
             head -c 193 >/run/clipboard-observed
         if cmp -s /run/clipboard-expected /run/clipboard-observed; then
             printf '%s\n' NEXAUI_CLIPBOARD_INDEPENDENT_OK >/dev/ttyS0
             paint 44 'Guest clipboard matches the approved text'
         else
+            printf '%s\n' NEXAUI_CLIPBOARD_INDEPENDENT_FAILED >/dev/ttyS0
             paint 41 'Guest clipboard differs from the approved text'
         fi
         rm -f /run/clipboard-expected /run/clipboard-observed

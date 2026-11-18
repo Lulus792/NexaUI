@@ -4,6 +4,7 @@
 #include <X11/Xutil.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <glob.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -660,6 +661,32 @@ static int offer_guest_clipboard(const char *source,const char *text) {
     return joined==child&&WIFEXITED(status)&&WEXITSTATUS(status)==0;
 }
 
+static int await_guest_clipboard_read(void) {
+    const char *socket=getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET");
+    const char *end=socket?strrchr(socket,'/'):NULL;
+    if (!end||end-socket>=80) return 0;
+    char pattern[128];
+    snprintf(pattern,sizeof(pattern),"%.*s/qemu-guest-*/guest.trace",(int)(end-socket),socket);
+    glob_t paths={0};
+    int found=glob(pattern,0,NULL,&paths)==0&&paths.gl_pathc==1;
+    FILE *trace=found?fopen(paths.gl_pathv[0],"rb"):NULL;
+    globfree(&paths);
+    if (!trace) return 0;
+    int ok=0;
+    for (unsigned i=0;i<600;++i) {
+        char line[512];
+        while (fgets(line,sizeof(line),trace)) {
+            if (!strcmp(line,"NEXAUI_CLIPBOARD_INDEPENDENT_OK\r\n")||
+                !strcmp(line,"NEXAUI_CLIPBOARD_INDEPENDENT_OK\n")) ok=1;
+        }
+        if (ok) break;
+        rewind(trace);
+        pump();
+    }
+    fclose(trace);
+    return ok;
+}
+
 static int read_guest_export(const char *directory, struct stat *info) {
     char path[128];
     snprintf(path,sizeof(path),"%s/guest-export.txt",directory);
@@ -1252,8 +1279,9 @@ int main(int argc,char **argv) {
                 observe(app,"Guest clipboard confirmed.",0)&&input_chrome(display,id,"guest-clipboard-confirmed")&&
                 drive("key","Escape")&&observe(app,"Sharing",1));
             CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
-                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&guest_command("clipcheck")&&
-                browser_pixel(display,outer,156,43,0x0000a8u)&&release_guest_keys(app));
+                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,155,100)&&drive("click","1")&&
+                guest_command("clipcheck")&&await_guest_clipboard_read()&&release_guest_keys(app)&&
+                input_chrome(display,id,"guest-clipboard-read"));
             puts("GUEST_CLIPBOARD_NATIVE verified: size rejection, cancel, review, keyboard send, and independent guest paste");
         }
         unsigned long long reads=0, before=0, after=0;
