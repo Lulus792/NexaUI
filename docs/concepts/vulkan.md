@@ -21,11 +21,13 @@ vertices preserve the original quad coordinates and triangle order. C size and
 offset assertions fix the input layout. Existing diagnostics still report six
 generated vertices per quad; `vertex_upload_bytes` counts actual instance bytes.
 
-A batch contains an optional destination-reading first instance followed by
-opaque instances. The next image/mask/translucent instance starts another group
-and keeps its original clipped history snapshot. Instances and attachment
-writes preserve primitive order. The hardware scissor encloses the group, while
-each fragment also enforces its instance's exact clip. This uses standard
+A batch can begin with up to 32 consecutive destination-reading instances whose
+clipped pixel rectangles are pairwise disjoint, then include trailing opaque
+instances. The renderer captures those disjoint regions in one image-copy
+command. Overlap or an intervening opaque draw starts a fresh capture for the
+next reader. Instances and attachment writes preserve primitive order. The
+hardware scissor encloses the group, while each fragment also enforces its
+instance's exact clip. This uses standard
 instanced attributes and direct `vkCmdDraw` with `firstInstance`; it requires no
 storage-buffer descriptor path, indirect draw feature or relaxed raster order.
 The selected slot's submission fence protects CPU writes, buffer growth and
@@ -36,7 +38,8 @@ commands, visible records, API draws, render passes, history copies and one-way
 payload bytes. They separate submission retirement, preparation, acquisition,
 encoding, submit and present intervals. A discarded pre-submit attempt leaves
 the previous profile intact. These are CPU elapsed intervals, including waits
-and scheduling, not GPU timestamps. The
+and scheduling, not GPU timestamps. `history_copies` counts copy commands and
+`history_copy_bytes` sums all copied pixel regions. The
 [pre-instancing baseline](../../benchmarks/baselines/vulkan-19c07ba/README.md)
 retains 192 original measured frames with native GPU/reference checks.
 
@@ -379,13 +382,13 @@ establish exact coverage for every possible float or hardware driver.
 Colors, including transfer clears, are quantized to the headless RGBA8 rule
 before Vulkan UNORM conversion. Clips intersect their ancestors after half-open
 pixel-center conversion and become dynamic scissors. Empty clips and paints
-whose quantized alpha is zero emit no draw. For each translucent primitive the
-painter ends the current pass, copies its clipped bounds from canvas to history,
-transitions both images, and resumes a LOAD/STORE pass. The shader uses integer
+whose quantized alpha is zero emit no draw. Before a batch of translucent or
+bitmap primitives the painter ends the current pass, copies their disjoint
+clipped bounds from canvas to history, transitions both images, and resumes
+a LOAD/STORE pass. The shader uses integer
 straight-alpha source-over arithmetic, including destination alpha and the same
 division/rounding as `src/headless.c`. It applies no fixed-function blending.
-Opaque draws need no history copy. This is a correctness-oriented serial path;
-broader batching and GPU timing remain V07 work.
+Opaque draws need no history copy.
 
 ![GPU clipping and alpha reference image](../images/vulkan-clips-alpha.png)
 

@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Vulkan source `1f68c15` advances R01/R02/R06 by batching disjoint alpha and
+bitmap regions. The tests cover clipped and overlapping primitives at
+four scales, compare displayed content and record a reduction in Vulkan
+copy commands and CPU encoding for matching PDF frame counters. The full
+Vulkan PDF interaction still reaches the native peer deadline on Lavapipe.
+[Vulkan history-copy evidence](external-content-report.md#disjoint-vulkan-history-copies-2026-11-18)
+
 Example38 at `8fcfe1f` advances R05/R06/D08 with an opt-in installed Vulkan
 presenter. The native peer checks displayed staged RGBA8, 2× content backing,
 retired producer frames and clean window release. The complete Vulkan PDF

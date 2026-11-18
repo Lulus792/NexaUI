@@ -2181,3 +2181,51 @@ source export and one lossless copy per verified matching viewport state.
 Producer-owned GPU image import, cross-process synchronization, real GPU
 driver coverage, complete Vulkan PDF interaction and Aetheri compositor and
 engine acceptance remain open.
+
+## Disjoint Vulkan history copies, 2026-11-18
+
+Renderer source `1f68c15e8f64cac39d0392805d9c2a6693ab69ab` groups at
+most 32 consecutive alpha/bitmap draws with disjoint physical scissors.
+One Vulkan image-copy command captures their separate background regions.
+Each instance still reads its original clipped rectangle, and an overlap
+or intervening opaque draw starts a new capture. The uploaded bitmap,
+render lease and present-fence contracts are the same. [Vulkan image-copy regions](https://docs.vulkan.org/refpages/latest/refpages/source/vkCmdCopyImage.html)
+
+The Wayland tests compare complete Vulkan readbacks against the software
+reference at 1×, 1.25×, 1.5× and 2×. They cover RGBA8 and A8, clipped
+touching bounds, an overlap with an earlier instance, intervening opaque
+writes and the 33rd disjoint rectangle. The tests-disabled installed SDK
+is used for profiling and the tests-enabled SDK also runs the independent
+external-content consumer. All validation runs keep their original deadlines.
+
+The Lavapipe baseline from `57dcbc0602a7b52a97adf7e7203fd9f8278fde1b`
+hit the 35-second PDF time limit after 68 logged submissions. The
+diagnostic attributes 29.8 seconds of CPU elapsed time to command encoding.
+It instruments the same private profiler in the baseline and candidate.
+The profiler records CPU intervals, including validation and scheduling.
+
+With the same Vulkan validation and two LLVMpipe threads, the candidate
+logged 77 submissions before reaching the same deadline. For the most
+frequent shared counter signature, nine frames per variant had 136 input
+commands, 132 visible records, 418,724 history bytes and 909,312 bitmap
+upload bytes. Median history copy commands, draw calls and render passes
+each fell from 118 to 96. Median CPU encoding fell from 612.0 to 526.6 ms.
+The full synthetic workflow passed on both variants but took 12.8 and 13.2
+seconds in the two profiled runs. The full Vulkan PDF interaction remains
+open under this environment's 35-second budget.
+
+The candidate passed 65 CTests in the installed and core configurations,
+including Release and ASan/UBSan with leak detection. Eight native
+candidate workflows passed, covering PNG, content generation and damage,
+pending/rejected close, and the software PDF reference. The displayed
+viewport captures matched the older Vulkan result for the full synthetic
+workflow and matched the software reference for the PDF states reached.
+The prior renderer failed the new history-copy count assertion with the
+new test source and identical Vulkan validation settings.
+
+The proof archive `nexaui-vulkan-composite476.tar.gz` has SHA-256
+`acbb56ed721e667e666b8b90657c74b69d0c82b8a520044e46aee6d5e2b48895`.
+The audit read back its 68 members, including the two changed source
+files, paired CPU traces, native results and representative pixel captures.
+The build recipe can export the exact source revision recorded in the
+manifest. Physical driver performance remains open.
