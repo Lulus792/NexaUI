@@ -227,7 +227,7 @@ def verify_guest_export(path):
 
 def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False,
               sharing=False, revoke=False, grant=False, bindfs=None, clipboard_source=None, clipboard_reader=None,
-              network=False):
+              network=False, microphone=False):
     from guest_fixture import DESKTOP_BOOT_TIMEOUT
 
     engine = str(engine.resolve(strict=True))
@@ -264,6 +264,9 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
         env.pop('NEXAUI_CONTENT_TEST_GUEST_NETWORK',None)
         if network:
             env['NEXAUI_CONTENT_TEST_GUEST_NETWORK']='1'
+        env.pop('NEXAUI_CONTENT_TEST_GUEST_MICROPHONE',None)
+        if microphone:
+            env['NEXAUI_CONTENT_TEST_GUEST_MICROPHONE']='1'
         if clipboard_source:
             env['NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD']='1'
             env['NEXAUI_CONTENT_TEST_HOST_WL_COPY']=clipboard_source
@@ -365,6 +368,7 @@ def main():
     parser.add_argument('--guest-file-bindfs', type=Path, help='Bindfs executable for revoking access without guest unmount')
     parser.add_argument('--guest-clipboard', action='store_true', help='Exercise reviewed text transfers between host and guest')
     parser.add_argument('--guest-network', action='store_true', help='Grant and revoke the single private guest TCP test endpoint')
+    parser.add_argument('--guest-microphone', action='store_true', help='Grant and revoke the synthetic guest microphone tone')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF or guest clipboard cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -391,6 +395,8 @@ def main():
         parser.error('--guest-clipboard requires a graphical guest and host wl-copy and wl-paste')
     if args.guest_network and not desktop_guest:
         parser.error('--guest-network requires a graphical guest')
+    if args.guest_microphone and not desktop_guest:
+        parser.error('--guest-microphone requires a graphical guest')
     if (desktop_guest or args.case=='guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
         parser.error('guest cases require --guest-engine and --guest-firmware')
     if desktop_guest != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
@@ -489,7 +495,7 @@ def main():
                          revoke=args.guest_file_revoke,grant=args.guest_file_grant,bindfs=args.guest_file_bindfs,
                          clipboard_source=clipboard_source,
                          clipboard_reader=str(Path(guest_clipboard_reader).resolve(strict=True)) if guest_clipboard_reader else None,
-                         network=args.guest_network)
+                         network=args.guest_network,microphone=args.guest_microphone)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

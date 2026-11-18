@@ -102,7 +102,8 @@ enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INS
        GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS, GUEST_INSPECT_SHARING,
        GUEST_INSPECT_SHARE_REVOKE, GUEST_INSPECT_SHARE_REFRESH, GUEST_INSPECT_SHARE_GRANT,
        GUEST_INSPECT_CLIPBOARD_REVIEW, GUEST_INSPECT_CLIPBOARD_SEND, GUEST_INSPECT_CLIPBOARD_READ,
-       GUEST_INSPECT_CLIPBOARD_ACCEPT, GUEST_INSPECT_NET_GRANT, GUEST_INSPECT_NET_REVOKE, GUEST_INSPECT_NET_REFRESH };
+       GUEST_INSPECT_CLIPBOARD_ACCEPT, GUEST_INSPECT_NET_GRANT, GUEST_INSPECT_NET_REVOKE, GUEST_INSPECT_NET_REFRESH,
+       GUEST_INSPECT_MIC_GRANT, GUEST_INSPECT_MIC_REVOKE };
 enum { CLIPBOARD_IDLE, CLIPBOARD_READING, CLIPBOARD_READING_GUEST, CLIPBOARD_REVIEW,
        CLIPBOARD_UNAVAILABLE, CLIPBOARD_SENDING, CLIPBOARD_OFFERED, CLIPBOARD_UNKNOWN };
 typedef struct guest_inspector {
@@ -129,6 +130,7 @@ static int guest_inspector_busy(const guest_inspector *view) {
     return guest_reset_pending(view)||
         ((view->request==CONTENT_GUEST_REVOKE_FILES||view->request==CONTENT_GUEST_GRANT_FILES||
           view->request==CONTENT_GUEST_GRANT_NETWORK||view->request==CONTENT_GUEST_REVOKE_NETWORK||
+          view->request==CONTENT_GUEST_GRANT_MICROPHONE||view->request==CONTENT_GUEST_REVOKE_MICROPHONE||
           view->request==CONTENT_GUEST_CLIPBOARD)&&
          view->report.ticket!=view->ticket);
 }
@@ -172,6 +174,7 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         close,"Close",panel.x+width-86,y-4,70,!awaiting,action);
     char lines[9][GUEST_SHARE_PATH_LIMIT+40];
     unsigned count=1;
+    int microphone_control=0;
     if (clipboard) {
         const char *status="Clipboard text unavailable or cannot be reviewed.";
         if (view->clipboard_phase==CLIPBOARD_READING) status="Reading host clipboard…";
@@ -211,6 +214,8 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         if (sharing&&awaiting) {
             if (view->request==CONTENT_GUEST_GRANT_NETWORK) status="Requesting network access…";
             else if (view->request==CONTENT_GUEST_REVOKE_NETWORK) status="Revoking network access…";
+            else if (view->request==CONTENT_GUEST_GRANT_MICROPHONE) status="Enabling microphone test tone…";
+            else if (view->request==CONTENT_GUEST_REVOKE_MICROPHONE) status="Revoking microphone access…";
             else status=view->request==CONTENT_GUEST_GRANT_FILES?"Requesting file access…":"Requesting file access revocation…";
         }
         strcpy(lines[0],status);
@@ -262,10 +267,20 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
             "Network: 10.0.2.100:8080 outcome unknown"
         };
         strcpy(lines[2],network_status[share->network]);
-        strcpy(lines[3],"Microphone: unavailable");
+        static const char *const microphone_status[]={"Microphone: unavailable", "Microphone: test tone off",
+            "Microphone: test tone on", "Microphone: revoked", "Microphone: outcome unknown"};
+        strcpy(lines[3],microphone_status[share->microphone]);
         strcpy(lines[4],"Devices: unavailable");
         count=5;
         if (directory[0]) snprintf(lines[count++],sizeof(lines[0]),"Host directory: %s",directory);
+        if (result==NX_OK&&(share->microphone==GUEST_MICROPHONE_OFF||share->microphone==GUEST_MICROPHONE_ACTIVE)) {
+            int grant=share->microphone==GUEST_MICROPHONE_OFF;
+            float button_width=width>=368?168:112;
+            const char *text=grant?"Enable test tone":"Revoke test tone";
+            microphone_control=1;
+            result=scoped_button(context,fonts,grant?GUEST_INSPECT_MIC_GRANT:GUEST_INSPECT_MIC_REVOKE,GUEST_INSPECT_PANEL,
+                text,text,panel.x+width-16-button_width,y+106,button_width,!grant||!disconnected,action);
+        }
         if (result==NX_OK&&share->state==GUEST_SHARE_ACTIVE)
             result=scoped_button(context,fonts,GUEST_INSPECT_SHARE_REVOKE,GUEST_INSPECT_PANEL,"Revoke file access",
                 "Revoke file access",x,y+200,168,1,action);
@@ -312,7 +327,7 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
     }
     for (unsigned i=0;result==NX_OK&&i<count;++i)
         result=scoped_label(context,fonts,GUEST_INSPECT_ROW+i,GUEST_INSPECT_PANEL,lines[i],
-            (nx_rect){x,y+42+24*i,width-32,20},14,ink);
+            (nx_rect){x,y+42+24*i,width-(microphone_control&&i==3?(width>=368?212:156):32),20},14,ink);
     nx_result ended=nx_overlay_end(context);
     if (dismissed) *action=GUEST_INSPECT_CLOSE;
     return result==NX_OK?ended:result;
@@ -1531,7 +1546,10 @@ int main(void) {
                      (action==GUEST_INSPECT_SHARE_GRANT&&inspector.report.sharing.state==GUEST_SHARE_OFFERED)||
                      (action==GUEST_INSPECT_NET_GRANT&&inspector.report.sharing.network==GUEST_NETWORK_OFF&&
                       input_phase!=INPUT_DISCONNECTED)||
-                     (action==GUEST_INSPECT_NET_REVOKE&&inspector.report.sharing.network==GUEST_NETWORK_ACTIVE))))) {
+                     (action==GUEST_INSPECT_NET_REVOKE&&inspector.report.sharing.network==GUEST_NETWORK_ACTIVE)||
+                     (action==GUEST_INSPECT_MIC_GRANT&&inspector.report.sharing.microphone==GUEST_MICROPHONE_OFF&&
+                      input_phase!=INPUT_DISCONNECTED)||
+                     (action==GUEST_INSPECT_MIC_REVOKE&&inspector.report.sharing.microphone==GUEST_MICROPHONE_ACTIVE))))) {
             if (inspector.ticket==UINT64_MAX) goto done;
             ++inspector.ticket;
             inspector.share_scope=inspector.report.sharing;
@@ -1539,6 +1557,8 @@ int main(void) {
             else if (action==GUEST_INSPECT_SHARE_REVOKE) inspector.request=CONTENT_GUEST_REVOKE_FILES;
             else if (action==GUEST_INSPECT_NET_GRANT) inspector.request=CONTENT_GUEST_GRANT_NETWORK;
             else if (action==GUEST_INSPECT_NET_REVOKE) inspector.request=CONTENT_GUEST_REVOKE_NETWORK;
+            else if (action==GUEST_INSPECT_MIC_GRANT) inspector.request=CONTENT_GUEST_GRANT_MICROPHONE;
+            else if (action==GUEST_INSPECT_MIC_REVOKE) inspector.request=CONTENT_GUEST_REVOKE_MICROPHONE;
             else inspector.request=CONTENT_GUEST_SHARING;
             inspector.pending=need_frame=1;
         } else if (action==GUEST_INSPECT_CLOSE&&inspector.open&&!guest_inspector_busy(&inspector)) {

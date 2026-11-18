@@ -29,6 +29,18 @@ if ! udevadm settle --timeout=30; then
     printf '%s\n' 'NEXAUI_STARTUP_FAILED udev settlement timed out'
     exit 1
 fi
+case " $(cat /proc/cmdline) " in
+    *" nexaui.microphone=probe "*)
+        if ! command -v arecord >/dev/null || ! modprobe snd_hda_codec_generic || ! modprobe snd_hda_intel ||
+            ! timeout 4 sh -c 'until [ -c /dev/snd/pcmC0D0c ]; do sleep .1; done' ||
+            ! amixer -q -c 0 sset Capture 75% cap; then
+            printf '%s\n' 'NEXAUI_STARTUP_FAILED synthetic microphone setup'
+            exit 1
+        fi
+        : >/run/microphone-enabled
+        printf '%s\n' NEXAUI_MICROPHONE_READY
+        ;;
+esac
 if [ -n "$work" ]; then
     mkdir -p /mnt/work
     if [ "$work" = ro ]; then
@@ -190,6 +202,30 @@ network_new_reply() {
 network_read() {
     timeout 2 sh -c 'IFS= read -r reply <&5 && [ "$reply" = "$1" ]' reply "$1"
 }
+microphone_window() {
+    dd if="$1" bs=192000 skip="$2" count=1 2>/dev/null | od -An -v -t d2 |
+        awk -v stage="$3" '
+            { for (i = 1; i <= NF; ++i) {
+                v = $i + 0; ++count
+                if (v != 0) ++nonzero
+                if (v > 500) ++positive
+                if (v < -500) ++negative
+            } }
+            END {
+                printf "NEXAUI_MICROPHONE_WINDOW %s count=%d nonzero=%d positive=%d negative=%d\n",
+                    stage, count, nonzero, positive, negative
+                exit !(count == 96000 && (stage == "active" ? positive > 20000 && negative > 20000 : nonzero == 0))
+            }' >/dev/ttyS0
+}
+microphone_held_window() {
+    timeout 12 sh -c '
+        while [ ! -f /run/microphone-held.raw ] || [ "$(wc -c </run/microphone-held.raw)" -lt "$2" ]; do
+            kill -0 "$1" || exit 1
+            sleep .1
+        done' capture "$microphone_client" "$((($1+1)*192000))" &&
+        kill -0 "$microphone_client" && microphone_window /run/microphone-held.raw "$1" "$2"
+}
+microphone_client=
 while IFS= read -r line; do
     if [ "$line" = nexa ]; then
         if [ -f /run/file-export ]; then
@@ -207,6 +243,39 @@ while IFS= read -r line; do
         sleep .4
         paint 42 'Guest keyboard input received'
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
+    elif [ -f /run/microphone-enabled ] && [ "$line" = micoff ] && [ ! -f /run/microphone-held.raw ]; then
+        printf '%s\n' NEXAUI_MICROPHONE_RECORD_START >/dev/ttyS0
+        arecord -q -D hw:0,0 -t raw -f S16_LE -c 2 -r 48000 -d 50 /run/microphone-held.raw </dev/null 2>/dev/ttyS0 &
+        microphone_client=$!
+        if microphone_held_window 0 off; then
+            printf '%s\n' NEXAUI_MICROPHONE_OFF >/dev/ttyS0
+        else
+            printf 'NEXAUI_MICROPHONE_FAILED off bytes=%s\n' "$(stat -c '%s' /run/microphone-held.raw)" >/dev/ttyS0
+        fi
+    elif [ -n "$microphone_client" ] && [ "$line" = micon ]; then
+        printf '%s\n' NEXAUI_MICROPHONE_RECORD_ACTIVE >/dev/ttyS0
+        microphone_offset=$(( $(wc -c </run/microphone-held.raw) / 192000 + 1 ))
+        if microphone_held_window "$microphone_offset" active; then
+            printf '%s\n' NEXAUI_MICROPHONE_HELD_ACTIVE >/dev/ttyS0
+        else
+            printf 'NEXAUI_MICROPHONE_FAILED active bytes=%s offset=%s\n' \
+                "$(stat -c '%s' /run/microphone-held.raw)" "$microphone_offset" >/dev/ttyS0
+        fi
+    elif [ -n "$microphone_client" ] && [ "$line" = miccheck ]; then
+        printf '%s\n' NEXAUI_MICROPHONE_RECORD_CUTOFF >/dev/ttyS0
+        microphone_offset=$(( $(wc -c </run/microphone-held.raw) / 192000 + 1 ))
+        microphone_silent=no
+        if microphone_held_window "$microphone_offset" revoked-held; then microphone_silent=yes; fi
+        if kill "$microphone_client" 2>/dev/null; then wait "$microphone_client" || :; fi
+        if [ "$microphone_silent" = yes ] &&
+            timeout 5 arecord -q -D hw:0,0 -t raw -f S16_LE -c 2 -r 48000 -d 1 /run/microphone-fresh.raw </dev/null &&
+            microphone_window /run/microphone-fresh.raw 0 revoked-fresh; then
+            printf '%s\n' NEXAUI_MICROPHONE_CUTOFF >/dev/ttyS0
+        else
+            printf '%s\n' 'NEXAUI_MICROPHONE_FAILED cutoff' >/dev/ttyS0
+        fi
+        microphone_client=
+        rm -f /run/microphone-held.raw /run/microphone-fresh.raw
     elif [ -f /run/network-enabled ] && [ "$line" = netoff ]; then
         if ! network_interface >/dev/null && [ "$(network_new_reply)" != 'NEXAUI first' ]; then
             printf '%s\n' NEXAUI_NETWORK_OFF >/dev/ttyS0
