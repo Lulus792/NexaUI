@@ -1899,3 +1899,46 @@ test-disk digest, native outcomes and 112 verified archive members.
 
 Physical USB passthrough, device selection and policy on Aetheri, the wider
 file-sharing combination and guest desktop accessibility remain open.
+
+## QEMU guest accessibility snapshots, 2026-11-18
+
+The tested source is `d50f6ed82df84d534741614d7a2444585a701e20`. Its selected
+Git archive has SHA-256
+`0cb0fb9294a98b4baa756539a2893efef2f3d54a90a5a3675bd5bb696199fba2`.
+The host used installed SDK `266404bf1743248f16eb289c0a1c0d99701cc395`.
+The guest used QEMU 11.0.3, Alpine `6.18.63-0-virt`, Weston 14.0.2,
+GTK 3.24.52 and AT-SPI 2.60.5.
+
+The optional reader queries a process selected by the VM owner on the
+guest accessibility bus. It requires one showing window and matching
+window-local bounds. It produces up to 32 records for the frame, visible
+labels and push buttons, with their bounds and disabled state. The GTK
+test exposes a changing Unicode label, two buttons and a password field.
+The snapshots contain the Unicode change and both buttons. The password
+field and its value are absent. An incorrect size, hiding the window while
+the process is still live, and exiting the process each produce no snapshot.
+[AT-SPI child enumeration](https://gnome.pages.gitlab.gnome.org/at-spi2-core/libatspi/method.Accessible.get_child_at_index.html)
+[AT-SPI coordinate systems](https://gnome.pages.gitlab.gnome.org/at-spi2-core/libatspi/method.Component.get_extents.html)
+
+The independent runner captures two matching 800 × 600 QEMU rasters and a
+third after the window has retired. The host probe uses the actual rasters
+and native guest snapshots to publish frames through the existing surface.
+In an 896 × 416 viewport the fitted image starts at x = 171 and spans
+554 × 416 pixels. The first button's bounds map to (226, 119, 444, 77).
+The published semantic tree exposes read-only Unicode text, button roles
+and the disabled state. The update retires the old epoch's identifiers.
+The third frame retains the pixels with an empty guest subtree. A truncated
+packet and a root with mismatched geometry are rejected.
+
+The host probe passed in Release and ASan/UBSan with leak detection. Forty
+CTests passed across the default and two native build profiles. The guest
+initramfs has SHA-256
+`14b577dcb12e5635c342f2151cdfc514c844eb4485c2fbed0db003f13ae8b8d6`.
+The evidence archive `nexaui-qemu-accessibility466.tar.gz` has SHA-256
+`0ac6b02a6a10b0d57d84a4ee9e4a57f521d84b3efa7c7eca9312ac75b28fca9d`.
+`qemu-accessibility466-final.json` records 26 verified archive members and
+the exact guest binary, images and source hashes.
+
+The proven path covers a selected fullscreen window. Continuous transport,
+publication through the native host AT-SPI bridge, other window geometries,
+guest actions and a screen-reader walkthrough remain open.

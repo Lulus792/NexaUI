@@ -556,6 +556,25 @@ Production disk enrollment, recovery when storage is unavailable,
 production grant policy, broader networking, physical microphone and USB
 passthrough, and guest accessibility remain open.
 
+### Guest accessibility snapshots
+
+Build `content_guest_ax_reader` with
+`-DNEXAUI_CONTENT_BUILD_GUEST_AX_READER=ON` on Linux with the AT-SPI and
+GObject development libraries. Run it inside the guest's accessibility
+session as `content_guest_ax_reader PID EPOCH WIDTH HEIGHT`. Use the process
+of the selected guest app, a nonzero 16-bit epoch and the expected window
+dimensions. The reader writes a bounded binary snapshot to standard output
+only when the app has a single visible window with matching bounds.
+The profile describes visible labels and push buttons with window-local
+rectangles and the disabled state. Editable fields are outside the profile.
+
+`content_guest_frame_with_ax` combines the snapshot with a corresponding
+guest PNG when the selected window fills the raster. It uses the same fit
+as the pixels, including letterboxing. Pass an empty snapshot when the owner
+has no current observation to publish a frame with an empty accessibility
+subtree. The VM owner supplies the matching image, window and epoch. Live
+transport to the native console and forwarding guest actions remain open.
+
 ## Optional PDF producer on Linux
 
 Configure with `-DNEXAUI_CONTENT_BUILD_PNG=ON` and
