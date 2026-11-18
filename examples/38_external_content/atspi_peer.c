@@ -15,6 +15,7 @@
 #include <unistd.h>
 
 #define CHECK(x) do { if (!(x)) { fprintf(stderr,"content peer line %d: %s\n",__LINE__,#x); goto done; } } while (0)
+#define CONTENT_HOST_LOG_LIMIT (128u*1024u)
 static void pump(void) {
     while (g_main_context_iteration(NULL,FALSE)) {}
     const struct timespec delay={0,10000000}; nanosleep(&delay,NULL);
@@ -506,16 +507,25 @@ static int input_workflow(AtspiAccessible *app,Display *display,const char *wind
     return 1;
 }
 static int host_markers(FILE *log,const char *marker,unsigned required) {
-    char text[16384];
+    char *text=malloc(CONTENT_HOST_LOG_LIMIT);
+    if (!text) return 0;
+    int found=0;
     for(unsigned i=0;i<200;++i){
-        ssize_t bytes=pread(fileno(log),text,sizeof(text)-1u,0);
-        if(bytes<0||(size_t)bytes==sizeof(text)-1u)return 0;text[bytes]=0;
+        ssize_t bytes=pread(fileno(log),text,CONTENT_HOST_LOG_LIMIT-1u,0);
+        if(bytes<0||(size_t)bytes==CONTENT_HOST_LOG_LIMIT-1u) break;
+        text[bytes]=0;
         unsigned seen=0;
-        for (const char *p=text;(p=strstr(p,marker));p+=strlen(marker))
-            if (++seen==required) return 1;
+        for (const char *p=text;(p=strstr(p,marker));p+=strlen(marker)) {
+            if (++seen==required) {
+                found=1;
+                break;
+            }
+        }
+        if (found) break;
         pump();
     }
-    return 0;
+    free(text);
+    return found;
 }
 static int host_marker(FILE *log,const char *marker) { return host_markers(log,marker,1); }
 
@@ -1380,7 +1390,7 @@ int main(int argc,char **argv) {
         if (directory) {
             CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoke?"Files: revoked":NULL)&&
                 focus(app,"Close sharing")&&drive("key","Return")&&observe(app,"Sharing",1));
-            puts("GUEST_SHARING_NATIVE verified: exact File grant and four unavailable channels across disconnect");
+            puts("GUEST_SHARING_NATIVE verified: exact file grant and independent channel states across disconnect");
         }
         puts("GUEST_DESKTOP_NATIVE verified: fitted live Linux desktop, guest terminal typing, host escape and retained disconnect");
         if (guest_storage) {
@@ -1564,10 +1574,10 @@ done:
     if(new_selected)g_object_unref(new_selected);
     if(app)g_object_unref(app);if(desktop)g_object_unref(desktop);if(initialized)atspi_exit();if(display)XCloseDisplay(display);
     if(host_log){
-        char *text=malloc(128u*1024u);
+        char *text=malloc(CONTENT_HOST_LOG_LIMIT);
         if(!text)result=1;
-        else{ssize_t count=pread(fileno(host_log),text,128u*1024u,0);
-            if(count<0||count==128*1024)result=1;else if(fwrite(text,1,(size_t)count,stdout)!=(size_t)count)result=1;free(text);}
+        else{ssize_t count=pread(fileno(host_log),text,CONTENT_HOST_LOG_LIMIT,0);
+            if(count<0||count==CONTENT_HOST_LOG_LIMIT)result=1;else if(fwrite(text,1,(size_t)count,stdout)!=(size_t)count)result=1;free(text);}
         fclose(host_log);
     }
     return result;
