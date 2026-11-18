@@ -1,5 +1,14 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Example 38 at `dae5903` advances R05/R06/I08/A05/D08 with the installed
+Wayland Vulkan presenter for Chromium CPU frames. The native workflows
+cover tab retirement, crash recovery, CSS pointer input, Wayland v1
+composition, AT-SPI actions and ordered close. The worker signals
+unheld frames after publication. Aetheri can reuse the bounded frame
+and input handoff while selecting its production engine. Physical GPU,
+text-input v3, human assistive and engine-selection gates remain open.
+[Installed Wayland Vulkan browser evidence](external-content-report.md#installed-wayland-vulkan-browser-fixture-2026-11-18)
+
 Vulkan source `103508c` advances R01/R06/D08 with device-aligned render
 areas. The full native PDF workflow completes within its original limit
 on Lavapipe in Release and ASan/UBSan, including keyboard and AT-SPI
@@ -2288,7 +2297,7 @@ claim a full pass. The source catalogue contains the complete acceptance text.
 | Composition lifetime — T01/T04/T06/T10, I02, P04/P05 | [Wayland input tests and assessment](aetheri-adoption-assessment.md) | Actual input-context reset, exactly-once commit, candidate geometry, stale identity/address reuse, focus/keymap/close and sensitive-field policy. |
 | Clipboard and paste review — I05/I07, T06/T07, W06/W10, P04/P05/P08 | [bounded read API](../../include/nexaui/wayland_clipboard.h), fixed-deadline outgoing transfers in [assessment](aetheri-adoption-assessment.md) | Independent Aetheri peers and slow/partial/late transfers, immutable snapshots, revalidation and app-owned complete paste review; no transfer result proves revocation. |
 | Terminal/session close — L09/L11, P05/P07, B07 | [app-owned session example](../../examples/18_settings/README.md) demonstrates a separate view lifetime | Actual PTY/process/channel state and retained session; close or EOF alone must not claim all work drained. Persistence beyond windows is a product decision. |
-| Browser/document — R05/R06/R10, D08, I08, A05 | [renderer contract](../concepts/renderer-backend.md), [viewport](../concepts/viewport.md) | Reviewed engine-owned frame contract, focus/IME/accessibility handoff, crash and late-frame behavior; engine stays external. |
+| Browser/document — R05/R06/R10, D08, I08, A05 | [renderer contract](../concepts/renderer-backend.md), [viewport](../concepts/viewport.md), [installed Chromium fixture](external-content-report.md#installed-wayland-vulkan-browser-fixture-2026-11-18), [installed PDF fixture](external-content-report.md#bounded-vulkan-render-areas-2026-11-18) | Aetheri engine selection and integration, text-input v3, navigation and permissions, physical output and optional producer-owned GPU import. |
 | Files/grants/removal — D07, L05/L06/L09-L12, I04, P07 | [widgets](../concepts/widgets.md), [layout](../concepts/layout.md) | Real stable item IDs and independently observed grants/operations, precise retained-data scope and error/unknown states; UI selection grants no authority. |
 | VM/experiment console — D07/D08, I08, L09/L11, R06, P07 | [viewport](../concepts/viewport.md) provides a starting surface | Real guest/display adapter, host escape and key release, individual sharing grants and honest reset/external-write scope; guest content is untrusted. |
 | Login/lock — D06, T06, A06, P08 | [text](../concepts/text.md) and [accessibility](../concepts/accessibility.md) document partial sensitive-field behavior | Aetheri trusted session enforces routing and lock; test unavailable providers and prevent secrets in diagnostics, semantics and caches. |

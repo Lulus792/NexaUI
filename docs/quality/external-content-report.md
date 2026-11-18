@@ -2271,3 +2271,55 @@ captures. Its SHA-256 is
 Physical GPU performance and the Aetheri compositor integration remain
 open. The proved Vulkan PDF behavior covers the private Wayland/Lavapipe
 configuration and the existing external-content fixture.
+
+## Installed Wayland Vulkan browser fixture, 2026-11-18
+
+Consumer and installed SDK revision
+`dae590395f9232fb0e593807fd652bd01a4ca4a3` run the Example 38 Chromium
+fixture through the Wayland-only SDK and its existing Vulkan presenter.
+Chromium Headless Shell 156.0.8078.79 supplies PNGs over the private
+transport. The worker stages validated RGBA8 through the existing
+snapshot exchange. The Vulkan view consumes the staged pixels within
+the existing renderer lease.
+
+The unheld worker jobs signal frame readiness after publishing and
+recording their result. A deliberately held frame still signals that it
+is prepared before the test releases publication. During one baseline
+run at `4e9d7b95fe731d14d368b3eaa806872700b10ea2`, Chromium processed the
+second click while the native pixel check still saw the previous frame.
+A baseline repeat passed in 22.79 seconds with 103 host render iterations.
+The candidate's first Release Vulkan run passed in 19.57 seconds with
+95 iterations and the same 19 publications and disposals. Both traces
+are in the local evidence. The elapsed times describe these runs on
+Lavapipe with validation enabled.
+
+The installed Release software, Release Vulkan and ASan/UBSan Vulkan
+profiles each passed four native workflows on Alpine 3.24, Weston
+14.0.2 and Mesa 26.1.6 Lavapipe. Vulkan ran with core and synchronization
+validation. All six viewport captures match across the three profiles.
+The peer verified tab retirement, engine crash and recovery, 1× and 2×
+backing, mouse clicks and wheel movement, the composed value `aü`, six
+Wayland v1 candidate rectangles, Unicode AT-SPI text, and one action on
+the admitted browser subtree. Chromium exited cleanly and each
+published frame was disposed. Two Vulkan pointer repeats, two generic
+Vulkan external-content workflows and 28 installed-fixture CTests
+also passed. The native peer's 35-second limit remained in effect.
+
+The test uses a private mount and PID namespace. Chromium runs as UID
+65534. An independent smoke probe captured a rendered frame and observed
+`Seccomp=2` and `NoNewPrivs=1` in the Chromium renderer child. In the
+plain chroot control, Chromium failed to start because the kernel denied
+unprivileged user namespace creation.
+[Chromium Linux sandbox](https://chromium.googlesource.com/chromium/src.git/+/refs/heads/main/sandbox/linux)
+
+The local archive `nexaui-vulkan-chromium478.tar.gz` retains 100 verified
+members in 140,345 bytes. It includes the exact source export digest,
+installed library hashes, package identities, native receipts, IME wire
+traces and representative lossless captures. Its SHA-256 is
+`79d78d5cfc5b140f159abdfc27d24153d74a8d26dd54844ecc881e3819c650eb`.
+
+Aetheri can reuse the bounded CPU-frame, focus and semantic handoff with
+either existing presenter. The production engine choice, arbitrary web
+navigation and permissions, Wayland text-input v3 for this integration,
+physical GPU, human assistive acceptance and producer-owned GPU image
+import remain open.
