@@ -7,7 +7,7 @@
 enum content_browser_edit_kind {
     CONTENT_BROWSER_FOCUS=5, CONTENT_BROWSER_PREEDIT, CONTENT_BROWSER_COMMIT, CONTENT_BROWSER_BLUR,
     CONTENT_BROWSER_MOUSE_MOVE, CONTENT_BROWSER_MOUSE_DOWN, CONTENT_BROWSER_MOUSE_UP,
-    CONTENT_BROWSER_MOUSE_WHEEL, CONTENT_BROWSER_MOUSE_CANCEL
+    CONTENT_BROWSER_MOUSE_WHEEL, CONTENT_BROWSER_MOUSE_CANCEL, CONTENT_BROWSER_KEY=15
 };
 typedef struct content_browser_pointer {
     int32_t x,y,delta_x,delta_y; /* CSS pixels in units of 1/256. */
@@ -19,7 +19,12 @@ typedef struct content_browser_edit {
     size_t length;
     char text[CONTENT_BROWSER_TEXT_LIMIT+1u];
     content_browser_pointer pointer;
+    nx_key key;
+    uint32_t key_modifiers;
+    int key_repeat;
 } content_browser_edit;
+
+const char *content_browser_key_code(nx_key key,uint32_t modifiers);
 
 /* Request one complete CPU frame from the app's private browser service.
    The worker calls this with an owned absolute socket path. On success the

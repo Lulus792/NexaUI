@@ -195,6 +195,24 @@ static nx_result read_guest_clipboard(const uint8_t *wire,size_t bytes,
     return NX_OK;
 }
 
+const char *content_browser_key_code(nx_key key,uint32_t modifiers) {
+    if (modifiers & ~(NX_MOD_SHIFT|NX_MOD_CONTROL)) return NULL;
+    switch (key) {
+        case NX_KEY_BACKSPACE: return "Backspace";
+        case NX_KEY_DELETE: return modifiers&NX_MOD_SHIFT?NULL:"Delete";
+        case NX_KEY_LEFT: return "ArrowLeft";
+        case NX_KEY_RIGHT: return "ArrowRight";
+        case NX_KEY_UP: return "ArrowUp";
+        case NX_KEY_DOWN: return "ArrowDown";
+        case NX_KEY_HOME: return "Home";
+        case NX_KEY_END: return "End";
+        case NX_KEY_A: return modifiers==NX_MOD_CONTROL?"KeyA":NULL;
+        case NX_KEY_Z: return modifiers&NX_MOD_CONTROL?"KeyZ":NULL;
+        case NX_KEY_Y: return modifiers==NX_MOD_CONTROL?"KeyY":NULL;
+        default: return NULL;
+    }
+}
+
 static nx_result transfer(const char *socket_path,content_request request,uint64_t sequence,unsigned kind,
     const content_browser_edit *edit,int accessible,content_ax_action action,const content_guest_batch *input,
     void **out,size_t *bytes,nx_rect *caret,void *guest_report,const uint8_t *operation,size_t operation_bytes) {
@@ -213,14 +231,20 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     if (edit) {
         const content_browser_pointer *pointer=&edit->pointer;
         size_t body=edit->length;
-        char pointer_payload[80];
+        char input_payload[80];
         const char *payload=edit->text;
         if (kind>=CONTENT_BROWSER_MOUSE_MOVE && kind<=CONTENT_BROWSER_MOUSE_WHEEL) {
-            int n=snprintf(pointer_payload,sizeof(pointer_payload),"%d %d %d %d %u %u",
+            int n=snprintf(input_payload,sizeof(input_payload),"%d %d %d %d %u %u",
                 pointer->x,pointer->y,pointer->delta_x,pointer->delta_y,pointer->button,pointer->modifiers);
-            if (n<=0 || (size_t)n>=sizeof(pointer_payload)) return NX_ERROR_LIMIT;
+            if (n<=0 || (size_t)n>=sizeof(input_payload)) return NX_ERROR_LIMIT;
             body=(size_t)n;
-            payload=pointer_payload;
+            payload=input_payload;
+        } else if (kind==CONTENT_BROWSER_KEY) {
+            int n=snprintf(input_payload,sizeof(input_payload),"%s %u %d",
+                content_browser_key_code(edit->key,edit->key_modifiers),edit->key_modifiers,edit->key_repeat);
+            if (n<=0 || (size_t)n>=sizeof(input_payload)) return NX_ERROR_LIMIT;
+            body=(size_t)n;
+            payload=input_payload;
         }
         length=snprintf(line+send_size,sizeof(line)-send_size," %d %d %zu\n",edit->begin,edit->end,body);
         if (length<=0 || (size_t)length>=sizeof(line)-send_size || body>sizeof(line)-send_size-(size_t)length)
@@ -349,7 +373,8 @@ nx_result content_browser_frame(const char *socket_path,content_request request,
 
 nx_result content_browser_edit_frame(const char *socket_path,content_request request,
     uint64_t sequence,const content_browser_edit *edit,void **out,size_t *bytes,nx_rect *caret) {
-    if (!edit || !caret || edit->kind<CONTENT_BROWSER_FOCUS || edit->kind>CONTENT_BROWSER_MOUSE_CANCEL ||
+    if (!edit || !caret || edit->kind<CONTENT_BROWSER_FOCUS ||
+        (edit->kind>CONTENT_BROWSER_MOUSE_CANCEL && edit->kind!=CONTENT_BROWSER_KEY) ||
         edit->length>CONTENT_BROWSER_TEXT_LIMIT ||
         (edit->length && (edit->kind==CONTENT_BROWSER_FOCUS || edit->kind==CONTENT_BROWSER_BLUR ||
                           edit->kind==CONTENT_BROWSER_MOUSE_CANCEL)) ||
@@ -369,6 +394,9 @@ nx_result content_browser_edit_frame(const char *socket_path,content_request req
             (pointer->modifiers & ~(NX_MOD_SHIFT|NX_MOD_CONTROL|NX_MOD_ALT|NX_MOD_SUPER)))
             return NX_ERROR_ARGUMENT;
     }
+    if (edit->kind==CONTENT_BROWSER_KEY && (edit->length || edit->begin || edit->end ||
+        !content_browser_key_code(edit->key,edit->key_modifiers) ||
+        (edit->key_repeat!=0 && edit->key_repeat!=1))) return NX_ERROR_ARGUMENT;
     return transfer(socket_path,request,sequence,edit->kind,edit,0,(content_ax_action){0},NULL,out,bytes,caret,NULL,NULL,0);
 }
 

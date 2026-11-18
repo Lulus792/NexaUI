@@ -16,6 +16,11 @@ import time
 
 CDP_LIMIT = 8 * 1024 * 1024
 PNG_LIMIT = 4 * 1024 * 1024
+EDIT_KEYS = {
+    'Backspace': 8, 'Delete': 46, 'ArrowLeft': 37, 'ArrowRight': 39,
+    'ArrowUp': 38, 'ArrowDown': 40, 'Home': 36, 'End': 35,
+    'KeyA': 65, 'KeyZ': 90, 'KeyY': 89,
+}
 
 
 class Chromium:
@@ -257,6 +262,39 @@ class Chromium:
         self.command('Input.dispatchMouseEvent', {'type': 'mouseMoved', 'x': -1, 'y': -1, 'buttons': 0})
         self.mouse_inside = False
 
+    def edit_key(self, raw, begin, end):
+        code, mods, repeat = raw.decode('ascii').split()
+        mods, repeat = int(mods), int(repeat)
+        if (begin or end or code not in EDIT_KEYS or mods not in (0, 1, 2, 3) or repeat not in (0, 1) or
+                (code == 'Delete' and mods & 1) or
+                (code in ('KeyA', 'KeyY') and mods != 2) or (code == 'KeyZ' and mods not in (2, 3))):
+            raise ValueError('Invalid browser editing key')
+        if not self.value("document.activeElement.id === 'editor' && !document.activeElement.dataset.preedit"):
+            raise ValueError('Browser editing key has no committed text context')
+        key = code if not code.startswith('Key') else (code[-1] if mods & 1 else code[-1].lower())
+        params = {'code': code, 'key': key, 'windowsVirtualKeyCode': EDIT_KEYS[code],
+                  'modifiers': ((mods & 1) << 3) | (mods & 2)}
+        self.command('Input.dispatchKeyEvent', dict(params, type='rawKeyDown', autoRepeat=bool(repeat)))
+        self.command('Input.dispatchKeyEvent', dict(params, type='keyUp'))
+        if os.environ.get('NEXAUI_CONTENT_TEST_BROWSER_KEYS') != '1':
+            return
+        value, anchor, focus = self.value("""(() => {
+            const editor = document.querySelector('#editor');
+            const selection = getSelection();
+            if (!editor.contains(selection.anchorNode) || !editor.contains(selection.focusNode))
+                throw new Error('Browser selection left the editor');
+            function offset(node, index) {
+                const range = document.createRange();
+                range.selectNodeContents(editor);
+                range.setEnd(node, index);
+                return range.toString().length;
+            }
+            return [editor.textContent, offset(selection.anchorNode, selection.anchorOffset),
+                    offset(selection.focusNode, selection.focusOffset)];
+        })()""")
+        print(f'BROWSER_KEY code={code} mods={mods} repeat={repeat} selection={anchor},{focus} '
+              f'value={json.dumps(value, ensure_ascii=True)}', flush=True)
+
     def edit(self, kind, raw, begin, end):
         if kind == 5:
             if self.value("!!document.querySelector('#editor')"):
@@ -325,6 +363,8 @@ class Chromium:
             self.value("document.querySelector('#editor').blur(); true")
         elif kind == 13:
             self.cancel_mouse()
+        elif kind == 15:
+            self.edit_key(raw, begin, end)
         else:
             self.mouse(kind,raw)
         state = self.value("""(() => {
@@ -334,9 +374,10 @@ class Chromium:
             if (focused) {
                 const selection = getSelection();
                 let box = editor.getBoundingClientRect();
-                if (selection.rangeCount) {
-                    const range = selection.getRangeAt(0).cloneRange();
-                    range.collapse(false);
+                if (editor.contains(selection.focusNode)) {
+                    const range = document.createRange();
+                    range.setStart(selection.focusNode, selection.focusOffset);
+                    range.collapse(true);
                     const cursor = range.getBoundingClientRect();
                     if (cursor.height) box = cursor;
                     else box = {x:box.x+4, y:box.y+4, height:24};
@@ -423,7 +464,7 @@ def serve(engine, socket_path, accessible=False):
                             if request.read(1):
                                 raise ValueError('Unexpected browser request bytes')
                         if not (0 < tab < 2**64 and 0 < resize < 2**64 and 0 < width <= 2048 and
-                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 14):
+                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 15):
                             raise ValueError('Browser request exceeds fixture limits')
                         if kind == 2:
                             result = browser.crash()
@@ -433,6 +474,8 @@ def serve(engine, socket_path, accessible=False):
                         if kind==14 and (not accessible or browser is None or requested_epoch!=epoch or
                                         captured!=(tab,resize,width,height)):
                             raise ValueError('Stale browser accessibility action')
+                        if kind == 15 and (browser is None or captured != (tab, resize, width, height)):
+                            raise ValueError('Stale browser editing key')
                         if browser is None:
                             replacement = profile / 'replacement'
                             replacement.mkdir()
@@ -459,7 +502,7 @@ def serve(engine, socket_path, accessible=False):
                             peer.sendall(prefix+png)
                             print(f'BROWSER_EDIT kind={kind} focus={focused} preedit={preedit} '
                                   f'committed={committed} expected={expected}', flush=True)
-                            if kind >= 9 or (kind == 8 and browser.cancelled):
+                            if 9 <= kind <= 13 or (kind == 8 and browser.cancelled):
                                 browser.pointer_receipt(kind)
                             continue
                         png, (css_w, css_h, dpr) = browser.capture(width, height, kind)

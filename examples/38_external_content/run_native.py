@@ -364,9 +364,11 @@ def main():
     parser.add_argument('--png-gallery', action='store_true', help='Open the host-owned ordered PNG gallery')
     parser.add_argument('--jpeg-gallery', action='store_true', help='Include an EXIF-oriented JPEG in --png-gallery')
     parser.add_argument('--browser-engine', type=Path, help='Chromium headless shell for the offline browser frame workflow')
-    parser.add_argument('--browser-input', action='store_true', help='Exercise native keyboard and Weston Compose in Chromium')
-    parser.add_argument('--browser-pointer', action='store_true', help='Exercise native pointer and wheel routing in Chromium')
-    parser.add_argument('--browser-accessibility', action='store_true', help='Exercise the browser document subtree through native AT-SPI')
+    browser_modes = parser.add_mutually_exclusive_group()
+    browser_modes.add_argument('--browser-input', action='store_true', help='Exercise native keyboard and Weston Compose in Chromium')
+    browser_modes.add_argument('--browser-keys', action='store_true', help='Exercise native editing keys and selection in Chromium')
+    browser_modes.add_argument('--browser-pointer', action='store_true', help='Exercise native pointer and wheel routing in Chromium')
+    browser_modes.add_argument('--browser-accessibility', action='store_true', help='Exercise the browser document subtree through native AT-SPI')
     parser.add_argument('--guest-engine', type=Path, help='QEMU system x86-64 executable for --case guest')
     parser.add_argument('--guest-firmware', type=Path, help='QEMU packaged firmware directory for --case guest')
     parser.add_argument('--guest-kernel', type=Path, help='Linux kernel for --case guest-desktop')
@@ -424,12 +426,11 @@ def main():
         parser.error('guest cases require --guest-engine and --guest-firmware')
     if desktop_guest != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
         parser.error('graphical guest cases require --guest-kernel and --guest-initrd')
-    if (args.browser_input or args.browser_pointer) and (not args.browser_engine or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
-        parser.error('Browser input workflows require the browser case and Weston simple-IME')
-    if args.browser_input and args.browser_pointer:
-        parser.error('Run browser pointer and text input workflows separately')
-    if args.browser_accessibility and (not args.browser_engine or args.browser_input or args.browser_pointer):
-        parser.error('--browser-accessibility is a separate browser workflow')
+    browser_input = args.browser_input or args.browser_keys
+    if (browser_input or args.browser_pointer) and (not args.browser_engine or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
+        parser.error('Browser input workflows require the browser case and private Weston input helpers')
+    if args.browser_accessibility and not args.browser_engine:
+        parser.error('--browser-accessibility requires the browser case')
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
@@ -507,16 +508,19 @@ def main():
                sys.executable, str(repo / 'tests/run_atspi_native.py'),
                str(args.registry), str(args.build_dir / 'content_atspi_peer'),
                str(args.build_dir / 'content_native_host')]
-    if args.pdf_compose or args.browser_input or args.browser_pointer:
+    if args.pdf_compose or browser_input or args.browser_pointer:
         setxkbmap = os.environ.get('NEXAUI_SETXKBMAP', 'setxkbmap')
         command[4:4] = ['sh', '-ec', '"$1" -layout us -option "" -option compose:ralt; shift; exec "$@"',
                        'content-compose', setxkbmap]
-        env.update(NEXAUI_WESTON_INPUT_METHOD='weston-simple-im', XKB_DEFAULT_OPTIONS='compose:ralt')
+        input_method = 'weston-keyboard' if args.browser_keys else 'weston-simple-im'
+        env.update(NEXAUI_WESTON_INPUT_METHOD=input_method, XKB_DEFAULT_OPTIONS='compose:ralt')
         flag='NEXAUI_CONTENT_PDF_COMPOSE' if args.pdf_compose else (
-            'NEXAUI_CONTENT_TEST_BROWSER_INPUT' if args.browser_input else 'NEXAUI_CONTENT_TEST_BROWSER_POINTER')
+            'NEXAUI_CONTENT_TEST_BROWSER_INPUT' if browser_input else 'NEXAUI_CONTENT_TEST_BROWSER_POINTER')
         env[flag]='1'
-        if args.browser_input:
+        if browser_input:
             env['NEXAUI_CONTENT_TEST_BROWSER_WIRE']=str(args.work_dir.resolve() / 'browser-ime.wire')
+        if args.browser_keys:
+            env['NEXAUI_CONTENT_TEST_BROWSER_KEYS']='1'
     if args.browser_engine:
         return run_browser(command, env, args.browser_engine,args.browser_accessibility)
     if args.guest_engine:

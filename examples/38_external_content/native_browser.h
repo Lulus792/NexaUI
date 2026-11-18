@@ -129,7 +129,16 @@ static int browser_append(content_browser_edit *text,uint32_t scalar) {
 static int browser_edit_event(browser_editor *editor,nx_window *window,const nx_event *event) {
     if (editor->phase!=BROWSER_EDITING) return 1;
     int current=event->ime_target==BROWSER_EDITOR_ID && event->ime_revision==editor->revision;
-    if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN) {
+    if (event->type==NX_EVENT_KEY_DOWN && content_browser_key_code(event->key,event->modifiers)) {
+        size_t preedit=0;
+        int32_t begin=0,end=0;
+        nx_result queried=nx_window_get_ime_preedit_for(window,BROWSER_EDITOR_ID,editor->revision,
+            NULL,0,&preedit,&begin,&end);
+        if (queried!=NX_OK && queried!=NX_ERROR_STATE) return 0;
+        if (editor->receiving || preedit) return 1;
+        return browser_edit_queue(editor,(content_browser_edit){.kind=CONTENT_BROWSER_KEY,
+            .key=event->key,.key_modifiers=event->modifiers,.key_repeat=event->repeat!=0});
+    } else if (event->type==NX_EVENT_IME_TRANSACTION_BEGIN) {
         editor->commit=(content_browser_edit){.kind=CONTENT_BROWSER_COMMIT};
         editor->receiving=current && event->ime_before==NX_IME_TRANSACTION_COMMIT;
     } else if (event->type==NX_EVENT_IME_TRANSACTION_END) {
@@ -234,12 +243,15 @@ static int browser_edit_update(browser_editor *editor,native_worker *worker,nati
             if (caret.x+caret.width>info.width-32 || caret.y+caret.height>info.height-152) return 0;
             caret.x+=16;caret.y+=136;
             if (nx_window_set_ime_rect(window,caret)!=NX_OK) return 0;
-            if (editor->operation==CONTENT_BROWSER_FOCUS || editor->operation==CONTENT_BROWSER_COMMIT) {
+            if (editor->operation==CONTENT_BROWSER_FOCUS || editor->operation==CONTENT_BROWSER_COMMIT ||
+                editor->operation==CONTENT_BROWSER_KEY) {
                 if (editor->revision==UINT64_MAX ||
                     nx_window_set_ime_surrounding_text(window,BROWSER_EDITOR_ID,++editor->revision,"",0,0,0)!=NX_OK)
                     return 0;
             }
-            if (editor->operation>=CONTENT_BROWSER_MOUSE_MOVE)
+            if (editor->operation==CONTENT_BROWSER_KEY)
+                printf("BROWSER_KEY adopted revision=%llu\n",(unsigned long long)editor->revision);
+            else if (editor->operation>=CONTENT_BROWSER_MOUSE_MOVE)
                 printf("BROWSER_POINTER kind=%u adopted\n",editor->operation);
             else
                 printf("BROWSER_IME kind=%u revision=%llu caret=%.0f,%.0f,%.0f,%.0f\n",editor->operation,

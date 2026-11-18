@@ -1123,6 +1123,7 @@ int main(int argc,char **argv) {
     int guest_ax=guest_desktop&&getenv("NEXAUI_CONTENT_TEST_GUEST_AX");
     int guest_compose=guest_ax&&getenv("NEXAUI_CONTENT_TEST_GUEST_COMPOSE");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
+    int browser_keys=browser_input&&getenv("NEXAUI_CONTENT_TEST_BROWSER_KEYS");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
     int browser_ax=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_AX");
     int png_case=browser_case||!strcmp(test_case,"png");
@@ -1768,7 +1769,7 @@ int main(int argc,char **argv) {
         goto closed;
     } else CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
     if (browser_case) puts("BROWSER_NATIVE verified: retired tab, engine failure, host recovery, 2x backing and native controls");
-    if (browser_input) {
+    if (browser_input&&!browser_keys) {
         CHECK(focus(app,"Enter page")&&drive("key","Return")&&
             observe(app,"Page input active: Ctrl+Shift+F12 exits.",0)&&observe(app,viewport,1));
         CHECK(drive("key","a")&&host_marker(host_log,"BROWSER_IME kind=7 revision=2"));
@@ -1786,6 +1787,30 @@ int main(int argc,char **argv) {
             observe(app,"Page input released.",0)&&observe(app,"Close",1));
         CHECK(drive("key","b")&&observe(app,"Close",1));
         puts("BROWSER_INPUT verified: native keys, preedit, commit, candidate geometry and host escape");
+    }
+    if (browser_keys) {
+        static const char *const keys[]={"Home","Delete","End","Shift+Left","BackSpace",
+            "ctrl+z","ctrl+shift+z","ctrl+a"};
+        CHECK(focus(app,"Enter page")&&drive("key","Return")&&
+            observe(app,"Page input active: Ctrl+Shift+F12 exits.",0)&&observe(app,viewport,1));
+        CHECK(drive("key","a")&&host_marker(host_log,"BROWSER_IME kind=7 revision=2")&&
+            drive("key","b")&&host_marker(host_log,"BROWSER_IME kind=7 revision=3")&&
+            drive("key","c")&&host_marker(host_log,"BROWSER_IME kind=7 revision=4")&&
+            input_chrome(display,id,"browser-keys-seed"));
+        for (unsigned i=0;i<sizeof(keys)/sizeof(keys[0]);++i) {
+            char marker[64];
+            snprintf(marker,sizeof(marker),"BROWSER_KEY adopted revision=%u\n",5u+i);
+            CHECK(drive("key",keys[i])&&host_marker(host_log,marker));
+            if (i==3) {
+                CHECK(input_chrome(display,id,"browser-keys-selection")&&drive("key","Shift+Delete"));
+            }
+        }
+        CHECK(drive("key","x")&&host_marker(host_log,"BROWSER_IME kind=7 revision=13")&&
+            drive("key","Home")&&host_marker(host_log,"BROWSER_KEY adopted revision=14\n")&&
+            input_chrome(display,id,"browser-keys-result"));
+        CHECK(drive("key","ctrl+shift+F12")&&observe(app,"Page input released.",0)&&observe(app,"Close",1)&&
+            drive("key","Delete")&&observe(app,"Close",1));
+        puts("BROWSER_KEYS verified: navigation, selection, editing, undo, redo and host escape");
     }
     if (browser_pointer) {
         CHECK(focus(app,"Enter page")&&drive("key","Return")&&
