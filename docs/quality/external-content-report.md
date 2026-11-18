@@ -2138,3 +2138,46 @@ SHA-256 `bf203f1e23bf8ae4672727bf53c272e6a649b6982abb8e07e6cae6c420005679`.
 The verified scope is recovery from a delayed reply on the same private
 guest session. Production VM integration, guest actions, other window
 geometries and human screen-reader acceptance remain open.
+
+## Installed Vulkan presenter for external content, 2026-11-18
+
+Example source `8fcfe1fb4e44c35f85bd73ff4ebd8b9de0b391e3` selects the
+installed `NexaUI::Vulkan` presenter from Wayland-only SDK
+`266404bf1743248f16eb289c0a1c0d99701cc395`. The opt-in native fixture
+passes the existing staged RGBA8 bitmap commands in logical coordinates
+with the native window's physical size and scale. It releases the viewport
+lease after submission returns. The renderer owns the uploaded bytes and
+retires GPU work before releasing its window lease. The software build
+remains selectable independently. [Strict Vulkan presentation retirement](https://docs.vulkan.org/refpages/latest/refpages/source/VkSwapchainPresentFenceInfoKHR.html)
+
+The independent client reads displayed pixels from the private Weston
+carrier and drives the native host controls. The native lifetime cases
+close with a producer allocation held or after a stale generation was
+rejected. Configuration against an installed SDK without the Vulkan
+component fails when that component is requested. Runtime selection in
+the software-only fixture reports `NX_ERROR_UNSUPPORTED`.
+
+Fifty-seven CTests passed across Release Vulkan, Release software-only and
+ASan/UBSan Vulkan with leak detection (19 each). Eight native runs passed
+on Weston 14.0.2 and Mesa 26.1.6 Lavapipe. They covered PNG decoding,
+producer generation and damage, the pending/rejected close paths, and the
+software PDF reference. The completed Vulkan runs used core and synchronization
+validation and reported no errors. The Vulkan and software images match
+byte for byte for all six 448 × 208 synthetic viewport captures across all
+three build profiles.
+
+The Vulkan PDF runs displayed both Poppler pages, and seven viewport
+captures matched the software reference in Release and ASan/UBSan. The
+full PDF interaction did not finish within the existing 35-second AT-SPI
+peer budget on this software driver. Attempts with the default driver
+thread count and with two and zero LLVMpipe rendering threads all hit the
+same budget. The results retain the runs as incomplete. [LLVMpipe thread configuration](https://docs.mesa3d.org/envvars.html#envvar-LP_NUM_THREADS)
+
+The compact proof is `nexaui-content-vulkan475.tar.gz`, SHA-256
+`ca56cf75daf1681b26df780f8da904317f4d22d2472af52e8124766b382e4ece`.
+The archive contains independent native receipts, CTest outcomes, the
+source export and one lossless copy per verified matching viewport state.
+
+Producer-owned GPU image import, cross-process synchronization, real GPU
+driver coverage, complete Vulkan PDF interaction and Aetheri compositor and
+engine acceptance remain open.

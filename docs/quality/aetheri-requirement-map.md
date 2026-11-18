@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Example38 at `8fcfe1f` advances R05/R06/D08 with an opt-in installed Vulkan
+presenter. The native peer checks displayed staged RGBA8, 2× content backing,
+retired producer frames and clean window release. The complete Vulkan PDF
+workflow and producer-owned GPU image import remain open.
+[Installed content Vulkan evidence](external-content-report.md#installed-vulkan-presenter-for-external-content-2026-11-18)
+
 The QEMU guest accessibility timeout fix advances A05/D08 at `4ff9d6d`.
 The VM owner can publish video during a late observation and restore the
 read-only guest subtree after fresh matching snapshots. A mismatched frame
