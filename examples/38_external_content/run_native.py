@@ -150,11 +150,11 @@ os.execv(renderer, [renderer, *sys.argv[1:]])
     return path
 
 
-def run_content_service(command, env, address, args, startup_timeout=12):
+def run_content_service(command, env, address, args, startup_timeout=12, ready=None):
     service = subprocess.Popen(args, env=env)
     try:
         deadline = time.monotonic() + startup_timeout
-        while not address.exists():
+        while not (ready or address).exists():
             if service.poll() is not None or time.monotonic() >= deadline:
                 raise RuntimeError('Content frame service did not start')
             time.sleep(.02)
@@ -214,7 +214,7 @@ def verify_guest_disk(engine, firmware, boot, initrd, disk, root, reset=False):
     print(f'{label} mode=readonly bytes={capacity} read={read} written={written} sha256={before}',flush=True)
 
 
-def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False):
+def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False):
     engine = str(engine.resolve(strict=True))
     firmware = str(firmware.resolve(strict=True))
     with tempfile.TemporaryDirectory(prefix='nexaui-guest-') as directory:
@@ -265,8 +265,9 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
             print(f'GUEST_RESET_BASELINE sha256={baseline_hash.hex()} capacity={WORK_DISK_BYTES}',flush=True)
             args.extend((str(disk),str(checkpoint)))
             if reset:
-                args.append('drop-response')
-        result=run_content_service(command,env,address,args,startup_timeout=36 if initrd else 12)
+                args.append('restart-before-reply' if restart else 'drop-response')
+        result=run_content_service(command,env,address,args,startup_timeout=36 if initrd else 12,
+                                   ready=address.with_suffix('.ready') if restart else None)
         if storage and result==0:
             if image_digest(checkpoint)!=baseline_hash or (image_digest(disk)==baseline_hash)!=reset:
                 raise RuntimeError('The retained work and baseline images are inconsistent')
@@ -311,6 +312,7 @@ def main():
     parser.add_argument('--guest-firmware', type=Path, help='QEMU packaged firmware directory for --case guest')
     parser.add_argument('--guest-kernel', type=Path, help='Linux kernel for --case guest-desktop')
     parser.add_argument('--guest-initrd', type=Path, help='Alpine/Weston initramfs for --case guest-desktop')
+    parser.add_argument('--guest-owner-restart', action='store_true', help='Replace the guest owner after a committed reset')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -323,6 +325,8 @@ def main():
     if (args.case == 'browser') != bool(args.browser_engine):
         parser.error('--case browser and --browser-engine must be used together')
     desktop_guest=args.case in ('guest-desktop','guest-storage','guest-reset')
+    if args.guest_owner_restart and args.case!='guest-reset':
+        parser.error('--guest-owner-restart requires --case guest-reset')
     if (desktop_guest or args.case=='guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
         parser.error('guest cases require --guest-engine and --guest-firmware')
     if desktop_guest != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
@@ -416,7 +420,8 @@ def main():
         return run_browser(command, env, args.browser_engine,args.browser_accessibility)
     if args.guest_engine:
         return run_guest(command,env,args.guest_engine,args.guest_firmware,args.guest_kernel,args.guest_initrd,
-                         storage=args.case in ('guest-storage','guest-reset'),reset=args.case=='guest-reset')
+                         storage=args.case in ('guest-storage','guest-reset'),reset=args.case=='guest-reset',
+                         restart=args.guest_owner_restart)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

@@ -1,6 +1,5 @@
 """Private QEMU guest owner for the native console workflow."""
 
-import hashlib
 import json
 import os
 from pathlib import Path
@@ -15,13 +14,16 @@ import sys
 import tempfile
 import time
 
+from guest_reset import (RESET_APPLIED, RESET_REJECTED, RESET_SCOPE_BYTES, RESET_UNKNOWN, RESET_UNREQUESTED,
+                         WORK_DISK_BYTES, image_digest, image_identity, image_snapshot, observe_reset,
+                         record_reset, sync_directory)
+
 PNG_LIMIT = 4 * 1024 * 1024
 INPUT_LIMIT = 128
 INPUT_RECORD_SIZE = 5
 INPUT_KEY, INPUT_BUTTON, INPUT_MOTION = 1, 2, 3
 QMP_LIMIT = 16384
-WORK_DISK_BYTES = 16*1024*1024
-RESET_APPLIED, RESET_REJECTED, RESET_UNKNOWN, RESET_UNREQUESTED = range(1,5)
+RESET_RESTART_EXIT = 86
 KEY_CODES = {k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
                   7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
@@ -29,29 +31,6 @@ KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_
                   19:'end', 20:'pgup', 21:'pgdn', 22:'meta_l'})
 KEY_CODES.update({63+n:f'f{n}' for n in range(1,13)})
 BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
-
-def image_identity(info):
-    if not stat.S_ISREG(info.st_mode) or info.st_size != WORK_DISK_BYTES:
-        raise ValueError('Unexpected work image')
-    return info.st_dev,info.st_ino,info.st_size
-
-
-def image_digest(path):
-    fd=os.open(path,os.O_RDONLY|os.O_NOFOLLOW|os.O_NONBLOCK)
-    with os.fdopen(fd,'rb') as image:
-        image_identity(os.fstat(image.fileno()))
-        digest=hashlib.sha256()
-        remaining=WORK_DISK_BYTES
-        while remaining:
-            data=image.read(min(remaining,256*1024))
-            if not data:
-                raise ValueError('Work image became shorter')
-            digest.update(data)
-            remaining-=len(data)
-        if image.read(1):
-            raise ValueError('Work image grew')
-        return digest.digest()
-
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
@@ -311,11 +290,7 @@ class Guest:
     def reset_status(self, scope):
         state=self.reset_state if self.reset_matches(scope) else RESET_REJECTED
         if state==RESET_APPLIED:
-            try:
-                if image_digest(self.disk)!=self.checkpoint_hash:
-                    state=RESET_UNKNOWN
-            except (OSError,ValueError):
-                state=RESET_UNKNOWN
+            state=observe_reset(self.disk.parent,scope)
         print(f'GUEST_RESET_STATUS state={state}',flush=True)
         return state
 
@@ -323,7 +298,7 @@ class Guest:
         if not self.reset_matches(scope):
             return RESET_REJECTED
         if self.reset_state!=RESET_UNREQUESTED:
-            return self.reset_state
+            return self.reset_status(scope)
         if self.held or self.buttons:
             return RESET_REJECTED
         try:
@@ -341,7 +316,8 @@ class Guest:
                     shutil.copyfileobj(source,output)
                 output.flush()
                 os.fsync(output.fileno())
-            if image_digest(staged)!=self.checkpoint_hash:
+            replacement, digest = image_snapshot(staged)
+            if digest!=self.checkpoint_hash:
                 raise ValueError('Invalid staged baseline')
             if self.close()!=0:
                 raise RuntimeError('The old guest failed to stop')
@@ -349,16 +325,15 @@ class Guest:
                 raise ValueError('The stopped work disk changed identity')
             previous=self.disk.with_name('work-before-reset.img')
             os.link(self.disk,previous,follow_symlinks=False)
-            saved=image_digest(previous)
+            saved_identity, saved = image_snapshot(previous)
+            if saved_identity!=self.disk_identity:
+                raise ValueError('The retained work disk changed identity')
             os.replace(staged,self.disk)
             installed=True
-            directory=os.open(self.disk.parent,os.O_RDONLY|os.O_DIRECTORY)
-            try:
-                os.fsync(directory)
-            finally:
-                os.close(directory)
-            if image_digest(self.disk)!=self.checkpoint_hash:
+            sync_directory(self.disk.parent)
+            if image_snapshot(self.disk)!=(replacement,self.checkpoint_hash):
                 raise ValueError('The installed work disk does not match the baseline')
+            record_reset(self.disk.parent,scope,replacement,self.checkpoint_identity,saved_identity,saved)
             self.reset_state=RESET_APPLIED
             print(f'GUEST_RESET_APPLIED environment={self.environment.hex()} '
                   f'checkpoint={self.checkpoint_hash.hex()} prior={saved.hex()}',flush=True)
@@ -408,19 +383,51 @@ class Guest:
             self.peer.close()
 
 
-def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=None, reset_mode=None):
-    def interrupt(*_):
-        raise KeyboardInterrupt
+def read_request(peer, desktop):
+    peer.settimeout(1)
+    with peer.makefile('rb') as stream:
+        line = stream.readline(96)
+        if not line.endswith(b'\n'):
+            raise ValueError('Invalid guest frame request')
+        fields = tuple(map(int, line.split()))
+        generation, resize, width, height, kind = fields[:5]
+        if not (0 < generation < 2**64 and 0 < resize < 2**64 and
+                0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
+                kind in range(11 if desktop else 6) and len(fields)==(6 if kind in (5,9,10) else 5)):
+            raise ValueError('Guest request outside the fixture limits')
+        size = fields[5] if len(fields)==6 else 0
+        if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
+            raise ValueError('Guest input batch too large')
+        if kind in (9,10) and size!=RESET_SCOPE_BYTES:
+            raise ValueError('Invalid guest reset scope length')
+        payload = stream.read(size)
+        if len(payload)!=size or stream.read(1):
+            raise ValueError('Invalid guest request framing')
+    return generation, resize, kind, payload
 
+
+def interrupt(*_):
+    raise KeyboardInterrupt
+
+
+def require_reset_root(address):
+    info = address.parent.stat(follow_symlinks=False)
+    if (not address.parent.name.startswith('nexaui-guest-') or not stat.S_ISDIR(info.st_mode) or
+            stat.S_IMODE(info.st_mode)!=0o700 or info.st_uid!=os.geteuid()):
+        raise ValueError('Reset requires the private test harness directory')
+
+
+def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=None, reset_mode=None, listener_fd=None):
     signal.signal(signal.SIGTERM, interrupt)
-    if reset_mode and (reset_mode!='drop-response' or not disk or not checkpoint or
-            not address.parent.name.startswith('nexaui-guest-') or stat.S_IMODE(address.parent.stat().st_mode)!=0o700 or
-            Path(disk)!=address.parent/'work.img' or Path(checkpoint)!=address.parent/'baseline.img'):
-        raise ValueError('Reset requires the private test harness images')
+    if reset_mode:
+        require_reset_root(address)
+        if (reset_mode not in ('drop-response','restart-before-reply') or not disk or not checkpoint or
+                Path(disk)!=address.parent/'work.img' or Path(checkpoint)!=address.parent/'baseline.img'):
+            raise ValueError('Reset requires the private test harness images')
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
                       reset_enabled=bool(reset_mode))
-        drop_response=bool(reset_mode)
+        drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()
             if status != 'running':
@@ -428,33 +435,21 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
             version = '.'.join(str(guest.version[k]) for k in ('major','minor','micro'))
             identity = 'desktop nic=none ram=768MiB' if guest.desktop else 'trace=R nic=none boot=readonly ram=32MiB'
             print(f'GUEST_READY qemu={version} status={status} {identity}', flush=True)
-            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
-                listener.bind(str(address))
-                listener.listen(1)
+            with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM, fileno=listener_fd) as listener:
+                if listener_fd is None:
+                    listener.bind(str(address))
+                    listener.listen(1)
+                else:
+                    address.with_suffix('.ready').touch(exist_ok=False)
                 while True:
                     peer, _ = listener.accept()
                     with peer:
-                        peer.settimeout(1)
-                        with peer.makefile('rb') as stream:
-                            line = stream.readline(96)
-                            if not line.endswith(b'\n'):
-                                raise ValueError('Invalid guest frame request')
-                            fields = tuple(map(int, line.split()))
-                            generation,resize,width,height,kind = fields[:5]
-                            if not (0 < generation < 2**64 and 0 < resize < 2**64 and
-                                    0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                                    kind in range(11 if guest.desktop else 6) and len(fields)==(6 if kind in (5,9,10) else 5)):
-                                raise ValueError('Guest request outside the fixture limits')
-                            size = fields[5] if len(fields)==6 else 0
-                            if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
-                                raise ValueError('Guest input batch too large')
-                            if kind in (9,10) and size!=48:
-                                raise ValueError('Guest reset scope must be 48 bytes')
-                            payload = stream.read(size)
-                            if len(payload)!=size or stream.read(1):
-                                raise ValueError('Invalid guest request framing')
+                        generation, resize, kind, payload = read_request(peer,guest.desktop)
                         if kind in (9,10):
                             state = guest.apply_reset(payload) if kind==9 else guest.reset_status(payload)
+                            if kind==9 and reset_mode=='restart-before-reply' and state==RESET_APPLIED:
+                                print(f'GUEST_RESET_OWNER_EXIT pid={os.getpid()}',flush=True)
+                                os._exit(RESET_RESTART_EXIT)
                             if kind==9 and drop_response and state==RESET_APPLIED:
                                 drop_response=False
                                 print('GUEST_RESET_RESPONSE dropped',flush=True)
@@ -503,5 +498,63 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                 raise RuntimeError('QEMU failed to exit cleanly')
 
 
+def serve_reset_status(address, listener_fd):
+    require_reset_root(address)
+    signal.signal(signal.SIGTERM, interrupt)
+    print(f'GUEST_RESET_RECOVERY_READY pid={os.getpid()}',flush=True)
+    try:
+        with socket.socket(fileno=listener_fd) as listener:
+            while True:
+                peer, _ = listener.accept()
+                with peer:
+                    try:
+                        _, _, kind, scope = read_request(peer,True)
+                        state = observe_reset(address.parent,scope) if kind==10 else RESET_REJECTED
+                        print(f'GUEST_RESET_RECOVERY kind={kind} state={state}',flush=True)
+                        peer.sendall(b'NXA1'+bytes((state,)))
+                    except (OSError,ValueError):
+                        continue
+    except KeyboardInterrupt:
+        pass
+
+
+def supervise_reset_restart(arguments):
+    address = Path(arguments[3])
+    require_reset_root(address)
+    signal.signal(signal.SIGTERM, interrupt)
+    child = None
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as listener:
+        listener.bind(str(address))
+        listener.listen(1)
+        fd = listener.fileno()
+        script = [sys.executable, __file__]
+        try:
+            child = subprocess.Popen([*script, *arguments, str(fd)],pass_fds=(fd,))
+            if child.wait()!=RESET_RESTART_EXIT:
+                raise RuntimeError('Expected the guest owner to exit after committing the reset')
+            child = subprocess.Popen([*script, '--recover-reset', str(address), str(fd)],pass_fds=(fd,))
+            if child.wait()!=0:
+                raise RuntimeError('The reset status owner failed')
+        except KeyboardInterrupt:
+            signal.signal(signal.SIGTERM,signal.SIG_IGN)
+        finally:
+            if child and child.poll() is None:
+                child.terminate()
+                try:
+                    child.wait(timeout=6)
+                except subprocess.TimeoutExpired:
+                    child.kill()
+                    child.wait()
+                    raise
+
+
 if __name__ == '__main__':
-    serve(*sys.argv[1:4], Path(sys.argv[4]), *sys.argv[5:])
+    args = sys.argv[1:]
+    if len(args)==3 and args[0]=='--recover-reset':
+        serve_reset_status(Path(args[1]),int(args[2]))
+    elif len(args)==8 and args[-1]=='restart-before-reply':
+        supervise_reset_restart(args)
+    elif 4<=len(args)<=8 or (len(args)==9 and args[7]=='restart-before-reply'):
+        serve(*args[:3], Path(args[3]), *args[4:8], listener_fd=int(args[8]) if len(args)==9 else None)
+    else:
+        raise SystemExit('Invalid guest fixture arguments')
