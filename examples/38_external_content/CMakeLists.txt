@@ -126,7 +126,7 @@ if((NEXAUI_CONTENT_BUILD_BROWSER_FIXTURE OR NEXAUI_CONTENT_BUILD_GUEST_FIXTURE) 
     message(FATAL_ERROR "Browser and guest frame cases require the native fixture and NEXAUI_CONTENT_BUILD_PNG")
 endif()
 if(BUILD_TESTING AND NEXAUI_CONTENT_BUILD_GUEST_FIXTURE)
-    find_package(Python3 QUIET COMPONENTS Interpreter)
+    find_package(Python3 3.8 QUIET COMPONENTS Interpreter)
     if(Python3_Interpreter_FOUND)
         add_test(NAME content_guest_accessibility COMMAND "${Python3_EXECUTABLE}" -B
             "${CMAKE_CURRENT_SOURCE_DIR}/test_guest_accessibility.py")

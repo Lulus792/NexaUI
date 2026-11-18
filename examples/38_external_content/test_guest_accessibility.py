@@ -22,7 +22,9 @@ class GuestAccessibilityTest(unittest.TestCase):
         self.channel.peer, self.guest = socket.socketpair()
         self.addCleanup(self.guest.close)
         self.guest.settimeout(.5)
-        self.enterContext(patch('guest_accessibility.AX_REPLY_TIMEOUT', .04, create=True))
+        timeout = patch('guest_accessibility.AX_REPLY_TIMEOUT', .04, create=True)
+        timeout.start()
+        self.addCleanup(timeout.stop)
 
     def expect_ticket(self, ticket):
         self.assertEqual(self.guest.recv(REQUEST.size), REQUEST.pack(ticket))
