@@ -342,15 +342,21 @@ uses 32 MiB RAM, TCG and a read-only temporary boot image.
 
 The app owns QEMU and a private QMP socket. The worker fits the entire
 guest VGA image using the existing PNG producer. QMP confirms pause
-and resume. **Enter guest** grants keyboard focus. Press
-**Ctrl+Shift+F12** to release it. The input gate also releases admitted
-keys on native focus loss. **Disconnect** withdraws console input
-while the guest stays running. The owner joins QEMU on fixture close.
+and resume. **Enter guest** enables keyboard input and relative motion
+with the three main mouse buttons. The fitted guest image defines the
+active pointer area. The first pointer position when entering establishes
+the motion reference. The PS/2 fixture uses the primary three buttons
+and leaves the wheel and side buttons unavailable.
 
-The guest fixture verifies a VGA display and normalized keyboard input.
+Press **Ctrl+Shift+F12** to return input to the host. The input gate
+releases held keys and buttons on native focus loss and on movement
+outside the guest image. **Disconnect** drains guest input and keeps
+the last image while QEMU stays running. The owner joins QEMU on
+fixture close.
+
 The host advertises clipboard, file, network, microphone and device
-sharing as unavailable. Guest pointer input, a full guest desktop,
-persistent storage and reset confirmation remain separate work.
+sharing as unavailable. A full guest desktop, persistent storage and
+reset confirmation remain separate work.
 
 ## Optional PDF producer on Linux
 

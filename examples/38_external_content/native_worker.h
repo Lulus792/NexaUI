@@ -37,7 +37,7 @@ typedef struct native_job {
     content_ax_action ax_action;
 #endif
 #ifdef CONTENT_NATIVE_GUEST
-    content_guest_keys guest_keys;
+    content_guest_batch guest_input;
 #endif
 } native_job;
 typedef struct native_png_source {
@@ -370,7 +370,7 @@ static void *native_worker_entry(void *user) {
         nx_rect browser_caret={0};
 #ifdef CONTENT_NATIVE_GUEST
         if (worker->guest_socket)
-            result=content_guest_frame(worker->guest_socket,job.request,job.sequence,job.kind,&job.guest_keys,&data,&bytes);
+            result=content_guest_frame(worker->guest_socket,job.request,job.sequence,job.kind,&job.guest_input,&data,&bytes);
         else
 #endif
 #ifdef CONTENT_NATIVE_BROWSER

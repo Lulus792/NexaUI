@@ -14,16 +14,17 @@
 #include "native_browser_ax.h"
 #endif
 
-enum input_phase { INPUT_IDLE, INPUT_PENDING, INPUT_ACTIVE, INPUT_RELEASED, INPUT_FOCUS_LOST, INPUT_DISCONNECTED };
+enum input_phase { INPUT_IDLE, INPUT_PENDING, INPUT_ACTIVE, INPUT_RELEASED, INPUT_FOCUS_LOST,
+                   INPUT_DISCONNECTED, INPUT_DISCONNECTING };
 static const char *input_name(enum input_phase phase) {
     static const char *names[]={"Scaled frame ready.","Release keys to enter content.",
         "Input active: Ctrl+Shift+F12 exits.","Input released.","Input focus lost.","Input disconnected; pixels retained."};
     return names[(unsigned)phase];
 }
 static const char *guest_input_name(enum input_phase phase) {
-    static const char *names[]={"Guest running. Keyboard only.","Release keys to enter guest.",
-        "Guest keyboard active: Ctrl+Shift+F12 exits.","Guest keyboard released.","Guest keyboard focus lost.",
-        "Console disconnected. Guest retained."};
+    static const char *names[]={"Guest running. Keyboard and three-button mouse.","Release keys and buttons to enter guest.",
+        "Guest input active: Ctrl+Shift+F12 exits.","Guest input released.","Guest input focus lost.",
+        "Console disconnected. Guest retained.","Disconnecting console. Releasing guest input."};
     return names[(unsigned)phase];
 }
 enum phase { PREPARING, WAITING, REPLACED, RELEASED, OLD_REJECTED, FRESH_PENDING, READY,
@@ -884,11 +885,6 @@ int main(void) {
                 if(nx_window_next_event(window,&event,&available)!=NX_OK) goto done;
                 if(!available) break;
                 ++routed;
-                if (guest_case&&(event.type==NX_EVENT_POINTER_MOVE||event.type==NX_EVENT_POINTER_DOWN||
-                    event.type==NX_EVENT_POINTER_UP||event.type==NX_EVENT_WHEEL)) {
-                    if (nx_context_queue_event(context,&event)!=NX_OK) goto done;
-                    continue;
-                }
                 if(event.type==NX_EVENT_FOCUS||event.type==NX_EVENT_KEY_DOWN||event.type==NX_EVENT_KEY_UP||event.type==NX_EVENT_POINTER_CANCEL) {
                     printf("INPUT_NATIVE type=%d key=%d focus=%d repeat=%d\n",(int)event.type,(int)event.key,event.focused,event.repeat);fflush(stdout);
                 }
@@ -904,7 +900,8 @@ int main(void) {
                 }
                 /* Some backends deliver pointer cancellation before FocusOut.
                    Preserve the actual focus-loss reason after that release. */
-                if(event.type==NX_EVENT_FOCUS&&!event.focused&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED) {
+                if(event.type==NX_EVENT_FOCUS&&!event.focused&&phase==SCALED_READY&&
+                    input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_DISCONNECTING) {
                     input_phase=INPUT_FOCUS_LOST;need_frame=1;
                 }
             }
@@ -1327,21 +1324,28 @@ int main(void) {
             nav_completion=state.completed+1; phase=PDF_PAGE_PENDING; need_frame=1;
         }
         if(input) {
-            if(action==16&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_ACTIVE) {
+            if(action==16&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&
+                input_phase!=INPUT_DISCONNECTING&&input_phase!=INPUT_ACTIVE) {
                 input_phase=INPUT_PENDING;
                 if(nx_focus_set(context,100)!=NX_OK) goto done;
                 need_frame=1;
             } else if(action==17&&(input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING)) {
                 if(content_input_release(input)!=NX_OK||nx_focus_set(context,15)!=NX_OK) goto done;
                 input_phase=INPUT_RELEASED;need_frame=1;
-            } else if(action==18&&input_phase!=INPUT_DISCONNECTED) {
+            } else if(action==18&&input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_DISCONNECTING) {
                 if(content_input_release(input)!=NX_OK||nx_focus_set(context,15)!=NX_OK) goto done;
-                input_phase=INPUT_DISCONNECTED;need_frame=1;
+                input_phase=guest_case?INPUT_DISCONNECTING:INPUT_DISCONNECTED;need_frame=1;
             }
             content_input_target target={.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
                 .width=status.request.width,.height=status.request.height,
-                .available=phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED,
+                .available=phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_DISCONNECTING,
                 .focused=nx_focus_id(context)==100};
+            if (guest_case) {
+                target.bounds=content_image_destination(status,target.bounds);
+                target.width=status.image.source_width;
+                target.height=status.image.source_height;
+                target.available=target.available&&target.width&&target.height;
+            }
             content_input_status before,after;
             if(content_input_get_status(input,&before)!=NX_OK||content_input_set_target(input,&target)!=NX_OK||
                 content_input_get_status(input,&after)!=NX_OK) goto done;
@@ -1356,11 +1360,16 @@ int main(void) {
             }
         }
 #ifdef CONTENT_NATIVE_GUEST
-        if(guest_case&&phase==SCALED_READY&&guest.pending.count&&!state.working&&!state.pending) {
-            if(!status.sequence||status.sequence==UINT64_MAX||
-                !native_schedule(&worker,(native_job){.request=status.request,.sequence=status.sequence+1,.kind=5,
-                    .guest_keys=guest.pending})) goto done;
-            guest.pending.count=0;
+        if(guest_case&&phase==SCALED_READY&&!state.working&&!state.pending) {
+            if (guest.pending.count) {
+                if(!status.sequence||status.sequence==UINT64_MAX||
+                    !native_schedule(&worker,(native_job){.request=status.request,.sequence=status.sequence+1,.kind=5,
+                        .guest_input=guest.pending})) goto done;
+                guest.pending.count=0;
+            } else if (input_phase==INPUT_DISCONNECTING) {
+                input_phase=INPUT_DISCONNECTED;
+                need_frame=1;
+            }
         }
 #endif
 #ifdef CONTENT_NATIVE_PDF
@@ -1400,7 +1409,7 @@ done:
 #ifdef CONTENT_NATIVE_GUEST
     if (guest_case) {
         expected=worker.completed;
-        if (expected<7u || guest.pending.count || guest.ledger.focused || native_input_keys(&guest.ledger) ||
+        if (expected<7u || guest.pending.count || guest.ledger.focused || native_input_keys(&guest.ledger) || guest.ledger.buttons ||
             input_phase!=INPUT_DISCONNECTED || phase!=SCALED_READY) result=1;
     }
 #endif

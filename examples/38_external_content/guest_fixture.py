@@ -4,14 +4,24 @@ import json
 from pathlib import Path
 import signal
 import socket
+import struct
 import subprocess
 import sys
 import tempfile
 import time
 
 PNG_LIMIT = 4 * 1024 * 1024
-KEY_LIMIT = 64
+INPUT_LIMIT = 128
+INPUT_RECORD_SIZE = 5
+INPUT_KEY, INPUT_BUTTON, INPUT_MOTION = 1, 2, 3
 QMP_LIMIT = 16384
+KEY_CODES = {k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'}
+KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
+                  7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
+                  13:'right', 14:'up', 15:'down', 16:'delete', 17:'insert', 18:'home',
+                  19:'end', 20:'pgup', 21:'pgdn', 22:'meta_l'})
+KEY_CODES.update({63+n:f'f{n}' for n in range(1,13)})
+BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 
 class Guest:
@@ -20,7 +30,9 @@ class Guest:
         self.trace = root / 'guest.trace'
         self.address = root / 'qmp.sock'
         self.held = set()
-        self.trace_cursor = b'R'
+        self.buttons = set()
+        self.trace_offset = 0
+        self.trace_cursor = b''
         self.serial = 0
         self.peer = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.stream = None
@@ -48,7 +60,7 @@ class Guest:
         self.stream = self.peer.makefile('rb')
         self.version = self.message(deadline)['QMP']['version']['qemu']
         self.command('qmp_capabilities')
-        self.wait_trace(self.trace_cursor)
+        self.wait_trace(b'R')
         return self.command('query-status')['status']
 
     def progress(self, deadline):
@@ -86,43 +98,66 @@ class Guest:
                 return reply['return']
 
     def wait_trace(self, expected):
+        if not expected:
+            return
         deadline = time.monotonic() + 2
         while True:
             if self.trace.exists():
                 with self.trace.open('rb') as stream:
-                    data = stream.read(1025)
+                    stream.seek(self.trace_offset)
+                    data = stream.read(len(expected) + 1)
                 if data == expected:
+                    self.trace_offset += len(expected)
+                    self.trace_cursor = (self.trace_cursor + data)[-256:]
                     return
                 if not expected.startswith(data):
-                    raise RuntimeError('Unexpected boot or keyboard transition in guest')
+                    raise RuntimeError('Unexpected boot or input transition in guest')
             self.progress(deadline)
 
-    def keyboard(self, payload):
-        special = {1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
-                   7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
-                   13:'right',14:'up',15:'down',16:'delete',17:'insert',18:'home',
-                   19:'end',20:'pgup',21:'pgdn',22:'meta_l'}
-        allowed = ({k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'} | special |
-                   {63+n:f'f{n}' for n in range(1,13)})
-        held = self.held.copy()
-        expected = self.trace_cursor
-        events = []
-        if not payload or len(payload)%2 or len(payload) > KEY_LIMIT*2:
-            raise ValueError('Invalid guest keyboard batch')
-        for code, down in zip(payload[::2], payload[1::2]):
+    def input(self, payload):
+        if not payload or len(payload)%INPUT_RECORD_SIZE or len(payload) > INPUT_LIMIT*INPUT_RECORD_SIZE:
+            raise ValueError('Invalid guest input batch')
+        keys, buttons = self.held.copy(), self.buttons.copy()
+        commands = []
+        for kind, code, down, lo, hi in struct.iter_unpack('5B', payload):
+            if kind == INPUT_MOTION:
+                dx, dy = struct.unpack('<hh', bytes((code, down, lo, hi)))
+                if not (dx or dy) or max(abs(dx), abs(dy)) >= 2048:
+                    raise ValueError('Invalid guest pointer motion')
+                # The PS/2 guest receives one packet per impulse.
+                while dx or dy:
+                    steps = [max(-127,min(127,value)) for value in (dx,dy)]
+                    events = [{'type':'rel','data':{'axis':axis,'value':step}}
+                              for axis, step in zip('xy',steps) if step]
+                    commands.append((events,b'P'))
+                    dx, dy = dx-steps[0], dy-steps[1]
+                continue
+            if kind not in (INPUT_KEY, INPUT_BUTTON) or lo or hi:
+                raise ValueError('Invalid guest input record')
+            allowed, held = (KEY_CODES,keys) if kind == INPUT_KEY else (BUTTONS,buttons)
             if code not in allowed or down not in (0,1) or (code in held)==bool(down):
-                raise ValueError('Invalid guest keyboard transition')
+                raise ValueError('Invalid guest button or key transition')
             if down:
                 held.add(code)
             else:
                 held.remove(code)
-            if code == ord('a'):
-                expected += b'D' if down else b'U'
-            events.append({'type':'key','data':{'key':{'type':'qcode','data':allowed[code]},'down':bool(down)}})
-        self.command('input-send-event', events=events)
-        self.wait_trace(expected)
-        self.trace_cursor, self.held = expected, held
-        print(f'GUEST_KEYS count={len(events)} held={len(held)} trace={expected.decode()}', flush=True)
+            if kind == INPUT_KEY:
+                token = (b'D' if down else b'U') if code==ord('a') else b''
+                event = {'type':'key','data':{'key':{'type':'qcode','data':allowed[code]},'down':bool(down)}}
+            else:
+                button, token = allowed[code]
+                token = token if down else token.lower()
+                event = {'type':'btn','data':{'button':button,'down':bool(down)}}
+            commands.append(([event],token))
+        deadline = time.monotonic() + 3.5
+        for events, token in commands:
+            if time.monotonic() >= deadline:
+                raise TimeoutError('Guest input batch response')
+            self.command('input-send-event', events=events)
+            self.wait_trace(token)
+        self.held, self.buttons = keys, buttons
+        print(f'GUEST_INPUT count={len(payload)//INPUT_RECORD_SIZE} held={len(keys)} '
+              f'buttons={len(buttons)} trace={self.trace_cursor.decode()}', flush=True)
 
     def frame(self):
         path = self.root / 'screen.png'
@@ -139,7 +174,8 @@ class Guest:
             if self.process.poll() is None and self.stream:
                 try:
                     status = self.command('query-status')['status']
-                    print(f'GUEST_CLOSE status={status} held={len(self.held)} trace={self.trace_cursor.decode()}',flush=True)
+                    print(f'GUEST_CLOSE status={status} held={len(self.held)} buttons={len(self.buttons)} '
+                          f'trace={self.trace_cursor.decode()}',flush=True)
                     self.command('quit')
                 except EOFError:
                     pass  # QEMU may close QMP immediately after quit.
@@ -189,10 +225,10 @@ def serve(engine, firmware, boot, address):
                                     kind in range(6) and len(fields)==(6 if kind==5 else 5)):
                                 raise ValueError('Guest request outside the fixture limits')
                             size = fields[5] if kind == 5 else 0
-                            if not 0 <= size <= KEY_LIMIT*2:
-                                raise ValueError('Guest key batch too large')
-                            keys = stream.read(size)
-                            if len(keys)!=size or stream.read(1):
+                            if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
+                                raise ValueError('Guest input batch too large')
+                            payload = stream.read(size)
+                            if len(payload)!=size or stream.read(1):
                                 raise ValueError('Invalid guest request framing')
                         if kind == 2:
                             guest.command('stop')
@@ -207,7 +243,7 @@ def serve(engine, firmware, boot, address):
                                 raise RuntimeError('Guest did not resume')
                             print('GUEST_STATUS running',flush=True)
                         if kind == 5:
-                            guest.keyboard(keys)
+                            guest.input(payload)
                         image = guest.frame()
                         peer.sendall(image)
                         print(f'GUEST_FRAME kind={kind} generation={generation} resize={resize} bytes={len(image)}',flush=True)

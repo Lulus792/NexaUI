@@ -1102,7 +1102,7 @@ int main(int argc,char **argv) {
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
     if(pdf_case)CHECK(state(second_text,ATSPI_STATE_DEFUNCT));
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":
-        guest_case?"Guest running. Keyboard only.":"Scaled frame ready.",0));
+        guest_case?"Guest running. Keyboard and three-button mouse.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     if (browser_ax) {
         CHECK(state(second_text,ATSPI_STATE_DEFUNCT)&&browser_ax_image(app)&&browser_pixel(display,outer,410,82,0xbf3f89u));
@@ -1114,21 +1114,50 @@ int main(int argc,char **argv) {
     } else if (guest_case) {
         CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu));
         CHECK(observe(app,"Host sharing unavailable: clipboard, files, network, microphone, devices.",0));
-        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
-            observe(app,"Guest keyboard active: Ctrl+Shift+F12 exits.",0)&&observe(app,viewport,1));
+        const char *active="Guest input active: Ctrl+Shift+F12 exits.";
+        const char *released="Guest input released.";
+        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&observe(app,active,0)&&observe(app,viewport,1));
+        CHECK(browser_pixel(display,outer,90,33,0xffffffu));
+        CHECK(point_at(id,120,55)&&host_marker(host_log,"x=120 y=105")&&point_at(id,150,75));
+        CHECK(browser_pixel(display,outer,90,33,0x0000ffu)&&browser_pixel(display,outer,150,72,0xffffffu)&&
+            input_chrome(display,id,"guest-pointer-moved"));
+        const char *mouse_buttons[]={"3","2"};
+        for (size_t i=0;i<sizeof(mouse_buttons)/sizeof(*mouse_buttons);++i) {
+            CHECK(drive("mousedown",mouse_buttons[i])&&browser_pixel(display,outer,150,72,0xffff00u));
+            CHECK(drive("mouseup",mouse_buttons[i])&&browser_pixel(display,outer,150,72,0xffffffu));
+        }
+        CHECK(drive("mousedown","1")&&browser_pixel(display,outer,150,72,0xffff00u)&&
+            input_chrome(display,id,"guest-button-down"));
         CHECK(drive("keydown","a")&&browser_pixel(display,outer,224,104,0x00ff00u)&&input_chrome(display,id,"guest-key-down"));
         CHECK(drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
-            observe(app,"Guest keyboard released.",0)&&observe(app,"Close",1));
-        CHECK(browser_pixel(display,outer,224,104,0xff00ffu)&&input_chrome(display,id,"guest-key-released"));
-        CHECK(drive("keyup","a")&&drive("keyup","shift")&&drive("keyup","ctrl")&&drive("key","a")&&observe(app,"Close",1));
-        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&observe(app,"Guest keyboard active: Ctrl+Shift+F12 exits.",0));
+            observe(app,released,0)&&observe(app,"Close",1));
+        CHECK(browser_pixel(display,outer,224,104,0xff00ffu)&&browser_pixel(display,outer,150,72,0xffffffu)&&
+            input_chrome(display,id,"guest-key-released"));
+        CHECK(drive("mouseup","1")&&drive("keyup","a")&&drive("keyup","shift")&&drive("keyup","ctrl")&&
+            drive("key","a")&&observe(app,"Close",1));
+        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&observe(app,active,0));
+        CHECK(drive("mousedown","1")&&browser_pixel(display,outer,150,72,0xffff00u));
+        CHECK(point_at(id,164,82)&&browser_pixel(display,outer,179,87,0xffff00u)&&
+            browser_pixel(display,outer,150,72,0xff00ffu)&&input_chrome(display,id,"guest-button-drag"));
+        CHECK(point_at(id,150,75)&&browser_pixel(display,outer,150,72,0xffff00u));
         CHECK(drive("keydown","a")&&browser_pixel(display,outer,224,104,0x00ff00u));
         char desktop_id[32];
         snprintf(desktop_id,sizeof(desktop_id),"%lu",(unsigned long)DefaultRootWindow(display));
-        CHECK(drive("windowfocus",desktop_id)&&observe(app,"Guest keyboard focus lost.",0)&&
-            browser_pixel(display,outer,224,104,0xff00ffu)&&input_chrome(display,id,"guest-focus-release"));
-        CHECK(drive("keyup","a")&&drive("windowfocus",id)&&press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0));
-        puts("GUEST_NATIVE verified: actual VGA pixels, pause/resume, native keyboard, host escape and focus-loss release");
+        CHECK(drive("windowfocus",desktop_id)&&observe(app,"Guest input focus lost.",0)&&
+            browser_pixel(display,outer,224,104,0xff00ffu)&&browser_pixel(display,outer,150,72,0xffffffu)&&
+            input_chrome(display,id,"guest-focus-release"));
+        CHECK(drive("mouseup","1")&&drive("keyup","a")&&drive("windowfocus",id)&&
+            point_at(id,420,-119)&&drive("click","1"));
+        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&observe(app,active,0));
+        CHECK(point_at(id,150,75)&&drive("mousedown","1")&&browser_pixel(display,outer,150,72,0xffff00u));
+        CHECK(point_at(id,30,75)&&observe(app,released,0)&&browser_pixel(display,outer,150,72,0xffffffu)&&
+            input_chrome(display,id,"guest-letterbox-release")&&drive("mouseup","1"));
+        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&observe(app,active,0));
+        CHECK(point_at(id,150,75)&&drive("mousedown","1")&&browser_pixel(display,outer,150,72,0xffff00u));
+        CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
+            browser_pixel(display,outer,150,72,0xffffffu)&&input_chrome(display,id,"guest-disconnect-release")&&
+            drive("mouseup","1"));
+        puts("GUEST_NATIVE verified: VGA pixels, pause/resume, keyboard, three mouse buttons, host escape, focus loss, letterbox exit and disconnect");
         /* The X carrier alone does not restore native Wayland keyboard focus. */
         CHECK(point_at(id,274,-38)&&drive("click","1"));
         goto closed;
