@@ -27,7 +27,10 @@ instances. The renderer captures those disjoint regions in one image-copy
 command. Overlap or an intervening opaque draw starts a fresh capture for the
 next reader. Instances and attachment writes preserve primitive order. The
 hardware scissor encloses the group, while each fragment also enforces its
-instance's exact clip. This uses standard
+instance's exact clip. Each LOAD/STORE render area covers the pass's complete
+scissor union, rounded out to the render pass's device granularity and clamped
+to the framebuffer. The calculation also covers sequential draws in diagnostic mode.
+This uses standard
 instanced attributes and direct `vkCmdDraw` with `firstInstance`; it requires no
 storage-buffer descriptor path, indirect draw feature or relaxed raster order.
 The selected slot's submission fence protects CPU writes, buffer growth and
@@ -39,8 +42,10 @@ payload bytes. They separate submission retirement, preparation, acquisition,
 encoding, submit and present intervals. A discarded pre-submit attempt leaves
 the previous profile intact. These are CPU elapsed intervals, including waits
 and scheduling, not GPU timestamps. `history_copies` counts copy commands and
-`history_copy_bytes` sums all copied pixel regions. The
-[pre-instancing baseline](../../benchmarks/baselines/vulkan-19c07ba/README.md)
+`history_copy_bytes` sums all copied pixel regions. `render_area_pixels` sums
+the declared attachment area of every pass. [Vulkan render area](https://docs.vulkan.org/refpages/latest/refpages/source/VkRenderPassBeginInfo.html)
+
+The [pre-instancing baseline](../../benchmarks/baselines/vulkan-19c07ba/README.md)
 retains 192 original measured frames with native GPU/reference checks.
 
 Native `--smoke` keeps correctness checks; the explicit test-build `--profile`

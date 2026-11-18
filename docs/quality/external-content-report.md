@@ -2229,3 +2229,45 @@ The audit read back its 68 members, including the two changed source
 files, paired CPU traces, native results and representative pixel captures.
 The build recipe can export the exact source revision recorded in the
 manifest. Physical driver performance remains open.
+
+## Bounded Vulkan render areas, 2026-11-18
+
+Renderer revision `103508c581ce601b0540d9c32c7f316320376c9e` limits each
+LOAD/STORE render pass to the union of its clipped drawing bounds. It rounds
+the region outward to the device's published render-area granularity and
+clamps it at the framebuffer edge. Opaque draws following a destination
+reader are included in the same region even with batching disabled. The
+renderer retains order, clipping and read/write barriers. [Vulkan attachment load and store](https://docs.vulkan.org/spec/latest/chapters/renderpass.html#renderpass-load-operations)
+
+The private command recorder measured 11.4 seconds in image barriers and
+12.9 seconds opening and closing render passes in 70 baseline PDF frames.
+The comparison used the same recorder and validation for
+`92e3d91f4800c00756ea4a308e992f66f97b22ed` and the candidate on Weston
+14.0.2, Mesa 26.1.6 Lavapipe with two rendering threads, and validation
+layers 1.4.343. For the most frequent shared counter signature, eight frames
+per variant each had 76 commands, 60 passes, 28,680 history bytes and
+57,344 bitmap-upload bytes. The declared attachment area per frame fell
+from 10,368,000 to 165,414 summed pixels. Median CPU encoding fell from
+180.1 to 103.2 ms. The recorder measures CPU time with validation and
+scheduling. The pixel counter measures the declared regions.
+
+The complete native Vulkan PDF workflow passed within the existing
+35-second peer limit. Release finished in 25.57 seconds and ASan/UBSan
+with leak detection finished in 33.66 seconds. The instrumented candidate
+finished in 24.77 seconds. The instrumented baseline stopped at the same
+35-second limit. The independent peer checked search, keyboard page jumps,
+text geometry and close. All eleven PDF viewport captures agree byte for
+byte with the software reference. The full-area control produces the
+right image and fails the exact area assertion.
+
+The candidate passed 69 CTests across the installed fixture, two native
+Wayland core builds and a shared X11 core build. Eleven native fixture
+workflows passed. The archive `nexaui-vulkan-render-area477.tar.gz` retains
+78 verified members, including exact changed source files, both profiled
+runs, native and CTest receipts, and representative lossless viewport
+captures. Its SHA-256 is
+`e0602f559814c76e4f8db0e3af3ad1b49da716e52e5d24d598cf306007655ccf`.
+
+Physical GPU performance and the Aetheri compositor integration remain
+open. The proved Vulkan PDF behavior covers the private Wayland/Lavapipe
+configuration and the existing external-content fixture.

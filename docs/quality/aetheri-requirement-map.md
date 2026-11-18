@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Vulkan source `103508c` advances R01/R06/D08 with device-aligned render
+areas. The full native PDF workflow completes within its original limit
+on Lavapipe in Release and ASan/UBSan, including keyboard and AT-SPI
+interaction. Physical GPU and Aetheri compositor acceptance remain open.
+[Vulkan render-area and PDF evidence](external-content-report.md#bounded-vulkan-render-areas-2026-11-18)
+
 Vulkan source `1f68c15` advances R01/R02/R06 by batching disjoint alpha and
 bitmap regions. The tests cover clipped and overlapping primitives at
 four scales, compare displayed content and record a reduction in Vulkan
