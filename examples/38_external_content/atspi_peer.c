@@ -578,6 +578,25 @@ static int guest_video(AtspiAccessible *app, int desktop) {
     return ok;
 }
 
+static int guest_resource_counter(AtspiAccessible *app,const char *prefix,unsigned long long *value) {
+    AtspiAccessible *panel=find(app,"Guest resources",0);
+    if (!panel) return 0;
+    int count=atspi_accessible_get_child_count(panel,NULL), found=0;
+    size_t length=strlen(prefix);
+    for (int i=0;i<count&&!found;++i) {
+        AtspiAccessible *row=atspi_accessible_get_child_at_index(panel,i,NULL);
+        char *name=row?atspi_accessible_get_name(row,NULL):NULL;
+        if (name&&!strncmp(name,prefix,length)) {
+            char suffix[7]={0}, end=0;
+            found=sscanf(name+length,"%llu %6s%c",value,suffix,&end)==2&&!strcmp(suffix,"bytes");
+        }
+        g_free(name);
+        if (row) g_object_unref(row);
+    }
+    g_object_unref(panel);
+    return found;
+}
+
 static AtspiAccessible *pdf_text(AtspiAccessible *app, const char *expected) {
     for(unsigned i=0;i<200;++i) {
         AtspiAccessible *node=find(app,"PDF page text",0);
@@ -744,12 +763,13 @@ int main(int argc,char **argv) {
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
-        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&
+        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&strcmp(test_case,"guest-storage")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int browser_case=!strcmp(test_case,"browser");
-    int guest_desktop=!strcmp(test_case,"guest-desktop");
+    int guest_storage=!strcmp(test_case,"guest-storage");
+    int guest_desktop=guest_storage||!strcmp(test_case,"guest-desktop");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
@@ -1119,6 +1139,15 @@ int main(int argc,char **argv) {
     } else if (guest_desktop) {
         CHECK(guest_video(app,1)&&input_chrome(display,id,"guest-desktop-scaled"));
         CHECK(observe(app,"Host sharing unavailable: clipboard, files, network, microphone, devices.",0));
+        unsigned long long reads=0, before=0, after=0;
+        CHECK(focus(app,"Resources")&&drive("key","Return")&&observe(app,"Guest resources",0)&&
+            observe(app,"1 vCPU, 768 MiB RAM assigned",0)&&observe(app,"Guest running",0));
+        if (guest_storage) {
+            CHECK(observe(app,"Work disk: 16 MiB, read/write",0)&&
+                guest_resource_counter(app,"Device read ",&reads)&&reads>0&&
+                guest_resource_counter(app,"Device wrote ",&before));
+        } else CHECK(observe(app,"No persistent disk attached",0));
+        CHECK(input_chrome(display,id,"guest-resources-first")&&drive("key","Escape")&&observe(app,"Resources",1));
         CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
             observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0));
         CHECK(point_at(id,140,90)&&host_marker(host_log,"x=157 y=259")&&
@@ -1131,6 +1160,14 @@ int main(int argc,char **argv) {
         CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
         puts("GUEST_DESKTOP_NATIVE verified: fitted live Linux desktop, guest terminal typing, host escape and retained disconnect");
+        if (guest_storage) {
+            CHECK(focus(app,"Resources")&&drive("key","Return")&&observe(app,"Guest running",0)&&
+                observe(app,"Work disk: 16 MiB, read/write",0)&&
+                guest_resource_counter(app,"Device wrote ",&after)&&after>before&&
+                input_chrome(display,id,"guest-resources-written"));
+            printf("GUEST_STORAGE_NATIVE before=%llu after=%llu\n",before,after);
+            CHECK(drive("key","Escape")&&observe(app,"Resources",1)&&browser_pixel(display,outer,156,43,0x00a800u));
+        }
         CHECK(point_at(id,274,-38)&&drive("click","1"));
         goto closed;
     } else if (guest_case) {

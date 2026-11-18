@@ -26,9 +26,10 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 
 class Guest:
-    def __init__(self, engine, firmware, boot, root, initrd=None):
+    def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False):
         self.root = root
         self.desktop = initrd is not None
+        self.disk = disk is not None
         self.trace = root / 'guest.trace'
         self.address = root / 'qmp.sock'
         self.held = set()
@@ -39,10 +40,17 @@ class Guest:
         self.peer = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.stream = None
         if self.desktop:
+            cmdline = 'console=ttyS0 quiet rootfstype=ramfs'
+            if disk:
+                cmdline += ' nexaui.work=' + ('rw' if writable else 'ro')
             boot_options = [
                 '-m', '768', '-device', 'virtio-vga,id=guest-gpu,xres=800,yres=600',
-                '-kernel', boot, '-initrd', initrd, '-append', 'console=ttyS0 quiet rootfstype=ramfs',
+                '-kernel', boot, '-initrd', initrd, '-append', cmdline,
                 '-serial', f'file:{self.trace}']
+            if disk:
+                node = {'driver':'raw','node-name':'work','read-only':not writable,
+                        'file':{'driver':'file','filename':str(disk)}}
+                boot_options += ['-blockdev',json.dumps(node),'-device','virtio-blk-pci,drive=work,id=work-disk']
         else:
             boot_options = [
                 '-m', '32', '-device', 'VGA', '-serial', 'none',
@@ -209,6 +217,25 @@ class Guest:
             raise ValueError('Invalid guest screendump')
         return data
 
+    def resources(self):
+        state = {'running':1,'paused':2}[self.command('query-status')['status']]
+        cpus = len(self.command('query-cpus-fast'))
+        memory = self.command('query-memory-size-summary')
+        ram = memory['base-memory'] + memory.get('plugged-memory',0)
+        flags = capacity = read = written = 0
+        if self.disk:
+            device, = [entry for entry in self.command('query-block')
+                        if entry.get('inserted',{}).get('node-name')=='work']
+            block = device['inserted']
+            stats, = [entry['stats'] for entry in self.command('query-blockstats')
+                      if entry.get('qdev')==device['qdev']]
+            flags = 1 if block['ro'] else 3
+            capacity = block['image']['virtual-size']
+            read, written = stats['rd_bytes'], stats['wr_bytes']
+        print(f'GUEST_RESOURCES state={state} flags={flags} cpus={cpus} ram={ram} '
+              f'capacity={capacity} read={read} written={written}',flush=True)
+        return struct.pack('>4sBBHQQQQ',b'NXR1',state,flags,cpus,ram,capacity,read,written)
+
     def close(self):
         try:
             if self.process.poll() is None and self.stream:
@@ -222,6 +249,8 @@ class Guest:
                         buttons = re.findall(rb'\(BTN_LEFT\), value ([01])', output)
                         print(f'GUEST_DESKTOP_INPUT terminal={typed} motion={motion} '
                               f'left={b"".join(buttons).decode()}',flush=True)
+                        for storage in re.findall(rb'^NEXAUI_STORAGE (\w+)\r?$',output,re.M):
+                            print(f'GUEST_STORAGE {storage.decode()}',flush=True)
                     print(f'GUEST_CLOSE status={status} held={len(self.held)} buttons={len(self.buttons)} '
                           f'trace={self.trace_cursor.decode()}',flush=True)
                     self.command('quit')
@@ -242,13 +271,13 @@ class Guest:
             self.peer.close()
 
 
-def serve(engine, firmware, boot, address, initrd=None):
+def serve(engine, firmware, boot, address, initrd=None, disk=None):
     def interrupt(*_):
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, interrupt)
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
-        guest = Guest(engine, firmware, boot, Path(temp), initrd)
+        guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk))
         try:
             status = guest.wait_ready()
             if status != 'running':
@@ -271,7 +300,7 @@ def serve(engine, firmware, boot, address, initrd=None):
                             generation,resize,width,height,kind = fields[:5]
                             if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                                     0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                                    kind in range(7 if guest.desktop else 6) and len(fields)==(6 if kind==5 else 5)):
+                                    kind in range(8 if guest.desktop else 6) and len(fields)==(6 if kind==5 else 5)):
                                 raise ValueError('Guest request outside the fixture limits')
                             size = fields[5] if kind == 5 else 0
                             if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
@@ -293,6 +322,9 @@ def serve(engine, firmware, boot, address, initrd=None):
                             print('GUEST_STATUS running',flush=True)
                         if kind == 5:
                             guest.input(payload)
+                        if kind == 7:
+                            peer.sendall(guest.resources())
+                            continue
                         image = guest.frame()
                         peer.sendall(image)
                         print(f'GUEST_FRAME kind={kind} generation={generation} resize={resize} bytes={len(image)}',flush=True)

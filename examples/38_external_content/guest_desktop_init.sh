@@ -14,9 +14,34 @@ chmod 700 /run/desktop
 modprobe virtio_gpu
 modprobe evdev
 modprobe psmouse
+case " $(cat /proc/cmdline) " in
+    *" nexaui.work=rw "*) work=rw ;;
+    *" nexaui.work=ro "*) work=ro ;;
+    *) work= ;;
+esac
+if [ -n "$work" ]; then
+    modprobe virtio_blk
+fi
 udevd --daemon
 udevadm trigger --action=add
 udevadm settle --timeout=5
+if [ -n "$work" ]; then
+    mkdir -p /mnt/work
+    if [ "$work" = ro ]; then
+        mount -t ext4 -o ro,noload,nodev,nosuid,noexec /dev/vda /mnt/work
+        if printf '%s\n' 'NexaUI persisted guest data' | cmp -s - /mnt/work/state.txt; then
+            printf '%s\n' 'NEXAUI_STORAGE restored' >/dev/ttyS0
+        else
+            printf '%s\n' 'NEXAUI_STORAGE mismatch' >/dev/ttyS0
+        fi
+        umount /mnt/work
+    else
+        mount -t ext4 -o rw,nodev,nosuid,noexec /dev/vda /mnt/work
+        [ ! -e /mnt/work/state.txt ]
+        : >/run/work-writable
+        printf '%s\n' 'NEXAUI_STORAGE fresh' >/dev/ttyS0
+    fi
+fi
 for event in /dev/input/event*; do
     if udevadm info -q property "$event" | grep -qx ID_INPUT_MOUSE=1; then
         evtest "$event" >/dev/ttyS0 2>&1 &
@@ -66,6 +91,13 @@ printf 'NexaUI console test\r\n'
 printf '%s\n' NEXAUI_DESKTOP_READY >/dev/ttyS0
 while IFS= read -r line; do
     if [ "$line" = nexa ]; then
+        if [ -f /run/work-writable ]; then
+            printf '%s\n' 'NexaUI persisted guest data' >/mnt/work/state.txt || exit 1
+            sync
+            umount /mnt/work || exit 1
+            rm /run/work-writable
+            printf '%s\n' 'NEXAUI_STORAGE saved' >/dev/ttyS0
+        fi
         sleep .4
         printf '\033[42m\033[2J\033[H'
         for row in 1 2 3 4 5 6; do

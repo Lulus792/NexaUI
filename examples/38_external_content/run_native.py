@@ -183,7 +183,38 @@ def run_browser(command, env, engine, accessible=False):
         return run_content_service(command,env,address,args)
 
 
-def run_guest(command, env, engine, firmware, kernel=None, initrd=None):
+def verify_guest_disk(engine, firmware, boot, initrd, disk, root):
+    from guest_fixture import Guest
+
+    def digest():
+        with disk.open('rb') as image:
+            return hashlib.file_digest(image,'sha256').hexdigest()
+
+    check_dir = root/'verify'
+    check_dir.mkdir(mode=0o700)
+    before = digest()
+    guest = Guest(engine, firmware, boot, check_dir, initrd, disk, writable=False)
+    try:
+        if guest.wait_ready() != 'running':
+            raise RuntimeError('Unexpected storage verification state')
+        with guest.trace.open('rb') as log:
+            serial = log.read(65536).splitlines()
+        if b'NEXAUI_STORAGE restored' not in serial:
+            raise RuntimeError('The new guest did not read the saved contents')
+        _, state, flags, _, _, capacity, read, written = struct.unpack('>4sBBHQQQQ',guest.resources())
+        if state != 1 or flags != 1 or capacity != disk.stat().st_size or not read or written:
+            raise RuntimeError('Read-only guest I/O did not match the verification contract')
+    finally:
+        if guest.close():
+            raise RuntimeError('Storage verification guest failed to exit')
+    if digest() != before:
+        raise RuntimeError('Read-only guest changed disk bytes')
+    print(f'GUEST_STORAGE_VERIFIED mode=readonly bytes={capacity} read={read} written={written} sha256={before}',flush=True)
+
+
+def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False):
+    engine = str(engine.resolve(strict=True))
+    firmware = str(firmware.resolve(strict=True))
     with tempfile.TemporaryDirectory(prefix='nexaui-guest-') as directory:
         root = Path(directory)
         if kernel:
@@ -208,10 +239,24 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None):
         address=root/'guest.sock'
         env['NEXAUI_CONTENT_TEST_GUEST_SOCKET']=str(address)
         args=[sys.executable,str(Path(__file__).with_name('guest_fixture.py')),
-              str(engine.resolve(strict=True)),str(firmware.resolve(strict=True)),str(boot),str(address)]
+              engine,firmware,str(boot),str(address)]
         if initrd:
             args.append(str(initrd))
-        return run_content_service(command,env,address,args,startup_timeout=36 if initrd else 12)
+        disk = root/'work.img'
+        if storage:
+            formatter=shutil.which('mke2fs')
+            if not formatter:
+                raise RuntimeError('The guest storage fixture requires mke2fs')
+            with disk.open('xb') as image:
+                image.truncate(16*1024*1024)
+            subprocess.run([formatter,'-q','-F','-t','ext4','-L','nexaui-work','-E',
+                            'lazy_itable_init=0,lazy_journal_init=0',str(disk)],check=True,timeout=15)
+            args.append(str(disk))
+        result=run_content_service(command,env,address,args,startup_timeout=36 if initrd else 12)
+        if storage and result==0:
+            # The engine inherits the private runtime environment for both boots.
+            verify_guest_disk(engine,firmware,str(boot),str(initrd),disk,root)
+        return result
 
 
 def main():
@@ -220,7 +265,7 @@ def main():
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
-    parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'browser', 'guest', 'guest-desktop',
+    parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'browser', 'guest', 'guest-desktop','guest-storage',
                                            'pending-close', 'rejected-close'), default='full')
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
     parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
@@ -254,10 +299,10 @@ def main():
         parser.error('--jpeg-gallery requires --png-gallery')
     if (args.case == 'browser') != bool(args.browser_engine):
         parser.error('--case browser and --browser-engine must be used together')
-    if (args.case in ('guest','guest-desktop')) != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
+    if (args.case in ('guest','guest-desktop','guest-storage')) != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
         parser.error('guest cases require --guest-engine and --guest-firmware')
-    if (args.case == 'guest-desktop') != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
-        parser.error('--case guest-desktop requires --guest-kernel and --guest-initrd')
+    if (args.case in ('guest-desktop','guest-storage')) != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
+        parser.error('graphical guest cases require --guest-kernel and --guest-initrd')
     if (args.browser_input or args.browser_pointer) and (not args.browser_engine or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
         parser.error('Browser input workflows require the browser case and Weston simple-IME')
     if args.browser_input and args.browser_pointer:
@@ -346,7 +391,8 @@ def main():
     if args.browser_engine:
         return run_browser(command, env, args.browser_engine,args.browser_accessibility)
     if args.guest_engine:
-        return run_guest(command,env,args.guest_engine,args.guest_firmware,args.guest_kernel,args.guest_initrd)
+        return run_guest(command,env,args.guest_engine,args.guest_firmware,args.guest_kernel,args.guest_initrd,
+                         storage=args.case=='guest-storage')
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

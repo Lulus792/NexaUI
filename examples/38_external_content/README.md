@@ -379,8 +379,20 @@ staged kernel version. Install `guest_desktop_init.sh` as executable
 root as a gzip-compressed `newc` initramfs. Use the matching QEMU VirtIO
 VGA modules for distributions that package them separately.
 
-Persistent storage, reset review, sharing grants and the guest's
-accessibility tree are separate work.
+The **Resources** dialog reads a snapshot from the private VM owner.
+It shows guest run state, assigned RAM, virtual CPUs and the work
+disk's capacity, access mode and cumulative device I/O. The dialog
+releases guest input and stays available after console disconnect.
+
+Use `--case guest-storage` with the same kernel and initramfs and have
+`mke2fs` on the host path. The harness formats a new temporary 16 MiB
+ext4 work disk. The terminal test writes and unmounts it before QEMU
+exits. A new QEMU process mounts the same bytes read-only and verifies
+the saved file. The harness checks the disk's SHA-256 before and after
+that read-only boot.
+
+Production disk ownership, reset review, sharing grants and the guest's
+accessibility tree remain open.
 
 ## Optional PDF producer on Linux
 

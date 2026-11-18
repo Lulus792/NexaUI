@@ -59,17 +59,21 @@ static uint8_t *read_font(const char *path, size_t *bytes) {
     }
     fclose(file); return data;
 }
-static nx_result label(nx_context *context, const nx_font_collection *fonts,
-    uint64_t id, const char *text, nx_rect bounds, double em) {
+static nx_result scoped_label(nx_context *context, const nx_font_collection *fonts,
+    uint64_t id, uint64_t parent, const char *text, nx_rect bounds, double em) {
     nx_text_layout *layout = NULL;
     nx_result result = nx_text_layout_create(fonts, text, strlen(text), NX_BIDI_AUTO, em, bounds.width, &layout);
     if (result == NX_OK) {
         nx_point origin = {bounds.x,bounds.y};
         nx_color color = {0.05f,0.07f,0.1f,1};
-        result = id ? nx_label(context,id,1,bounds,layout,origin,color,65536) :
+        result = id ? nx_label(context,id,parent,bounds,layout,origin,color,65536) :
             nx_draw_text_layout(context,layout,origin,color,65536);
     }
     nx_text_layout_destroy(layout); return result;
+}
+static nx_result label(nx_context *context,const nx_font_collection *fonts,
+    uint64_t id,const char *text,nx_rect bounds,double em) {
+    return scoped_label(context,fonts,id,1,text,bounds,em);
 }
 static nx_result scoped_button(nx_context *context, const nx_font_collection *fonts, uint64_t id, uint64_t parent,
     const char *text, const char *caption, float x, float y, float width, int enabled, unsigned *action) {
@@ -92,6 +96,56 @@ static nx_result input_hint(nx_context *context,const nx_font_collection *fonts,
     const char *hint=guest_case?"Host sharing unavailable: clipboard, files, network, microphone, devices.":
         "Physical input fixture; exit: Ctrl+Shift+F12";
     return label(context,fonts,3,hint,(nx_rect){16,122,448,14},11);
+}
+enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INSPECT_CLOSE,
+       GUEST_INSPECT_ROW };
+typedef struct guest_inspector {
+    uint64_t ticket;
+    int enabled, open, pending;
+    native_guest_report report;
+} guest_inspector;
+
+static nx_result guest_resources_overlay(nx_context *context,const nx_font_collection *fonts,
+    nx_window_info info,const guest_inspector *view,unsigned *action) {
+    static const char title[]="Guest resources";
+    float width=info.width<448?info.width-32:416;
+    nx_rect panel={(info.width-width)/2,44,width,232};
+    nx_overlay_desc overlay={.panel={.id=GUEST_INSPECT_PANEL,.parent_id=1,.bounds=panel,
+        .name={title,sizeof(title)-1u}},.backdrop_id=GUEST_INSPECT_BACKDROP,.dismiss_on_escape=1};
+    int dismissed;
+    nx_result result=nx_modal_begin(context,&overlay,&dismissed);
+    if (result!=NX_OK) return result;
+    float x=panel.x+16, y=panel.y+12;
+    result=label(context,fonts,0,title,(nx_rect){x,y,width-128,24},17);
+    if (result==NX_OK) result=scoped_button(context,fonts,GUEST_INSPECT_CLOSE,GUEST_INSPECT_PANEL,
+        "Close resources","Close",panel.x+width-86,y-4,70,1,action);
+    char lines[5][96];
+    unsigned count=1;
+    if (view->report.ticket!=view->ticket) {
+        strcpy(lines[0],"Reading guest resources");
+    } else if (view->report.result!=NX_OK) {
+        strcpy(lines[0],"Guest resources unavailable");
+    } else {
+        const content_guest_resources *r=&view->report.resources;
+        snprintf(lines[0],sizeof(lines[0]),"Guest %s",r->state==GUEST_RESOURCE_RUNNING?"running":"paused");
+        snprintf(lines[1],sizeof(lines[1]),"%u vCPU%s, %llu MiB RAM assigned",r->cpus,r->cpus==1?"":"s",
+            (unsigned long long)(r->ram/(1024u*1024u)));
+        count=3;
+        if (r->flags&GUEST_RESOURCE_DISK) {
+            snprintf(lines[2],sizeof(lines[2]),"Work disk: %llu MiB, %s",
+                (unsigned long long)(r->capacity/(1024u*1024u)),
+                r->flags&GUEST_RESOURCE_WRITABLE?"read/write":"read-only");
+            snprintf(lines[3],sizeof(lines[3]),"Device read %llu bytes",(unsigned long long)r->read);
+            snprintf(lines[4],sizeof(lines[4]),"Device wrote %llu bytes",(unsigned long long)r->written);
+            count=5;
+        } else strcpy(lines[2],"No persistent disk attached");
+    }
+    for (unsigned i=0;result==NX_OK&&i<count;++i)
+        result=scoped_label(context,fonts,GUEST_INSPECT_ROW+i,GUEST_INSPECT_PANEL,lines[i],
+            (nx_rect){x,y+42+24*i,width-32,20},14);
+    nx_result ended=nx_overlay_end(context);
+    if (dismissed) *action=GUEST_INSPECT_CLOSE;
+    return result==NX_OK?ended:result;
 }
 typedef struct pdf_text_view {
     uint64_t generation, resize, sequence, identity;
@@ -616,7 +670,7 @@ static nx_result pdf_find_results(nx_context *context, const nx_font_collection 
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
     nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case, int browser_case,
-    int guest_case,
+    int guest_case, const guest_inspector *inspector,
     pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
     unsigned *linked_page, pdf_selection *selection, int *redraw,
     char link_address[CONTENT_PDF_URI_LIMIT+1u], pdf_url_view *preview, int can_open_url,
@@ -683,7 +737,9 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
             phase==READY||(pdf_case&&phase==SCALED_READY)||(hit_page&&document->page>1u),action)!=NX_OK)) ||
         ((!gallery||scale==1)&&button(context,fonts,14,"Scale 2x",136,88,112,
             phase==RECOVERED||(hit_page&&scale==1)||(gallery&&document->page&&pdf_hit_page(phase)),action)!=NX_OK) ||
-        button(context,fonts,15,"Close",256,88,pdf_case&&info.width>=480?112:128,1,action)!=NX_OK) return 0;
+        button(context,fonts,15,"Close",256,88,(pdf_case||inspector->enabled)&&info.width>=480?112:128,1,action)!=NX_OK) return 0;
+    if (inspector->enabled&&phase==SCALED_READY&&info.width>=480&&
+        button(context,fonts,GUEST_INSPECT,"Resources",376,88,88,1,action)!=NX_OK) return 0;
     if (pdf_case&&info.width>=480&&pdf_can_navigate(phase)) {
         nx_utf8_span text;
         if (content_surface_get_text(surface,&text)!=NX_OK ||
@@ -767,6 +823,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
 #ifdef CONTENT_NATIVE_PNG
     if (document->thumbnails.open && content_pages_dialog(context,fonts,info,document,action,linked_page)!=NX_OK) return 0;
 #endif
+    if (inspector->open&&guest_resources_overlay(context,fonts,info,inspector,action)!=NX_OK) return 0;
     return nx_end_frame(context)==NX_OK;
 }
 
@@ -776,10 +833,10 @@ int main(void) {
     if (!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!path||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
-        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&
+        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&strcmp(test_case,"guest-storage")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
     int browser_case=!strcmp(test_case,"browser");
-    int guest_desktop=!strcmp(test_case,"guest-desktop");
+    int guest_desktop=!strcmp(test_case,"guest-desktop")||!strcmp(test_case,"guest-storage");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
     const char *guest_socket=guest_case?getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET"):NULL;
 #ifndef CONTENT_NATIVE_GUEST
@@ -827,6 +884,7 @@ int main(void) {
     native_guest_input guest={.ledger.generation=1};
 #endif
     int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
+    guest_inspector inspector={.enabled=guest_desktop};
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
 #ifdef CONTENT_NATIVE_BROWSER
     browser_editor editor={.pointer_enabled=browser_pointer_case};
@@ -934,6 +992,7 @@ int main(void) {
             if (count<0&&errno!=EAGAIN&&errno!=EWOULDBLOCK) goto done;
         }
         native_worker_state state=native_state(&worker);
+        inspector.report=state.guest_report;
         if (uri_launcher) {
             native_uri_result released=native_take_uri_result(&worker);
             if (released.ticket && released.ticket==preview.ticket) {
@@ -1024,7 +1083,7 @@ int main(void) {
         if (info.should_close) { result=0; break; }
         if (!need_frame&&!routed&&!worker_frame) {
 #ifdef CONTENT_NATIVE_GUEST
-            if (guest_desktop&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&
+            if (guest_desktop&&phase==SCALED_READY&&!inspector.open&&input_phase!=INPUT_DISCONNECTED&&
                 input_phase!=INPUT_DISCONNECTING&&!state.working&&!state.pending) {
                 content_surface_status current;
                 if (content_surface_get_status(surface,&current)!=NX_OK||!current.sequence||
@@ -1055,7 +1114,7 @@ int main(void) {
         ++frames;
         if ((!guest_desktop&&frames>((browser_pointer_case||guest_case)?220u:150u))||
             !frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
-            &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,guest_case,&text_view,window,query,&document,
+            &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,guest_case,&inspector,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view,
             browser_status,browser_enter,browser_ax_case&&phase==SCALED_READY&&!state.working&&!state.pending,
             &browser_action)) goto done;
@@ -1065,7 +1124,7 @@ int main(void) {
         } else find_pressed=0;
         if (phase!=last_phase) need_frame=1;
         last_phase=drawn;
-        if (!had_pages&&!had_preview&&!preview.uri[0]&&!search_focused&&nx_key_pressed(context,NX_KEY_ESCAPE)) {
+        if (!had_pages&&!had_preview&&!preview.uri[0]&&!inspector.open&&!search_focused&&nx_key_pressed(context,NX_KEY_ESCAPE)) {
             if (!selection.active || nx_focus_id(context)!=PDF_TEXT_NODE) { result=0; break; }
             selection.active=selection.dragging=selection.take_focus=0;
             if (nx_focus_set(context,leased?100u:15u)!=NX_OK) goto done;
@@ -1171,6 +1230,18 @@ int main(void) {
             initial_job=1;
         }
         if (action==15) { result=0; break; }
+        if (action==GUEST_INSPECT&&inspector.enabled&&!inspector.open) {
+            if (inspector.ticket==UINT64_MAX||content_input_release(input)!=NX_OK) goto done;
+            if (input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING) input_phase=INPUT_RELEASED;
+            ++inspector.ticket;
+            inspector.open=inspector.pending=1;
+            need_frame=1;
+        } else if (action==GUEST_INSPECT_CLOSE&&inspector.open) {
+            inspector.open=inspector.pending=0;
+            nx_result closed=nx_overlay_close(context);
+            if (closed!=NX_OK&&closed!=NX_ERROR_STATE) goto done;
+            need_frame=1;
+        }
 #ifdef CONTENT_NATIVE_BROWSER
         if (browser_action.node && !action && phase==SCALED_READY && content_result==NX_OK) {
             const content_ax_node *nodes;
@@ -1355,7 +1426,7 @@ int main(void) {
             content_input_target target={.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
                 .width=status.request.width,.height=status.request.height,
                 .available=phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_DISCONNECTING,
-                .focused=nx_focus_id(context)==100};
+                .focused=!inspector.open&&nx_focus_id(context)==100};
             if (guest_case) {
                 target.bounds=content_image_destination(status,target.bounds);
                 target.width=status.image.source_width;
@@ -1385,6 +1456,10 @@ int main(void) {
             } else if (input_phase==INPUT_DISCONNECTING) {
                 input_phase=INPUT_DISCONNECTED;
                 need_frame=1;
+            } else if (inspector.pending) {
+                if (!native_schedule(&worker,(native_job){.request=status.request,.sequence=inspector.ticket,
+                        .kind=CONTENT_GUEST_RESOURCES})) goto done;
+                inspector.pending=0;
             }
         }
 #endif

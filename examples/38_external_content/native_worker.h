@@ -20,9 +20,7 @@
 #ifdef CONTENT_NATIVE_BROWSER
 #include "browser_frame.h"
 #endif
-#ifdef CONTENT_NATIVE_GUEST
 #include "guest_frame.h"
-#endif
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
@@ -68,6 +66,11 @@ typedef struct native_uri_result {
     uint64_t ticket;
     nx_result result;
 } native_uri_result;
+typedef struct native_guest_report {
+    uint64_t ticket;
+    nx_result result;
+    content_guest_resources resources;
+} native_guest_report;
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
@@ -86,6 +89,7 @@ typedef struct native_worker {
     unsigned completed, publications, discarded;
     nx_result result;
     nx_rect browser_caret;
+    native_guest_report guest_report;
     native_png_source png_source;
     int pdf_file;
     uint64_t pdf_generation, indexed_generation;
@@ -110,6 +114,7 @@ typedef struct native_worker_state {
     unsigned completed;
     nx_result result;
     nx_rect browser_caret;
+    native_guest_report guest_report;
 } native_worker_state;
 
 static void native_dispose(void *user, void *data, size_t bytes) {
@@ -363,6 +368,18 @@ static void *native_worker_entry(void *user) {
         native_job job = worker->job;
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
+#ifdef CONTENT_NATIVE_GUEST
+        if (worker->guest_socket&&job.kind==CONTENT_GUEST_RESOURCES) {
+            native_guest_report report={.ticket=job.sequence};
+            report.result=content_guest_read_resources(worker->guest_socket,job.request,&report.resources);
+            pthread_mutex_lock(&worker->mutex);
+            worker->guest_report=report;
+            worker->working=0;
+            pthread_mutex_unlock(&worker->mutex);
+            native_wake(worker,NATIVE_FRAME_READY);
+            continue;
+        }
+#endif
         size_t bytes = 0;
         void *data = NULL;
         native_png_source original={0};
@@ -482,7 +499,8 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
 }
 static native_worker_state native_state(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
-    native_worker_state state = {worker->working, worker->pending, worker->prepared, worker->completed, worker->result,worker->browser_caret};
+    native_worker_state state = {worker->working, worker->pending, worker->prepared, worker->completed,
+        worker->result,worker->browser_caret,worker->guest_report};
     pthread_mutex_unlock(&worker->mutex);
     return state;
 }
