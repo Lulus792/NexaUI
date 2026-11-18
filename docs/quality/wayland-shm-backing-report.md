@@ -61,3 +61,26 @@ matched an unbuilt unrelated executable remain failed records. The corrected
 bounded selector passes all twelve intended cases. Earlier builds without the
 optional D-Bus headers pass the same rendering tests, but cannot supply native
 AT-SPI; their native publication failure is not counted as an accepted workflow.
+
+## Read-only `/tmp` check, 2026-11-18
+
+P04 now includes the confined Aetheri Greeter's read-only global `/tmp`
+requirement. Source `c39fb7b0e269d9fb2a206d57b71618c1714827c4` retains
+the existing anonymous allocation path for the ordinary software window
+and borrowed Wayland presenter. The ENOSYS fallback needs writable `/tmp`.
+
+The two Wayland presenter tests passed in a private Linux mount namespace
+after `statvfs` confirmed that `/tmp` was read-only. Their synthetic
+compositor sockets used a writable `/run` in that namespace. Each test
+source differs from the committed test only in that socket directory.
+The SDK sources are exact. The ordinary software test recorded nine
+successful `memfd_create` and reservation calls. The borrowed host test
+recorded five of each. The traces contain zero attempts to open the
+SDK's legacy `/tmp/nexaui-wayland-` file path.
+
+The first setup stopped before compilation because the WSL system root
+lacked `diff`. The isolated Alpine `diff` verified the fixture path
+adjustments and the rerun passed. The local `qemu-reset-recovery456-final.json`
+receipt lists the test diffs, command, syscall traces and their SHA-256
+hashes. Actual Greeter acceptance with its confinement policy and Aetheri
+SDK pin remains open.

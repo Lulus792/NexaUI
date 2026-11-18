@@ -412,8 +412,21 @@ status request. Reopening the dialog shows the observed result.
 The harness reads the guest's saved file from the retained disk and
 boots the restored disk with read-only access. It checks that the file
 is absent, the guest read the device, and the checkpoint hash stayed
-the same. Production disk ownership, recovery across owner restarts,
-sharing grants and the guest's accessibility tree remain open.
+the same.
+
+Add `--guest-owner-restart` to replace the VM owner between committing
+the reset and replying to the host. The original owner records the
+environment, checkpoint, and identities of the installed, baseline and
+retained images in a flushed receipt. The harness holds the private
+listener across the process exit. The replacement owner verifies the
+receipt and all three images for the status request. It supports status
+reads and refuses reset requests. A missing receipt or an inconsistent
+image yields an unknown result.
+
+Run `python3 examples/38_external_content/test_guest_reset.py -v` on
+Linux for the receipt and replacement-owner checks. Production disk
+enrollment, recovery when storage is unavailable, sharing grants and
+the guest's accessibility tree remain open.
 
 ## Optional PDF producer on Linux
 

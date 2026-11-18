@@ -1343,3 +1343,49 @@ tested profiles, bound scopes and independent readback measurements.
 
 Product-owned disk enrollment, durable recovery across owner restarts,
 individual external write grants and guest accessibility remain open.
+
+## Native QEMU reset owner replacement, 2026-11-18
+
+Consumer and Wayland-only SDK source
+`c39fb7b0e269d9fb2a206d57b71618c1714827c4` were built from Git archive
+SHA-256 `fa6814b66c39dcb7a41b07f625f94bc2c4853ec73196e2da008e2e5be84ab55b`.
+The isolated Alpine environment uses Clang 22.1.3, Weston 14.0.2 and
+QEMU 11.0.3 with the boot artifacts from the confirmed-reset checkpoint.
+
+The reset owner joins QEMU, installs the checked disk and flushes the
+directory. It records a bounded, versioned receipt for the confirmed
+environment and checkpoint with identities for the installed, baseline
+and retained images. The owner flushes the receipt and its directory
+entry before returning success. The replacement owner opens the receipt
+read-only, checks the scoped IDs and reobserves all three image identities
+and hashes. Missing or inconsistent evidence yields unknown. A different
+scope is rejected. The replacement owner refuses restore requests.
+
+In `--case guest-reset --guest-owner-restart`, the original owner exits
+after committing the receipt and before replying. The harness retains
+the private listener while starting a new process. Each native run sees
+distinct owner PIDs, exactly one disk replacement and one status read.
+The independent AT-SPI peer observes the restored result before and after
+reopening the dialog and verifies focus restoration. The retained disk
+still contains the exact 28-byte guest file. A separate, read-only QEMU
+boot checks the installed baseline and its stable hash.
+
+The exact revision passed 54 CTests across four fixture build profiles,
+eight native test runs, six receipt regression tests and 15 existing
+owner probes. Owner replacement passed in Release and under ASan/UBSan
+with leak detection. The original dropped-response, VGA, desktop and
+storage workflows passed alongside the default and PNG controls. The
+receipt tests cover malformed or missing receipts, byte and inode
+changes, duplicate publication, failed flush and rejection of replay by
+another process.
+
+The local bundle `nexaui-qemu-reset-recovery456.tar.gz` has SHA-256
+`32ae11e21fcdbb36247fd7e22e97c6f4075e83c62c257dffff974d49f9f972a5`.
+`qemu-reset-recovery456-final.json` records profile results, library and
+artifact hashes, PIDs, exact scopes and archive member hashes.
+
+Recovery here assumes that the mounted private work directory and the
+harness remain available. Product disk enrollment across UI launches,
+recovery across host or storage failure, external sharing grants and
+guest accessibility remain open. The optional Browser/PDF/JPEG matrix
+has separate prior evidence.
