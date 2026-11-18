@@ -8,6 +8,7 @@ import time
 
 
 AX_LIMIT = 4 + 32 * (22 + 256)
+AX_PREPARE_TIMEOUT = 45
 REQUEST = struct.Struct('>Q')
 REPLY = struct.Struct('>QI')
 
@@ -75,26 +76,51 @@ def serve_guest():
     import tty
 
     trigger = Path('/run/nexaui-guest-ax-open')
+    prepared = Path('/run/nexaui-guest-ax-prepared')
     shown = Path('/run/nexaui-guest-ax-shown')
-    app = None
-    epoch = 0
+
+    def launch():
+        prepared.unlink(missing_ok=True)
+        shown.unlink(missing_ok=True)
+        return subprocess.Popen(['/usr/bin/python3', '/guest_ax_fixture.py'], stdin=subprocess.PIPE)
+
+    epoch = 1
     last_ticket = 0
     with open('/dev/ttyS2', 'r+b', buffering=0) as port:
         tty.setraw(port.fileno())
-        print('NEXAUI_GUEST_AX_READY', flush=True)
+        app = launch()
         try:
+            deadline = time.monotonic() + AX_PREPARE_TIMEOUT
+            while not prepared.exists():
+                if app.poll() is not None or time.monotonic() >= deadline:
+                    print('NEXAUI_STARTUP_FAILED guest accessibility application', flush=True)
+                    return
+                time.sleep(.05)
+            print('NEXAUI_GUEST_AX_READY', flush=True)
             while (ticket := read_ticket(port)) > last_ticket:
                 last_ticket = ticket
                 if app and app.poll() is not None:
+                    app.stdin.close()
+                    shown.unlink(missing_ok=True)
                     if app.returncode:
                         print(f'NEXAUI_GUEST_AX_APP_FAILED {app.returncode}', flush=True)
-                    app = None
+                        app = None
+                    elif epoch < 65535:
+                        epoch += 1
+                        app = launch()
+                    else:
+                        app = None
                 if trigger.exists():
                     trigger.unlink()
                     if not app and epoch < 65535:
                         epoch += 1
-                        shown.unlink(missing_ok=True)
-                        app = subprocess.Popen(['/usr/bin/python3', '/guest_ax_fixture.py'], stdin=subprocess.DEVNULL)
+                        app = launch()
+                    if app and not app.stdin.closed:
+                        try:
+                            with app.stdin:
+                                app.stdin.write(b'1')
+                        except BrokenPipeError:
+                            pass
                 payload = b''
                 if app and shown.exists():
                     try:
@@ -111,13 +137,15 @@ def serve_guest():
                         return
                     pending = pending[sent:]
         finally:
-            if app and app.poll() is None:
-                app.terminate()
-                try:
-                    app.wait(timeout=1)
-                except subprocess.TimeoutExpired:
-                    app.kill()
-                    app.wait()
+            if app:
+                app.stdin.close()
+                if app.poll() is None:
+                    app.terminate()
+                    try:
+                        app.wait(timeout=1)
+                    except subprocess.TimeoutExpired:
+                        app.kill()
+                        app.wait()
 
 
 if __name__ == '__main__':

@@ -1,5 +1,7 @@
 """A fullscreen GTK test window that exports native guest semantics."""
 
+import sys
+
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -109,6 +111,10 @@ def press(_window, event):
 window.add(box)
 window.add_events(Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.BUTTON_RELEASE_MASK)
 window.connect('key-press-event', press)
+with open('/run/nexaui-guest-ax-prepared', 'xb'):
+    pass
+if sys.stdin.buffer.read(1) != b'1':
+    raise SystemExit(1)
 window.fullscreen()
 window.show_all()
 with open('/run/nexaui-guest-ax-shown', 'xb'):

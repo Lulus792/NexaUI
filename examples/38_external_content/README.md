@@ -583,7 +583,8 @@ initramfs with `guest_desktop_init.sh` as `/init`, the executable
 `/guest_ax_fixture.py`. The guest also needs D-Bus, AT-SPI, GTK 3, Python
 and PyGObject. The VM owner connects a private QEMU serial channel for
 accessibility. The guest test terminal's `axopen` command opens the
-fullscreen GTK test app. F8 changes its status and F9 closes it.
+fullscreen GTK test app. The guest prepares this app during startup and
+keeps it hidden until the command. F8 changes its status and F9 closes it.
 With `--guest-pointer --guest-ax`, F7 opens the fixture's scroll view.
 The native test observes both GTK scroll adjustments and the resulting
 video, then verifies that the guest application receives both side-button

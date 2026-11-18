@@ -228,7 +228,7 @@ def verify_guest_export(path):
 def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False,
               sharing=False, revoke=False, grant=False, bindfs=None, clipboard_source=None, clipboard_reader=None,
               network=False, microphone=False, usb=False, accessibility=False, extended_pointer=False):
-    from guest_fixture import DESKTOP_BOOT_TIMEOUT
+    from guest_fixture import desktop_boot_timeout
 
     engine = str(engine.resolve(strict=True))
     firmware = str(firmware.resolve(strict=True))
@@ -317,7 +317,7 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
             args.extend((str(disk),str(checkpoint)))
             if reset:
                 args.append('restart-before-reply' if restart else 'drop-response')
-        result=run_content_service(command,env,address,args,startup_timeout=DESKTOP_BOOT_TIMEOUT+12 if initrd else 12,
+        result=run_content_service(command,env,address,args,startup_timeout=12+(desktop_boot_timeout(accessibility) if initrd else 0),
                                    ready=address.with_suffix('.ready') if restart else None)
         if storage and result==0:
             if image_digest(checkpoint)!=baseline_hash or (image_digest(disk)==baseline_hash)!=reset:

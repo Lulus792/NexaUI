@@ -15,7 +15,7 @@ import sys
 import tempfile
 import time
 
-from guest_accessibility import GuestAccessibility
+from guest_accessibility import AX_PREPARE_TIMEOUT, GuestAccessibility
 from guest_clipboard import CLIPBOARD_LIMIT, GuestClipboard
 from guest_export import GuestExport, private_export_identity
 from guest_microphone import GuestMicrophone
@@ -48,6 +48,11 @@ EXPLORER_BUTTONS = {**BUTTONS, 4:('side',b''), 5:('extra',b'')}
 EXPLORER_CODES = (b'Input device name: "ImExPS/2 Generic Explorer Mouse"',
                   b'Event code 275 (BTN_SIDE)', b'Event code 276 (BTN_EXTRA)',
                   b'Event code 6 (REL_HWHEEL)', b'Event code 8 (REL_WHEEL)')
+
+
+def desktop_boot_timeout(accessibility):
+    return DESKTOP_BOOT_TIMEOUT + (AX_PREPARE_TIMEOUT if accessibility else 0)
+
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
@@ -205,7 +210,7 @@ class Guest:
         if self.accessibility:
             self.accessibility.connect()
         if self.desktop:
-            deadline = time.monotonic() + DESKTOP_BOOT_TIMEOUT
+            deadline = time.monotonic() + desktop_boot_timeout(self.accessibility is not None)
             while True:
                 if self.trace.exists():
                     with self.trace.open('rb') as stream:

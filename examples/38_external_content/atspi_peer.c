@@ -868,7 +868,11 @@ static int guest_ax_retired(AtspiAccessible *app,AtspiAccessible *old) {
 static int guest_ax_flow(AtspiAccessible *app,Display *display,Window outer,const char *window,int pointer_view) {
     const char *ready="Gaststatus – bereit",*updated="Gaststatus – fertig";
     AtspiAccessible *label=NULL,*second=NULL;
+    AtspiAccessible *early=find(app,"Guest accessibility check",0);
+    int hidden=early==NULL;
+    if (early) g_object_unref(early);
     int ok=0;
+    CHECK(hidden&&guest_video(app,1));
     CHECK(guest_console_marker(app,window,"axopen","NEXAUI_GUEST_AX_OPEN"));
     CHECK(await_guest_marker("NEXAUI_GUEST_AX_APP_STARTED",2400));
     CHECK(observe(app,ready,0));
