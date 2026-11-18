@@ -9,6 +9,7 @@ import time
 
 AX_LIMIT = 4 + 32 * (22 + 256)
 AX_PREPARE_TIMEOUT = 45
+AX_REPLY_TIMEOUT = 1.4
 REQUEST = struct.Struct('>Q')
 REPLY = struct.Struct('>QI')
 
@@ -18,6 +19,8 @@ class GuestAccessibility:
         self.address = root / 'ax.sock'
         self.peer = None
         self.ticket = 0
+        self.awaiting_reply = False
+        self.pending = bytearray()
 
     def connect(self):
         with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as peer:
@@ -26,37 +29,55 @@ class GuestAccessibility:
             self.peer = peer.dup()
 
     def close(self):
+        self.pending.clear()
+        self.awaiting_reply = False
         if self.peer:
             self.peer.close()
             self.peer = None
 
     def receive(self, size, deadline):
-        packet = bytearray()
-        while len(packet) < size:
-            remaining = deadline - time.monotonic()
-            if remaining <= 0:
+        while len(self.pending) < size:
+            timeout = 0 if deadline is None else deadline - time.monotonic()
+            if timeout <= 0 and deadline is not None:
                 raise TimeoutError('Guest accessibility reply')
-            self.peer.settimeout(remaining)
-            chunk = self.peer.recv(size - len(packet))
+            self.peer.settimeout(timeout)
+            chunk = self.peer.recv(size - len(self.pending))
             if not chunk:
                 raise EOFError('Guest accessibility channel closed')
-            packet.extend(chunk)
-        return bytes(packet)
+            self.pending.extend(chunk)
+
+    def receive_reply(self, deadline):
+        self.receive(REPLY.size, deadline)
+        ticket, size = REPLY.unpack_from(self.pending)
+        if ticket != self.ticket or size > AX_LIMIT:
+            raise ValueError('Unmatched guest accessibility frame')
+        self.receive(REPLY.size + size, deadline)
+        payload = bytes(self.pending[REPLY.size:])
+        self.pending.clear()
+        self.awaiting_reply = False
+        return payload
 
     def read(self):
         if not self.peer:
             return b''
-        self.ticket += 1
-        deadline = time.monotonic() + 1.4
         try:
-            self.peer.settimeout(1.4)
+            if self.awaiting_reply:
+                # Drain the old reply without delaying video or accepting stale semantics.
+                try:
+                    self.receive_reply(None)
+                except BlockingIOError:
+                    return b''
+            self.ticket += 1
+            deadline = time.monotonic() + AX_REPLY_TIMEOUT
+            self.peer.settimeout(AX_REPLY_TIMEOUT)
             self.peer.sendall(REQUEST.pack(self.ticket))
-            ticket, size = REPLY.unpack(self.receive(REPLY.size, deadline))
-            if ticket != self.ticket or size > AX_LIMIT:
-                raise ValueError('Unmatched guest accessibility frame')
-            return self.receive(size, deadline)
+            self.awaiting_reply = True
+            try:
+                return self.receive_reply(deadline)
+            except TimeoutError:
+                print('GUEST_AX snapshot=timed-out', flush=True)
+                return b''
         except (OSError, ValueError, EOFError) as error:
-            # A partial response cannot be the start of the next revision.
             print(f'GUEST_AX channel=closed reason={type(error).__name__}', flush=True)
             self.close()
             return b''

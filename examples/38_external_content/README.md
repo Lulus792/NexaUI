@@ -606,6 +606,15 @@ publishes usable pixels with an empty guest subtree. Disconnect clears the
 guest subtree and preserves the video. The verified profile is read-only.
 Supporting other window geometries and forwarding guest actions remain open.
 
+An accessibility reply that misses its deadline leaves the frame with video
+only. The owner keeps at most one request in flight and drains an expired
+reply without waiting on later frames. It discards that reply and requires
+two fresh matching snapshots around capture before restoring the subtree.
+An invalid header, closed socket or failed request write retires the channel.
+The transport checks run as `content_guest_accessibility` with the guest
+fixture and a Python interpreter, or directly with
+`python3 -B test_guest_accessibility.py`.
+
 ## Optional PDF producer on Linux
 
 Configure with `-DNEXAUI_CONTENT_BUILD_PNG=ON` and
