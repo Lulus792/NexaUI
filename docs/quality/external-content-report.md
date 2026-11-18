@@ -1733,3 +1733,62 @@ boot hashes, test outcomes, captures and archived hashes.
 The fixture provides explicit bounded text transfers in both
 directions. Aetheri's production grant authority, network,
 microphone and device sharing, and guest accessibility remain open.
+
+## Native QEMU private network grant, 2026-11-18
+
+The exact tested consumer revision is
+`ab73b8b505dde2b60db8ac053b813d935eda1cd4`. Its selected Git archive
+has SHA-256 `3ff2fd0f6d02730fc43a0d9a31536faf45bb09e260cac65051e81861c7ddc9b3`.
+The Wayland-only Release and sanitizer SDK libraries came from
+`266404bf1743248f16eb289c0a1c0d99701cc395`. The compared core sources,
+CMake configuration and data match the tested consumer revision. The
+audit verifies SDK hashes and the executable `/init` in the guest
+boot image. The native runs use QEMU 11.0.3 with libslirp, Weston
+14.0.2 and Alpine's VirtIO network driver.
+
+The opt-in `--guest-network` profile starts with the adapter absent.
+**Sharing** displays `10.0.2.100:8080` and the network access state.
+The original VM owner validates the selected environment before it
+attaches a VirtIO adapter. The QEMU user-mode backend enables
+`restrict`, disables IPv6 and forwards one TCP endpoint to the
+private Unix socket. A fresh read verifies that QEMU realized the
+expected adapter, backend and MAC and that the service accepted the
+Unix connection. The native peer observes **activation pending**
+before checking the resulting active state.
+[QEMU 11.0.3 network commands](https://github.com/qemu/qemu/blob/v11.0.3/qapi/net.json)
+[QEMU restricted user-mode network](https://qemu.readthedocs.io/en/v11.0.0/system/invocation.html#network-options)
+
+The independent guest terminal checks absence before approval and
+receives the exact TCP response after approval. The direct run also
+checks a host loopback listener on a dynamically allocated port.
+The guest has a default route during this probe, and the independent
+host listener receives no connection. Revocation retires the Unix
+listener and accepted socket before confirming cutoff. The owner
+also requests link-down. The guest attempts another operation on
+the held connection and opens a new connection. Neither probe
+receives the service response. The guest remains running, with the
+original adapter still present in QEMU. The test service records
+one request and no post-cutoff request.
+
+The native flow passed in Release and ASan/UBSan with leak detection.
+The combined Release run included both clipboard directions, a
+separate file grant and cutoff, and reset-owner replacement. The
+keyboard and AT-SPI peer verified the endpoint, status, controls and
+focus restoration. The network status rows measured 12.85:1 in each tested network profile.
+The audited set passed 54 CTests across four profiles, 13
+native runs and 166 focused checks. These include a foreign VM scope,
+a lost attach reply, adapter identity drift, local socket cleanup
+and earlier sharing-wire compatibility.
+
+The first standalone QEMU probe lost a burst of emulated keyboard
+events. The paced probe passed against the same guest image. Its
+final run uses the archived source revision.
+
+The local evidence bundle `nexaui-qemu-network463.tar.gz` has SHA-256
+`fe577c2af805cc4256ca42fdd5fdb257df8141ef5eb5f362a0fd67e9d67444c5`. The paired `qemu-network463-final.json` records the
+source, boot and library hashes, native observations and archived
+members.
+
+The fixture covers a single private TCP service. General network
+policy and Aetheri's production authorization, microphone and device
+sharing, and guest accessibility remain open.

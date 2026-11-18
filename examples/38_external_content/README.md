@@ -508,9 +508,24 @@ The guest offers the text through its native Wayland clipboard.
 A second reader checks the exact
 bytes. Clipboard content stays out of the fixture's ordinary logs.
 
+Use `--case guest-desktop --guest-network` for the private TCP
+service. The fixture boots with its network adapter absent.
+**Grant network access** attaches a VirtIO NIC and a restricted QEMU
+user-mode backend. The only forwarded service is
+`10.0.2.100:8080`. Its host endpoint uses a Unix socket in the
+fixture's private directory. The QEMU build needs libslirp, and
+the guest initramfs needs the `virtio_net` module.
+
+**Check network status** confirms the scoped adapter and service.
+**Revoke network access** stops the service and retires its listener
+and accepted socket before reporting revocation. The owner also
+requests link-down in QEMU. The test verifies a TCP exchange while
+the grant is active and probes both a held and a fresh connection
+after revocation. Console input and the guest process remain usable.
+
 Production disk enrollment, recovery when storage is unavailable,
-production grant policy, further sharing channels and guest accessibility
-remain open.
+production grant policy, broader networking, microphone and device
+sharing, and guest accessibility remain open.
 
 ## Optional PDF producer on Linux
 
