@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+The QEMU guest accessibility timeout fix advances A05/D08 at `4ff9d6d`.
+The VM owner can publish video during a late observation and restore the
+read-only guest subtree after fresh matching snapshots. A mismatched frame
+or a broken channel still retires the subtree. Production integration and
+human assistive acceptance remain open.
+[Guest accessibility timeout evidence](external-content-report.md#native-qemu-guest-accessibility-timeout-recovery-2026-11-18)
+
 The QEMU GTK guest composition test advances I08/D08 at `ea5b0a8`.
 The guest entry reports preedit, one Unicode commit and cancellation, then
 keeps the same buffer across host escape and re-entry. Aetheri can reuse this

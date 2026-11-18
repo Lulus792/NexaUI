@@ -2095,3 +2095,46 @@ both guest overlays, JUnit results, and positive and negative native receipts.
 This scope covers guest-owned composition through the QEMU console.
 Host IME forwarding, candidate placement, broader guest platforms and
 Aetheri compositor adoption still require their own acceptance evidence.
+
+## Native QEMU guest accessibility timeout recovery, 2026-11-18
+
+The relay change is `4ff9d6d77f0925aef3bb7d0c95b7c0059f5d2c00`. The test
+candidate `9a0da687070a488ddfeb8197e6a95bd1ab74b84c` uses installed Wayland-only
+SDK `266404bf1743248f16eb289c0a1c0d99701cc395`. The guest owner keeps a
+single read-only request in flight. A reply that misses its 1.4-second
+receive deadline yields a frame with video only. The owner retains the
+validated stream position, reads remaining bytes without waiting on later
+frames and discards the completed reply. The next request receives a new
+ticket. The existing frame contract requires fresh equal snapshots before
+and after video capture. Invalid headers, EOF and ambiguous failed request
+writes close the channel. [Python socket timeout and send behavior](https://docs.python.org/3.14/library/socket.html#socket.socket.sendall)
+
+Six socket and frame cases cover a partial header, a partial payload,
+continued video, new snapshot pairing, mismatched or oversized replies,
+EOF and an uncertain partial request write. Three fail with the prior
+host relay from `2b2c9ed5c35eb9d0c0ab25e0c616d09889f32b63`.
+
+The native test used QEMU 11.0.3, Weston 14.0.2, Alpine Linux
+`6.18.63-0-virt` and GTK 3.24.52. A separate boot layer delayed the first
+nonempty guest reply by 1.8 seconds. On Release and ASan/UBSan with leak
+detection, the owner logged a timeout, delivered a frame and recovered the
+guest subtree for an independent AT-SPI peer. The native check continued
+through guest composition, exit, reopening and console disconnect. With
+the same delayed image and the prior host relay, the channel closed and
+the client exited with status 1 waiting for the guest label. A Release
+reference run with the ordinary guest image covered pointer, accessibility
+and composition. Earlier attempts stopped at guest activation or the F8
+status update. Their receipts are retained. The final peer reports each
+F8 condition separately, with the same assertions and deadlines.
+
+Forty-two CTests passed across Release (15), ASan/UBSan (15) and the
+default fixture (12). The ordinary initramfs hash is
+`78be6e54b7667391b88f3abf7ed8bcf05077dc76eb692b00c89090f0f396236e`.
+The delayed initramfs hash is
+`7a3ac43758b56b77a6944e751321b4bdfaaeffbf17e49d8f66b2d2e12388e454`.
+The audit read back all 43 members of `nexaui-qemu-ax-retry474.tar.gz`,
+SHA-256 `bf203f1e23bf8ae4672727bf53c272e6a649b6982abb8e07e6cae6c420005679`.
+
+The verified scope is recovery from a delayed reply on the same private
+guest session. Production VM integration, guest actions, other window
+geometries and human screen-reader acceptance remain open.
