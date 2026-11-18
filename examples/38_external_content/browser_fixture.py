@@ -23,6 +23,9 @@ class Chromium:
         self.serial = 0
         self.session = None
         self.target = None
+        self.buttons = 0
+        self.cancelled = 0
+        self.mouse_inside = False
         self.socket, child = socket.socketpair()
         try:
             with (profile / 'chromium.stderr').open('wb') as log:
@@ -75,6 +78,9 @@ class Chromium:
         self.target = self.command('Target.createTarget', {'url': 'about:blank'}, browser=True)['targetId']
         self.session = self.command('Target.attachToTarget', {'targetId': self.target, 'flatten': True},
                                     browser=True)['sessionId']
+        self.buttons = 0
+        self.cancelled = 0
+        self.mouse_inside = False
         self.command('Network.enable')
         self.command('Network.emulateNetworkConditions', {'offline': True, 'latency': 0,
                          'downloadThroughput': 0, 'uploadThroughput': 0})
@@ -82,6 +88,7 @@ class Chromium:
     def capture(self, width, height, kind):
         scale = 2 if kind == 4 else 1
         css_width, css_height = width // scale, height // scale
+        self.css_size = (css_width, css_height)
         self.command('Emulation.setDeviceMetricsOverride', {'width': css_width, 'height': css_height,
                      'deviceScaleFactor': scale, 'mobile': False})
         color = {0: '#d34f1f', 1: '#1753c5', 3: '#1753c5', 4: '#bf3f89'}[kind]
@@ -95,7 +102,7 @@ class Chromium:
         return self.screenshot(width,height,scale)
 
     def value(self, expression):
-        result = self.command('Runtime.evaluate', {'expression': expression, 'returnByValue': True})
+        result = self.command('Runtime.evaluate', {'expression': expression, 'returnByValue': True, 'awaitPromise': True})
         if 'exceptionDetails' in result:
             raise RuntimeError('Browser fixture expression failed')
         return result['result']['value']
@@ -112,9 +119,40 @@ class Chromium:
             raise ValueError('Chromium physical frame differs from the request')
         return png, metrics
 
+    def mouse(self, kind, raw):
+        x,y,dx,dy,button,mods = map(int,raw.split())
+        nx,ny = x/256,y/256
+        if not (0 <= nx < self.css_size[0] and 0 <= ny < self.css_size[1]):
+            raise ValueError('Pointer outside the CSS viewport')
+        modifiers = ((mods&1)<<3) | (mods&2) | ((mods&4)>>2) | ((mods&8)>>1)
+        params = {'type': {9:'mouseMoved',10:'mousePressed',11:'mouseReleased',12:'mouseWheel'}[kind],
+                  'x': nx, 'y': ny, 'modifiers': modifiers}
+        if kind in (10,11):
+            params.update(button={1:'left',2:'right',4:'middle',8:'back',16:'forward'}[button],clickCount=1)
+            self.buttons = self.buttons|button if kind==10 else self.buttons&~button
+        if kind==12:
+            params.update(deltaX=dx/256,deltaY=dy/256)
+        self.command('Input.dispatchMouseEvent', dict(params,buttons=self.buttons))
+        self.mouse_inside = True
+        if kind==12:
+            self.value('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve(true))))')
+
+    def cancel_mouse(self):
+        self.command('Input.cancelDragging')
+        for button,name in ((1,'left'),(2,'right'),(4,'middle'),(8,'back'),(16,'forward')):
+            if self.buttons&button:
+                self.buttons &= ~button
+                self.command('Input.dispatchMouseEvent', {'type': 'mouseReleased', 'x': -1, 'y': -1,
+                    'button': name, 'buttons': self.buttons, 'clickCount': 0})
+                self.cancelled += 1
+        self.command('Input.dispatchMouseEvent', {'type': 'mouseMoved', 'x': -1, 'y': -1, 'buttons': 0})
+        self.mouse_inside = False
+
     def edit(self, kind, raw, begin, end):
         if kind == 5:
             if self.value("!!document.querySelector('#editor')"):
+                if self.mouse_inside:
+                    self.cancel_mouse()
                 self.command('Input.imeSetComposition', {'text': '', 'selectionStart': 0, 'selectionEnd': 0})
             self.value("""(() => {
                 let editor = document.querySelector('#editor');
@@ -130,6 +168,26 @@ class Chromium:
                     editor.dataset.preedit = '';
                     editor.addEventListener('compositionupdate', e => editor.dataset.preedit = e.data);
                     editor.addEventListener('compositionend', () => editor.dataset.preedit = '');
+                    let button = document.createElement('button');
+                    button.id = 'toggle';
+                    button.textContent = 'Toggle';
+                    button.style.cssText = 'position:absolute;left:336px;top:32px;width:96px;height:48px;background:#eee';
+                    button.onclick = () => {
+                        ++window.fixtureMouse.clicks;
+                        button.style.background = window.fixtureMouse.clicks % 2 ? '#21bb71' : '#eee';
+                    };
+                    document.body.append(button);
+                    let scroll = document.createElement('div');
+                    scroll.id = 'scroll';
+                    scroll.style.cssText = 'position:absolute;left:336px;top:96px;width:96px;height:88px;overflow:auto;overscroll-behavior:contain';
+                    scroll.innerHTML = '<div style="height:240px;background:linear-gradient(#3667d1 38px,#ffaa00 38px,#ffaa00 90px,#153945 90px)"></div>';
+                    document.body.append(scroll);
+                    window.fixtureMouse = {clicks:0,wheels:0,event:[-1,-1,-1]};
+                    document.addEventListener('mousedown', e => {
+                        if (e.target !== editor) e.preventDefault();
+                    });
+                    document.addEventListener('pointerup', e => window.fixtureMouse.event = [e.clientX,e.clientY,e.buttons]);
+                    scroll.addEventListener('wheel', () => ++window.fixtureMouse.wheels, {passive:true});
                 }
                 editor.focus();
                 return true;
@@ -152,8 +210,14 @@ class Chromium:
         elif kind == 7:
             self.command('Input.insertText', {'text': raw.decode('utf-8')})
         elif kind == 8:
+            if self.mouse_inside:
+                self.cancel_mouse()
             self.command('Input.imeSetComposition', {'text': '', 'selectionStart': 0, 'selectionEnd': 0})
             self.value("document.querySelector('#editor').blur(); true")
+        elif kind == 13:
+            self.cancel_mouse()
+        else:
+            self.mouse(kind,raw)
         state = self.value("""(() => {
             const editor = document.querySelector('#editor');
             const focused = document.activeElement === editor;
@@ -177,6 +241,13 @@ class Chromium:
         if focused != (kind != 8):
             raise RuntimeError('Chromium focus disagrees with the requested edit')
         return struct.pack('>4H', *caret), (int(focused), preedit, committed, int(expected))
+
+    def pointer_receipt(self, kind):
+        clicks,wheels,scroll,(x,y,buttons) = self.value("""[
+            fixtureMouse.clicks, fixtureMouse.wheels, document.querySelector('#scroll').scrollTop, fixtureMouse.event
+        ]""")
+        print(f'BROWSER_MOUSE kind={kind} engine_buttons={self.buttons} cancelled={self.cancelled} '
+              f'clicks={clicks} wheels={wheels} scroll={scroll} last_up={x},{y},{buttons}',flush=True)
 
     def crash(self):
         os.killpg(self.process.pid, signal.SIGKILL)
@@ -239,7 +310,7 @@ def serve(engine, socket_path):
                             if request.read(1):
                                 raise ValueError('Unexpected browser request bytes')
                         if not (0 < tab < 2**64 and 0 < resize < 2**64 and 0 < width <= 2048 and
-                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 8):
+                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 13):
                             raise ValueError('Browser request exceeds fixture limits')
                         if kind == 2:
                             result = browser.crash()
@@ -264,6 +335,8 @@ def serve(engine, socket_path):
                             peer.sendall(prefix+png)
                             print(f'BROWSER_EDIT kind={kind} focus={focused} preedit={preedit} '
                                   f'committed={committed} expected={expected}', flush=True)
+                            if kind >= 9 or (kind == 8 and browser.cancelled):
+                                browser.pointer_receipt(kind)
                             continue
                         png, (css_w, css_h, dpr) = browser.capture(width, height, kind)
                         peer.sendall(png)

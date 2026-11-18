@@ -758,7 +758,8 @@ int main(void) {
 #ifndef CONTENT_NATIVE_BROWSER
     if (browser_case) return 2;
 #endif
-    int browser_text_case=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
+    int browser_pointer_case=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
+    int browser_text_case=browser_pointer_case||(browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT"));
     int gallery_case=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
     int pdf_case=!strcmp(test_case,"pdf");
     int pdf_select_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
@@ -791,7 +792,7 @@ int main(void) {
     int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
 #ifdef CONTENT_NATIVE_BROWSER
-    browser_editor editor={0};
+    browser_editor editor={.pointer_enabled=browser_pointer_case};
 #endif
 #ifdef CONTENT_NATIVE_PNG
     native_png_source png_source={0};
@@ -995,7 +996,7 @@ int main(void) {
                 editor.revision?"Page input released.":"Scaled frame ready.";
         }
 #endif
-        if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
+        if (++frames>(browser_pointer_case?220u:150u)||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
             &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view,
             browser_status,browser_enter)) goto done;
@@ -1114,7 +1115,8 @@ int main(void) {
 #ifdef CONTENT_NATIVE_BROWSER
         if (browser_status) {
             if (browser_enter&&action==16) {
-                if (!browser_edit_enter(&editor,context,status.request)) goto done;
+                nx_rect bounds={16,136,info.width-32,info.height-152};
+                if (!browser_edit_enter(&editor,context,status,bounds)) goto done;
                 need_frame=1;
             }
             if (action==17) {
@@ -1331,7 +1333,8 @@ done:
 #ifdef CONTENT_NATIVE_BROWSER
     if (browser_text_case) {
         expected=worker.completed;
-        if (expected<10u || editor.awaiting || editor.count || editor.phase!=BROWSER_HOST || editor.revision<3) result=1;
+        if (expected<10u || editor.awaiting || editor.count || editor.phase!=BROWSER_HOST ||
+            editor.revision<(browser_pointer_case?1u:3u)) result=1;
     }
 #endif
     if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case||pdf_detail_case||pdf_export_case)?4u:

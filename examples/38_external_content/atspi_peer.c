@@ -399,6 +399,19 @@ static int input_chrome(Display *display,const char *window,const char *name) {
     int saved=save_ppm(image,content_left-16,content_top-136,480,360,name);
     XDestroyImage(image);return saved;
 }
+static int browser_pixel(Display *display,Window window,int x,int y,unsigned long color) {
+    unsigned long actual=0;
+    for (unsigned i=0;i<150;++i) {
+        XImage *image=XGetImage(display,window,content_left+x,content_top+y,1,1,AllPlanes,ZPixmap);
+        if (!image) return 0;
+        actual=XGetPixel(image,0,0)&0xffffffu;
+        XDestroyImage(image);
+        if (actual==color) return 1;
+        pump();
+    }
+    fprintf(stderr,"Browser pixel %d,%d got %06lx expected %06lx\n",x,y,actual,color);
+    return 0;
+}
 static AtspiAccessible *await_preview(AtspiAccessible *app,const char *name,const char *status) {
     for (unsigned i=0;i<200;++i) {
         AtspiAccessible *node=find(app,name,0);
@@ -490,15 +503,19 @@ static int input_workflow(AtspiAccessible *app,Display *display,const char *wind
     printf("INPUT_PEER physical keys, 2x absolute pointer, host escape, native focus loss and disconnect passed\n");
     return 1;
 }
-static int host_marker(FILE *log,const char *marker) {
+static int host_markers(FILE *log,const char *marker,unsigned required) {
     char text[16384];
     for(unsigned i=0;i<200;++i){
         ssize_t bytes=pread(fileno(log),text,sizeof(text)-1u,0);
         if(bytes<0||(size_t)bytes==sizeof(text)-1u)return 0;text[bytes]=0;
-        if(strstr(text,marker))return 1;pump();
+        unsigned seen=0;
+        for (const char *p=text;(p=strstr(p,marker));p+=strlen(marker))
+            if (++seen==required) return 1;
+        pump();
     }
     return 0;
 }
+static int host_marker(FILE *log,const char *marker) { return host_markers(log,marker,1); }
 
 static int pdf_text_is(AtspiAccessible *node, const char *expected) {
     AtspiText *text=node?atspi_accessible_get_text_iface(node):NULL;
@@ -687,6 +704,7 @@ int main(int argc,char **argv) {
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int browser_case=!strcmp(test_case,"browser");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
+    int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
     int png_case=browser_case||!strcmp(test_case,"png");
     int png_viewer=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_VIEWER");
     int gallery=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
@@ -1034,6 +1052,23 @@ int main(int argc,char **argv) {
             observe(app,"Page input released.",0)&&observe(app,"Close",1));
         CHECK(drive("key","b")&&observe(app,"Close",1));
         puts("BROWSER_INPUT verified: native keys, preedit, commit, candidate geometry and host escape");
+    }
+    if (browser_pointer) {
+        CHECK(focus(app,"Enter page")&&drive("key","Return")&&
+            observe(app,"Page input active: Ctrl+Shift+F12 exits.",0)&&observe(app,viewport,1));
+        CHECK(browser_pixel(display,outer,344,42,0xeeeeeeu)&&browser_pixel(display,outer,382,110,0x3667d1u));
+        CHECK(point_at(id,365,48)&&drive("click","1")&&browser_pixel(display,outer,344,42,0x21bb71u));
+        CHECK(point_at(id,345,110)&&drive("click","5")&&browser_pixel(display,outer,382,110,0xffaa00u));
+        CHECK(input_chrome(display,id,"browser-pointer-changed"));
+        CHECK(point_at(id,449,112)&&host_marker(host_log,"BROWSER_POINTER kind=13 adopted")&&drive("click","5"));
+        CHECK(point_at(id,365,48)&&drive("mousedown","1")&&host_markers(host_log,"BROWSER_POINTER kind=10 adopted",2));
+        CHECK(press(app,"Release page")&&observe(app,"Page input released.",0)&&observe(app,"Close",1));
+        CHECK(point_at(id,274,-38)&&drive("mouseup","1")&&observe(app,"Close",1));
+        CHECK(point_at(id,345,110)&&drive("click","5")&&browser_pixel(display,outer,382,110,0xffaa00u));
+        CHECK(focus(app,"Enter page")&&drive("key","Return")&&observe(app,"Page input active: Ctrl+Shift+F12 exits.",0));
+        CHECK(point_at(id,365,48)&&drive("click","1")&&browser_pixel(display,outer,344,42,0xeeeeeeu));
+        CHECK(press(app,"Release page")&&observe(app,"Page input released.",0)&&observe(app,"Close",1));
+        puts("BROWSER_POINTER verified: native click, wheel pixels, viewport exit, held-button release and fresh click");
     }
     if(pdf_case) {
         CHECK((scaled_text=pdf_text(app,"Grün page two\n\n"))&&pdf_word_geometry(scaled_text,72,4,145)&&

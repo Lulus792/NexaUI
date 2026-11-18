@@ -312,10 +312,17 @@ The host forwards the translated candidate rectangle to Wayland.
 holds at most eight pending operations of up to 256 UTF-8 bytes each.
 The browser retains ownership of the field value.
 
-The input fixture covers text in one offline editable element at 2×
-backing. Pointer and wheel routing, browser accessibility subtree mapping,
-regular website navigation and GPU buffer ownership remain separate work.
-The browser executable is a fixture input.
+Use `--browser-pointer` for the separate mouse and wheel workflow at
+2× backing. The viewport maps native coordinates to CSS pixels and
+the fixture chooses 40 CSS pixels per scroll unit. It clips input to
+the active viewport and coalesces consecutive queued moves. The peer
+verifies a button click, scrolled content, release with a held button,
+and a fresh click after re-entry.
+
+The input fixtures use one offline page and editable element. Browser
+accessibility subtree mapping, regular website navigation and GPU
+buffer ownership remain separate work. The browser executable is a
+fixture input.
 
 ## Optional PDF producer on Linux
 

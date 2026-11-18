@@ -125,6 +125,12 @@ static int text_event(nx_event_type type) {
         type == NX_EVENT_IME_DELETE_RANGE || type == NX_EVENT_IME_TRANSACTION_BEGIN ||
         type == NX_EVENT_IME_TRANSACTION_END;
 }
+int content_input_pointer_local(nx_rect bounds,float x,float y,nx_point *out) {
+    if (!out || !isfinite(x) || !isfinite(y) || !(x>=bounds.x && y>=bounds.y &&
+        x<bounds.x+bounds.width && y<bounds.y+bounds.height)) return 0;
+    *out=(nx_point){x-bounds.x,y-bounds.y};
+    return 1;
+}
 static float pixel(float value, float start, float size, uint32_t extent) {
     double p = ((double)value - (double)start) * (double)extent / (double)size;
     if (p < 0) p = 0;
@@ -171,8 +177,8 @@ nx_result content_input_event(content_input *input, const nx_event *event,
         *route_host = 1; return NX_OK;
     }
     if (input->active && pointer_event(e.type)) {
-        nx_rect r = input->target.bounds;
-        if (e.x < r.x || e.y < r.y || e.x >= r.x+r.width || e.y >= r.y+r.height) {
+        nx_point local;
+        if (!content_input_pointer_local(input->target.bounds,e.x,e.y,&local)) {
             nx_result result = content_input_release(input);
             if (result != NX_OK) return result;
         }

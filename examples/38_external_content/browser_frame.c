@@ -66,12 +66,23 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     if (length<=0 || (size_t)length>=sizeof(line)) return NX_ERROR_LIMIT;
     size_t send_size=(size_t)length;
     if (edit) {
-        length=snprintf(line+send_size,sizeof(line)-send_size," %d %d %zu\n",edit->begin,edit->end,edit->length);
-        if (length<=0 || (size_t)length>=sizeof(line)-send_size || edit->length>sizeof(line)-send_size-(size_t)length)
+        const content_browser_pointer *pointer=&edit->pointer;
+        size_t body=edit->length;
+        char pointer_payload[80];
+        const char *payload=edit->text;
+        if (kind>=CONTENT_BROWSER_MOUSE_MOVE && kind<=CONTENT_BROWSER_MOUSE_WHEEL) {
+            int n=snprintf(pointer_payload,sizeof(pointer_payload),"%d %d %d %d %u %u",
+                pointer->x,pointer->y,pointer->delta_x,pointer->delta_y,pointer->button,pointer->modifiers);
+            if (n<=0 || (size_t)n>=sizeof(pointer_payload)) return NX_ERROR_LIMIT;
+            body=(size_t)n;
+            payload=pointer_payload;
+        }
+        length=snprintf(line+send_size,sizeof(line)-send_size," %d %d %zu\n",edit->begin,edit->end,body);
+        if (length<=0 || (size_t)length>=sizeof(line)-send_size || body>sizeof(line)-send_size-(size_t)length)
             return NX_ERROR_LIMIT;
         send_size+=(size_t)length;
-        memcpy(line+send_size,edit->text,edit->length);
-        send_size+=edit->length;
+        memcpy(line+send_size,payload,body);
+        send_size+=body;
     } else line[send_size++]='\n';
     int64_t start=monotonic_ms();
     int fd=socket(AF_UNIX,SOCK_STREAM|SOCK_CLOEXEC|SOCK_NONBLOCK,0);
@@ -123,14 +134,25 @@ nx_result content_browser_frame(const char *socket_path,content_request request,
 
 nx_result content_browser_edit_frame(const char *socket_path,content_request request,
     uint64_t sequence,const content_browser_edit *edit,void **out,size_t *bytes,nx_rect *caret) {
-    if (!edit || !caret || edit->kind<CONTENT_BROWSER_FOCUS || edit->kind>CONTENT_BROWSER_BLUR ||
+    if (!edit || !caret || edit->kind<CONTENT_BROWSER_FOCUS || edit->kind>CONTENT_BROWSER_MOUSE_CANCEL ||
         edit->length>CONTENT_BROWSER_TEXT_LIMIT ||
-        (edit->length && (edit->kind==CONTENT_BROWSER_FOCUS || edit->kind==CONTENT_BROWSER_BLUR)) ||
+        (edit->length && (edit->kind==CONTENT_BROWSER_FOCUS || edit->kind==CONTENT_BROWSER_BLUR ||
+                          edit->kind==CONTENT_BROWSER_MOUSE_CANCEL)) ||
         (!edit->length && edit->kind==CONTENT_BROWSER_COMMIT) ||
         (edit->kind==CONTENT_BROWSER_PREEDIT &&
             ((edit->begin==-1)!=(edit->end==-1) || edit->begin < -1 || edit->end < -1 ||
              edit->begin>(int32_t)edit->length || edit->end>(int32_t)edit->length)) ||
         memchr(edit->text,0,edit->length) ||
         nx_utf8_validate(edit->text,edit->length,NULL)!=NX_OK) return NX_ERROR_ARGUMENT;
+    if (edit->kind>=CONTENT_BROWSER_MOUSE_MOVE && edit->kind<=CONTENT_BROWSER_MOUSE_WHEEL) {
+        const content_browser_pointer *pointer=&edit->pointer;
+        uint32_t button=pointer->button;
+        int edge=edit->kind==CONTENT_BROWSER_MOUSE_DOWN || edit->kind==CONTENT_BROWSER_MOUSE_UP;
+        if (edit->length || pointer->x<0 || pointer->y<0 ||
+            (uint32_t)pointer->x/128u>=request.width || (uint32_t)pointer->y/128u>=request.height ||
+            (edge?(!button || button>NX_BUTTON_X2 || (button&(button-1u))):button!=0) ||
+            (pointer->modifiers & ~(NX_MOD_SHIFT|NX_MOD_CONTROL|NX_MOD_ALT|NX_MOD_SUPER)))
+            return NX_ERROR_ARGUMENT;
+    }
     return transfer(socket_path,request,sequence,edit->kind,edit,out,bytes,caret);
 }

@@ -23,6 +23,9 @@ typedef struct content_input_status {
     nx_result last_error;
 } content_input_status;
 
+/* Translate a pointer within half-open host logical bounds. */
+int content_input_pointer_local(nx_rect bounds,float x,float y,nx_point *out);
+
 /* Borrow callback/user until close. Uses one bounded calloc allocation.
    Escape requires a nonmodifier key and exact known modifier mask. The caller
    must pick a platform-usable shortcut and present it before activation. */
