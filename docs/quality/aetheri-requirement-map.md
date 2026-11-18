@@ -1,5 +1,13 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+Example 38 at `aeb5ef1` advances I08/D08 with native Chromium editing keys.
+The peer checks navigation, selection, deletion, undo/redo, the blocked
+clipboard chord and host escape through the installed software and Vulkan
+presenters. The Compose workflow still verifies its separate IME input path.
+Product shortcut policy, browser traversal, clipboard permissions,
+text-input v3 and Aetheri integration remain open.
+[Browser editing key evidence](external-content-report.md#native-browser-editing-keys-2026-11-18)
+
 Example 38 at `dae5903` advances R05/R06/I08/A05/D08 with the installed
 Wayland Vulkan presenter for Chromium CPU frames. The native workflows
 cover tab retirement, crash recovery, CSS pointer input, Wayland v1

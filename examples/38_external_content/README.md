@@ -331,6 +331,13 @@ The host forwards the translated candidate rectangle to Wayland.
 holds at most eight pending operations of up to 256 UTF-8 bytes each.
 The browser retains ownership of the field value.
 
+Use `--browser-keys` to exercise the editor with native Wayland keys and
+the Weston keyboard helper. Arrows, Home, End, Backspace, Delete and the
+admitted selection and undo shortcuts use Chromium's editing behavior.
+Each admitted key sends a DevTools press and release. NexaUI updates the
+candidate rectangle from the returned DOM focus offset. Clipboard
+shortcuts are filtered. **Ctrl+Shift+F12** restores host focus.
+
 Use `--browser-pointer` for the separate mouse and wheel workflow at
 2× backing. The viewport maps native coordinates to CSS pixels and
 the fixture chooses 40 CSS pixels per scroll unit. It clips input to

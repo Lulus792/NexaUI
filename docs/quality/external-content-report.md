@@ -2323,3 +2323,48 @@ either existing presenter. The production engine choice, arbitrary web
 navigation and permissions, Wayland text-input v3 for this integration,
 physical GPU, human assistive acceptance and producer-owned GPU image
 import remain open.
+
+## Native browser editing keys, 2026-11-18
+
+Consumer and installed SDK revision
+`aeb5ef17f9c40306dd1332821845640c64744e14` extend Example 38's browser
+editor. The private worker request carries an admitted key, modifiers and
+repeat state for the current browser viewport. Chromium applies the
+editing operation through a DevTools key press and release. The browser
+returns pixels and a caret based on the DOM selection's focus endpoint.
+The host uses a new IME context revision when it adopts the result.
+Text and composition continue through the existing UTF-8 and IME
+operations. The key allowlist excludes clipboard shortcuts.
+[Chromium's editing key bindings](https://chromium.googlesource.com/chromium/src/+/refs/heads/main/third_party/blink/renderer/core/editing/editing_behavior.cc)
+
+The test types `abc`, moves to the beginning, deletes forward and extends
+a selection backwards from the end of `bc`. Backspace deletes the selection,
+undo restores `bc` with its original selection, and redo returns to `b`.
+Select All followed by ordinary text input leaves `x` in the browser.
+The Wayland trace records three Delete presses. Only the unmodified press
+inside the browser reaches Chromium. The other two are Shift+Delete and a
+press after Ctrl+Shift+F12 has returned focus to the host Close control.
+The independent peer reads the seed, selection and final editor pixels.
+
+Weston simple-IME turned the initial Delete into a U+007F text commit
+in the captured control. That commit carries no usable physical shortcut
+identity. The keyboard workflow uses regular Wayland key events with
+`weston-keyboard`. The independent Compose workflow exercises
+`weston-simple-im` and still verifies `aü`. A mixed-build control uses the
+new peer and the previous host from
+`1fa02b3d17305e8a9541eb512d0765852278c2ae`. It reaches `abc` and fails at
+the first required edit-key adoption.
+
+The new workflow passes on Release software and on Release and ASan/UBSan
+Vulkan on Weston 14.0.2 and Mesa 26.1.6 Lavapipe. The two Vulkan profiles also
+pass the existing frame, pointer, IME and AT-SPI workflows. All 11 native
+workflows and 28 installed-fixture CTests pass with the same 35-second
+native peer limit. The three keyboard runs publish and dispose 19 frames
+each. The local archive `nexaui-browser-keys479.tar.gz` retains 79 verified
+members in 135,710 bytes. SHA-256 is
+`db9c26193b60c46d81721617ea52774efdc1e195df2828debe74ac50fee968c9`.
+
+The existing snapshot and input contract is available for the Aetheri
+browser integration. Product shortcut policy, page traversal, clipboard
+permissions, Wayland text-input v3 and physical input and GPU acceptance
+remain open.
