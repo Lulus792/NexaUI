@@ -7,3 +7,5 @@
 /renderers/d3d12/shaders/*.hlsl text eol=lf
 # A unified diff's blank context lines have one required leading space.
 /tools/mesa/*.patch text eol=lf whitespace=-blank-at-eol
+# The Linux guest kernel launches this script directly from its initramfs.
+/examples/38_external_content/guest_desktop_init.sh text eol=lf
