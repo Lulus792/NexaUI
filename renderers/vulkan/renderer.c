@@ -940,6 +940,9 @@ static nx_result nx_vk_present(nx_vulkan_renderer *renderer,
     profile.draw_records = reuse ? 0 : renderer->painter.vertex_count/6u;
     profile.draw_calls = reuse ? 0 : renderer->painter.recorded_draws;
     profile.render_passes = reuse ? 0 : renderer->painter.recorded_passes;
+    profile.render_area_pixels = reuse ? 0 : renderer->painter.recorded_render_area_pixels;
+    VkExtent2D granularity = renderer->painter.render_area_granularity;
+    profile.render_area_granularity = (nx_pixel_size){granularity.width,granularity.height};
     profile.history_copies = reuse ? 0 : renderer->painter.recorded_history_copies;
     profile.history_copy_bytes = reuse ? 0 : renderer->painter.recorded_history_bytes;
     profile.vertex_upload_bytes = reuse ? 0 : renderer->painter.vertex_upload_bytes;

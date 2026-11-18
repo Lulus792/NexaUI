@@ -681,6 +681,37 @@ static int test_disjoint_history(nx_window *window, nx_vulkan_renderer *renderer
     return 0;
 }
 
+static uint64_t attachment_span(uint32_t first, uint32_t last, uint32_t limit, uint32_t granularity) {
+    uint64_t rounded = ((uint64_t)last+granularity-1u)/granularity*granularity;
+    return (rounded < limit ? rounded : limit) - first/granularity*granularity;
+}
+
+static int test_render_areas(nx_window *window, nx_vulkan_renderer *renderer) {
+    const nx_command stream[]={
+        rect(3,4,10,7,(nx_color){.1f,.5f,.8f,1}),
+        rect(100,60,9,11,(nx_color){.5f,.8f,.1f,1}),
+        rect(21,20,4,5,(nx_color){.7f,.2f,.4f,.5f}),
+        rect(86,49,4,6,(nx_color){.5f,.2f,.6f,1})
+    };
+    for (int batching=0;batching<=1;++batching) {
+        CHECK(nx_vulkan_test_set_batching(renderer,batching) == NX_OK);
+        CHECK(compare(window,renderer,stream,sizeof(stream)/sizeof(stream[0]),1,(nx_color){.2f,.1f,.3f,.7f}) == 0);
+        nx_vulkan_renderer_info info;
+        CHECK(nx_vulkan_renderer_get_info(renderer,&info) == NX_OK);
+        const nx_vulkan_frame_profile *frame=&info.last_frame;
+        const nx_pixel_size granularity=frame->render_area_granularity;
+        CHECK(granularity.width && granularity.height && frame->pixel_width >= 109 && frame->pixel_height >= 71);
+        uint64_t first_area=attachment_span(3,109,frame->pixel_width,granularity.width)*
+            attachment_span(4,71,frame->pixel_height,granularity.height);
+        uint64_t second_area=attachment_span(21,90,frame->pixel_width,granularity.width)*
+            attachment_span(20,55,frame->pixel_height,granularity.height);
+        CHECK(frame->render_passes == 2 && frame->draw_calls == (batching ? 2u : 4u));
+        CHECK(frame->render_area_pixels == first_area+second_area);
+    }
+    puts("Vulkan render areas: exact aligned bounds and preserved pixels with grouped and serial draws");
+    return 0;
+}
+
 static int test_batches(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
     CHECK(create_serial(window,NULL,&renderer) == NX_OK);
@@ -715,6 +746,7 @@ static int test_batches(nx_window *window) {
         CHECK(after.last_frame.cpu_timing_valid && after.last_frame.submission == after.submitted_frames);
     }
     CHECK(test_disjoint_history(window,renderer) == 0);
+    CHECK(test_render_areas(window,renderer) == 0);
     enum {COUNT=10000};
     nx_command *many=calloc(COUNT,sizeof(*many)); CHECK(many);
     for (unsigned i=0;i<COUNT;++i) many[i]=rect((float)((i*7)%151)+.5f,(float)((i*11)%103)+.5f,4,4,

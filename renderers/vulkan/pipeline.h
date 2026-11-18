@@ -51,6 +51,7 @@ typedef struct nx_vk_painter {
     nx_vk_upload uploads[NX_VK_FRAME_SLOTS];
     nx_vk_upload *upload;
     VkExtent2D bitmap_extent;
+    VkExtent2D render_area_granularity;
     uint64_t atlas_allocations, bitmap_allocations;
     nx_vk_bitmap *bitmaps;
     size_t bitmap_count, bitmap_record_capacity;
@@ -60,6 +61,7 @@ typedef struct nx_vk_painter {
     uint64_t allocations;
     uint32_t vertex_count;
     uint64_t recorded_draws, recorded_passes, recorded_history_copies, recorded_history_bytes;
+    uint64_t recorded_render_area_pixels;
     uint64_t vertex_upload_bytes;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     int fail_framebuffer, fail_vertex_memory, fail_draw_memory;

@@ -11,8 +11,10 @@ typedef struct nx_vulkan_renderer nx_vulkan_renderer;
    Byte counters describe one-way authored payloads, not physical GPU traffic. */
 typedef struct nx_vulkan_frame_profile {
     uint64_t submission, input_commands, draw_records, draw_calls, render_passes;
+    uint64_t render_area_pixels; /* Sum of the declared attachment regions. */
     uint64_t history_copies, history_copy_bytes, vertex_upload_bytes, bitmap_upload_bytes, present_copy_bytes;
     uint32_t pixel_width, pixel_height, frame_slot, frames_in_flight;
+    nx_pixel_size render_area_granularity;
     double draw_scale, retirement_ms, prepare_ms, acquire_ms, encode_ms, submit_ms, present_ms;
     int cpu_timing_valid, batched, reused_canvas;
 } nx_vulkan_frame_profile;

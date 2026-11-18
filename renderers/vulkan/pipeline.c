@@ -431,6 +431,7 @@ static nx_result nx_vk_painter_create(nx_vk_painter *painter,
     pass.pSubpasses = &subpass;
     status = vkCreateRenderPass(native->logical, &pass, NULL, &painter->render_pass);
     if (status != VK_SUCCESS) { painter->render_pass = VK_NULL_HANDLE; goto fail; }
+    vkGetRenderAreaGranularity(native->logical, painter->render_pass, &painter->render_area_granularity);
     VkPipelineLayoutCreateInfo layout = {0};
     layout.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
     layout.setLayoutCount = 1; layout.pSetLayouts = &painter->descriptor_layout;
@@ -630,6 +631,7 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
     const nx_command *commands, size_t count, double scale) {
     painter->vertex_count = 0;
     painter->recorded_draws = painter->recorded_passes = painter->recorded_history_copies = painter->recorded_history_bytes = 0;
+    painter->recorded_render_area_pixels = 0;
     painter->vertex_upload_bytes = 0;
     painter->draw_count = 0;
     painter->bitmap_count = 0;
@@ -745,13 +747,25 @@ nx_result nx_vk_painter_prepare(nx_vk_painter *painter,
     return NX_OK;
 }
 
-static void nx_vk_painter_begin(nx_vk_painter *painter, VkCommandBuffer commands, VkExtent2D extent) {
+static uint32_t nx_vk_render_area_end(uint32_t edge, uint32_t limit, uint32_t granularity) {
+    uint64_t rounded = ((uint64_t)edge+granularity-1u)/granularity*granularity;
+    return rounded < limit ? (uint32_t)rounded : limit;
+}
+
+static void nx_vk_painter_begin(nx_vk_painter *painter, VkCommandBuffer commands,
+                                VkExtent2D extent, VkRect2D scissor) {
     ++painter->recorded_passes;
     VkRenderPassBeginInfo begin = {0};
     begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
     begin.renderPass = painter->render_pass;
     begin.framebuffer = painter->frame;
-    begin.renderArea.extent = extent;
+    VkExtent2D granularity = painter->render_area_granularity;
+    uint32_t x = (uint32_t)scissor.offset.x, y = (uint32_t)scissor.offset.y;
+    uint32_t left = x-x%granularity.width, top = y-y%granularity.height;
+    uint32_t right = nx_vk_render_area_end(x+scissor.extent.width, extent.width, granularity.width);
+    uint32_t bottom = nx_vk_render_area_end(y+scissor.extent.height, extent.height, granularity.height);
+    begin.renderArea = (VkRect2D){{(int32_t)left,(int32_t)top},{right-left,bottom-top}};
+    painter->recorded_render_area_pixels += (uint64_t)begin.renderArea.extent.width*begin.renderArea.extent.height;
     vkCmdBeginRenderPass(commands, &begin, VK_SUBPASS_CONTENTS_INLINE);
     vkCmdBindPipeline(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, painter->pipeline);
     vkCmdBindDescriptorSets(commands, VK_PIPELINE_BIND_POINT_GRAPHICS, painter->layout,
@@ -822,11 +836,11 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
             0, 0, NULL, 0, NULL, 1, &history);
         painter->history_initialized = 1;
     }
-    int open = 0, batched = 1;
+    int batched = 1;
 #ifdef NEXAUI_VULKAN_TEST_HOOKS
     batched = !painter->disable_batching;
 #endif
-    for (size_t i = 0; i < painter->draw_count; ++i) {
+    for (size_t i = 0; i < painter->draw_count;) {
         const nx_vk_draw *draw = &painter->draws[i];
         size_t end = i+1;
         if (draw->composite) {
@@ -834,7 +848,6 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
                Overlapping readers and intervening opaque writes need fresh history. */
             if (batched) end = nx_vk_history_batch_end(painter->draws, i, painter->draw_count);
             ++painter->recorded_history_copies;
-            if (open) { vkCmdEndRenderPass(commands); open = 0; }
             VkImageMemoryBarrier barriers[2] = {history, history};
             barriers[0].image = painter->canvas;
             barriers[0].oldLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
@@ -872,9 +885,8 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
                 VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
                 0, 0, NULL, 0, NULL, 2, barriers);
         }
-        if (!open) { nx_vk_painter_begin(painter, commands, extent); open = 1; }
-        /* Trailing opaque instances can share the draw in original paint order. */
-        while (batched && end < painter->draw_count && !painter->draws[end].composite) ++end;
+        /* The area covers the entire pass, including trailing opaque draws. */
+        while (end < painter->draw_count && !painter->draws[end].composite) ++end;
         VkRect2D scissor = draw->scissor;
         for (size_t entry = i+1; entry < end; ++entry) {
             VkRect2D next = painter->draws[entry].scissor;
@@ -887,10 +899,20 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
             if (next.offset.y < scissor.offset.y) scissor.offset.y = next.offset.y;
             scissor.extent.width = right-(uint32_t)scissor.offset.x; scissor.extent.height = bottom-(uint32_t)scissor.offset.y;
         }
-        vkCmdSetScissor(commands, 0, 1, &scissor);
-        vkCmdDraw(commands, 6, (uint32_t)(end-i), 0, draw->first_vertex/6u);
-        ++painter->recorded_draws;
-        i = end-1;
+        nx_vk_painter_begin(painter, commands, extent, scissor);
+        if (batched) {
+            vkCmdSetScissor(commands, 0, 1, &scissor);
+            vkCmdDraw(commands, 6, (uint32_t)(end-i), 0, draw->first_vertex/6u);
+            ++painter->recorded_draws;
+        } else {
+            for (size_t entry = i; entry < end; ++entry) {
+                const nx_vk_draw *single = &painter->draws[entry];
+                vkCmdSetScissor(commands, 0, 1, &single->scissor);
+                vkCmdDraw(commands, 6, 1, 0, single->first_vertex/6u);
+                ++painter->recorded_draws;
+            }
+        }
+        vkCmdEndRenderPass(commands);
+        i = end;
     }
-    if (open) vkCmdEndRenderPass(commands);
 }
