@@ -116,8 +116,28 @@ case " $(cat /proc/cmdline) " in
         (
             umask 077
             exec 4<>/dev/ttyS1
+            printf '%s\n' NEXAUI_CLIPBOARD_READ_READY >/dev/ttyS0
             printf '%s\n' NEXAUI_CLIPBOARD_READY >/dev/ttyS0
+            paste_clipboard() (
+                set -o pipefail
+                timeout "$1" wl-paste --no-newline --type 'text/plain;charset=utf-8' 2>/dev/null |
+                    head -c 193 >/run/clipboard-out
+            )
             while IFS=' ' read -r ticket expected encoded <&4; do
+                if [ "$ticket" = Q ]; then
+                    ticket=$expected
+                    case "$ticket" in ''|*[!0-9]*) continue ;; esac
+                    if [ -z "$encoded" ] && paste_clipboard 2 &&
+                        [ -s /run/clipboard-out ] && [ "$(wc -c </run/clipboard-out)" -le 192 ]; then
+                        digest=$(sha256sum /run/clipboard-out | cut -d ' ' -f 1)
+                        data=$(base64 </run/clipboard-out | tr -d '\n')
+                        printf 'D %s %s %s\n' "$ticket" "$digest" "$data" >&4
+                    else
+                        printf 'R %s\n' "$ticket" >&4
+                    fi
+                    rm -f /run/clipboard-out
+                    continue
+                fi
                 case "$ticket" in ''|*[!0-9]*) continue ;; esac
                 status=R
                 if printf '%s' "$encoded" | base64 -d >/run/clipboard-in &&
@@ -125,12 +145,9 @@ case " $(cat /proc/cmdline) " in
                     [ -s /run/clipboard-in ] &&
                     [ "$(sha256sum /run/clipboard-in | cut -d ' ' -f 1)" = "$expected" ]; then
                     status=U
-                    if timeout 2 wl-copy --type 'text/plain;charset=utf-8' </run/clipboard-in >/dev/null 2>&1; then
-                        timeout 1 wl-paste --no-newline --type 'text/plain;charset=utf-8' 2>/dev/null |
-                            head -c 193 >/run/clipboard-out
-                        if cmp -s /run/clipboard-in /run/clipboard-out; then
-                            status=A
-                        fi
+                    if timeout 2 wl-copy --type 'text/plain;charset=utf-8' </run/clipboard-in >/dev/null 2>&1 &&
+                        paste_clipboard 1 && cmp -s /run/clipboard-in /run/clipboard-out; then
+                        status=A
                     fi
                 fi
                 rm -f /run/clipboard-in /run/clipboard-out
@@ -181,6 +198,18 @@ while IFS= read -r line; do
             paint 41 'Guest clipboard differs from the approved text'
         fi
         rm -f /run/clipboard-expected /run/clipboard-observed
+    elif [ -f /run/clipboard-enabled ] && { [ "$line" = clipoffer ] || [ "$line" = clipbad ]; }; then
+        if [ "$line" = clipoffer ]; then
+            printf '%s\n' 'Grüße aus dem Gast' 'Zweite Gastzeile' >/run/clipboard-test-offer
+            marker=NEXAUI_CLIPBOARD_GUEST_OFFER
+        else
+            printf 'Unzulässiger\033Text\n' >/run/clipboard-test-offer
+            marker=NEXAUI_CLIPBOARD_GUEST_BAD
+        fi
+        if timeout 3 wl-copy --type 'text/plain;charset=utf-8' </run/clipboard-test-offer >/dev/null 2>&1; then
+            printf '%s\n' "$marker" >/dev/ttyS0
+        fi
+        rm -f /run/clipboard-test-offer
     elif [ -f /run/grantable-export ] && [ "$line" = attach ]; then
         tries=0
         until timeout 3 mount -t 9p -o trans=virtio,version=9p2000.L,cache=none,nodev,nosuid,noexec nexaui-export /mnt/export; do

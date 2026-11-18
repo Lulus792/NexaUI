@@ -160,6 +160,8 @@ class Guest:
                     lines = data.splitlines()
                     if (b'NEXAUI_DESKTOP_READY' in lines and
                             (not self.clipboard or b'NEXAUI_CLIPBOARD_READY' in lines)):
+                        if self.clipboard:
+                            self.clipboard.can_read = b'NEXAUI_CLIPBOARD_READ_READY' in lines
                         break
                     if b'NEXAUI_STARTUP_FAILED ' in data or b'Kernel panic - not syncing' in data:
                         raise RuntimeError('Guest startup failed before desktop readiness')
@@ -393,7 +395,8 @@ class Guest:
     def sharing_reply(self, state):
         path = self.share_path if self.file_share else b''
         if self.clipboard:
-            return struct.pack('>4sBB2x16sI',b'NXS3',state,bool(self.clipboard.peer),self.environment,len(path))+path
+            return struct.pack('>4sBB2x16sI',b'NXS3',state,self.clipboard.capabilities(),
+                               self.environment,len(path))+path
         return struct.pack('>4sB3x16sI',b'NXS2',state,self.environment,len(path))+path
 
     def sharing(self):
@@ -412,21 +415,36 @@ class Guest:
             return self.sharing_reply(0)
         return struct.pack('>4sI',b'NXS1',len(path))+path
 
-    def send_clipboard(self, payload):
+    def clipboard_ticket(self, payload):
         if not self.clipboard or payload[:16]!=self.environment:
-            return b'R'
+            return 0
         if self.held or self.buttons:
-            return b'R'
+            return 0
         try:
             if self.command('query-status')['status']!='running':
-                return b'R'
+                return 0
         except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            return 0
+        return int.from_bytes(payload[16:24],'big')
+
+    def send_clipboard(self, payload):
+        ticket = self.clipboard_ticket(payload)
+        if not ticket:
             return b'R'
-        ticket = int.from_bytes(payload[16:24],'big')
         outcome = self.clipboard.send(ticket,payload[24:])
         if outcome==b'A':
             print('GUEST_CLIPBOARD acknowledged',flush=True)
         return outcome
+
+    def read_clipboard(self, payload):
+        ticket = self.clipboard_ticket(payload)
+        if not ticket:
+            return b'R'
+        outcome, text = self.clipboard.read(ticket)
+        if outcome!=b'A':
+            return outcome
+        print('GUEST_CLIPBOARD guest_snapshot',flush=True)
+        return struct.pack('>4s16sQI',b'NXC1',self.environment,ticket,len(text))+text
 
     def revoke_files(self, environment):
         if not self.file_share or not self.revoke_share or environment!=self.environment:
@@ -600,7 +618,7 @@ def read_request(peer, desktop):
         generation, resize, width, height, kind = fields[:5]
         if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                 0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                kind in range(15 if desktop else 6) and len(fields)==(6 if kind in (5,9,10,12,13,14) else 5)):
+                kind in range(16 if desktop else 6) and len(fields)==(6 if kind in (5,9,10,12,13,14,15) else 5)):
             raise ValueError('Guest request outside the fixture limits')
         size = fields[5] if len(fields)==6 else 0
         if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
@@ -611,6 +629,8 @@ def read_request(peer, desktop):
             raise ValueError('Invalid file grant environment length')
         if kind==14 and not 24<size<=24+CLIPBOARD_LIMIT:
             raise ValueError('Invalid guest clipboard length')
+        if kind==15 and size!=24:
+            raise ValueError('Invalid guest clipboard read scope')
         payload = stream.read(size)
         if len(payload)!=size or stream.read(1):
             raise ValueError('Invalid guest request framing')
@@ -707,8 +727,8 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                         if kind == 13:
                             peer.sendall(guest.grant_files(payload))
                             continue
-                        if kind == 14:
-                            outcome = guest.send_clipboard(payload)
+                        if kind in (14,15):
+                            outcome = guest.send_clipboard(payload) if kind==14 else guest.read_clipboard(payload)
                             try:
                                 peer.sendall(outcome)
                             except (BrokenPipeError,ConnectionResetError):

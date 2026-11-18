@@ -101,12 +101,14 @@ static nx_result input_hint(nx_context *context,const nx_font_collection *fonts,
 enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INSPECT_CLOSE,
        GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS, GUEST_INSPECT_SHARING,
        GUEST_INSPECT_SHARE_REVOKE, GUEST_INSPECT_SHARE_REFRESH, GUEST_INSPECT_SHARE_GRANT,
-       GUEST_INSPECT_CLIPBOARD_REVIEW, GUEST_INSPECT_CLIPBOARD_SEND };
-enum { CLIPBOARD_IDLE, CLIPBOARD_READING, CLIPBOARD_REVIEW, CLIPBOARD_UNAVAILABLE, CLIPBOARD_SENDING };
+       GUEST_INSPECT_CLIPBOARD_REVIEW, GUEST_INSPECT_CLIPBOARD_SEND, GUEST_INSPECT_CLIPBOARD_READ,
+       GUEST_INSPECT_CLIPBOARD_ACCEPT };
+enum { CLIPBOARD_IDLE, CLIPBOARD_READING, CLIPBOARD_READING_GUEST, CLIPBOARD_REVIEW,
+       CLIPBOARD_UNAVAILABLE, CLIPBOARD_SENDING, CLIPBOARD_OFFERED, CLIPBOARD_UNKNOWN };
 typedef struct guest_inspector {
     uint64_t ticket, clipboard_token;
     unsigned open, request, clipboard_phase;
-    int enabled, reset_enabled, can_apply, reset_started, pending;
+    int enabled, reset_enabled, can_apply, reset_started, pending, clipboard_import;
     content_guest_reset_preview scope;
     content_guest_sharing share_scope;
     content_guest_clipboard clipboard;
@@ -152,7 +154,9 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
     const char *close=clipboard?"Close clipboard review":preview?"Close reset preview":sharing?"Close sharing":"Close resources";
     float width=info.width<448?info.width-32:416;
     int awaiting=guest_inspector_busy(view);
-    nx_rect panel={(info.width-width)/2,44,width,preview?(view->can_apply?304:272):sharing?256:232};
+    unsigned channels=sharing&&!clipboard&&view->report.ticket==view->ticket&&view->report.result==NX_OK?
+        view->report.sharing.clipboard:0;
+    nx_rect panel={(info.width-width)/2,44,width,preview?(view->can_apply?304:272):sharing?(channels?300:256):232};
     nx_overlay_desc overlay={.panel={.id=GUEST_INSPECT_PANEL,.parent_id=1,.bounds=panel,
         .name={title,strlen(title)}},.backdrop_id=GUEST_INSPECT_BACKDROP,.dismiss_on_escape=!awaiting};
     int dismissed;
@@ -170,7 +174,11 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
     if (clipboard) {
         const char *status="Clipboard text unavailable or cannot be reviewed.";
         if (view->clipboard_phase==CLIPBOARD_READING) status="Reading host clipboard…";
-        else if (view->clipboard_phase==CLIPBOARD_REVIEW) status="Review text to copy to the Alpine guest.";
+        else if (view->clipboard_phase==CLIPBOARD_READING_GUEST) status="Reading guest clipboard…";
+        else if (view->clipboard_phase==CLIPBOARD_REVIEW)
+            status=view->clipboard_import?"Review guest text to copy to the host.":"Review text to copy to the Alpine guest.";
+        else if (view->clipboard_phase==CLIPBOARD_OFFERED) status="Host clipboard offered.";
+        else if (view->clipboard_phase==CLIPBOARD_UNKNOWN) status="Guest clipboard outcome unknown.";
         else if (view->clipboard_phase==CLIPBOARD_SENDING) {
             unsigned outcome=view->report.result==NX_OK?view->report.clipboard_state:'U';
             status=awaiting?"Sending text to guest…":outcome=='A'?"Guest clipboard confirmed.":
@@ -180,9 +188,12 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         if (view->clipboard_phase==CLIPBOARD_REVIEW && result==NX_OK) {
             result=scoped_label(context,fonts,GUEST_INSPECT_ROW+10,GUEST_INSPECT_PANEL,view->clipboard.text,
                 (nx_rect){x,y+76,width-32,116},13,ink);
-            if (result==NX_OK)
-                result=scoped_button(context,fonts,GUEST_INSPECT_CLIPBOARD_SEND,GUEST_INSPECT_PANEL,
-                    "Copy text to guest","Copy text to guest",x,y+200,168,width>=328&&info.height>=300,action);
+            if (result==NX_OK) {
+                const char *copy=view->clipboard_import?"Copy text to host":"Copy text to guest";
+                uint64_t id=view->clipboard_import?GUEST_INSPECT_CLIPBOARD_ACCEPT:GUEST_INSPECT_CLIPBOARD_SEND;
+                result=scoped_button(context,fonts,id,GUEST_INSPECT_PANEL,
+                    copy,copy,x,y+200,168,width>=328&&info.height>=300,action);
+            }
         }
     } else if (view->reset_started) {
         const char *status="Reset status unknown.";
@@ -234,7 +245,8 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         else if (share->state==GUEST_SHARE_UNKNOWN) file_status="Files: status unconfirmed";
         else if (share->state==GUEST_SHARE_OFFERED) file_status="Files: access off";
         else if (share->state==GUEST_SHARE_ATTACHING) file_status="Files: activation pending";
-        strcpy(lines[0],share->clipboard?"Clipboard: one-time text to guest":"Clipboard: unavailable");
+        strcpy(lines[0],channels&GUEST_CLIPBOARD_READ?"Clipboard: one-time text transfers":
+            channels&GUEST_CLIPBOARD_SEND?"Clipboard: one-time text to guest":"Clipboard: unavailable");
         strcpy(lines[1],file_status);
         strcpy(lines[2],"Network: unavailable");
         strcpy(lines[3],"Microphone: unavailable");
@@ -251,9 +263,13 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
                            share->state==GUEST_SHARE_ATTACHING))
             result=scoped_button(context,fonts,GUEST_INSPECT_SHARE_REFRESH,GUEST_INSPECT_PANEL,"Check sharing status",
                 "Check sharing status",x,y+200,168,1,action);
-        if (result==NX_OK&&share->clipboard)
+        int clipboard_enabled=width>=368&&info.height>=342&&!disconnected;
+        if (result==NX_OK&&(channels&GUEST_CLIPBOARD_SEND))
             result=scoped_button(context,fonts,GUEST_INSPECT_CLIPBOARD_REVIEW,GUEST_INSPECT_PANEL,"Review clipboard text",
-                "Review clipboard text",panel.x+width-184,y+200,168,width>=368&&!disconnected,action);
+                "Review clipboard text",x,y+242,168,clipboard_enabled,action);
+        if (result==NX_OK&&(channels&GUEST_CLIPBOARD_READ))
+            result=scoped_button(context,fonts,GUEST_INSPECT_CLIPBOARD_READ,GUEST_INSPECT_PANEL,"Review guest text",
+                "Review guest text",panel.x+width-184,y+242,168,clipboard_enabled,action);
     } else {
         const content_guest_resources *r=&view->report.resources;
         snprintf(lines[0],sizeof(lines[0]),"Guest %s",r->state==GUEST_RESOURCE_RUNNING?"running":"paused");
@@ -1084,9 +1100,11 @@ int main(void) {
                 if(!available) break;
                 ++routed;
                 if (event.type==NX_EVENT_FOCUS&&!event.focused&&
-                    (inspector.clipboard_phase==CLIPBOARD_READING||inspector.clipboard_phase==CLIPBOARD_REVIEW)) {
+                    (inspector.clipboard_phase==CLIPBOARD_READING||inspector.clipboard_phase==CLIPBOARD_READING_GUEST||
+                     inspector.clipboard_phase==CLIPBOARD_REVIEW)) {
                     guest_clipboard_drop(window,&inspector);
                     inspector.clipboard_phase=CLIPBOARD_UNAVAILABLE;
+                    if (inspector.request==CONTENT_GUEST_CLIPBOARD_READ) inspector.pending=0;
                     need_frame=1;
                 }
                 if(event.type==NX_EVENT_FOCUS||event.type==NX_EVENT_KEY_DOWN||event.type==NX_EVENT_KEY_UP||event.type==NX_EVENT_POINTER_CANCEL) {
@@ -1138,6 +1156,20 @@ int main(void) {
         native_worker_state state=native_state(&worker);
         inspector.report=state.guest_report;
 #ifdef CONTENT_NATIVE_GUEST
+        if (state.guest_report.kind==CONTENT_GUEST_CLIPBOARD_READ) {
+            if (inspector.open==CONTENT_GUEST_SHARING&&inspector.clipboard_phase==CLIPBOARD_READING_GUEST&&
+                state.guest_report.ticket==inspector.ticket) {
+                nx_result read=state.guest_report.result;
+                inspector.clipboard_phase=read==NX_ERROR_STATE?CLIPBOARD_UNAVAILABLE:CLIPBOARD_UNKNOWN;
+                if (read==NX_OK) {
+                    inspector.clipboard=state.guest_report.clipboard_text;
+                    inspector.clipboard_phase=CLIPBOARD_REVIEW;
+                }
+                need_frame=1;
+            }
+            inspector.report=(native_guest_report){0};
+            state.guest_report=(native_guest_report){0};
+        }
         if (inspector.clipboard_token) {
             char *text=NULL;
             size_t length=0;
@@ -1430,15 +1462,36 @@ int main(void) {
             inspector.pending=need_frame=1;
         }
 #ifdef CONTENT_NATIVE_GUEST
-        else if (action==GUEST_INSPECT_CLIPBOARD_REVIEW&&inspector.open==CONTENT_GUEST_SHARING&&
+        else if ((action==GUEST_INSPECT_CLIPBOARD_REVIEW||action==GUEST_INSPECT_CLIPBOARD_READ)&&
+                 inspector.open==CONTENT_GUEST_SHARING&&
                  inspector.clipboard_phase==CLIPBOARD_IDLE&&inspector.report.ticket==inspector.ticket&&
                  inspector.report.result==NX_OK&&inspector.report.sharing.clipboard&&input_phase!=INPUT_DISCONNECTED) {
-            inspector.share_scope=inspector.report.sharing;
-            nx_result read=nx_wayland_clipboard_read_begin(window,GUEST_CLIPBOARD_LIMIT,1500,1,&inspector.clipboard_token);
-            inspector.clipboard_phase=read==NX_OK?CLIPBOARD_READING:CLIPBOARD_UNAVAILABLE;
+            int from_guest=action==GUEST_INSPECT_CLIPBOARD_READ;
+            unsigned channel=from_guest?GUEST_CLIPBOARD_READ:GUEST_CLIPBOARD_SEND;
+            if (inspector.report.sharing.clipboard&channel) {
+                inspector.share_scope=inspector.report.sharing;
+                inspector.clipboard_import=from_guest;
+                if (from_guest) {
+                    if (inspector.ticket==UINT64_MAX) goto done;
+                    ++inspector.ticket;
+                    inspector.request=CONTENT_GUEST_CLIPBOARD_READ;
+                    inspector.clipboard_phase=CLIPBOARD_READING_GUEST;
+                    inspector.pending=1;
+                } else {
+                    nx_result read=nx_wayland_clipboard_read_begin(window,GUEST_CLIPBOARD_LIMIT,1500,1,
+                        &inspector.clipboard_token);
+                    inspector.clipboard_phase=read==NX_OK?CLIPBOARD_READING:CLIPBOARD_UNAVAILABLE;
+                }
+                need_frame=1;
+            }
+        } else if (action==GUEST_INSPECT_CLIPBOARD_ACCEPT&&inspector.clipboard_phase==CLIPBOARD_REVIEW&&
+                   inspector.clipboard_import&&inspector.clipboard.bytes&&input_phase!=INPUT_DISCONNECTED) {
+            nx_result offered=nx_window_clipboard_set_text(window,inspector.clipboard.text,inspector.clipboard.bytes);
+            guest_clipboard_drop(window,&inspector);
+            inspector.clipboard_phase=offered==NX_OK?CLIPBOARD_OFFERED:CLIPBOARD_UNAVAILABLE;
             need_frame=1;
         } else if (action==GUEST_INSPECT_CLIPBOARD_SEND&&inspector.clipboard_phase==CLIPBOARD_REVIEW&&
-                   inspector.clipboard.bytes&&input_phase!=INPUT_DISCONNECTED) {
+                   !inspector.clipboard_import&&inspector.clipboard.bytes&&input_phase!=INPUT_DISCONNECTED) {
             if (inspector.ticket==UINT64_MAX) goto done;
             ++inspector.ticket;
             inspector.request=CONTENT_GUEST_CLIPBOARD;
@@ -1461,6 +1514,7 @@ int main(void) {
             inspector.open=inspector.pending=0;
             guest_clipboard_drop(window,&inspector);
             inspector.clipboard_phase=CLIPBOARD_IDLE;
+            inspector.clipboard_import=0;
             nx_result closed=nx_overlay_close(context);
             if (closed!=NX_OK&&closed!=NX_ERROR_STATE) goto done;
             need_frame=1;

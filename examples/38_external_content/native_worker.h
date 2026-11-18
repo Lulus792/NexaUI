@@ -72,12 +72,14 @@ typedef struct native_uri_result {
 typedef struct native_guest_report {
     uint64_t ticket;
     nx_result result;
+    unsigned kind;
     union {
         content_guest_resources resources;
         content_guest_sharing sharing;
         content_guest_reset_preview preview;
         unsigned reset_state;
         unsigned clipboard_state;
+        content_guest_clipboard clipboard_text;
     };
 } native_guest_report;
 typedef struct native_worker {
@@ -381,8 +383,8 @@ static void *native_worker_entry(void *user) {
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
 #ifdef CONTENT_NATIVE_GUEST
-        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_CLIPBOARD) {
-            native_guest_report report={.ticket=job.sequence};
+        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_CLIPBOARD_READ) {
+            native_guest_report report={.ticket=job.sequence,.kind=job.kind};
             if (job.kind==CONTENT_GUEST_RESOURCES)
                 report.result=content_guest_read_resources(worker->guest_socket,job.request,&report.resources);
             else if (job.kind==CONTENT_GUEST_SHARING)
@@ -393,6 +395,9 @@ static void *native_worker_entry(void *user) {
             else if (job.kind==CONTENT_GUEST_CLIPBOARD)
                 report.result=content_guest_send_clipboard(worker->guest_socket,job.request,job.sequence,
                     job.share_scope.environment,&job.clipboard,&report.clipboard_state);
+            else if (job.kind==CONTENT_GUEST_CLIPBOARD_READ)
+                report.result=content_guest_read_clipboard(worker->guest_socket,job.request,job.sequence,
+                    job.share_scope.environment,&report.clipboard_text);
             else if (job.kind==CONTENT_GUEST_RESET_PREVIEW)
                 report.result=content_guest_read_reset_preview(worker->guest_socket,job.request,&report.preview);
             else report.result=content_guest_reset_action(worker->guest_socket,job.request,job.kind,
@@ -526,6 +531,8 @@ static native_worker_state native_state(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
     native_worker_state state = {worker->working, worker->pending, worker->prepared, worker->completed,
         worker->result,worker->browser_caret,worker->guest_report};
+    if (state.guest_report.kind==CONTENT_GUEST_CLIPBOARD_READ)
+        worker->guest_report=(native_guest_report){0};
     pthread_mutex_unlock(&worker->mutex);
     return state;
 }

@@ -623,7 +623,7 @@ static int read_guest_sharing(AtspiAccessible *app,const char *directory,const c
     char row[128];
     snprintf(row,sizeof(row),"Host directory: %s",directory?directory:"");
     const char *clipboard=getenv("NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD")?
-        "Clipboard: one-time text to guest":"Clipboard: unavailable";
+        "Clipboard: one-time text transfers":"Clipboard: unavailable";
     return observe(app,"Guest sharing",0)&&observe(app,clipboard,0)&&
         observe(app,status?status:directory?"Files: read/write":"Files: unavailable",0)&&observe(app,"Network: unavailable",0)&&
         observe(app,"Microphone: unavailable",0)&&observe(app,"Devices: unavailable",0)&&(!directory||observe(app,row,0));
@@ -643,7 +643,7 @@ static int release_guest_keys(AtspiAccessible *app) {
         drive("keyup","shift")&&drive("keyup","ctrl");
 }
 
-static int offer_guest_clipboard(const char *source,const char *text) {
+static int offer_host_clipboard(const char *source,const char *text) {
     FILE *input=tmpfile();
     if (!input) return 0;
     int ok=fputs(text,input)>=0&&!fflush(input)&&!fseek(input,0,SEEK_SET);
@@ -661,7 +661,7 @@ static int offer_guest_clipboard(const char *source,const char *text) {
     return joined==child&&WIFEXITED(status)&&WEXITSTATUS(status)==0;
 }
 
-static int await_guest_clipboard_read(void) {
+static int await_guest_clipboard_marker(const char *expected) {
     const char *socket=getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET");
     const char *end=socket?strrchr(socket,'/'):NULL;
     if (!end||end-socket>=80) return 0;
@@ -676,8 +676,8 @@ static int await_guest_clipboard_read(void) {
     for (unsigned i=0;i<600;++i) {
         char line[512];
         while (fgets(line,sizeof(line),trace)) {
-            if (!strcmp(line,"NEXAUI_CLIPBOARD_INDEPENDENT_OK\r\n")||
-                !strcmp(line,"NEXAUI_CLIPBOARD_INDEPENDENT_OK\n")) ok=1;
+            line[strcspn(line,"\r\n")]=0;
+            if (!strcmp(line,expected)) ok=1;
         }
         if (ok) break;
         rewind(trace);
@@ -685,6 +685,13 @@ static int await_guest_clipboard_read(void) {
     }
     fclose(trace);
     return ok;
+}
+
+static int offer_guest_selection(AtspiAccessible *app,const char *window,const char *command,const char *marker) {
+    return focus(app,"Enter guest")&&drive("key","Return")&&
+        observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&
+        point_at(window,155,100)&&drive("click","1")&&guest_command(command)&&
+        await_guest_clipboard_marker(marker)&&release_guest_keys(app);
 }
 
 static int read_guest_export(const char *directory, struct stat *info) {
@@ -1266,11 +1273,11 @@ int main(int argc,char **argv) {
             char excess[194];
             memset(excess,'a',sizeof(excess)-1u);
             excess[sizeof(excess)-1u]=0;
-            CHECK(offer_guest_clipboard(clipboard_source,excess)&&drive("windowfocus",id)&&
+            CHECK(offer_host_clipboard(clipboard_source,excess)&&drive("windowfocus",id)&&
                 focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review clipboard text")&&drive("key","Return")&&
                 observe(app,"Clipboard text unavailable or cannot be reviewed.",0)&&
                 drive("key","Escape")&&observe(app,"Sharing",1));
-            CHECK(offer_guest_clipboard(clipboard_source,payload)&&drive("windowfocus",id)&&
+            CHECK(offer_host_clipboard(clipboard_source,payload)&&drive("windowfocus",id)&&
                 focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review clipboard text")&&drive("key","Return")&&
                 observe(app,payload,0)&&input_chrome(display,id,"guest-clipboard-review")&&
                 drive("key","Escape")&&observe(app,"Sharing",1));
@@ -1278,11 +1285,24 @@ int main(int argc,char **argv) {
                 observe(app,payload,0)&&focus(app,"Copy text to guest")&&drive("key","Return")&&
                 observe(app,"Guest clipboard confirmed.",0)&&input_chrome(display,id,"guest-clipboard-confirmed")&&
                 drive("key","Escape")&&observe(app,"Sharing",1));
-            CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
-                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,155,100)&&drive("click","1")&&
-                guest_command("clipcheck")&&await_guest_clipboard_read()&&release_guest_keys(app)&&
+            CHECK(offer_guest_selection(app,id,"clipcheck","NEXAUI_CLIPBOARD_INDEPENDENT_OK")&&
                 input_chrome(display,id,"guest-clipboard-read"));
             puts("GUEST_CLIPBOARD_NATIVE verified: size rejection, cancel, review, keyboard send, and independent guest paste");
+            const char *received="Grüße aus dem Gast\nZweite Gastzeile\n";
+            CHECK(offer_guest_selection(app,id,"clipbad","NEXAUI_CLIPBOARD_GUEST_BAD")&&
+                focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review guest text")&&drive("key","Return")&&
+                observe(app,"Clipboard text unavailable or cannot be reviewed.",0)&&
+                drive("key","Escape")&&observe(app,"Sharing",1)&&clipboard_reads(payload));
+            CHECK(drive("windowfocus",id)&&offer_guest_selection(app,id,"clipoffer","NEXAUI_CLIPBOARD_GUEST_OFFER")&&
+                focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review guest text")&&drive("key","Return")&&
+                observe(app,received,0)&&input_chrome(display,id,"guest-clipboard-import-review")&&
+                drive("key","Escape")&&observe(app,"Sharing",1)&&clipboard_reads(payload));
+            CHECK(drive("windowfocus",id)&&focus(app,"Sharing")&&drive("key","Return")&&
+                focus(app,"Review guest text")&&drive("key","Return")&&observe(app,received,0)&&
+                focus(app,"Copy text to host")&&drive("key","Return")&&observe(app,"Host clipboard offered.",0)&&
+                input_chrome(display,id,"guest-clipboard-import-offered")&&drive("key","Escape")&&observe(app,"Sharing",1)&&
+                clipboard_reads(received)&&drive("windowfocus",id));
+            puts("GUEST_CLIPBOARD_IMPORT_NATIVE verified: guest data review, host selection retained until approval, and independent host paste");
         }
         unsigned long long reads=0, before=0, after=0;
         guest_reset_scope baseline={0}, preview={0};
