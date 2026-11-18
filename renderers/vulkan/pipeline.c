@@ -762,6 +762,26 @@ static void nx_vk_painter_begin(nx_vk_painter *painter, VkCommandBuffer commands
     vkCmdSetViewport(commands, 0, 1, &viewport);
 }
 
+#define NX_VK_HISTORY_BATCH_LIMIT 32u
+
+static int nx_vk_scissors_overlap(VkRect2D a, VkRect2D b) {
+    uint32_t ax = (uint32_t)a.offset.x, ay = (uint32_t)a.offset.y;
+    uint32_t bx = (uint32_t)b.offset.x, by = (uint32_t)b.offset.y;
+    return ax < bx + b.extent.width && bx < ax + a.extent.width &&
+           ay < by + b.extent.height && by < ay + a.extent.height;
+}
+
+static size_t nx_vk_history_batch_end(const nx_vk_draw *draws, size_t first, size_t count) {
+    size_t end = first + 1;
+    while (end < count && end - first < NX_VK_HISTORY_BATCH_LIMIT && draws[end].composite) {
+        size_t prior = first;
+        while (prior < end && !nx_vk_scissors_overlap(draws[prior].scissor, draws[end].scissor)) ++prior;
+        if (prior != end) break;
+        ++end;
+    }
+    return end;
+}
+
 void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkExtent2D extent) {
     VkImageMemoryBarrier atlas = {0}; atlas.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     atlas.srcQueueFamilyIndex = atlas.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
@@ -802,12 +822,18 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
             0, 0, NULL, 0, NULL, 1, &history);
         painter->history_initialized = 1;
     }
-    int open = 0;
+    int open = 0, batched = 1;
+#ifdef NEXAUI_VULKAN_TEST_HOOKS
+    batched = !painter->disable_batching;
+#endif
     for (size_t i = 0; i < painter->draw_count; ++i) {
-        nx_vk_draw *draw = &painter->draws[i];
+        const nx_vk_draw *draw = &painter->draws[i];
+        size_t end = i+1;
         if (draw->composite) {
+            /* Each reader uses its own clipped pixels of the pre-batch canvas.
+               Overlapping readers and intervening opaque writes need fresh history. */
+            if (batched) end = nx_vk_history_batch_end(painter->draws, i, painter->draw_count);
             ++painter->recorded_history_copies;
-            painter->recorded_history_bytes += (uint64_t)draw->scissor.extent.width * draw->scissor.extent.height * 4u;
             if (open) { vkCmdEndRenderPass(commands); open = 0; }
             VkImageMemoryBarrier barriers[2] = {history, history};
             barriers[0].image = painter->canvas;
@@ -822,12 +848,18 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
             vkCmdPipelineBarrier(commands, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT |
                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT,
                 VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 2, barriers);
-            VkImageCopy copy = {0};
-            copy.srcSubresource = copy.dstSubresource = (VkImageSubresourceLayers){VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
-            copy.srcOffset = copy.dstOffset = (VkOffset3D){draw->scissor.offset.x, draw->scissor.offset.y, 0};
-            copy.extent = (VkExtent3D){draw->scissor.extent.width, draw->scissor.extent.height, 1};
+            VkImageCopy copies[NX_VK_HISTORY_BATCH_LIMIT];
+            for (size_t entry = i; entry < end; ++entry) {
+                VkRect2D bounds = painter->draws[entry].scissor;
+                VkImageSubresourceLayers color = {VK_IMAGE_ASPECT_COLOR_BIT, 0, 0, 1};
+                VkOffset3D offset = {bounds.offset.x, bounds.offset.y, 0};
+                copies[entry-i] = (VkImageCopy){.srcSubresource=color, .srcOffset=offset,
+                    .dstSubresource=color, .dstOffset=offset,
+                    .extent={bounds.extent.width, bounds.extent.height, 1}};
+                painter->recorded_history_bytes += (uint64_t)bounds.extent.width * bounds.extent.height * 4u;
+            }
             vkCmdCopyImage(commands, painter->canvas, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-                painter->history, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &copy);
+                painter->history, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, (uint32_t)(end-i), copies);
             barriers[0].oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             barriers[0].newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             barriers[0].srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
@@ -841,17 +873,11 @@ void nx_vk_painter_record(nx_vk_painter *painter, VkCommandBuffer commands, VkEx
                 0, 0, NULL, 0, NULL, 2, barriers);
         }
         if (!open) { nx_vk_painter_begin(painter, commands, extent); open = 1; }
-        size_t end = i+1;
+        /* Trailing opaque instances can share the draw in original paint order. */
+        while (batched && end < painter->draw_count && !painter->draws[end].composite) ++end;
         VkRect2D scissor = draw->scissor;
-        int batched = 1;
-#ifdef NEXAUI_VULKAN_TEST_HOOKS
-        batched = !painter->disable_batching;
-#endif
-        /* At most one destination reader, at the start. Its history copy above
-           is unchanged. Every following instance is opaque and keeps its own
-           shader clip, while attachment writes retain primitive order. */
-        while (batched && end < painter->draw_count && !painter->draws[end].composite) {
-            VkRect2D next = painter->draws[end++].scissor;
+        for (size_t entry = i+1; entry < end; ++entry) {
+            VkRect2D next = painter->draws[entry].scissor;
             uint32_t right = (uint32_t)scissor.offset.x+scissor.extent.width;
             uint32_t bottom = (uint32_t)scissor.offset.y+scissor.extent.height;
             uint32_t nr = (uint32_t)next.offset.x+next.extent.width, nb = (uint32_t)next.offset.y+next.extent.height;

@@ -638,6 +638,49 @@ static int test_preflight_and_driver(nx_window *window) {
     return 0;
 }
 
+static int test_disjoint_history(nx_window *window, nx_vulkan_renderer *renderer) {
+    const uint8_t pixels[]={250,20,200,80,50,100,170,190};
+    const uint8_t mask[]={0,190,75,255};
+    const nx_command stream[]={
+        rect(0,0,56,32,(nx_color){.1f,.2f,.5f,1}),
+        bitmap(4,4,16,16,(nx_bitmap_view){pixels,2,1,8,NX_BITMAP_RGBA8},(nx_color){1,1,1,1}),
+        {.type=NX_COMMAND_PUSH_CLIP,.rect={20,4,12,16}},
+        bitmap(16,4,16,16,(nx_bitmap_view){mask,2,2,2,NX_BITMAP_A8},(nx_color){1,.3f,.4f,.8f}),
+        {.type=NX_COMMAND_POP_CLIP},
+        rect(6,5,10,10,(nx_color){.2f,.8f,.3f,.5f}),
+        rect(9,8,5,5,(nx_color){.4f,.1f,.2f,1}),
+        rect(8,7,7,7,(nx_color){.7f,.4f,.8f,.6f})
+    };
+    const double scales[]={1,1.25,1.5,2};
+    const nx_color clear={.1f,.2f,.3f,.4f};
+    for (size_t i=0;i<sizeof(scales)/sizeof(scales[0]);++i) {
+        nx_vulkan_renderer_info serial,grouped;
+        CHECK(nx_vulkan_test_set_batching(renderer,0) == NX_OK);
+        CHECK(compare(window,renderer,stream,sizeof(stream)/sizeof(stream[0]),scales[i],clear) == 0);
+        CHECK(nx_vulkan_renderer_get_info(renderer,&serial) == NX_OK);
+        CHECK(serial.last_frame.draw_calls == 6 && serial.last_frame.history_copies == 4 &&
+            serial.last_frame.render_passes == 5);
+        CHECK(nx_vulkan_test_set_batching(renderer,1) == NX_OK);
+        CHECK(compare(window,renderer,stream,sizeof(stream)/sizeof(stream[0]),scales[i],clear) == 0);
+        CHECK(nx_vulkan_renderer_get_info(renderer,&grouped) == NX_OK);
+        CHECK(grouped.last_frame.draw_records == 6 && grouped.last_frame.draw_calls == 4 &&
+            grouped.last_frame.history_copies == 3 && grouped.last_frame.render_passes == 4);
+        CHECK(grouped.last_frame.history_copy_bytes == serial.last_frame.history_copy_bytes);
+    }
+    nx_command separated[33];
+    for (size_t i=0;i<sizeof(separated)/sizeof(separated[0]);++i) {
+        separated[i]=rect((float)(i%11u)*6,(float)(i/11u)*6,4,4,(nx_color){.8f,.2f,.1f,.7f});
+    }
+    CHECK(compare(window,renderer,separated,sizeof(separated)/sizeof(separated[0]),1,clear) == 0);
+    nx_vulkan_renderer_info grouped;
+    CHECK(nx_vulkan_renderer_get_info(renderer,&grouped) == NX_OK);
+    CHECK(grouped.last_frame.draw_records == 33 && grouped.last_frame.draw_calls == 2 &&
+        grouped.last_frame.history_copies == 2 && grouped.last_frame.render_passes == 2 &&
+        grouped.last_frame.history_copy_bytes == 33u*4u*4u*4u);
+    puts("Vulkan disjoint history batches: clipped A8/RGBA8, overlap, paint order and copy limit verified");
+    return 0;
+}
+
 static int test_batches(nx_window *window) {
     nx_vulkan_renderer *renderer = NULL;
     CHECK(create_serial(window,NULL,&renderer) == NX_OK);
@@ -671,6 +714,7 @@ static int test_batches(nx_window *window) {
             after.last_frame.history_copy_bytes == before.last_frame.history_copy_bytes && after.last_frame.render_passes == before.last_frame.render_passes);
         CHECK(after.last_frame.cpu_timing_valid && after.last_frame.submission == after.submitted_frames);
     }
+    CHECK(test_disjoint_history(window,renderer) == 0);
     enum {COUNT=10000};
     nx_command *many=calloc(COUNT,sizeof(*many)); CHECK(many);
     for (unsigned i=0;i<COUNT;++i) many[i]=rect((float)((i*7)%151)+.5f,(float)((i*11)%103)+.5f,4,4,
