@@ -1038,7 +1038,7 @@ int main(void) {
                 editor.revision?"Page input released.":"Scaled frame ready.";
         }
 #endif
-        if (++frames>(browser_pointer_case?220u:150u)||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
+        if (++frames>((browser_pointer_case||guest_case)?220u:150u)||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
             &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,guest_case,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view,
             browser_status,browser_enter,browser_ax_case&&phase==SCALED_READY&&!state.working&&!state.pending,
