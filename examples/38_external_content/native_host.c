@@ -1,7 +1,7 @@
 #define _GNU_SOURCE
 #include "native_worker.h"
+#include "native_presenter.h"
 #include <nexaui/wayland_clipboard.h>
-#include <nexaui/software.h>
 #include <limits.h>
 #include <stdio.h>
 #include "native_input.h"
@@ -1048,12 +1048,15 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
 int main(void) {
     const char *isolated=getenv("NEXAUI_TEST_PRIVATE_WAYLAND"),*display=getenv("WAYLAND_DISPLAY");
     const char *path=getenv("NEXAUI_CONTENT_TEST_FONT"),*test_case=getenv("NEXAUI_CONTENT_TEST_CASE");
+    const char *renderer=getenv("NEXAUI_CONTENT_TEST_RENDERER");
     if (!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!path||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
         strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&
         strcmp(test_case,"guest-storage")&&strcmp(test_case,"guest-reset")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
+    int use_vulkan=renderer&&!strcmp(renderer,"vulkan");
+    if (renderer&&!use_vulkan&&strcmp(renderer,"software")) return 2;
     int browser_case=!strcmp(test_case,"browser");
     int guest_reset=!strcmp(test_case,"guest-reset");
     int guest_desktop=guest_reset||!strcmp(test_case,"guest-desktop")||!strcmp(test_case,"guest-storage");
@@ -1100,7 +1103,8 @@ int main(void) {
         (browser_case&&(gallery_case||!browser_socket||browser_socket[0]!='/'))) return 2;
     int result=1,leased=0,worker_ready=0;
     nx_snapshot_exchange *exchange=NULL; content_surface *surface=NULL;
-    nx_window *window=NULL; nx_software_view *software=NULL; nx_context *context=NULL;
+    nx_window *window=NULL; nx_context *context=NULL;
+    native_presenter presenter={0};
     nx_font *font=NULL; nx_font_collection *fonts=NULL;
     content_input *input=NULL; native_input_receiver receiver={.generation=1};
 #ifdef CONTENT_NATIVE_GUEST
@@ -1147,7 +1151,7 @@ int main(void) {
         content_surface_create(exchange,1,4u*1024u*1024u,NULL,&surface)!=NX_OK||
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
         (pdf_case&&nx_text_field_create("",0,4096,&query)!=NX_OK)||
-        nx_software_view_open(window,&software)!=NX_OK||
+        native_presenter_open(&presenter,window,use_vulkan)!=NX_OK||
         native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher,export_path,
             document.gallery,browser_socket,browser_ax_case,guest_socket,guest_ax)) goto done;
     worker_ready=1;
@@ -1440,7 +1444,7 @@ int main(void) {
             need_frame=1;
         }
         if (nx_window_publish_semantics(window,context)!=NX_OK) goto done;
-        const nx_command *commands=NULL; size_t count=0; nx_software_view_outcome outcome=NX_SOFTWARE_VIEW_READY;
+        const nx_command *commands=NULL; size_t count=0; int submitted;
         if (nx_frame_commands(context,&commands,&count)!=NX_OK) goto done;
         content_surface_status status;
         if (content_surface_get_status(surface,&status)!=NX_OK) goto done;
@@ -1475,11 +1479,11 @@ int main(void) {
 #endif
         if ((pdf_case||png_case)&&leased&&camera.percent>100 &&
             content_surface_map_commands(surface,commands,count,image,detail_bitmap,&commands)!=NX_OK) goto done;
-        if (nx_software_view_render(software,commands,count,(nx_color){1,1,1,1},&outcome)!=NX_OK) goto done;
+        if (native_presenter_render(&presenter,window,info.scale,commands,count,&submitted)!=NX_OK) goto done;
         /* The presenter borrows commands only until return. Discard this
            stream after completing its lease; BUSY/SUSPENDED rebuild later. */
         if (leased) { if (content_surface_complete(surface)!=NX_OK) goto done; leased=0; }
-        if (outcome!=NX_SOFTWARE_VIEW_READY) need_frame=1;
+        if (!submitted) need_frame=1;
         if (status.request.generation!=logged_generation||status.request.resize!=logged_resize||status.sequence!=logged_sequence) {
             printf("CONTENT_STATE generation=%llu resize=%llu width=%u height=%u sequence=%llu copied=%llu copy_bytes=%zu\n",
                 (unsigned long long)status.request.generation,(unsigned long long)status.request.resize,
@@ -1841,7 +1845,7 @@ done:
     if(content_input_close(&input)!=NX_OK) result=1;
     if (leased&&content_surface_complete(surface)!=NX_OK) result=1;
     if (window&&nx_window_publish_semantics(window,NULL)!=NX_OK) result=1;
-    if (software&&nx_software_view_close(&software)!=NX_OK) result=1;
+    if (native_presenter_close(&presenter,window)!=NX_OK) result=1;
 #ifdef CONTENT_NATIVE_PNG
     free((void *)png_source.bitmap.pixels);
 #endif
@@ -1862,6 +1866,9 @@ done:
     if (exchange&&nx_snapshot_exchange_destroy(exchange)!=NX_OK) result=1;
     if (window) {
         guest_clipboard_drop(window,&inspector);
+#ifdef CONTENT_NATIVE_VULKAN
+        if (!presenter.vulkan)
+#endif
         nx_window_destroy(window);
     }
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);

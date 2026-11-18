@@ -346,6 +346,8 @@ def main():
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
+    parser.add_argument('--renderer', choices=('software', 'vulkan'), default='software',
+                        help='Presenter required for the native content window')
     parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'browser', 'guest', 'guest-desktop','guest-storage','guest-reset',
                                            'pending-close', 'rejected-close'), default='full')
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
@@ -463,6 +465,7 @@ def main():
     repo = Path(__file__).resolve().parents[2]
     env = dict(os.environ, NEXAUI_PLATFORM='wayland', NEXAUI_TEST_PRIVATE_X11='1',
                NEXAUI_CONTENT_TEST_FONT=str(args.font), NEXAUI_CONTENT_TEST_CASE=args.case,
+               NEXAUI_CONTENT_TEST_RENDERER=args.renderer,
                NEXAUI_CONTENT_TEST_XDOTOOL=xdotool,
                NEXAUI_CONTENT_CAPTURE_PREFIX=str(args.work_dir / 'content-'))
     if args.pdf_zoom:
