@@ -924,3 +924,57 @@ Wayland text-input v1 through Weston simple-IME. Page pointer and
 wheel routing, non-text key editing commands, surrounding deletion,
 text-input v3 acceptance for this integration, the engine accessibility
 subtree, arbitrary navigation and physical IME review remain open.
+
+## Native browser mouse and wheel checkpoint, 2026-11-18
+
+Consumer `38ff790b5853631a4ffb66f90b7abb26d4070367` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and Chromium Headless Shell
+156.0.8078.79. The existing input adapter and browser fixture share a
+half-open viewport hit test. Active browser input converts logical
+coordinates relative to the viewport into CSS pixels with 1/256-pixel
+resolution. The fixture maps each abstract wheel unit to 40 CSS pixels,
+with positive Chromium deltas toward the end of the scroll area.
+Browser operations use the existing bounded worker queue and publish
+sequence-matched CPU frames. Consecutive pending motion can coalesce.
+[DevTools mouse dispatch](https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-dispatchMouseEvent)
+
+The native peer clicks a fixture button and reads back its color change.
+Chromium reports the paired release at CSS coordinates `365,48` while
+the UI receives an 896 × 416 backing frame for the 448 × 208 view. A
+physical wheel step scrolls the page's inner panel by 40 CSS pixels,
+and the peer reads the newly exposed color from the native framebuffer.
+Moving out of bounds cancels browser pointer input. Wheel activity
+outside the viewport and after host release leaves the scroll position
+intact.
+
+An AT-SPI **Release page** action during a held mouse button cancels the
+engine drag and releases the button off the page. Chromium reports
+zero held buttons and the original click count. The native release
+drains without activating a host control. A new click after re-entry
+activates the page button exactly once. Host-originated gestures keep
+their ownership across the viewport boundary. The worker can complete
+release on the prior geometry when resizing, and the surface retires
+the accompanying old pixels by request identity.
+
+The exact-source matrix passes 81 CTests, 68 native Wayland runs
+and 34 independent probes on Alpine 3.24 with Clang 22.1.3 and
+Weston 14.0.2. Each release, shared SDK and ASan/UBSan pointer run
+reports two clicks, one wheel event, one forced release and 19
+snapshot disposals for 19 publications. The independent readback
+confirms both changed colors in the native screenshot. The prior
+browser CPU captures are byte-identical and the text input cases
+still report the same Wayland commits.
+
+Local archive `nexaui-browser-pointer448.tar.gz` binds exact source,
+SDK and package receipts, test results, engine receipts, captures
+and probe sources. Readback verified SHA-256
+`16e23ed63a6804aeff3bd50c5cd614ef444f1b969b9dadac8f5aaa668cb09e43`.
+The local receipt is `browser-pointer448-final.json`.
+
+The browser case covers local mouse buttons and a vertical wheel step
+on the offline test page. The independent routing probe also checks
+horizontal and fractional deltas, boundary clipping, motion
+coalescing and leave before focus dispatch. Native resize during an
+active drag, touch, relative input, OS capture, production
+drag-and-drop, general web navigation and the Chromium accessibility
+subtree remain open.
