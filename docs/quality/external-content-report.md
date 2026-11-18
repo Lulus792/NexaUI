@@ -1251,3 +1251,50 @@ The disk I/O labels represent cumulative device bytes. Live CPU and
 memory usage, guest filesystem occupancy, persistent disk ownership
 across independent app launches, reset preview and recovery,
 per-channel sharing grants and guest accessibility remain open.
+
+## Native QEMU reset preview checkpoint, 2026-11-18
+
+Consumer `38d562ecead3aead49a231002b2c109f96a03326` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`, QEMU 11.0.3 and the
+previously verified Alpine storage boot media. The harness copies
+the newly formatted 16 MiB disk into a distinct read-only baseline.
+The VM owner assigns an opaque 128-bit environment ID and records
+the work disk identity, baseline identity and SHA-256.
+
+The separate preview request checks the live raw VirtIO disk and
+revalidates the baseline bytes before publishing the bounded reply.
+It presents the exact environment ID, full SHA-256, the affected disk's
+size and what a restore would replace. The fixed offline fixture has
+zero external write grants. The worker reply carries no sharing
+authority. Invalid or unavailable scope produces a visible unavailable
+state. The previews do not issue engine mutations.
+
+The independent AT-SPI peer opens the first preview by keyboard,
+records the scope and dismisses it with Escape. After the guest saves
+data and the console disconnects, the peer reads the same scope and
+dismisses it with the keyboard Close action. Both routes restore focus
+to the review button. The work disk has diverged from the original
+baseline, and an independent read-only boot verifies the retained
+guest file with zero write bytes and unchanged disk hash.
+
+The first exact smoke could not read Python's UUID module from the
+damaged WSL filesystem. The owner now uses an opaque ID directly from
+the OS random source. A later standalone smoke omitted an AT-SPI
+runner from its reduced source archive. Final builds extract the
+full Git archive and use a byte-verified QEMU runtime in private RAM.
+
+The final revision passed 100 CTests across six profiles, 83 unique
+native Weston scenarios and 28 focused checks. The preview was
+verified in Release, Shared, ASan/UBSan with leak detection and the
+guest-only build. One ASan read-only reboot timed out after the
+preview and write stages had passed. The complete isolated rerun
+passed on the same build, and both logs are retained. All eight
+preview rows measured 12.85:1 against the panel in each profile.
+The local archive `nexaui-qemu-reset-preview454.tar.gz` has SHA-256
+`e2ee3f39e0563b4cbea2cee82715adef63303af095000b699e81abb581c41963`.
+`qemu-reset-preview454-final.json` records the profiles, exact scope
+values, archive members and boot artifacts.
+
+Product-owned disk enrollment across app launches, applying a reset,
+recovery after uncertain operations, and reviewing concrete external
+write grants remain open.
