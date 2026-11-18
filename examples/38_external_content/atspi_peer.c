@@ -680,10 +680,12 @@ int main(int argc,char **argv) {
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
+        strcmp(test_case,"browser")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
-    int png_case=!strcmp(test_case,"png");
+    int browser_case=!strcmp(test_case,"browser");
+    int png_case=browser_case||!strcmp(test_case,"png");
     int png_viewer=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_VIEWER");
     int gallery=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
     int jpeg_gallery=gallery&&getenv("NEXAUI_CONTENT_TEST_JPEG_GALLERY");
@@ -697,7 +699,7 @@ int main(int argc,char **argv) {
     const char *export_path=pdf_case?getenv("NEXAUI_CONTENT_TEST_EXPORT_PATH"):NULL;
     int thumbnails=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     int properties=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
-    const char *viewport=pdf_case?"PDF page image":png_case?"PNG image":"Fixture frame";
+    const char *viewport=pdf_case?"PDF page image":browser_case?"Browser content":png_case?"PNG image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
@@ -790,9 +792,11 @@ int main(int argc,char **argv) {
         CHECK(focus(app,"Close")&&drive("key","Return"));
         goto closed;
     }
-    CHECK(press(app,"Bad frame"));
+    CHECK(press(app,browser_case?"Crash browser":"Bad frame"));
     if(png_case||pdf_case) {
-        CHECK(observe(app,pdf_case?"PDF rendering failed; page retained.":"PNG decoding failed; image retained.",0));
+        const char *failure=pdf_case?"PDF rendering failed; page retained.":
+            browser_case?"Browser engine unavailable; view retained.":"PNG decoding failed; image retained.";
+        CHECK(observe(app,failure,0));
         CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
         CHECK(capture(display,outer,blue,"bad-retained"));
         if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0));
@@ -849,7 +853,7 @@ int main(int argc,char **argv) {
         thumbnails?"PDF page 2 of 7.":pdf_case?"PDF page 2 of 2.":"Frame recovered.",0));
     if(!png_case&&!pdf_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
     CHECK((fresh=find(app,viewport,0))&&dimensions(fresh));
-    CHECK(host_marker(host_log,(pdf_case||png_viewer)?
+    CHECK(host_marker(host_log,(pdf_case||png_viewer||browser_case)?
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
     if (png_viewer) {
@@ -1004,6 +1008,7 @@ int main(int argc,char **argv) {
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
+    if (browser_case) puts("BROWSER_NATIVE verified: retired tab, engine failure, host recovery, 2x backing and native controls");
     if(pdf_case) {
         CHECK((scaled_text=pdf_text(app,"Grün page two\n\n"))&&pdf_word_geometry(scaled_text,72,4,145)&&
             observe(app,"0 matches on page",0));

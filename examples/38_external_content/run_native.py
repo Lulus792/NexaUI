@@ -8,6 +8,7 @@ import subprocess
 import struct
 import sys
 import tempfile
+import time
 import zlib
 
 
@@ -149,13 +150,38 @@ os.execv(renderer, [renderer, *sys.argv[1:]])
     return path
 
 
+def run_browser(command, env, engine):
+    with tempfile.TemporaryDirectory(prefix='nexaui-browser-') as directory:
+        address = Path(directory) / 'engine.sock'
+        env['NEXAUI_CONTENT_TEST_BROWSER_SOCKET'] = str(address)
+        service = subprocess.Popen([sys.executable, str(Path(__file__).with_name('browser_fixture.py')),
+                                    str(engine.resolve(strict=True)), str(address)], env=env)
+        try:
+            deadline = time.monotonic() + 8
+            while not address.exists():
+                if service.poll() is not None or time.monotonic() >= deadline:
+                    raise RuntimeError('Chromium frame service did not start')
+                time.sleep(.02)
+            result = subprocess.run(command, env=env, timeout=90).returncode
+        finally:
+            if service.poll() is None:
+                service.terminate()
+            try:
+                service.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                service.kill()
+                service.wait()
+                raise
+        return result or service.returncode
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--build-dir', type=Path, required=True)
     parser.add_argument('--font', type=Path, required=True)
     parser.add_argument('--registry', type=Path, required=True)
     parser.add_argument('--work-dir', type=Path, required=True)
-    parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'pending-close', 'rejected-close'), default='full')
+    parser.add_argument('--case', choices=('full', 'png', 'pdf', 'input', 'browser', 'pending-close', 'rejected-close'), default='full')
     parser.add_argument('--pdf-renderer', type=Path, help='App-selected pdftoppm executable for --case pdf')
     parser.add_argument('--pdf-text-reader', type=Path, help='pdftotext path, default next to pdftoppm')
     parser.add_argument('--pdf-link-reader', type=Path, help='Optional content_pdf_link_reader path')
@@ -169,6 +195,7 @@ def main():
     parser.add_argument('--png-viewer', action='store_true', help='View landscape and portrait PNGs, including zoom and pan')
     parser.add_argument('--png-gallery', action='store_true', help='Open the host-owned ordered PNG gallery')
     parser.add_argument('--jpeg-gallery', action='store_true', help='Include an EXIF-oriented JPEG in --png-gallery')
+    parser.add_argument('--browser-engine', type=Path, help='Chromium headless shell for the offline browser frame workflow')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -178,6 +205,8 @@ def main():
         parser.error('--png-gallery requires --case png and runs separately from --png-viewer')
     if args.jpeg_gallery and not args.png_gallery:
         parser.error('--jpeg-gallery requires --png-gallery')
+    if (args.case == 'browser') != bool(args.browser_engine):
+        parser.error('--case browser and --browser-engine must be used together')
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
@@ -253,6 +282,8 @@ def main():
                         'pdf-compose', setxkbmap]
         env.update(NEXAUI_WESTON_INPUT_METHOD='weston-simple-im', XKB_DEFAULT_OPTIONS='compose:ralt',
                    NEXAUI_CONTENT_PDF_COMPOSE='1')
+    if args.browser_engine:
+        return run_browser(command, env, args.browser_engine)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

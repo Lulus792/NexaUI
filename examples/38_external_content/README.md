@@ -283,6 +283,29 @@ shared 2048-pixel edge and 4 MiB RGBA budgets. Zoom uses that bounded
 raster. Use `--case png --png-gallery --jpeg-gallery` to check a mixed
 collection with a truncated JPEG and an EXIF-rotated progressive photo.
 
+## Optional native browser frame workflow
+
+Build with `NEXAUI_CONTENT_BUILD_NATIVE_FIXTURE=ON`,
+`NEXAUI_CONTENT_BUILD_PNG=ON` and `NEXAUI_CONTENT_BUILD_BROWSER_FIXTURE=ON`.
+Run the native harness with `--case browser --browser-engine /absolute/path/to/chromium-headless-shell`
+in addition to its build, font, registry and work-directory arguments.
+The fixture starts Chromium as an unprivileged process with a temporary
+profile. It supplies its own offline HTML and controls Chromium through
+inherited DevTools descriptors. The harness removes the profile and joins
+the engine when it exits.
+
+The UI worker sends the current surface generation, resize identity and
+physical dimensions over an app-owned Unix socket. A bounded request reads
+one PNG, checks its decoded dimensions against the request and publishes one
+complete CPU snapshot through the existing exchange. The UI thread owns the
+viewport and frame lease. The workflow checks an old tab publication at
+replacement, browser process failure and restart, 1× and 2× backing, host
+keyboard and AT-SPI controls, and close.
+
+Content input, candidate geometry, browser accessibility subtree mapping,
+regular website navigation and GPU buffer ownership remain separate work
+for the engine integration. The browser executable is a fixture input.
+
 ## Optional PDF producer on Linux
 
 Configure with `-DNEXAUI_CONTENT_BUILD_PNG=ON` and

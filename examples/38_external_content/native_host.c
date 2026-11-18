@@ -599,7 +599,7 @@ static nx_result pdf_find_results(nx_context *context, const nx_font_collection 
 
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
-    nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case,
+    nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case, int browser_case,
     pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
     unsigned *linked_page, pdf_selection *selection, int *redraw,
     char link_address[CONTENT_PDF_URI_LIMIT+1u], pdf_url_view *preview, int can_open_url,
@@ -612,6 +612,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     int input_controls=input_case&&phase==SCALED_READY;
     int gallery=document->gallery!=NULL;
     const char *status=png_case&&phase==BAD_REJECTED?"PNG decoding failed; image retained.":phase_name(phase);
+    if (browser_case && phase==BAD_REJECTED) status="Browser engine unavailable; view retained.";
     char pdf_status[64];
     if (pdf_case) {
         if (phase==BAD_REJECTED) status="PDF rendering failed; page retained.";
@@ -650,7 +651,8 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
             pdf_case&&(phase==BAD_REJECTED||phase==PDF_PAGE1_SCALED||hit_page)?"Next page":"Publish frame",256,48,128,
             input_controls?input_phase!=INPUT_DISCONNECTED:phase==OLD_REJECTED||phase==BAD_REJECTED||
             phase==SCALED_WAIT||phase==PDF_PAGE1_SCALED||(hit_page&&document->page<document->pages),action)!=NX_OK ||
-        button(context,fonts,13,pdf_case&&(phase==SCALED_READY||hit_page)?"Previous page":"Bad frame",16,88,112,
+        button(context,fonts,13,pdf_case&&(phase==SCALED_READY||hit_page)?"Previous page":
+            browser_case?"Crash browser":"Bad frame",16,88,112,
             phase==READY||(pdf_case&&phase==SCALED_READY)||(hit_page&&document->page>1u),action)!=NX_OK)) ||
         ((!gallery||scale==1)&&button(context,fonts,14,"Scale 2x",136,88,112,
             phase==RECOVERED||(hit_page&&scale==1)||(gallery&&document->page&&pdf_hit_page(phase)),action)!=NX_OK) ||
@@ -678,7 +680,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         if (button(context,fonts,PDF_NEXT_HIT,"Next hit",392,48,72,pdf_can_navigate(phase),action)!=NX_OK) return 0;
     }
 #endif
-    const char *name=pdf_case?"PDF page image":gallery?"Image view":png_case?"PNG image":"Fixture frame";
+    const char *name=pdf_case?"PDF page image":gallery?"Image view":browser_case?"Browser content":png_case?"PNG image":"Fixture frame";
     nx_viewport_desc desc = {.id=100,.parent_id=1,.bounds={16,136,info.width>32?info.width-32:0,info.height>152?info.height-152:0},
         .name={name,strlen(name)},.scale=scale};
     nx_interaction_state interaction;
@@ -742,8 +744,14 @@ int main(void) {
     if (!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!path||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
+        strcmp(test_case,"browser")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
-    int png_case=!strcmp(test_case,"png");
+    int browser_case=!strcmp(test_case,"browser");
+    int png_case=browser_case||!strcmp(test_case,"png");
+    const char *browser_socket=browser_case?getenv("NEXAUI_CONTENT_TEST_BROWSER_SOCKET"):NULL;
+#ifndef CONTENT_NATIVE_BROWSER
+    if (browser_case) return 2;
+#endif
     int gallery_case=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
     int pdf_case=!strcmp(test_case,"pdf");
     int pdf_select_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
@@ -766,7 +774,8 @@ int main(void) {
 #ifndef CONTENT_NATIVE_PDF
     if (pdf_case) return 2;
 #endif
-    if (((png_case||pdf_case)&&!encoded_dir)||(pdf_case&&(!pdf_renderer||!pdf_reader))) return 2;
+    if (((png_case||pdf_case)&&!browser_case&&!encoded_dir)||(pdf_case&&(!pdf_renderer||!pdf_reader))||
+        (browser_case&&(gallery_case||!browser_socket||browser_socket[0]!='/'))) return 2;
     int result=1,leased=0,worker_ready=0;
     nx_snapshot_exchange *exchange=NULL; content_surface *surface=NULL;
     nx_window *window=NULL; nx_software_view *software=NULL; nx_context *context=NULL;
@@ -809,7 +818,8 @@ int main(void) {
         nx_context_create(NULL,&context)!=NX_OK||nx_window_create(&desc,&window)!=NX_OK||
         (pdf_case&&nx_text_field_create("",0,4096,&query)!=NX_OK)||
         nx_software_view_open(window,&software)!=NX_OK||
-        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher,export_path,document.gallery)) goto done;
+        native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher,export_path,
+            document.gallery,browser_socket)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
     for (;;) {
@@ -934,7 +944,8 @@ int main(void) {
         }
 #endif
         if (phase==PREPARING&&state.prepared) { phase=WAITING; need_frame=1; }
-        int decode_rejected=(png_case||pdf_case)&&state.completed==3&&state.result==NX_ERROR_ARGUMENT;
+        int decode_rejected=(png_case||pdf_case)&&state.completed==3&&
+            (state.result==NX_ERROR_ARGUMENT||(browser_case&&state.result!=NX_OK));
         int navigation_error=pdf_case&&(phase==PDF_PAGE_PENDING||phase==PDF_HIT_FAILED)&&
             state.completed==nav_completion&&state.result!=NX_OK;
         if (!gallery_case&&state.result!=NX_OK&&!decode_rejected&&!navigation_error&&phase!=FAILED) { phase=FAILED; need_frame=1; }
@@ -946,7 +957,7 @@ int main(void) {
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
         content_camera_view page_view;
         if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
-            &content_result,&leased,input_case,input_phase,png_case,pdf_case,&text_view,window,query,&document,
+            &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view)) goto done;
         int search_focused=nx_focus_id(context)==PDF_FIND_FIELD;
         if (!had_pages&&!had_preview&&!preview.uri[0]&&find_visible(query,drawn,info.width)) {

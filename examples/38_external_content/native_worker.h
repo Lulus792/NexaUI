@@ -17,6 +17,9 @@
 #include "png_gallery.h"
 #include "pdf_detail.h"
 #include "pdf_export.h"
+#ifdef CONTENT_NATIVE_BROWSER
+#include "browser_frame.h"
+#endif
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
@@ -58,6 +61,7 @@ typedef struct native_uri_result {
 typedef struct native_worker {
     nx_snapshot_exchange *exchange;
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
+    const char *browser_socket;
     const char *uri_launcher;
     const char *export_path;
     const png_gallery *gallery;
@@ -349,6 +353,11 @@ static void *native_worker_entry(void *user) {
         void *data = NULL;
         native_png_source original={0};
         nx_result result;
+#ifdef CONTENT_NATIVE_BROWSER
+        if (worker->browser_socket)
+            result=content_browser_frame(worker->browser_socket,job.request,job.sequence,job.kind,&data,&bytes);
+        else
+#endif
 #ifdef CONTENT_NATIVE_PDF
         if (worker->pdf_renderer) result = native_pdf(worker, job, &data, &bytes);
         else
@@ -423,7 +432,7 @@ static int native_worker_close(native_worker *worker) {
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
     const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader,
-    const char *uri_launcher, const char *export_path,const png_gallery *gallery) {
+    const char *uri_launcher, const char *export_path,const png_gallery *gallery,const char *browser_socket) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
@@ -432,6 +441,7 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
     worker->uri_launcher = uri_launcher;
     worker->export_path = export_path;
     worker->gallery = gallery;
+    worker->browser_socket = browser_socket;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;
     if (pthread_cond_init(&worker->condition, NULL)) return -1;
