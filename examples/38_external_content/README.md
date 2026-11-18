@@ -468,9 +468,24 @@ includes the external directory, and the owner rejects pre-grant reset
 confirmations. The reset status owner can read the committed result
 when `--guest-owner-restart` is also enabled.
 
+Add `--guest-file-bindfs /path/to/bindfs` to the runtime grant to test
+revocation while the guest keeps its mount and an open file descriptor.
+The Linux host needs FUSE, `fusermount3`, and a bindfs build with
+`--direct-io` support. Run the fixture as an ordinary user who can mount
+FUSE filesystems. The private QEMU owner exports the FUSE mount and
+retains the original host directory for review and readback.
+
+**Revoke file access** stops the per-export bindfs process. Status
+becomes **Files: revoked** after the owner reaps the process and observes
+that the same FUSE mount is disconnected. QEMU and the guest mount
+continue running. The independent test then attempts to write through
+the previously opened descriptor and to create a new file. It checks
+that both attempts fail and that the original file and its inode
+survive reset. The owner unmounts the private FUSE mount after QEMU closes.
+
 Production disk enrollment, recovery when storage is unavailable,
-forced revocation when a guest keeps the mount, production grant policy,
-the other sharing channels and guest accessibility remain open.
+production grant policy, the other sharing channels and guest
+accessibility remain open.
 
 ## Optional PDF producer on Linux
 

@@ -1557,3 +1557,59 @@ The test owner supports one runtime grant for a prepared private
 directory. Aetheri's production grant authority, forced revocation
 while a guest keeps its mount, the remaining sharing channels and
 the guest's accessibility tree remain open.
+
+## Native QEMU file cutoff with a held mount, 2026-11-18
+
+The consumer source is `8e39b38225497c33110dc28c0af99b1ba489f58a` and
+its selected Git archive has SHA-256
+`15aa7241f9ac9b8538569a6ccb282966fe4b9e2ccb35cae6170c1fd7d87c5759`.
+The Release and sanitizer Wayland-only SDK libraries came from
+`266404bf1743248f16eb289c0a1c0d99701cc395`. The SDK sources, CMake
+profiles and data are identical at the consumer revision. The audit
+checks both library hashes and the archived source of the executable
+`/init` in the tested guest image. The run uses QEMU 11.0.3, Weston
+14.0.2, and bindfs 1.18.4 linked to Alpine libfuse 3.18.3.
+
+The opt-in `--guest-file-bindfs` profile gives QEMU a private FUSE mount
+of the prepared directory. Sharing and reset review continue to show
+the retained host directory. Bindfs runs in the foreground with direct
+I/O and mount-owner-only access. The owner uses the existing explicit
+revoke action to terminate the per-export helper. It checks that the
+helper has exited and the exact original mount returns `ENOTCONN`
+before reporting **Files: revoked**. The disconnected mount stays in
+place until QEMU joins, and the owner then unmounts it.
+[Linux FUSE connection lifetime](https://docs.kernel.org/filesystems/fuse/fuse.html)
+[Bindfs mount options](https://bindfs.org/docs/bindfs.1.html)
+
+The separate QMP run observed the original QEMU process running and
+its original VirtIO 9p device still present after cutoff. The guest
+used its retained mount and open file descriptor to attempt a write
+and also tried to create a file. Both operations failed. The host
+verified exactly one original file with unchanged bytes and inode.
+The native keyboard and AT-SPI peer verified the pending and confirmed
+rows, focus restoration, input re-entry and escape, and no new file.
+Reset retained the external write and the prior work disk. A separate
+read-only guest boot verified the restored baseline. A replacement
+owner observed one completed reset.
+
+Release and ASan/UBSan with leak detection passed the held-mount
+workflow. The native **revocation pending** and **revoked** rows
+measured 12.85:1 in each build. The audited test set passed 54 CTests across
+four profiles, 11 native runs and 81 focused checks. A separate
+unprivileged host check observed `ENOTCONN` for a retained descriptor
+and a new path. The focused checks also cover invalid source
+directories, helper launch failure, stale mount identity, unexpected
+helper loss and cleanup.
+
+The first matrix invocation stopped in preparation when the older
+stand-alone owner probe used incorrect indentation for its added field.
+The corrected invocation passed the native controls and the full matrix.
+
+The local evidence bundle `nexaui-qemu-file-cutoff460.tar.gz` has SHA-256
+`d9ddb22aece4fdde93eab991c8f256a5e7fc1242e46aa1b193e641f0c264cb5a`. Its companion `qemu-file-cutoff460-final.json` records
+the exact artifacts, SDK libraries, native scopes and archived hashes.
+
+The backend supports one owner-prepared private test directory and
+requires Linux FUSE. Revocation covers I/O attempted after the owner
+confirms cutoff. Aetheri's production grant authority, the remaining
+sharing channels and guest accessibility remain open.
