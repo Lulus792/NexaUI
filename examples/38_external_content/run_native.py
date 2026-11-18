@@ -226,7 +226,7 @@ def verify_guest_export(path):
 
 
 def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False,
-              sharing=False, revoke=False, grant=False, bindfs=None):
+              sharing=False, revoke=False, grant=False, bindfs=None, clipboard_source=None):
     from guest_fixture import DESKTOP_BOOT_TIMEOUT
 
     engine = str(engine.resolve(strict=True))
@@ -258,6 +258,11 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
         env.pop('NEXAUI_CONTENT_TEST_FILE_REVOKE',None)
         env.pop('NEXAUI_CONTENT_TEST_FILE_GRANT',None)
         env.pop('NEXAUI_CONTENT_TEST_FILE_BINDFS',None)
+        env.pop('NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD',None)
+        env.pop('NEXAUI_CONTENT_TEST_HOST_WL_COPY',None)
+        if clipboard_source:
+            env['NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD']='1'
+            env['NEXAUI_CONTENT_TEST_HOST_WL_COPY']=clipboard_source
         if sharing:
             (root/'host-export').mkdir(mode=0o700)
             env['NEXAUI_CONTENT_TEST_FILE_SHARE']='1'
@@ -353,6 +358,7 @@ def main():
     sharing.add_argument('--guest-file-grant', action='store_true', help='Exercise granting and revoking a private file export in the running guest')
     parser.add_argument('--guest-file-revoke', action='store_true', help='Exercise runtime removal of the private file export')
     parser.add_argument('--guest-file-bindfs', type=Path, help='Bindfs executable for revoking access without guest unmount')
+    parser.add_argument('--guest-clipboard', action='store_true', help='Review and send host Wayland text to the guest clipboard once')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -373,6 +379,9 @@ def main():
         parser.error('--guest-file-revoke requires --guest-file-share')
     if args.guest_file_bindfs and not (args.guest_file_grant and shutil.which('fusermount3')):
         parser.error('--guest-file-bindfs requires --guest-file-grant and fusermount3')
+    clipboard_source=shutil.which('wl-copy') if args.guest_clipboard else None
+    if args.guest_clipboard and not (desktop_guest and clipboard_source):
+        parser.error('--guest-clipboard requires a graphical guest and the host wl-copy tool')
     if (desktop_guest or args.case=='guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
         parser.error('guest cases require --guest-engine and --guest-firmware')
     if desktop_guest != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
@@ -468,7 +477,8 @@ def main():
         return run_guest(command,env,args.guest_engine,args.guest_firmware,args.guest_kernel,args.guest_initrd,
                          storage=args.case in ('guest-storage','guest-reset'),reset=args.case=='guest-reset',
                          restart=args.guest_owner_restart,sharing=args.guest_file_share or args.guest_file_grant,
-                         revoke=args.guest_file_revoke,grant=args.guest_file_grant,bindfs=args.guest_file_bindfs)
+                         revoke=args.guest_file_revoke,grant=args.guest_file_grant,bindfs=args.guest_file_bindfs,
+                         clipboard_source=clipboard_source)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

@@ -117,12 +117,15 @@ static nx_result read_guest_sharing(const uint8_t *wire,size_t bytes,content_gue
     content_guest_sharing value={0};
     size_t prefix=GUEST_SHARING_V1;
     if (bytes<GUEST_SHARING_V1) return NX_ERROR_ARGUMENT;
-    if (!memcmp(wire,"NXS2",4)) {
+    int clipboard=!memcmp(wire,"NXS3",4);
+    if (clipboard||!memcmp(wire,"NXS2",4)) {
         static const uint8_t zero[16]={0};
         prefix=GUEST_SHARING_V2;
-        if (bytes<=prefix||wire[4]<GUEST_SHARE_ACTIVE||wire[4]>GUEST_SHARE_ATTACHING||
-            wire[5]||wire[6]||wire[7]||!memcmp(wire+8,zero,sizeof(zero))) return NX_ERROR_ARGUMENT;
+        if (bytes<prefix||wire[4]>GUEST_SHARE_ATTACHING||((wire[4]||!clipboard)&&bytes==prefix)||
+            (!clipboard&&!wire[4])||wire[5]>(unsigned)clipboard||wire[6]||wire[7]||
+            !memcmp(wire+8,zero,sizeof(zero))) return NX_ERROR_ARGUMENT;
         value.state=wire[4];
+        value.clipboard=wire[5];
         memcpy(value.environment,wire+8,sizeof(value.environment));
     } else if (memcmp(wire,"NXS1",4)) return NX_ERROR_ARGUMENT;
     if (wire_u32(wire+prefix-4)!=bytes-prefix) return NX_ERROR_ARGUMENT;
@@ -216,7 +219,8 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     size_t prefix=edit?8u:0;
     int reset_action=kind==CONTENT_GUEST_RESET_APPLY||kind==CONTENT_GUEST_RESET_STATUS;
     int sharing=kind>=CONTENT_GUEST_SHARING&&kind<=CONTENT_GUEST_GRANT_FILES;
-    size_t capacity=guest_report?(reset_action?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:
+    int clipboard=guest_report&&kind==CONTENT_GUEST_CLIPBOARD;
+    size_t capacity=guest_report?(clipboard?1u:reset_action?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:
         (sharing?GUEST_SHARING_V2:GUEST_PREVIEW_V3)+GUEST_SHARE_PATH_LIMIT)+1u:
         prefix+(accessible?4u+BROWSER_AX_WIRE_LIMIT:0)+CONTENT_PNG_ENCODED_LIMIT+1u;
     encoded=malloc(capacity);
@@ -224,7 +228,10 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     size_t size=0;
     result=read_frame(fd,encoded,capacity,&size,deadline);
     if (guest_report) {
-        if (result==NX_OK && reset_action) {
+        if (result==NX_OK && clipboard) {
+            if (size!=1u||(encoded[0]!='A'&&encoded[0]!='R'&&encoded[0]!='U')) result=NX_ERROR_ARGUMENT;
+            else *(unsigned *)guest_report=encoded[0];
+        } else if (result==NX_OK && reset_action) {
             if (size!=GUEST_ACTION_BYTES || memcmp(encoded,"NXA1",4) ||
                 encoded[4]<GUEST_RESET_APPLIED || encoded[4]>GUEST_RESET_UNREQUESTED) result=NX_ERROR_ARGUMENT;
             else *(unsigned *)guest_report=encoded[4];
@@ -352,6 +359,37 @@ nx_result content_guest_file_action(const char *path,content_request request,uns
         return NX_ERROR_STATE;
     *out=observed;
     return NX_OK;
+}
+
+int content_guest_clipboard_valid(const char *text,size_t bytes) {
+    if (!text||!bytes||bytes>GUEST_CLIPBOARD_LIMIT) return 0;
+    size_t offset=0;
+    unsigned rows=1, columns=0;
+    while (offset<bytes) {
+        uint32_t scalar;
+        if (nx_utf8_decode(text,bytes,&offset,&scalar)!=NX_OK) return 0;
+        if (scalar=='\n') {
+            if (++rows>4) return 0;
+            columns=0;
+            continue;
+        }
+        if (++columns>32||scalar<32||(scalar>=0x7f&&scalar<=0x9f)||
+            (scalar>=0x200b&&scalar<=0x200f)||(scalar>=0x2028&&scalar<=0x202e)||
+            (scalar>=0x2060&&scalar<=0x206f)||scalar==0xfeff) return 0;
+    }
+    return 1;
+}
+
+nx_result content_guest_send_clipboard(const char *path,content_request request,uint64_t ticket,
+    const uint8_t environment[16],const content_guest_clipboard *text,unsigned *out) {
+    if (!ticket||!environment||!text||!out||!content_guest_clipboard_valid(text->text,text->bytes))
+        return NX_ERROR_ARGUMENT;
+    uint8_t operation[24+GUEST_CLIPBOARD_LIMIT];
+    memcpy(operation,environment,16);
+    for (unsigned i=0;i<8;++i) operation[16+i]=(uint8_t)(ticket>>(56u-8u*i));
+    memcpy(operation+24,text->text,text->bytes);
+    return transfer(path,request,1,CONTENT_GUEST_CLIPBOARD,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,
+        out,operation,24+text->bytes);
 }
 
 nx_result content_guest_read_reset_preview(const char *path,content_request request,content_guest_reset_preview *out) {

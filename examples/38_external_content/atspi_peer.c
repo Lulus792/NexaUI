@@ -621,7 +621,9 @@ static int read_guest_reset_scope(AtspiAccessible *app,guest_reset_scope *scope,
 static int read_guest_sharing(AtspiAccessible *app,const char *directory,const char *status) {
     char row[128];
     snprintf(row,sizeof(row),"Host directory: %s",directory?directory:"");
-    return observe(app,"Guest sharing",0)&&observe(app,"Clipboard: unavailable",0)&&
+    const char *clipboard=getenv("NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD")?
+        "Clipboard: one-time text to guest":"Clipboard: unavailable";
+    return observe(app,"Guest sharing",0)&&observe(app,clipboard,0)&&
         observe(app,status?status:directory?"Files: read/write":"Files: unavailable",0)&&observe(app,"Network: unavailable",0)&&
         observe(app,"Microphone: unavailable",0)&&observe(app,"Devices: unavailable",0)&&(!directory||observe(app,row,0));
 }
@@ -638,6 +640,24 @@ static int release_guest_keys(AtspiAccessible *app) {
     return drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
         observe(app,"Guest input released.",0)&&observe(app,"Close",1)&&
         drive("keyup","shift")&&drive("keyup","ctrl");
+}
+
+static int offer_guest_clipboard(const char *source,const char *text) {
+    FILE *input=tmpfile();
+    if (!input) return 0;
+    int ok=fputs(text,input)>=0&&!fflush(input)&&!fseek(input,0,SEEK_SET);
+    pid_t child=ok?fork():-1;
+    if (!child) {
+        if (dup2(fileno(input),STDIN_FILENO)<0) _exit(125);
+        execlp("timeout","timeout","4",source,"--type","text/plain;charset=utf-8",(char *)NULL);
+        _exit(125);
+    }
+    fclose(input);
+    if (child<0) return 0;
+    int status;
+    pid_t joined;
+    do { joined=waitpid(child,&status,0); } while (joined<0&&errno==EINTR);
+    return joined==child&&WIFEXITED(status)&&WEXITSTATUS(status)==0;
 }
 
 static int read_guest_export(const char *directory, struct stat *info) {
@@ -1213,6 +1233,29 @@ int main(int argc,char **argv) {
         CHECK(!cutoff||(grant&&revoke));
         CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,grant?"Files: access off":NULL)&&
             input_chrome(display,id,"guest-sharing")&&drive("key","Escape")&&observe(app,"Sharing",1));
+        const char *clipboard_source=getenv("NEXAUI_CONTENT_TEST_HOST_WL_COPY");
+        if (clipboard_source) {
+            const char *payload="Grüße aus NexaUI\nZweite Zeile\n";
+            char excess[194];
+            memset(excess,'a',sizeof(excess)-1u);
+            excess[sizeof(excess)-1u]=0;
+            CHECK(offer_guest_clipboard(clipboard_source,excess)&&drive("windowfocus",id)&&
+                focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review clipboard text")&&drive("key","Return")&&
+                observe(app,"Clipboard text unavailable or cannot be reviewed.",0)&&
+                drive("key","Escape")&&observe(app,"Sharing",1));
+            CHECK(offer_guest_clipboard(clipboard_source,payload)&&drive("windowfocus",id)&&
+                focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review clipboard text")&&drive("key","Return")&&
+                observe(app,payload,0)&&input_chrome(display,id,"guest-clipboard-review")&&
+                drive("key","Escape")&&observe(app,"Sharing",1));
+            CHECK(drive("key","Return")&&focus(app,"Review clipboard text")&&drive("key","Return")&&
+                observe(app,payload,0)&&focus(app,"Copy text to guest")&&drive("key","Return")&&
+                observe(app,"Guest clipboard confirmed.",0)&&input_chrome(display,id,"guest-clipboard-confirmed")&&
+                drive("key","Escape")&&observe(app,"Sharing",1));
+            CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&guest_command("clipcheck")&&
+                browser_pixel(display,outer,156,43,0x0000a8u)&&release_guest_keys(app));
+            puts("GUEST_CLIPBOARD_NATIVE verified: size rejection, cancel, review, keyboard send, and independent guest paste");
+        }
         unsigned long long reads=0, before=0, after=0;
         guest_reset_scope baseline={0}, preview={0};
         CHECK(focus(app,"Resources")&&drive("key","Return")&&observe(app,"Guest resources",0)&&

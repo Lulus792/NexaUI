@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 
+from guest_clipboard import CLIPBOARD_LIMIT, GuestClipboard
 from guest_export import GuestExport, private_export_identity
 from guest_reset import (RESET_APPLIED, RESET_REJECTED, RESET_SCOPE_BYTES, RESET_UNKNOWN, RESET_UNREQUESTED,
                          WORK_DISK_BYTES, image_digest, image_identity, image_snapshot, observe_reset,
@@ -41,7 +42,8 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
-                 reset_enabled=False, file_share=None, revoke_share=False, grant_share=False, export=None):
+                 reset_enabled=False, file_share=None, revoke_share=False, grant_share=False, export=None,
+                 clipboard=False):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -51,6 +53,11 @@ class Guest:
         self.close_result = None
         self.file_share = file_share
         self.export = export
+        if clipboard and not self.desktop:
+            raise ValueError('Clipboard requires the desktop guest')
+        self.clipboard = GuestClipboard(root) if clipboard else None
+        if self.clipboard or self.checkpoint:
+            self.environment = os.urandom(16)
         if self.export and (not grant_share or self.export.source!=file_share):
             raise ValueError('The file backend requires the private runtime grant')
         self.grant_share = grant_share
@@ -71,7 +78,6 @@ class Guest:
         if self.checkpoint:
             if not (self.desktop and self.disk and writable):
                 raise ValueError('Reset preview requires an owned writable disk')
-            self.environment = os.urandom(16)
             self.reset_binding = os.urandom(16) if grant_share else self.environment
             self.disk_identity = image_identity(self.disk.stat(follow_symlinks=False))
             self.checkpoint_identity = image_identity(self.checkpoint.stat(follow_symlinks=False))
@@ -91,12 +97,17 @@ class Guest:
             cmdline = 'console=ttyS0 quiet rootfstype=ramfs'
             if disk:
                 cmdline += ' nexaui.work=' + ('rw' if writable else 'ro')
+            if self.clipboard:
+                cmdline += ' nexaui.clipboard=on'
             if self.file_share:
                 cmdline += ' nexaui.export=' + ('grantable' if grant_share else 'revocable' if revoke_share else 'write')
             boot_options = [
                 '-m', '768', '-device', 'virtio-vga,id=guest-gpu,xres=800,yres=600',
                 '-kernel', boot, '-initrd', initrd, '-append', cmdline,
                 '-serial', f'file:{self.trace}']
+            if self.clipboard:
+                boot_options += ['-chardev',f'socket,id=clipboard,path={self.clipboard.address},server=on,wait=off',
+                                 '-serial','chardev:clipboard']
             if disk:
                 node = {'driver':'raw','node-name':'work','read-only':not writable,
                         'file':{'driver':'file','filename':str(disk)}}
@@ -138,13 +149,17 @@ class Guest:
         self.stream = self.peer.makefile('rb')
         self.version = self.message(deadline)['QMP']['version']['qemu']
         self.command('qmp_capabilities')
+        if self.clipboard:
+            self.clipboard.connect()
         if self.desktop:
             deadline = time.monotonic() + DESKTOP_BOOT_TIMEOUT
             while True:
                 if self.trace.exists():
                     with self.trace.open('rb') as stream:
                         data=stream.read(65537)
-                    if b'NEXAUI_DESKTOP_READY\r\n' in data or b'NEXAUI_DESKTOP_READY\n' in data:
+                    lines = data.splitlines()
+                    if (b'NEXAUI_DESKTOP_READY' in lines and
+                            (not self.clipboard or b'NEXAUI_CLIPBOARD_READY' in lines)):
                         break
                     if b'NEXAUI_STARTUP_FAILED ' in data or b'Kernel panic - not syncing' in data:
                         raise RuntimeError('Guest startup failed before desktop readiness')
@@ -376,7 +391,10 @@ class Guest:
         return self.sharing_reply(self.share_state)
 
     def sharing_reply(self, state):
-        return struct.pack('>4sB3x16sI',b'NXS2',state,self.environment,len(self.share_path))+self.share_path
+        path = self.share_path if self.file_share else b''
+        if self.clipboard:
+            return struct.pack('>4sBB2x16sI',b'NXS3',state,bool(self.clipboard.peer),self.environment,len(path))+path
+        return struct.pack('>4sB3x16sI',b'NXS2',state,self.environment,len(path))+path
 
     def sharing(self):
         try:
@@ -390,7 +408,25 @@ class Guest:
         print(f'GUEST_SHARING files={path.decode() or "unavailable"}',flush=True)
         if self.file_share and self.revoke_share:
             return self.sharing_reply(self.share_state)
+        if self.clipboard:
+            return self.sharing_reply(0)
         return struct.pack('>4sI',b'NXS1',len(path))+path
+
+    def send_clipboard(self, payload):
+        if not self.clipboard or payload[:16]!=self.environment:
+            return b'R'
+        if self.held or self.buttons:
+            return b'R'
+        try:
+            if self.command('query-status')['status']!='running':
+                return b'R'
+        except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            return b'R'
+        ticket = int.from_bytes(payload[16:24],'big')
+        outcome = self.clipboard.send(ticket,payload[24:])
+        if outcome==b'A':
+            print('GUEST_CLIPBOARD acknowledged',flush=True)
+        return outcome
 
     def revoke_files(self, environment):
         if not self.file_share or not self.revoke_share or environment!=self.environment:
@@ -529,6 +565,8 @@ class Guest:
                             print(f'GUEST_STORAGE {storage.decode()}',flush=True)
                         for export in re.findall(rb'^NEXAUI_FILE_SHARE (\w+)\r?$',output,re.M):
                             print(f'GUEST_FILE_SHARE {export.decode()}',flush=True)
+                        if b'NEXAUI_CLIPBOARD_INDEPENDENT_OK' in output.splitlines():
+                            print('GUEST_CLIPBOARD independent_wayland_read',flush=True)
                     print(f'GUEST_CLOSE status={status} held={len(self.held)} buttons={len(self.buttons)} '
                           f'trace={self.trace_cursor.decode()}',flush=True)
                     self.command('quit')
@@ -545,6 +583,8 @@ class Guest:
                 self.close_result=self.process.wait(timeout=2)
             return self.close_result
         finally:
+            if self.clipboard:
+                self.clipboard.close()
             if self.stream:
                 self.stream.close()
             self.peer.close()
@@ -560,7 +600,7 @@ def read_request(peer, desktop):
         generation, resize, width, height, kind = fields[:5]
         if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                 0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                kind in range(14 if desktop else 6) and len(fields)==(6 if kind in (5,9,10,12,13) else 5)):
+                kind in range(15 if desktop else 6) and len(fields)==(6 if kind in (5,9,10,12,13,14) else 5)):
             raise ValueError('Guest request outside the fixture limits')
         size = fields[5] if len(fields)==6 else 0
         if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
@@ -569,6 +609,8 @@ def read_request(peer, desktop):
             raise ValueError('Invalid guest reset scope length')
         if kind in (12,13) and size!=16:
             raise ValueError('Invalid file grant environment length')
+        if kind==14 and not 24<size<=24+CLIPBOARD_LIMIT:
+            raise ValueError('Invalid guest clipboard length')
         payload = stream.read(size)
         if len(payload)!=size or stream.read(1):
             raise ValueError('Invalid guest request framing')
@@ -594,6 +636,9 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                 Path(disk)!=address.parent/'work.img' or Path(checkpoint)!=address.parent/'baseline.img'):
             raise ValueError('Reset requires the private test harness images')
     file_share = address.parent/'host-export' if reset_mode and os.environ.get('NEXAUI_CONTENT_TEST_FILE_SHARE')=='1' else None
+    clipboard = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD')=='1'
+    if clipboard:
+        require_reset_root(address)
     grant = bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_GRANT')=='1')
     bindfs = os.environ.get('NEXAUI_CONTENT_TEST_FILE_BINDFS')
     if bindfs and not grant:
@@ -603,7 +648,7 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
                       reset_enabled=bool(reset_mode),file_share=file_share,
                       revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'),
-                      grant_share=grant,export=export)
+                      grant_share=grant,export=export,clipboard=clipboard)
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()
@@ -661,6 +706,13 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                             continue
                         if kind == 13:
                             peer.sendall(guest.grant_files(payload))
+                            continue
+                        if kind == 14:
+                            outcome = guest.send_clipboard(payload)
+                            try:
+                                peer.sendall(outcome)
+                            except (BrokenPipeError,ConnectionResetError):
+                                pass
                             continue
                         image = guest.frame()
                         peer.sendall(image)

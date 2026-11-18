@@ -108,6 +108,38 @@ EOF
 weston --backend=drm --renderer=pixman --socket="$WAYLAND_DISPLAY" --config=/run/weston.ini &
 desktop=$!
 wait_socket "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$desktop"
+case " $(cat /proc/cmdline) " in
+    *" nexaui.clipboard=on "*)
+        command -v wl-copy
+        command -v wl-paste
+        stty -F /dev/ttyS1 raw -echo clocal 115200
+        (
+            umask 077
+            exec 4<>/dev/ttyS1
+            printf '%s\n' NEXAUI_CLIPBOARD_READY >/dev/ttyS0
+            while IFS=' ' read -r ticket expected encoded <&4; do
+                case "$ticket" in ''|*[!0-9]*) continue ;; esac
+                status=R
+                if printf '%s' "$encoded" | base64 -d >/run/clipboard-in &&
+                    [ "$(wc -c </run/clipboard-in)" -le 192 ] &&
+                    [ -s /run/clipboard-in ] &&
+                    [ "$(sha256sum /run/clipboard-in | cut -d ' ' -f 1)" = "$expected" ]; then
+                    status=U
+                    if timeout 2 wl-copy --type 'text/plain;charset=utf-8' </run/clipboard-in >/dev/null 2>&1; then
+                        timeout 1 wl-paste --no-newline --type 'text/plain;charset=utf-8' 2>/dev/null |
+                            head -c 193 >/run/clipboard-out
+                        if cmp -s /run/clipboard-in /run/clipboard-out; then
+                            status=A
+                        fi
+                    fi
+                fi
+                rm -f /run/clipboard-in /run/clipboard-out
+                printf '%s %s\n' "$status" "$ticket" >&4
+            done
+        ) &
+        : >/run/clipboard-enabled
+        ;;
+esac
 export TERM=xterm SHELL=/bin/sh
 cat >/run/console-probe <<'EOF'
 #!/bin/sh
@@ -137,6 +169,17 @@ while IFS= read -r line; do
         sleep .4
         paint 42 'Guest keyboard input received'
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
+    elif [ -f /run/clipboard-enabled ] && [ "$line" = clipcheck ]; then
+        printf '%s\n' 'Grüße aus NexaUI' 'Zweite Zeile' >/run/clipboard-expected
+        timeout 2 wl-paste --no-newline --type 'text/plain;charset=utf-8' 2>/dev/null |
+            head -c 193 >/run/clipboard-observed
+        if cmp -s /run/clipboard-expected /run/clipboard-observed; then
+            printf '%s\n' NEXAUI_CLIPBOARD_INDEPENDENT_OK >/dev/ttyS0
+            paint 44 'Guest clipboard matches the approved text'
+        else
+            paint 41 'Guest clipboard differs from the approved text'
+        fi
+        rm -f /run/clipboard-expected /run/clipboard-observed
     elif [ -f /run/grantable-export ] && [ "$line" = attach ]; then
         tries=0
         until timeout 3 mount -t 9p -o trans=virtio,version=9p2000.L,cache=none,nodev,nosuid,noexec nexaui-export /mnt/export; do
