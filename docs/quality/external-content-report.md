@@ -1093,3 +1093,52 @@ input. A complete graphical guest OS, guest mouse capture, persistent
 storage and reset preview, resource accounting in the UI, sharing
 grants, guest accessibility and a production VM engine decision remain
 open.
+
+## Native QEMU guest pointer checkpoint, 2026-11-18
+
+Consumer `ce45c698ed6821773dac834d93661d2e7b93b3c4` includes relative
+pointer motion and the three primary mouse buttons in the same private
+QEMU 11.0.3 console and installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. The host uses the full
+fitted image at 2× backing to translate logical pointer events to
+source coordinates. Each entry establishes a fresh motion reference.
+Adjacent pending motions can coalesce between button and key edges.
+
+The bounded app-owned transport validates each batch before dispatch.
+The fixture sends each button transition in order and splits signed
+relative motion into impulses the PS/2 device can report. The guest
+reads the auxiliary port, draws a white pointer or a yellow held
+pointer, and traces its received edges. The independent Wayland peer
+sees movement and dragging in compositor captures. It holds both a
+key and a button across the host shortcut and across native focus loss.
+Moving into the letterbox revokes input and releases the held button.
+The explicit Disconnect action waits for pending input before showing
+the disconnected state. QMP still reports the guest running. The
+fixture then sends QMP quit and observes a successful process exit.
+[QEMU 11.0 input schema](https://github.com/qemu/qemu/blob/v11.0.0/qapi/ui.json#L1010)
+[QEMU 11.0 PS/2 input handler](https://github.com/qemu/qemu/blob/v11.0.0/hw/input/ps2.c#L759)
+
+The initial matrix stalled in CMake while its processes were waiting
+on the Windows filesystem. With a Linux working directory the six
+profiles built and passed CTest before the full Windows volume caused
+WSL ext4 I/O failures and a read-only filesystem. A private RAM-backed
+overlay for temporary files let the next matrix run without changing
+the shared WSL mount. Three native runs at
+`cb861f0c1a7c504d3a979576ffe07aaf4849528c` hit the fixture's 150-render
+ceiling. The extra mouse stages now use the existing 220-render ceiling
+for native pointer workflows.
+
+The corrected revision passed 100 CTests across six build profiles,
+75 native Weston scenarios and 28 additional transport, receiver and
+input-gate probes. Release, Shared, ASan/UBSan with leak detection and
+guest-only each verified ten compositor captures, eight key edges,
+twelve mouse-button edges and three motion impulses. Each run matched
+frame publications to disposals and observed a successful QEMU exit.
+The local evidence archive is `nexaui-qemu-guest-pointer451.tar.gz`
+(SHA-256 `51315628ba931243140877cc7630256d7cd76ea40856d80756a7b2daf87ef968`).
+Its member hashes are recorded in `qemu-guest-pointer451-final.json`.
+
+This fixture supports the three primary buttons with a relative PS/2
+device. Wheel and side buttons, a graphical guest OS, guest accessibility,
+storage and reset review, resource accounting, separate sharing grants
+and a production VM engine decision remain open.
