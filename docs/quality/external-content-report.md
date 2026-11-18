@@ -810,3 +810,59 @@ for deep zoom, product collection selection and human assistive
 acceptance remain open. The example defines the CPU image path. Browser
 and guest engine selection and GPU interop remain separate packet 7
 requirements.
+
+## Native browser CPU frame checkpoint, 2026-11-18
+
+Consumer `d3f7285144704af550aac94604183d5455aa1bce` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. Example 38 can run an offline,
+app-owned Chromium Headless Shell 156.0.8078.79 process as an unprivileged
+user with a temporary profile and inherited DevTools descriptors. The
+engine renders a trusted fixture page at the scenario's CSS extent and
+1× or 2× backing density. The native UI exchanges frames through its existing
+worker, wake FD, snapshot exchange and software view.
+[Chromium headless documentation](https://chromium.googlesource.com/chromium/src/+/main/headless/README.md)
+[DevTools screenshot API](https://chromedevtools.github.io/devtools-protocol/tot/Page/#method-captureScreenshot)
+
+Per request, the worker sends generation, resize and physical extent over
+the private Unix socket. A five-second monotonic deadline covers request
+transmission and receipt. Encoded and decoded buffers each have a 4 MiB
+limit, and each edge is limited to 2048 pixels. A successful PNG must
+decode to the exact requested extent before the worker can publish RGBA8.
+Published Chromium snapshots use full-frame copies. The app keeps ownership
+of tab identity and the browser process.
+
+The independent native peer replaces a tab while its already rendered
+frame is held, then releases it and checks that the retired generation
+never appears on screen. It observes the replacement's pixels and
+AT-SPI viewport, kills the fixture browser through the host's test
+control, and verifies the retained image and accessible failure state.
+The app starts a fresh engine and the viewport displays its pixels.
+The same 448 × 208 CSS viewport renders into 896 × 416 physical pixels
+at 2× backing. The peer verifies keyboard traversal into and out of the
+viewport, host close, four snapshot disposals and browser exit status.
+
+An independent socket probe covers a valid frame, an empty response,
+an invalid requested extent, a valid PNG with the wrong dimensions,
+a truncated PNG, an over-budget response and a stalled partial reply.
+It verifies that errors preserve the caller's outputs and that the
+stalled transfer cannot extend the deadline. Both the normal and
+ASan/UBSan probes pass.
+
+The exact-source matrix passes 81 CTests, 62 native Wayland runs and
+14 transfer probes on Alpine 3.24, Clang 22.1.3 and Weston 14.0.2.
+The browser case passes in the release, shared SDK and ASan/UBSan
+profiles. Default and PNG-only controls verify the build option in
+its disabled state. Independent pixel readback covers pending,
+rejected, current, retained, recovered and scaled viewports. The
+earlier JPEG and PDF captures remain byte-identical.
+
+Local archive `nexaui-browser-frame446.tar.gz` binds exact source,
+SDK and signed package receipts, results, captures and the independent
+probe. Readback verified SHA-256
+`b9540d809b6a8df363839395a703086e895e0f9eb5ad54243bbec4733da56259`.
+The local receipt is `browser-frame446-final.json`.
+
+The product engine decision, web navigation and permissions, body input and
+IME candidate geometry, engine accessibility subtree mapping, incremental
+damage and GPU interop remain open. This fixture exercises host keyboard
+and AT-SPI controls around browser-rendered pixels.
