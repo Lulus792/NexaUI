@@ -109,6 +109,12 @@ weston --backend=drm --renderer=pixman --socket="$WAYLAND_DISPLAY" --config=/run
 desktop=$!
 wait_socket "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$desktop"
 case " $(cat /proc/cmdline) " in
+    *" nexaui.network=probe "*)
+        modprobe virtio_net
+        : >/run/network-enabled
+        ;;
+esac
+case " $(cat /proc/cmdline) " in
     *" nexaui.clipboard=on "*)
         command -v wl-copy
         command -v wl-paste
@@ -169,6 +175,21 @@ paint() {
     done
     printf '\033[0m'
 }
+network_interface() {
+    for path in /sys/class/net/*; do
+        if [ "$(cat "$path/address")" = 52:54:00:4e:58:01 ]; then
+            printf '%s\n' "${path##*/}"
+            return
+        fi
+    done
+    return 1
+}
+network_new_reply() {
+    printf 'first\n' | timeout 2 nc -w 1 10.0.2.100 8080 2>/dev/null
+}
+network_read() {
+    timeout 2 sh -c 'IFS= read -r reply <&5 && [ "$reply" = "$1" ]' reply "$1"
+}
 while IFS= read -r line; do
     if [ "$line" = nexa ]; then
         if [ -f /run/file-export ]; then
@@ -186,6 +207,43 @@ while IFS= read -r line; do
         sleep .4
         paint 42 'Guest keyboard input received'
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
+    elif [ -f /run/network-enabled ] && [ "$line" = netoff ]; then
+        if ! network_interface >/dev/null && [ "$(network_new_reply)" != 'NEXAUI first' ]; then
+            printf '%s\n' NEXAUI_NETWORK_OFF >/dev/ttyS0
+        fi
+    elif [ -f /run/network-enabled ] && [ "$line" = netconnect ]; then
+        tries=0
+        until interface=$(network_interface); do
+            tries=$((tries+1))
+            [ "$tries" -lt 30 ] || break
+            sleep .1
+        done
+        if [ -n "$interface" ] && ip link set "$interface" up &&
+            ip addr replace 10.0.2.15/24 dev "$interface" &&
+            ip route replace default via 10.0.2.2 dev "$interface" &&
+            mkfifo /run/network-in /run/network-out; then
+            exec 4<>/run/network-in 5<>/run/network-out
+            nc 10.0.2.100 8080 <&4 >&5 2>/dev/null &
+            network_client=$!
+            printf 'first\n' >&4
+            if network_read 'NEXAUI first' && kill -0 "$network_client"; then
+                : >/run/network-held
+                printf '%s\n' NEXAUI_NETWORK_CONNECTED >/dev/ttyS0
+            fi
+        fi
+    elif [ -f /run/network-held ] && [ "${line#netcanary}" != "$line" ]; then
+        port=${line#netcanary}
+        case "$port" in ''|*[!0-9]*) continue ;; esac
+        if [ "$port" -ge 1024 ] && [ "$port" -le 65535 ] &&
+            ! timeout 2 nc -w 1 10.0.2.2 "$port" </dev/null 2>/dev/null; then
+            printf '%s\n' NEXAUI_NETWORK_CANARY_BLOCKED >/dev/ttyS0
+        fi
+    elif [ -f /run/network-held ] && [ "$line" = netcheck ]; then
+        printf 'second\n' >&4
+        if ! network_read 'NEXAUI second' && [ "$(network_new_reply)" != 'NEXAUI first' ]; then
+            printf '%s\n' NEXAUI_NETWORK_CUTOFF >/dev/ttyS0
+        fi
+        kill "$network_client" 2>/dev/null || :
     elif [ -f /run/clipboard-enabled ] && [ "$line" = clipcheck ]; then
         printf '%s\n' 'Grüße aus NexaUI' 'Zweite Zeile' >/run/clipboard-expected
         timeout 3 wl-paste --no-newline --type 'text/plain;charset=utf-8' 2>/dev/null |

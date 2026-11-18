@@ -19,12 +19,15 @@ enum { CONTENT_GUEST_RESOURCES=7, CONTENT_GUEST_RESET_PREVIEW=8,
        CONTENT_GUEST_RESET_APPLY=9, CONTENT_GUEST_RESET_STATUS=10, CONTENT_GUEST_SHARING=11,
        CONTENT_GUEST_REVOKE_FILES=12, CONTENT_GUEST_GRANT_FILES=13,
        CONTENT_GUEST_CLIPBOARD=14, CONTENT_GUEST_CLIPBOARD_READ=15,
+       CONTENT_GUEST_GRANT_NETWORK=16, CONTENT_GUEST_REVOKE_NETWORK=17,
        GUEST_RESOURCE_RUNNING=1, GUEST_RESOURCE_PAUSED=2,
        GUEST_RESOURCE_DISK=1, GUEST_RESOURCE_WRITABLE=2,
        GUEST_RESET_APPLIED=1, GUEST_RESET_REJECTED, GUEST_RESET_UNKNOWN, GUEST_RESET_UNREQUESTED };
 enum { GUEST_SHARE_FIXED=0, GUEST_SHARE_ACTIVE, GUEST_SHARE_PENDING, GUEST_SHARE_REVOKED, GUEST_SHARE_UNKNOWN,
        GUEST_SHARE_OFFERED, GUEST_SHARE_ATTACHING };
 enum { GUEST_CLIPBOARD_SEND=1, GUEST_CLIPBOARD_READ=2 };
+enum { GUEST_NETWORK_OFF=1, GUEST_NETWORK_PENDING, GUEST_NETWORK_ACTIVE,
+       GUEST_NETWORK_REVOKED, GUEST_NETWORK_UNKNOWN };
 typedef struct content_guest_resources {
     unsigned state, flags, cpus;
     uint64_t ram, capacity, read, written;
@@ -35,7 +38,7 @@ typedef struct content_guest_reset_preview {
     char file_share[GUEST_SHARE_PATH_LIMIT+1];
 } content_guest_reset_preview;
 typedef struct content_guest_sharing {
-    unsigned state, clipboard;
+    unsigned state, clipboard, network;
     uint8_t environment[16];
     char file_share[GUEST_SHARE_PATH_LIMIT+1];
 } content_guest_sharing;
@@ -52,6 +55,8 @@ nx_result content_guest_frame(const char *path,content_request request,uint64_t 
 nx_result content_guest_read_resources(const char *path,content_request request,content_guest_resources *out);
 nx_result content_guest_read_sharing(const char *path,content_request request,content_guest_sharing *out);
 nx_result content_guest_file_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
+    content_guest_sharing *out);
+nx_result content_guest_network_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
     content_guest_sharing *out);
 int content_guest_clipboard_valid(const char *text,size_t bytes);
 nx_result content_guest_send_clipboard(const char *path,content_request request,uint64_t ticket,

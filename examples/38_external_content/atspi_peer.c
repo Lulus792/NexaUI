@@ -629,13 +629,14 @@ static int read_guest_reset_scope(AtspiAccessible *app,guest_reset_scope *scope,
         strlen(scope->checkpoint)==64&&strspn(scope->checkpoint,hex)==64;
 }
 
-static int read_guest_sharing(AtspiAccessible *app,const char *directory,const char *status) {
+static int read_guest_sharing(AtspiAccessible *app,const char *directory,const char *status,const char *network) {
     char row[128];
     snprintf(row,sizeof(row),"Host directory: %s",directory?directory:"");
     const char *clipboard=getenv("NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD")?
         "Clipboard: one-time text transfers":"Clipboard: unavailable";
     return observe(app,"Guest sharing",0)&&observe(app,clipboard,0)&&
-        observe(app,status?status:directory?"Files: read/write":"Files: unavailable",0)&&observe(app,"Network: unavailable",0)&&
+        observe(app,status?status:directory?"Files: read/write":"Files: unavailable",0)&&
+        observe(app,network?network:"Network: unavailable",0)&&
         observe(app,"Microphone: unavailable",0)&&observe(app,"Devices: unavailable",0)&&(!directory||observe(app,row,0));
 }
 
@@ -671,7 +672,7 @@ static int offer_host_clipboard(const char *source,const char *text) {
     return joined==child&&WIFEXITED(status)&&WEXITSTATUS(status)==0;
 }
 
-static int await_guest_clipboard_marker(const char *expected) {
+static int await_guest_marker(const char *expected) {
     const char *socket=getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET");
     const char *end=socket?strrchr(socket,'/'):NULL;
     if (!end||end-socket>=80) return 0;
@@ -697,11 +698,11 @@ static int await_guest_clipboard_marker(const char *expected) {
     return ok;
 }
 
-static int offer_guest_selection(AtspiAccessible *app,const char *window,const char *command,const char *marker) {
+static int guest_console_marker(AtspiAccessible *app,const char *window,const char *command,const char *marker) {
     return focus(app,"Enter guest")&&drive("key","Return")&&
         observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&
         point_at(window,155,100)&&drive("click","1")&&guest_command(command)&&
-        await_guest_clipboard_marker(marker)&&release_guest_keys(app);
+        await_guest_marker(marker)&&release_guest_keys(app);
 }
 
 static int read_guest_export(const char *directory, struct stat *info) {
@@ -1273,9 +1274,10 @@ int main(int argc,char **argv) {
         int revoke=getenv("NEXAUI_CONTENT_TEST_FILE_REVOKE")!=NULL;
         int grant=getenv("NEXAUI_CONTENT_TEST_FILE_GRANT")!=NULL;
         int cutoff=getenv("NEXAUI_CONTENT_TEST_FILE_BINDFS")!=NULL;
+        const char *network=getenv("NEXAUI_CONTENT_TEST_GUEST_NETWORK")?"Network: 10.0.2.100:8080 access off":NULL;
         CHECK((!revoke&&!grant)||directory);
         CHECK(!cutoff||(grant&&revoke));
-        CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,grant?"Files: access off":NULL)&&
+        CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,grant?"Files: access off":NULL,network)&&
             input_chrome(display,id,"guest-sharing")&&drive("key","Escape")&&observe(app,"Sharing",1));
         const char *clipboard_source=getenv("NEXAUI_CONTENT_TEST_HOST_WL_COPY");
         if (clipboard_source) {
@@ -1295,15 +1297,15 @@ int main(int argc,char **argv) {
                 observe(app,payload,0)&&focus(app,"Copy text to guest")&&drive("key","Return")&&
                 observe(app,"Guest clipboard confirmed.",0)&&input_chrome(display,id,"guest-clipboard-confirmed")&&
                 drive("key","Escape")&&observe(app,"Sharing",1));
-            CHECK(offer_guest_selection(app,id,"clipcheck","NEXAUI_CLIPBOARD_INDEPENDENT_OK")&&
+            CHECK(guest_console_marker(app,id,"clipcheck","NEXAUI_CLIPBOARD_INDEPENDENT_OK")&&
                 input_chrome(display,id,"guest-clipboard-read"));
             puts("GUEST_CLIPBOARD_NATIVE verified: size rejection, cancel, review, keyboard send, and independent guest paste");
             const char *received="Grüße aus dem Gast\nZweite Gastzeile\n";
-            CHECK(offer_guest_selection(app,id,"clipbad","NEXAUI_CLIPBOARD_GUEST_BAD")&&
+            CHECK(guest_console_marker(app,id,"clipbad","NEXAUI_CLIPBOARD_GUEST_BAD")&&
                 focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review guest text")&&drive("key","Return")&&
                 observe(app,"Clipboard text unavailable or cannot be reviewed.",0)&&
                 drive("key","Escape")&&observe(app,"Sharing",1)&&clipboard_reads(payload));
-            CHECK(drive("windowfocus",id)&&offer_guest_selection(app,id,"clipoffer","NEXAUI_CLIPBOARD_GUEST_OFFER")&&
+            CHECK(drive("windowfocus",id)&&guest_console_marker(app,id,"clipoffer","NEXAUI_CLIPBOARD_GUEST_OFFER")&&
                 focus(app,"Sharing")&&drive("key","Return")&&focus(app,"Review guest text")&&drive("key","Return")&&
                 observe(app,received,0)&&input_chrome(display,id,"guest-clipboard-import-review")&&
                 drive("key","Escape")&&observe(app,"Sharing",1)&&clipboard_reads(payload));
@@ -1339,10 +1341,10 @@ int main(int argc,char **argv) {
             CHECK(guest_command("probe")&&browser_pixel(display,outer,156,43,0x00a800u)&&
                 release_guest_keys(app)&&drive("mouseup","1"));
             CHECK(access(path,F_OK)!=0&&errno==ENOENT);
-            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,"Files: access off")&&
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,"Files: access off",network)&&
                 focus(app,"Grant file access")&&drive("key","Return")&&
-                read_guest_sharing(app,directory,"Files: activation pending")&&input_chrome(display,id,"guest-grant-pending"));
-            CHECK(focus(app,"Check sharing status")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL)&&
+                read_guest_sharing(app,directory,"Files: activation pending",network)&&input_chrome(display,id,"guest-grant-pending"));
+            CHECK(focus(app,"Check sharing status")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL,network)&&
                 input_chrome(display,id,"guest-granted")&&drive("key","Escape")&&observe(app,"Sharing",1));
             CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
                 observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("attach")&&
@@ -1362,17 +1364,17 @@ int main(int argc,char **argv) {
             struct stat prior={0}, after_probe={0};
             const char *pending="Files: revocation pending", *revoked="Files: revoked";
             CHECK(read_guest_export(directory,&prior));
-            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL)&&
-                focus(app,"Revoke file access")&&drive("key","Return")&&read_guest_sharing(app,directory,pending)&&
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL,network)&&
+                focus(app,"Revoke file access")&&drive("key","Return")&&read_guest_sharing(app,directory,pending,network)&&
                 input_chrome(display,id,"guest-revoke-pending"));
             CHECK(focus(app,"Check sharing status")&&drive("key","Return")&&
-                read_guest_sharing(app,directory,cutoff?revoked:pending)&&drive("key","Escape")&&observe(app,"Sharing",1));
+                read_guest_sharing(app,directory,cutoff?revoked:pending,network)&&drive("key","Escape")&&observe(app,"Sharing",1));
             if (!cutoff) {
                 CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
                     observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("detach")&&
                     browser_pixel(display,outer,156,43,0x0000a8u)&&release_guest_keys(app));
             }
-            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoked)&&
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoked,network)&&
                 input_chrome(display,id,"guest-revoked")&&drive("key","Escape")&&observe(app,"Sharing",1));
             CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
                 observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command(cutoff?"check":"probe")&&
@@ -1385,10 +1387,28 @@ int main(int argc,char **argv) {
                 puts("GUEST_CUTOFF_NATIVE verified: retained mount and handle, denied writes and unchanged host file");
             } else puts("GUEST_REVOKE_NATIVE verified: pending, confirmed removal, guest denied and prior file retained");
         }
+        if (network) {
+            const char *file=revoke?"Files: revoked":NULL;
+            const char *active="Network: 10.0.2.100:8080 private TCP active";
+            CHECK(guest_console_marker(app,id,"netoff","NEXAUI_NETWORK_OFF"));
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,file,network)&&
+                focus(app,"Grant network access")&&drive("key","Return")&&
+                read_guest_sharing(app,directory,file,"Network: 10.0.2.100:8080 activation pending")&&
+                input_chrome(display,id,"guest-network-pending"));
+            CHECK(focus(app,"Check network status")&&drive("key","Return")&&read_guest_sharing(app,directory,file,active)&&
+                input_chrome(display,id,"guest-network-active")&&drive("key","Escape")&&observe(app,"Sharing",1)&&
+                guest_console_marker(app,id,"netconnect","NEXAUI_NETWORK_CONNECTED"));
+            network="Network: 10.0.2.100:8080 revoked";
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,file,active)&&
+                focus(app,"Revoke network access")&&drive("key","Return")&&read_guest_sharing(app,directory,file,network)&&
+                input_chrome(display,id,"guest-network-revoked")&&drive("key","Escape")&&observe(app,"Sharing",1)&&
+                guest_console_marker(app,id,"netcheck","NEXAUI_NETWORK_CUTOFF"));
+            puts("GUEST_NETWORK_NATIVE verified: private TCP grant and live cutoff for held and new connections");
+        }
         CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
         if (directory) {
-            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoke?"Files: revoked":NULL)&&
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoke?"Files: revoked":NULL,network)&&
                 focus(app,"Close sharing")&&drive("key","Return")&&observe(app,"Sharing",1));
             puts("GUEST_SHARING_NATIVE verified: exact file grant and independent channel states across disconnect");
         }

@@ -118,16 +118,19 @@ static nx_result read_guest_sharing(const uint8_t *wire,size_t bytes,content_gue
     content_guest_sharing value={0};
     size_t prefix=GUEST_SHARING_V1;
     if (bytes<GUEST_SHARING_V1) return NX_ERROR_ARGUMENT;
-    int clipboard=!memcmp(wire,"NXS3",4);
+    int network=!memcmp(wire,"NXS4",4);
+    int clipboard=network||!memcmp(wire,"NXS3",4);
     if (clipboard||!memcmp(wire,"NXS2",4)) {
         static const uint8_t zero[16]={0};
         prefix=GUEST_SHARING_V2;
         if (bytes<prefix||wire[4]>GUEST_SHARE_ATTACHING||((wire[4]||!clipboard)&&bytes==prefix)||
             (!clipboard&&!wire[4])||(!clipboard&&wire[5])||
-            (wire[5]&~(GUEST_CLIPBOARD_SEND|GUEST_CLIPBOARD_READ))||wire[6]||wire[7]||
+            (wire[5]&~(GUEST_CLIPBOARD_SEND|GUEST_CLIPBOARD_READ))||wire[7]||
+            (network?(wire[6]<GUEST_NETWORK_OFF||wire[6]>GUEST_NETWORK_UNKNOWN):wire[6]!=0)||
             !memcmp(wire+8,zero,sizeof(zero))) return NX_ERROR_ARGUMENT;
         value.state=wire[4];
         value.clipboard=wire[5];
+        value.network=wire[6];
         memcpy(value.environment,wire+8,sizeof(value.environment));
     } else if (memcmp(wire,"NXS1",4)) return NX_ERROR_ARGUMENT;
     if (wire_u32(wire+prefix-4)!=bytes-prefix) return NX_ERROR_ARGUMENT;
@@ -234,7 +237,8 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     if (!send_request(fd,line,send_size,deadline)) goto done;
     size_t prefix=edit?8u:0;
     int reset_action=kind==CONTENT_GUEST_RESET_APPLY||kind==CONTENT_GUEST_RESET_STATUS;
-    int sharing=kind>=CONTENT_GUEST_SHARING&&kind<=CONTENT_GUEST_GRANT_FILES;
+    int sharing=(kind>=CONTENT_GUEST_SHARING&&kind<=CONTENT_GUEST_GRANT_FILES)||
+        kind==CONTENT_GUEST_GRANT_NETWORK||kind==CONTENT_GUEST_REVOKE_NETWORK;
     int clipboard=guest_report&&kind==CONTENT_GUEST_CLIPBOARD;
     int clipboard_read=guest_report&&kind==CONTENT_GUEST_CLIPBOARD_READ;
     size_t capacity=guest_report?(clipboard_read?GUEST_CLIPBOARD_HEADER+GUEST_CLIPBOARD_LIMIT:
@@ -368,17 +372,31 @@ nx_result content_guest_read_sharing(const char *path,content_request request,co
     return transfer(path,request,1,CONTENT_GUEST_SHARING,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL,0);
 }
 
-nx_result content_guest_file_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
+static nx_result guest_sharing_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
     content_guest_sharing *out) {
-    if (!environment||!out||(kind!=CONTENT_GUEST_REVOKE_FILES&&kind!=CONTENT_GUEST_GRANT_FILES)) return NX_ERROR_ARGUMENT;
+    if (!environment||!out) return NX_ERROR_ARGUMENT;
     content_guest_sharing observed;
     nx_result result=transfer(path,request,1,kind,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,
         &observed,environment,sizeof(observed.environment));
     if (result!=NX_OK) return result;
-    if (observed.state==GUEST_SHARE_FIXED||memcmp(observed.environment,environment,sizeof(observed.environment)))
+    int network=kind==CONTENT_GUEST_GRANT_NETWORK||kind==CONTENT_GUEST_REVOKE_NETWORK;
+    if ((network?observed.network==0:observed.state==GUEST_SHARE_FIXED)||
+        memcmp(observed.environment,environment,sizeof(observed.environment)))
         return NX_ERROR_STATE;
     *out=observed;
     return NX_OK;
+}
+
+nx_result content_guest_file_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
+    content_guest_sharing *out) {
+    if (kind!=CONTENT_GUEST_REVOKE_FILES&&kind!=CONTENT_GUEST_GRANT_FILES) return NX_ERROR_ARGUMENT;
+    return guest_sharing_action(path,request,kind,environment,out);
+}
+
+nx_result content_guest_network_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
+    content_guest_sharing *out) {
+    if (kind!=CONTENT_GUEST_GRANT_NETWORK&&kind!=CONTENT_GUEST_REVOKE_NETWORK) return NX_ERROR_ARGUMENT;
+    return guest_sharing_action(path,request,kind,environment,out);
 }
 
 int content_guest_clipboard_valid(const char *text,size_t bytes) {

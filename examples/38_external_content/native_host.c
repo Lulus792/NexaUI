@@ -102,7 +102,7 @@ enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INS
        GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS, GUEST_INSPECT_SHARING,
        GUEST_INSPECT_SHARE_REVOKE, GUEST_INSPECT_SHARE_REFRESH, GUEST_INSPECT_SHARE_GRANT,
        GUEST_INSPECT_CLIPBOARD_REVIEW, GUEST_INSPECT_CLIPBOARD_SEND, GUEST_INSPECT_CLIPBOARD_READ,
-       GUEST_INSPECT_CLIPBOARD_ACCEPT };
+       GUEST_INSPECT_CLIPBOARD_ACCEPT, GUEST_INSPECT_NET_GRANT, GUEST_INSPECT_NET_REVOKE, GUEST_INSPECT_NET_REFRESH };
 enum { CLIPBOARD_IDLE, CLIPBOARD_READING, CLIPBOARD_READING_GUEST, CLIPBOARD_REVIEW,
        CLIPBOARD_UNAVAILABLE, CLIPBOARD_SENDING, CLIPBOARD_OFFERED, CLIPBOARD_UNKNOWN };
 typedef struct guest_inspector {
@@ -128,6 +128,7 @@ static int guest_reset_pending(const guest_inspector *view) {
 static int guest_inspector_busy(const guest_inspector *view) {
     return guest_reset_pending(view)||
         ((view->request==CONTENT_GUEST_REVOKE_FILES||view->request==CONTENT_GUEST_GRANT_FILES||
+          view->request==CONTENT_GUEST_GRANT_NETWORK||view->request==CONTENT_GUEST_REVOKE_NETWORK||
           view->request==CONTENT_GUEST_CLIPBOARD)&&
          view->report.ticket!=view->ticket);
 }
@@ -207,7 +208,11 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
                 "Check reset status",x,y+244,168,1,action);
     } else if (view->report.ticket!=view->ticket) {
         const char *status=preview?"Reading reset scope":sharing?"Reading guest sharing":"Reading guest resources";
-        if (sharing&&awaiting) status=view->request==CONTENT_GUEST_GRANT_FILES?"Requesting file access…":"Requesting file access revocation…";
+        if (sharing&&awaiting) {
+            if (view->request==CONTENT_GUEST_GRANT_NETWORK) status="Requesting network access…";
+            else if (view->request==CONTENT_GUEST_REVOKE_NETWORK) status="Revoking network access…";
+            else status=view->request==CONTENT_GUEST_GRANT_FILES?"Requesting file access…":"Requesting file access revocation…";
+        }
         strcpy(lines[0],status);
     } else if (view->report.result!=NX_OK) {
         strcpy(lines[0],preview?"Reset preview unavailable":sharing?"Guest sharing status unavailable":"Guest resources unavailable");
@@ -248,7 +253,15 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         strcpy(lines[0],channels&GUEST_CLIPBOARD_READ?"Clipboard: one-time text transfers":
             channels&GUEST_CLIPBOARD_SEND?"Clipboard: one-time text to guest":"Clipboard: unavailable");
         strcpy(lines[1],file_status);
-        strcpy(lines[2],"Network: unavailable");
+        static const char *const network_status[]={
+            "Network: unavailable",
+            "Network: 10.0.2.100:8080 access off",
+            "Network: 10.0.2.100:8080 activation pending",
+            "Network: 10.0.2.100:8080 private TCP active",
+            "Network: 10.0.2.100:8080 revoked",
+            "Network: 10.0.2.100:8080 outcome unknown"
+        };
+        strcpy(lines[2],network_status[share->network]);
         strcpy(lines[3],"Microphone: unavailable");
         strcpy(lines[4],"Devices: unavailable");
         count=5;
@@ -263,6 +276,18 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
                            share->state==GUEST_SHARE_ATTACHING))
             result=scoped_button(context,fonts,GUEST_INSPECT_SHARE_REFRESH,GUEST_INSPECT_PANEL,"Check sharing status",
                 "Check sharing status",x,y+200,168,1,action);
+        if (result==NX_OK&&share->network) {
+            float net_x=panel.x+width-184;
+            if (share->network==GUEST_NETWORK_OFF)
+                result=scoped_button(context,fonts,GUEST_INSPECT_NET_GRANT,GUEST_INSPECT_PANEL,"Grant network access",
+                    "Grant network access",net_x,y+200,168,width>=368&&!disconnected,action);
+            else if (share->network==GUEST_NETWORK_ACTIVE)
+                result=scoped_button(context,fonts,GUEST_INSPECT_NET_REVOKE,GUEST_INSPECT_PANEL,"Revoke network access",
+                    "Revoke network access",net_x,y+200,168,width>=368,action);
+            else if (share->network==GUEST_NETWORK_PENDING||share->network==GUEST_NETWORK_UNKNOWN)
+                result=scoped_button(context,fonts,GUEST_INSPECT_NET_REFRESH,GUEST_INSPECT_PANEL,"Check network status",
+                    "Check network status",net_x,y+200,168,width>=368,action);
+        }
         int clipboard_enabled=width>=368&&info.height>=342&&!disconnected;
         if (result==NX_OK&&(channels&GUEST_CLIPBOARD_SEND))
             result=scoped_button(context,fonts,GUEST_INSPECT_CLIPBOARD_REVIEW,GUEST_INSPECT_PANEL,"Review clipboard text",
@@ -1500,15 +1525,21 @@ int main(void) {
         }
 #endif
         else if (inspector.open==CONTENT_GUEST_SHARING&&inspector.report.ticket==inspector.ticket&&
-                   (action==GUEST_INSPECT_SHARE_REFRESH||(inspector.report.result==NX_OK&&
+                   (action==GUEST_INSPECT_SHARE_REFRESH||action==GUEST_INSPECT_NET_REFRESH||
+                    (inspector.report.result==NX_OK&&
                     ((action==GUEST_INSPECT_SHARE_REVOKE&&inspector.report.sharing.state==GUEST_SHARE_ACTIVE)||
-                     (action==GUEST_INSPECT_SHARE_GRANT&&inspector.report.sharing.state==GUEST_SHARE_OFFERED))))) {
+                     (action==GUEST_INSPECT_SHARE_GRANT&&inspector.report.sharing.state==GUEST_SHARE_OFFERED)||
+                     (action==GUEST_INSPECT_NET_GRANT&&inspector.report.sharing.network==GUEST_NETWORK_OFF&&
+                      input_phase!=INPUT_DISCONNECTED)||
+                     (action==GUEST_INSPECT_NET_REVOKE&&inspector.report.sharing.network==GUEST_NETWORK_ACTIVE))))) {
             if (inspector.ticket==UINT64_MAX) goto done;
             ++inspector.ticket;
-            if (action!=GUEST_INSPECT_SHARE_REFRESH) {
-                inspector.share_scope=inspector.report.sharing;
-                inspector.request=action==GUEST_INSPECT_SHARE_GRANT?CONTENT_GUEST_GRANT_FILES:CONTENT_GUEST_REVOKE_FILES;
-            } else inspector.request=CONTENT_GUEST_SHARING;
+            inspector.share_scope=inspector.report.sharing;
+            if (action==GUEST_INSPECT_SHARE_GRANT) inspector.request=CONTENT_GUEST_GRANT_FILES;
+            else if (action==GUEST_INSPECT_SHARE_REVOKE) inspector.request=CONTENT_GUEST_REVOKE_FILES;
+            else if (action==GUEST_INSPECT_NET_GRANT) inspector.request=CONTENT_GUEST_GRANT_NETWORK;
+            else if (action==GUEST_INSPECT_NET_REVOKE) inspector.request=CONTENT_GUEST_REVOKE_NETWORK;
+            else inspector.request=CONTENT_GUEST_SHARING;
             inspector.pending=need_frame=1;
         } else if (action==GUEST_INSPECT_CLOSE&&inspector.open&&!guest_inspector_busy(&inspector)) {
             inspector.open=inspector.pending=0;

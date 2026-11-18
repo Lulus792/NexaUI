@@ -383,7 +383,7 @@ static void *native_worker_entry(void *user) {
         worker->pending = 0; worker->working = 1;
         pthread_mutex_unlock(&worker->mutex);
 #ifdef CONTENT_NATIVE_GUEST
-        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_CLIPBOARD_READ) {
+        if (worker->guest_socket&&job.kind>=CONTENT_GUEST_RESOURCES&&job.kind<=CONTENT_GUEST_REVOKE_NETWORK) {
             native_guest_report report={.ticket=job.sequence,.kind=job.kind};
             if (job.kind==CONTENT_GUEST_RESOURCES)
                 report.result=content_guest_read_resources(worker->guest_socket,job.request,&report.resources);
@@ -398,6 +398,9 @@ static void *native_worker_entry(void *user) {
             else if (job.kind==CONTENT_GUEST_CLIPBOARD_READ)
                 report.result=content_guest_read_clipboard(worker->guest_socket,job.request,job.sequence,
                     job.share_scope.environment,&report.clipboard_text);
+            else if (job.kind==CONTENT_GUEST_GRANT_NETWORK||job.kind==CONTENT_GUEST_REVOKE_NETWORK)
+                report.result=content_guest_network_action(worker->guest_socket,job.request,job.kind,
+                    job.share_scope.environment,&report.sharing);
             else if (job.kind==CONTENT_GUEST_RESET_PREVIEW)
                 report.result=content_guest_read_reset_preview(worker->guest_socket,job.request,&report.preview);
             else report.result=content_guest_reset_action(worker->guest_socket,job.request,job.kind,
