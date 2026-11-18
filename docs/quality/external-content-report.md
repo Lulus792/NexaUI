@@ -1846,3 +1846,56 @@ hashes, measured windows, native results and 187 verified archive members.
 
 Physical microphone selection, production consent policy, hardware device
 sharing and the guest accessibility tree remain open.
+
+## Native QEMU read-only USB grant, 2026-11-18
+
+The tested consumer revision is `fadb4ca873011a1d78a825817bbb39df59d75fde`.
+Its selected Git archive has SHA-256
+`18657a496be2d62882d5e961b0fa147a3a529455344a9bfca9d3811cb57b2545`.
+The installed Wayland-only Release and sanitizer libraries came from
+`266404bf1743248f16eb289c0a1c0d99701cc395`. The SDK sources, headers, build
+configuration and data match the tested consumer. The native fixture uses
+QEMU 11.0.3, Weston 14.0.2 and Alpine Linux `6.18.63-0-virt`.
+
+The optional `--guest-usb` profile boots with an empty xHCI controller and
+holds a privately generated 1 MiB raw disk. **Attach test disk** checks the
+current environment, released guest input and running status. The owner adds
+the backing node in read-only mode and attaches the USB storage device to
+port 1. **Check device status** verifies the realized storage type, exact bus,
+port and serial, plus the read-only image and its path through the block
+backend. The host distinguishes the requested and verified states.
+
+**Detach test disk** requests removal. The owner requires the matching
+QMP `DEVICE_DELETED` event and absence of the USB device and its block use,
+then removes the private backing node and checks it is gone. A mismatch or
+failed observation can leave an unknown state. The independent AT-SPI peer
+uses Tab and Enter for the actions and confirms focus restoration with
+Escape. The `NXS6` wire reply carries the device state alongside the other
+channels. The earlier five reply formats remain readable.
+[QEMU USB devices](https://www.qemu.org/docs/master/system/devices/usb.html)
+[QEMU 11.0.3 removal events](https://raw.githubusercontent.com/qemu/qemu/v11.0.3/qapi/qdev.json)
+
+An independent Alpine client observes absence before consent, reads the
+expected bytes from the exact USB disk, verifies its read-only state and
+attempts a write that the kernel rejects. After removal, its held descriptor
+cannot read the previously unread test sector and a new open obtains no
+data. The direct owner probe verifies the backing image digest stayed the
+same, foreign environment requests were rejected and QEMU stayed running
+until orderly shutdown.
+
+The audited set passed 28 CTests, six reset-receipt tests, four native runs,
+25 wire cases in each of Release and ASan/UBSan, and eight owner checks.
+The combined native run included the USB disk, synthetic microphone, private
+TCP service and both clipboard directions. A separate native run exercised
+the network and microphone with USB disabled. The USB status rows measured
+12.85:1 across the Release, sanitizer and combined USB runs.
+
+The guest initramfs has SHA-256
+`174f850c47d79ecec783a94d85fa383af76ea3c2cfafbc959ec259c499273c20`.
+The local evidence archive `nexaui-qemu-device465.tar.gz` has SHA-256
+`d45c21f47773336618a622bbe47e4f275c9c36e9953cba2689832d695ebabe29`.
+`qemu-device465-final.json` records the source, SDK and boot hashes, exact
+test-disk digest, native outcomes and 112 verified archive members.
+
+Physical USB passthrough, device selection and policy on Aetheri, the wider
+file-sharing combination and guest desktop accessibility remain open.

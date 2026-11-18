@@ -1,5 +1,11 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+The emulated QEMU USB workflow advances D07/D08/I08/L11/P07 at `fadb4ca`.
+The host scopes an explicit read-only disk grant to the current VM. Independent
+guest reads and the QEMU backend confirm removal. Physical devices, production
+authorization and guest semantics remain open.
+[USB grant evidence](external-content-report.md#native-qemu-read-only-usb-grant-2026-11-18)
+
 The synthetic QEMU microphone fixture advances D07/D08/I08/L11/P07 at `9dddad7`.
 The host dialog grants one test input to the current VM. The independent ALSA
 capture verifies silence before consent and on held and new captures after
