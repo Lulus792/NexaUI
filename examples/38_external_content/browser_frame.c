@@ -82,6 +82,19 @@ static nx_result read_ax_packet(const uint8_t *data,size_t bytes,content_request
     return NX_OK;
 }
 
+static nx_result append_ax(void **frame,size_t *bytes,const content_ax_node *nodes,uint32_t count,uint32_t epoch) {
+    size_t tail=(size_t)count*sizeof(*nodes);
+    void *extended=realloc(*frame,*bytes+tail);
+    if (!extended) return NX_ERROR_MEMORY;
+    content_frame_header *header=extended;
+    header->ax_count=count;
+    header->ax_epoch=epoch;
+    memcpy((uint8_t *)extended+*bytes,nodes,tail);
+    *frame=extended;
+    *bytes+=tail;
+    return NX_OK;
+}
+
 static uint64_t wire_u64(const uint8_t *bytes) {
     return ((uint64_t)wire_u32(bytes)<<32)|wire_u32(bytes+4);
 }
@@ -302,20 +315,9 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
             void *frame=NULL;
             size_t frame_bytes=0;
             result=content_png_fit_bitmap(bitmap,request,sequence,&frame,&frame_bytes,NULL);
-            if (result==NX_OK && ax_count) {
-                size_t tail=(size_t)ax_count*sizeof(*ax);
-                void *extended=realloc(frame,frame_bytes+tail);
-                if (!extended) { free(frame);result=NX_ERROR_MEMORY; }
-                else {
-                    frame=extended;
-                    content_frame_header *header=frame;
-                    header->ax_count=ax_count;
-                    header->ax_epoch=epoch;
-                    memcpy((uint8_t *)frame+frame_bytes,ax,tail);
-                    frame_bytes+=tail;
-                }
-            }
+            if (result==NX_OK && ax_count) result=append_ax(&frame,&frame_bytes,ax,ax_count,epoch);
             if (result==NX_OK) { *out=frame;*bytes=frame_bytes; }
+            else free(frame);
         }
     }
     if (result==NX_OK && edit) *caret=candidate;
@@ -368,6 +370,46 @@ nx_result content_guest_frame(const char *path,content_request request,uint64_t 
     if (!input || input->count>CONTENT_GUEST_INPUT_LIMIT || kind>6 || (!!input->count!=(kind==5)))
         return NX_ERROR_ARGUMENT;
     return transfer(path,request,sequence,kind,NULL,0,(content_ax_action){0},input,out,bytes,NULL,NULL,NULL,0);
+}
+
+nx_result content_guest_frame_with_ax(const void *png,size_t png_bytes,const void *snapshot,size_t snapshot_bytes,
+    content_request request,uint64_t sequence,void **out,size_t *bytes) {
+    if (!out||!bytes||!!snapshot!=!!snapshot_bytes||snapshot_bytes>BROWSER_AX_WIRE_LIMIT) return NX_ERROR_ARGUMENT;
+    if (!snapshot) return content_png_frame(png,png_bytes,request,sequence,out,bytes);
+    nx_bitmap_view bitmap={0};
+    nx_result result=content_png_bitmap(png,png_bytes,&bitmap);
+    if (result!=NX_OK) return result;
+
+    content_request source=request;
+    source.width=bitmap.width;
+    source.height=bitmap.height;
+    content_ax_node nodes[CONTENT_AX_NODE_LIMIT];
+    uint32_t count,epoch;
+    result=read_ax_packet(snapshot,snapshot_bytes,source,(content_ax_action){0},nodes,&count,&epoch);
+    if (result==NX_OK&&(nodes[0].role!=CONTENT_AX_GROUP||nodes[0].x||nodes[0].y||
+        nodes[0].width!=source.width||nodes[0].height!=source.height)) result=NX_ERROR_ARGUMENT;
+    content_png_fit fit;
+    void *frame=NULL;
+    size_t frame_bytes=0;
+    if (result==NX_OK) result=content_png_fit_bitmap(bitmap,request,sequence,&frame,&frame_bytes,&fit);
+    free((void *)bitmap.pixels);
+    if (result==NX_OK) {
+        for (uint32_t i=0;i<count;++i) {
+            content_ax_node *node=&nodes[i];
+            uint32_t left=node->x*fit.width/source.width;
+            uint32_t top=node->y*fit.height/source.height;
+            uint32_t right=((node->x+node->width)*fit.width+source.width-1u)/source.width;
+            uint32_t bottom=((node->y+node->height)*fit.height+source.height-1u)/source.height;
+            node->x=(uint16_t)(fit.x+left);
+            node->y=(uint16_t)(fit.y+top);
+            node->width=(uint16_t)(right-left);
+            node->height=(uint16_t)(bottom-top);
+        }
+        result=append_ax(&frame,&frame_bytes,nodes,count,epoch);
+    }
+    if (result==NX_OK) { *out=frame;*bytes=frame_bytes; }
+    else free(frame);
+    return result;
 }
 
 nx_result content_guest_read_resources(const char *path,content_request request,content_guest_resources *out) {

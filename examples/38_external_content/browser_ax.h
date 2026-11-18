@@ -1,7 +1,7 @@
 #ifndef EXAMPLE_CONTENT_BROWSER_AX_H
 #define EXAMPLE_CONTENT_BROWSER_AX_H
 
-#include <nexaui/nexaui.h>
+#include <stdint.h>
 
 #define CONTENT_AX_NODE_LIMIT 32u
 #define CONTENT_AX_NAME_LIMIT 256u
