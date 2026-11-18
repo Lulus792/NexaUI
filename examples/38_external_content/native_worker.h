@@ -458,12 +458,13 @@ static void *native_worker_entry(void *user) {
             result = data ? NX_OK : NX_ERROR_MEMORY;
         }
         pthread_mutex_lock(&worker->mutex);
-        worker->prepared = 1;
-        pthread_mutex_unlock(&worker->mutex);
-        native_wake(worker,NATIVE_FRAME_READY);
-        pthread_mutex_lock(&worker->mutex);
-        while (!worker->stop && job.held && !worker->allowed)
-            pthread_cond_wait(&worker->condition, &worker->mutex);
+        if (job.held) {
+            /* Only a held frame needs an observation before publication. */
+            worker->prepared = 1;
+            native_wake(worker,NATIVE_FRAME_READY);
+            while (!worker->stop && !worker->allowed)
+                pthread_cond_wait(&worker->condition, &worker->mutex);
+        }
         int stop = worker->stop;
         if (stop && data) ++worker->discarded;
         pthread_mutex_unlock(&worker->mutex);

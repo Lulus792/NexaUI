@@ -305,6 +305,14 @@ profile. It supplies its own offline HTML and controls Chromium through
 inherited DevTools descriptors. The harness removes the profile and joins
 the engine when it exits.
 
+Run the fixture in an environment that supports Chromium's Linux sandbox.
+The validation environment uses a private mount and PID namespace with
+unprivileged user namespaces available to Chromium.
+
+Use `NEXAUI_CONTENT_BUILD_VULKAN=ON` and `--renderer vulkan` to exercise the
+installed Vulkan presenter with the same browser scenarios. Chromium
+supplies CPU pixels to the viewport through the existing snapshot exchange.
+
 The UI worker sends the current surface generation, resize identity and
 physical dimensions over an app-owned Unix socket. A bounded request reads
 one PNG, checks its decoded dimensions against the request and publishes one
