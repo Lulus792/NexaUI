@@ -765,3 +765,48 @@ The local receipt is `png-gallery444-final.json`.
 
 Product collection selection, live filesystem refresh, more photo codecs,
 and human assistive acceptance remain open.
+
+## JPEG gallery checkpoint, 2026-11-18
+
+Consumer `00ca458e3ff9047a80bed2ce0815a978dfefb88d` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. Optional JPEG support in
+Example 38 reuses the pinned gallery descriptors, existing worker, three
+preview slots and zoom/pan camera. The private content snapshot carries
+the oriented original size alongside the fitted raster. The visible
+dimensions and AT-SPI Image name are read from the accepted snapshot.
+
+The checked packages are TurboJPEG 3.1.3-r0 and libexif 0.6.26-r0 from
+Alpine 3.24. The harness verifies the APK signatures and extracts the
+libraries and headers to a private prefix. Link inspection found the
+two libraries only in the JPEG-enabled profiles. TurboJPEG sets a 64 Mi source-pixel
+limit, a 64 MB intermediate-buffer limit and a 128-scan limit, and
+treats warnings as decode failures. The existing gallery input limit is
+4 MiB. Each RGBA image buffer stays within 4 MiB and 2048 pixels on
+either edge. Rotation can temporarily hold two such buffers.
+[TurboJPEG API](https://github.com/libjpeg-turbo/libjpeg-turbo/blob/3.1.3/src/turbojpeg.h)
+[libexif API](https://github.com/libexif/libexif/blob/v0.6.26/libexif/exif-data.h)
+
+The fixture verifies all eight EXIF orientations with both byte orders,
+an invalid orientation tag, a missing end marker and a progressive
+4096 × 2048 image. Its view shows a 512 × 1024 raster and reports
+2048 × 4096 as the oriented original. The independent native peer
+checks preview pixels, normal and zoomed pixels, clipped AT-SPI bounds,
+keyboard activation, the previous image after a failed JPEG decode and
+the switch back to PNG. The close check accounts for every publication.
+
+The exact-source matrix passes 81 CTests and 59 native Wayland runs on
+Alpine 3.24 with Clang 22.1.3 and Weston 14.0.2, including release,
+shared SDK, ASan/UBSan, default and PNG-only profiles. Independent
+readback checks eight interior samples per quadrant at preview, fit
+and zoom. The earlier PNG gallery and PDF thumbnail pixel captures
+match the prior run byte for byte. Local archive
+`nexaui-jpeg-gallery445.tar.gz` binds the source, SDK and signed package
+receipts, fixture inputs, logs and screen captures. Readback verified
+SHA-256 `cf5e99b627567561896097f4847664659dab1e912f15673b89a4e56f97094730`.
+The local receipt is `jpeg-gallery445-final.json`.
+
+CMYK and lossless JPEG, ICC color management, higher-resolution tiles
+for deep zoom, product collection selection and human assistive
+acceptance remain open. The example defines the CPU image path. Browser
+and guest engine selection and GPU interop remain separate packet 7
+requirements.
