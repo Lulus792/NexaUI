@@ -13,7 +13,6 @@ import subprocess
 import sys
 import tempfile
 import time
-import uuid
 
 PNG_LIMIT = 4 * 1024 * 1024
 INPUT_LIMIT = 128
@@ -61,7 +60,7 @@ class Guest:
         if self.checkpoint:
             if not (self.desktop and self.disk and writable):
                 raise ValueError('Reset preview requires an owned writable disk')
-            self.environment = uuid.uuid4()
+            self.environment = os.urandom(16)
             self.disk_identity = image_identity(self.disk.stat(follow_symlinks=False))
             self.checkpoint_identity = image_identity(self.checkpoint.stat(follow_symlinks=False))
             self.checkpoint_hash = image_digest(self.checkpoint)
@@ -293,9 +292,9 @@ class Guest:
             print('GUEST_RESET_PREVIEW unavailable',flush=True)
             return b'U'
         # The fixed offline fixture has no host-sharing channels or write grants.
-        print(f'GUEST_RESET_PREVIEW environment={self.environment.hex} checkpoint={self.checkpoint_hash.hex()} '
+        print(f'GUEST_RESET_PREVIEW environment={self.environment.hex()} checkpoint={self.checkpoint_hash.hex()} '
               f'capacity={WORK_DISK_BYTES} grants=0',flush=True)
-        return struct.pack('>4s16s32sQ4x',b'NXV1',self.environment.bytes,self.checkpoint_hash,WORK_DISK_BYTES)
+        return struct.pack('>4s16s32sQ4x',b'NXV1',self.environment,self.checkpoint_hash,WORK_DISK_BYTES)
 
     def close(self):
         try:
