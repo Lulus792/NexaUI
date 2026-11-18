@@ -20,6 +20,9 @@
 #ifdef CONTENT_NATIVE_BROWSER
 #include "browser_frame.h"
 #endif
+#ifdef CONTENT_NATIVE_GUEST
+#include "guest_frame.h"
+#endif
 
 /* Private deterministic producer. Only copied requests cross this boundary;
    neither the surface nor UI context belongs to this worker. */
@@ -32,6 +35,9 @@ typedef struct native_job {
 #ifdef CONTENT_NATIVE_BROWSER
     content_browser_edit edit;
     content_ax_action ax_action;
+#endif
+#ifdef CONTENT_NATIVE_GUEST
+    content_guest_keys guest_keys;
 #endif
 } native_job;
 typedef struct native_png_source {
@@ -66,6 +72,7 @@ typedef struct native_worker {
     nx_snapshot_exchange *exchange;
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
     const char *browser_socket;
+    const char *guest_socket;
     int browser_ax;
     const char *uri_launcher;
     const char *export_path;
@@ -361,6 +368,11 @@ static void *native_worker_entry(void *user) {
         native_png_source original={0};
         nx_result result;
         nx_rect browser_caret={0};
+#ifdef CONTENT_NATIVE_GUEST
+        if (worker->guest_socket)
+            result=content_guest_frame(worker->guest_socket,job.request,job.sequence,job.kind,&job.guest_keys,&data,&bytes);
+        else
+#endif
 #ifdef CONTENT_NATIVE_BROWSER
         if (worker->browser_socket) {
             if (worker->browser_ax)
@@ -446,7 +458,8 @@ static int native_worker_close(native_worker *worker) {
 }
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
     const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader,
-    const char *uri_launcher, const char *export_path,const png_gallery *gallery,const char *browser_socket,int browser_ax) {
+    const char *uri_launcher, const char *export_path,const png_gallery *gallery,const char *browser_socket,int browser_ax,
+    const char *guest_socket) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
@@ -456,6 +469,7 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
     worker->export_path = export_path;
     worker->gallery = gallery;
     worker->browser_socket = browser_socket;
+    worker->guest_socket = guest_socket;
     worker->browser_ax = browser_ax;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;

@@ -565,6 +565,19 @@ static int browser_ax_image(AtspiAccessible *app) {
     return ok;
 }
 
+static int guest_video(AtspiAccessible *app) {
+    AtspiAccessible *node=find(app,"Guest video, 640 × 400 pixels",0);
+    AtspiComponent *component=node?atspi_accessible_get_component_iface(node):NULL;
+    AtspiRect *rect=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+    int ok=rect&&atspi_accessible_get_role(node,NULL)==ATSPI_ROLE_IMAGE&&browser_ax_parent(node,"Guest display")&&
+        abs(rect->x-74)<=1&&rect->y==136&&abs(rect->width-332)<=1&&rect->height==208;
+    if (rect&&!ok) fprintf(stderr,"Guest image geometry %d,%d %dx%d\n",rect->x,rect->y,rect->width,rect->height);
+    g_free(rect);
+    if (component) g_object_unref(component);
+    if (node) g_object_unref(node);
+    return ok;
+}
+
 static AtspiAccessible *pdf_text(AtspiAccessible *app, const char *expected) {
     for(unsigned i=0;i<200;++i) {
         AtspiAccessible *node=find(app,"PDF page text",0);
@@ -731,11 +744,12 @@ int main(int argc,char **argv) {
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
-        strcmp(test_case,"browser")&&
+        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int browser_case=!strcmp(test_case,"browser");
+    int guest_case=!strcmp(test_case,"guest");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
     int browser_ax=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_AX");
@@ -753,7 +767,8 @@ int main(int argc,char **argv) {
     const char *export_path=pdf_case?getenv("NEXAUI_CONTENT_TEST_EXPORT_PATH"):NULL;
     int thumbnails=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_THUMBNAILS");
     int properties=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_PROPERTIES");
-    const char *viewport=pdf_case?"PDF page image":browser_case?"Browser content":png_case?"PNG image":"Fixture frame";
+    const char *viewport=pdf_case?"PDF page image":browser_case?"Browser content":guest_case?"Guest display":
+        png_case?"PNG image":"Fixture frame";
     unsigned long blue=pdf_case?0x0000ffu:0x1753c5u;
     int result=1,initialized=0;pid_t child=-1;
     AtspiAccessible *desktop=NULL,*app=NULL,*retired=NULL,*fresh=NULL;
@@ -837,6 +852,8 @@ int main(int argc,char **argv) {
         CHECK(pdf_text_is(first_text,value)&&browser_ax_document(first_text,"Browser guide"));
         CHECK(browser_ax_image(app)&&!find(app,"Hidden fixture marker",0));
         CHECK(browser_pixel(display,outer,410,82,blue)&&input_chrome(display,id,"browser-ax-fresh"));
+    } else if (guest_case) {
+        CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu)&&input_chrome(display,id,"guest-fresh"));
     } else CHECK(capture(display,outer,blue,"fresh"));
     if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0)&&press(app,"Zoom in"));
     if(pdf_case)CHECK((first_text=pdf_text(app,"Résumé page one\n\n"))&&pdf_word_geometry(first_text,120,6,195));
@@ -858,15 +875,18 @@ int main(int argc,char **argv) {
         CHECK(focus(app,"Close")&&drive("key","Return"));
         goto closed;
     }
-    CHECK(press(app,browser_case?"Crash browser":"Bad frame"));
-    if(png_case||pdf_case) {
+    CHECK(press(app,browser_case?"Crash browser":guest_case?"Pause guest":"Bad frame"));
+    if(png_case||pdf_case||guest_case) {
         const char *failure=pdf_case?"PDF rendering failed; page retained.":
-            browser_case?"Browser engine unavailable; view retained.":"PNG decoding failed; image retained.";
+            browser_case?"Browser engine unavailable; view retained.":
+            guest_case?"Guest paused. Last display retained.":"PNG decoding failed; image retained.";
         CHECK(observe(app,failure,0));
         CHECK(!state(retired,ATSPI_STATE_DEFUNCT)&&dimensions(retired));
         if (browser_ax) {
             CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Grün, café and 👋.")&&
                 browser_pixel(display,outer,410,82,blue)&&input_chrome(display,id,"browser-ax-retained"));
+        } else if (guest_case) {
+            CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu)&&input_chrome(display,id,"guest-paused"));
         } else CHECK(capture(display,outer,blue,"bad-retained"));
         if (png_viewer) CHECK(observe(app,"PNG image, 112 × 52 pixels",0));
         if(pdf_case)CHECK(!state(first_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(first_text,"Résumé page one\n\n")&&
@@ -918,11 +938,11 @@ int main(int argc,char **argv) {
         CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
         CHECK(capture(display,outer,0xe3e7efu,"bad"));
     }
-    CHECK(press(app,pdf_case?"Next page":"Publish frame")&&observe(app,
+    CHECK(press(app,pdf_case?"Next page":guest_case?"Resume guest":"Publish frame")&&observe(app,
         thumbnails?"PDF page 2 of 7.":pdf_case?"PDF page 2 of 2.":"Frame recovered.",0));
-    if(!png_case&&!pdf_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
+    if(!png_case&&!pdf_case&&!guest_case)CHECK(state(retired,ATSPI_STATE_DEFUNCT)&&stale_focus(old_component));
     CHECK((fresh=find(app,viewport,0))&&dimensions(fresh));
-    CHECK(host_marker(host_log,(pdf_case||png_viewer||browser_case)?
+    CHECK(host_marker(host_log,(pdf_case||png_viewer||browser_case||guest_case)?
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=372736":
         "CONTENT_STATE generation=2 resize=1 width=448 height=208 sequence=3 copied=2 copy_bytes=23296"));
     if (png_viewer) {
@@ -942,6 +962,8 @@ int main(int argc,char **argv) {
             (second_text=find(app,"Grün, café and 👋.",0))&&pdf_text_is(second_text,"Grün, café and 👋.")&&
             browser_ax_document(second_text,"Recovered guide")&&
             browser_ax_image(app));
+    } else if (guest_case) {
+        CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu));
     } else if (detail_case) CHECK(pdf_detail_capture(display,outer,0,"pdf-detail-fit-before"));
     else CHECK(capture(display,outer,blue,pdf_case?"pdf-page2":"recovered"));
     if(pdf_case)CHECK((second_text=pdf_text(app,"Grün page two\n\n"))&&state(first_text,ATSPI_STATE_DEFUNCT)&&
@@ -1079,7 +1101,8 @@ int main(int argc,char **argv) {
     CHECK(observe(app,"Scale 2x",1)&&drive("key","Return"));
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
     if(pdf_case)CHECK(state(second_text,ATSPI_STATE_DEFUNCT));
-    CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":"Scaled frame ready.",0));
+    CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":
+        guest_case?"Guest running. Keyboard only.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     if (browser_ax) {
         CHECK(state(second_text,ATSPI_STATE_DEFUNCT)&&browser_ax_image(app)&&browser_pixel(display,outer,410,82,0xbf3f89u));
@@ -1088,6 +1111,27 @@ int main(int argc,char **argv) {
         CHECK(observe(app,"Notes opened ✓.",0)&&!state(scaled_text,ATSPI_STATE_DEFUNCT)&&pdf_text_is(scaled_text,"Notes opened ✓."));
         CHECK(browser_pixel(display,outer,32,104,0x21bb71u)&&input_chrome(display,id,"browser-ax-activated"));
         puts("BROWSER_ATSPI verified: document hierarchy, Unicode text, clipped image, retirement and native action");
+    } else if (guest_case) {
+        CHECK(guest_video(app)&&browser_pixel(display,outer,224,104,0x0000ffu));
+        CHECK(observe(app,"Host sharing unavailable: clipboard, files, network, microphone, devices.",0));
+        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+            observe(app,"Guest keyboard active: Ctrl+Shift+F12 exits.",0)&&observe(app,viewport,1));
+        CHECK(drive("keydown","a")&&browser_pixel(display,outer,224,104,0x00ff00u)&&input_chrome(display,id,"guest-key-down"));
+        CHECK(drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
+            observe(app,"Guest keyboard released.",0)&&observe(app,"Close",1));
+        CHECK(browser_pixel(display,outer,224,104,0xff00ffu)&&input_chrome(display,id,"guest-key-released"));
+        CHECK(drive("keyup","a")&&drive("keyup","shift")&&drive("keyup","ctrl")&&drive("key","a")&&observe(app,"Close",1));
+        CHECK(focus(app,"Enter guest")&&drive("key","Return")&&observe(app,"Guest keyboard active: Ctrl+Shift+F12 exits.",0));
+        CHECK(drive("keydown","a")&&browser_pixel(display,outer,224,104,0x00ff00u));
+        char desktop_id[32];
+        snprintf(desktop_id,sizeof(desktop_id),"%lu",(unsigned long)DefaultRootWindow(display));
+        CHECK(drive("windowfocus",desktop_id)&&observe(app,"Guest keyboard focus lost.",0)&&
+            browser_pixel(display,outer,224,104,0xff00ffu)&&input_chrome(display,id,"guest-focus-release"));
+        CHECK(drive("keyup","a")&&drive("windowfocus",id)&&press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0));
+        puts("GUEST_NATIVE verified: actual VGA pixels, pause/resume, native keyboard, host escape and focus-loss release");
+        /* The X carrier alone does not restore native Wayland keyboard focus. */
+        CHECK(point_at(id,274,-38)&&drive("click","1"));
+        goto closed;
     } else CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
     if (browser_case) puts("BROWSER_NATIVE verified: retired tab, engine failure, host recovery, 2x backing and native controls");
     if (browser_input) {

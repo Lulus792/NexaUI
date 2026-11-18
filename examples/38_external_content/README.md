@@ -331,6 +331,27 @@ The browser executable is a fixture input. General website navigation,
 additional HTML roles, editable page accessibility and GPU buffer
 ownership remain separate work.
 
+## Optional QEMU guest workflow
+
+Build with the native fixture, PNG support and
+`NEXAUI_CONTENT_BUILD_GUEST_FIXTURE=ON`. Run the native harness with
+`--case guest --guest-engine /absolute/path/to/qemu-system-x86_64` and
+`--guest-firmware /absolute/path/to/qemu/firmware`. The harness builds
+the boot sector from `guest_boot.S` using Clang and objcopy. The guest
+uses 32 MiB RAM, TCG and a read-only temporary boot image.
+
+The app owns QEMU and a private QMP socket. The worker fits the entire
+guest VGA image using the existing PNG producer. QMP confirms pause
+and resume. **Enter guest** grants keyboard focus. Press
+**Ctrl+Shift+F12** to release it. The input gate also releases admitted
+keys on native focus loss. **Disconnect** withdraws console input
+while the guest stays running. The owner joins QEMU on fixture close.
+
+The guest fixture verifies a VGA display and normalized keyboard input.
+The host advertises clipboard, file, network, microphone and device
+sharing as unavailable. Guest pointer input, a full guest desktop,
+persistent storage and reset confirmation remain separate work.
+
 ## Optional PDF producer on Linux
 
 Configure with `-DNEXAUI_CONTENT_BUILD_PNG=ON` and
