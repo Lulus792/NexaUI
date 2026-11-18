@@ -440,9 +440,22 @@ export identity again before committing the reset.
 The guest writes a file in that directory. An independent AT-SPI peer
 checks the before and after bytes and file identity, and the harness
 checks the file again after the separate read-only boot. The temporary
-directory is collected at the end of the fixture. Production disk
-enrollment, recovery when storage is unavailable, interactive grants and
-revocation, the other sharing channels and guest accessibility remain open.
+directory is collected at the end of the fixture.
+
+Add `--guest-file-revoke` to exercise **Revoke file access** in the
+Sharing dialog while the guest still has the directory mounted. This
+workflow was verified with QEMU 11.0.3 and its JSON device option. The
+owner sends the scoped QMP request once and reports **Files: revocation
+pending**. **Check sharing status** reads the owner again. The guest's
+`detach` command releases its mount. The owner reports **Files: revoked**
+after the matching `DEVICE_DELETED` event and confirmation that the
+device has left the VM. The guest's `probe` command attempts to mount
+the channel again and the harness verifies the host file is unchanged.
+The reset dialog still identifies the directory where prior writes stay.
+
+Production disk enrollment, recovery when storage is unavailable,
+runtime grant creation, forced revocation when a guest keeps the mount,
+the other sharing channels and guest accessibility remain open.
 
 ## Optional PDF producer on Linux
 

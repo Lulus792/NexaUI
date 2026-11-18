@@ -1440,3 +1440,61 @@ Aetheri's product authority, runtime grants and revocation, the other
 sharing channels and the guest's accessibility tree remain open. The
 private launch grant and reset evidence are available for consumer
 integration with the existing owner model.
+
+## Native QEMU file grant revocation, 2026-11-18
+
+The consumer and Wayland-only SDK were compiled from source
+`266404bf1743248f16eb289c0a1c0d99701cc395`, archive SHA-256
+`ce8dc4467a0567479f6df0e90548d4a85d2b43e5e5e59a576481320ea9e81488`.
+The final runtime candidate is `7e88cd01fbc799debe82743841081a0e86a8f7e2`.
+Its three changed runtime files were extracted from archive SHA-256
+`3617645a76da510e3782f13648b7dd1eb3532cb6e8f878412d37c0e5826b3b24`.
+The compiled sources are identical across the two revisions. The test
+uses QEMU 11.0.3, the existing Alpine kernel, and an initramfs with the
+matching guest `/init` and console probe.
+
+In `--case guest-reset --guest-file-share --guest-file-revoke`, the
+host binds a revoke request to the observed VM environment and export.
+QMP accepts a single `device_del` request while the guest still holds
+its VirtIO 9p mount. Sharing displays the pending state and offers a
+status read. The owner waits for the exact `DEVICE_DELETED` event and
+checks that QOM no longer lists the export device. A request with an
+uncertain reply stays unconfirmed until the owner observes completion.
+[QEMU device removal contract](https://www.qemu.org/docs/master/interop/qemu-qmp-ref.html)
+
+The guest's `detach` command releases the mount. After confirmed
+removal, a guest attempt to remount the former export fails. The host
+checks that the previously written file retains its bytes and inode.
+The reset dialog continues to list the exact host directory where
+those writes stay. A separate guest boot verifies the restored work
+disk while the external file remains available to the host.
+
+Early runs missed desktop readiness. A retained serial trace showed
+the shell exiting after `udevadm settle --timeout=5`, followed by a
+guest kernel panic. The corrected fixture allows 30 seconds for udev
+and 120 seconds for the complete emulated desktop boot. The owner
+reports a startup error as soon as the serial trace records an init
+failure or panic. These deadlines cover test startup.
+
+Release and ASan/UBSan with leak detection each passed the complete
+cooperative revocation workflow. The independent AT-SPI peer verified
+keyboard activation, pending refresh, and focus restoration. Both
+pending and revoked status rows measured 12.85:1 in the captures. Each
+run logged one device removal request, one confirmed removal, and one
+reset. The final candidate passed 54 CTests across four build profiles,
+nine native test runs and 61 focused checks. The focused checks cover
+stale environment IDs, missing and malformed replies, pending and
+unknown outcomes, device presence, repeated commands and export identity
+changes. The new wire cases also passed with sanitizers.
+
+The local bundle `nexaui-qemu-file-revoke458.tar.gz` has SHA-256
+`610bea62343ac5ba8fd9d02fb0181859f1d861731de0970f751659eb42472091`.
+`qemu-file-revoke458-final.json` records the compiled and runtime
+revisions, boot artifacts, per-run scopes, host file hash, captures and
+member hashes. The bundle includes the unsuccessful boot attempts and
+the diagnostic serial trace.
+
+The verified path requires a guest that releases its mount. Runtime
+grant creation, an enforced cutoff when the guest keeps a mount,
+Aetheri product authority, other sharing channels and guest accessibility
+remain open.
