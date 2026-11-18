@@ -1194,3 +1194,60 @@ The fixture covers a single display, a Wayland desktop shell and its
 terminal. Guest accessibility export, IME, wheel and side buttons,
 production refresh budgets, persistent storage and reset review,
 resource accounting and sharing grants remain open.
+
+## Native QEMU guest storage and resources checkpoint, 2026-11-18
+
+Consumer `cf04cbc77d45e2bb3e336375991c52ac8aa1ea34` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`, QEMU 11.0.3 and the
+Alpine 3.24.4 desktop hardware profile. The optional storage harness
+uses the host's mke2fs 1.47.4 to format a freshly created 16 MiB
+regular file as ext4. It attaches just that volume to the offline
+guest as a VirtIO disk. The kernel and modified initramfs are
+recorded separately with their exact digests.
+
+The keyboard-accessible Resources dialog requests its own bounded
+reply from the app-owned worker. It uses QMP for run state, CPU count,
+assigned RAM, disk capacity and access, and cumulative device reads
+and writes. Request completion has its own ticket. Opening releases
+guest input, and dismissing restores focus to Resources. A fresh
+query after Disconnect still reads the running VM's counters while
+the console retains its last desktop image.
+[QEMU machine queries](https://github.com/qemu/qemu/blob/v11.0.0/qapi/machine.json#L1191)
+[QEMU block information and statistics](https://github.com/qemu/qemu/blob/v11.0.0/qapi/block-core.json#L1186)
+
+The native peer reads the initial and later write totals through
+AT-SPI. The guest saves and unmounts a fixture file before the app
+joins QEMU. A new QEMU process attaches the same disk read-only. The
+guest mounts ext4 without replay and checks the file's exact contents.
+The owner verifies positive read bytes, zero write bytes, and the
+same SHA-256 before and after the read-only boot.
+
+The first probe queried raw-node statistics and got zero counters
+after ext4 had mounted. The corrected owner correlates the named
+image node to its VirtIO device and reads that device's counters.
+One run at `7a0eb0d` timed out waiting for the first visible guest
+scanout after the terminal signalled ready. That log is retained.
+The first dialog render also used the host's dark canvas text on a
+dark panel. The final dialog uses the theme text color. The capture
+audit compares the rasterized resource rows against the panel using
+the sRGB contrast calculation.
+[W3C contrast calculation and rationale](https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html)
+
+The final revision passed 100 CTests across six profiles, 83 unique
+native Weston scenarios, and 28 resource-reply probes. Four graphical
+scenarios in the parallel native run timed out before the guest's first
+readiness message. All four passed one at a time with the same built
+revision and a byte-verified private RAM copy of the QEMU runtime.
+The original failures and successful reruns are included. In each
+storage profile the AT-SPI write value changed from 1,024 to 22,528
+bytes. The read-only boot read 385,024 bytes and wrote zero. The five
+resource rows measured 12.85:1 against the panel in all four captures.
+The local archive `nexaui-qemu-guest-storage453.tar.gz` has SHA-256
+`c551cf8ada0f6bdb9605f58cceb8be59019dff9e15161c1166f0066a375a272d`.
+`qemu-guest-storage453-final.json` records its member hashes and
+per-profile measurements.
+
+The disk I/O labels represent cumulative device bytes. Live CPU and
+memory usage, guest filesystem occupancy, persistent disk ownership
+across independent app launches, reset preview and recovery,
+per-channel sharing grants and guest accessibility remain open.
