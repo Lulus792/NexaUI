@@ -781,12 +781,14 @@ int main(int argc,char **argv) {
     if(argc!=2||!isolated||strcmp(isolated,"1")||!wayland||strcmp(wayland,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
-        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&strcmp(test_case,"guest-storage")&&
+        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&
+        strcmp(test_case,"guest-storage")&&strcmp(test_case,"guest-reset")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close")))return 2;
     const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int browser_case=!strcmp(test_case,"browser");
-    int guest_storage=!strcmp(test_case,"guest-storage");
+    int guest_reset=!strcmp(test_case,"guest-reset");
+    int guest_storage=guest_reset||!strcmp(test_case,"guest-storage");
     int guest_desktop=guest_storage||!strcmp(test_case,"guest-desktop");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
@@ -1197,6 +1199,17 @@ int main(int argc,char **argv) {
                 input_chrome(display,id,"guest-resources-written"));
             printf("GUEST_STORAGE_NATIVE before=%llu after=%llu\n",before,after);
             CHECK(drive("key","Escape")&&observe(app,"Resources",1)&&browser_pixel(display,outer,156,43,0x00a800u));
+            if (guest_reset) {
+                CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&preview)&&
+                    !strcmp(baseline.environment,preview.environment)&&!strcmp(baseline.checkpoint,preview.checkpoint)&&
+                    observe(app,"Stops the guest. The previous disk is kept.",0));
+                CHECK(focus(app,"Restore checkpoint")&&drive("key","Return")&&
+                    observe(app,"Checkpoint restored. Guest stopped.",0)&&input_chrome(display,id,"guest-reset-applied"));
+                CHECK(focus(app,"Close reset preview")&&drive("key","Return")&&observe(app,"Review reset",1));
+                CHECK(drive("key","Return")&&observe(app,"Checkpoint restored. Guest stopped.",0)&&
+                    focus(app,"Close reset preview")&&drive("key","Return")&&observe(app,"Review reset",1));
+                puts("GUEST_RESET_NATIVE verified: keyboard confirmation, status recovery and retained result");
+            }
         }
         CHECK(point_at(id,274,-38)&&drive("click","1"));
         goto closed;

@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import signal
 import socket
 import stat
@@ -20,6 +21,7 @@ INPUT_RECORD_SIZE = 5
 INPUT_KEY, INPUT_BUTTON, INPUT_MOTION = 1, 2, 3
 QMP_LIMIT = 16384
 WORK_DISK_BYTES = 16*1024*1024
+RESET_APPLIED, RESET_REJECTED, RESET_UNKNOWN, RESET_UNREQUESTED = range(1,5)
 KEY_CODES = {k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
                   7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
@@ -52,11 +54,15 @@ def image_digest(path):
 
 
 class Guest:
-    def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None):
+    def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
+                 reset_enabled=False):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
         self.checkpoint = Path(checkpoint) if checkpoint else None
+        self.reset_enabled = reset_enabled
+        self.reset_state = RESET_UNREQUESTED
+        self.close_result = None
         if self.checkpoint:
             if not (self.desktop and self.disk and writable):
                 raise ValueError('Reset preview requires an owned writable disk')
@@ -276,18 +282,21 @@ class Guest:
               f'capacity={capacity} read={read} written={written}',flush=True)
         return struct.pack('>4sBBHQQQQ',b'NXR1',state,flags,cpus,ram,capacity,read,written)
 
+    def check_reset_scope(self):
+        if not self.checkpoint:
+            raise ValueError('The owner has no reset baseline')
+        block = self.work_device()['inserted']
+        if (block['ro'] or block['drv']!='raw' or block['image']['filename']!=str(self.disk) or
+                block['image']['virtual-size']!=WORK_DISK_BYTES or
+                image_identity(self.disk.stat(follow_symlinks=False))!=self.disk_identity or
+                image_identity(self.checkpoint.stat(follow_symlinks=False))!=self.checkpoint_identity or
+                image_digest(self.checkpoint)!=self.checkpoint_hash or
+                image_identity(self.checkpoint.stat(follow_symlinks=False))!=self.checkpoint_identity):
+            raise ValueError('The reset baseline or work disk changed')
+
     def reset_preview(self):
         try:
-            if not self.checkpoint:
-                raise ValueError('The owner has no reset baseline')
-            block = self.work_device()['inserted']
-            if (block['ro'] or block['drv']!='raw' or block['image']['filename']!=str(self.disk) or
-                    block['image']['virtual-size']!=WORK_DISK_BYTES or
-                    image_identity(self.disk.stat(follow_symlinks=False))!=self.disk_identity or
-                    image_identity(self.checkpoint.stat(follow_symlinks=False))!=self.checkpoint_identity or
-                    image_digest(self.checkpoint)!=self.checkpoint_hash or
-                    image_identity(self.checkpoint.stat(follow_symlinks=False))!=self.checkpoint_identity):
-                raise ValueError('The reset baseline or work disk changed')
+            self.check_reset_scope()
         except (OSError,ValueError,KeyError,RuntimeError):
             print('GUEST_RESET_PREVIEW unavailable',flush=True)
             return b'U'
@@ -296,7 +305,74 @@ class Guest:
               f'capacity={WORK_DISK_BYTES} grants=0',flush=True)
         return struct.pack('>4s16s32sQ4x',b'NXV1',self.environment,self.checkpoint_hash,WORK_DISK_BYTES)
 
+    def reset_matches(self, scope):
+        return self.reset_enabled and scope==self.environment+self.checkpoint_hash
+
+    def reset_status(self, scope):
+        state=self.reset_state if self.reset_matches(scope) else RESET_REJECTED
+        if state==RESET_APPLIED:
+            try:
+                if image_digest(self.disk)!=self.checkpoint_hash:
+                    state=RESET_UNKNOWN
+            except (OSError,ValueError):
+                state=RESET_UNKNOWN
+        print(f'GUEST_RESET_STATUS state={state}',flush=True)
+        return state
+
+    def apply_reset(self, scope):
+        if not self.reset_matches(scope):
+            return RESET_REJECTED
+        if self.reset_state!=RESET_UNREQUESTED:
+            return self.reset_state
+        if self.held or self.buttons:
+            return RESET_REJECTED
+        try:
+            self.check_reset_scope()
+        except (OSError,ValueError,KeyError,RuntimeError):
+            return RESET_REJECTED
+
+        self.reset_state=RESET_UNKNOWN
+        staged=None
+        installed=False
+        try:
+            with tempfile.NamedTemporaryFile(dir=self.disk.parent,prefix='reset-',delete=False) as output:
+                staged=Path(output.name)
+                with self.checkpoint.open('rb') as source:
+                    shutil.copyfileobj(source,output)
+                output.flush()
+                os.fsync(output.fileno())
+            if image_digest(staged)!=self.checkpoint_hash:
+                raise ValueError('Invalid staged baseline')
+            if self.close()!=0:
+                raise RuntimeError('The old guest failed to stop')
+            if image_identity(self.disk.stat(follow_symlinks=False))!=self.disk_identity:
+                raise ValueError('The stopped work disk changed identity')
+            previous=self.disk.with_name('work-before-reset.img')
+            os.link(self.disk,previous,follow_symlinks=False)
+            saved=image_digest(previous)
+            os.replace(staged,self.disk)
+            installed=True
+            directory=os.open(self.disk.parent,os.O_RDONLY|os.O_DIRECTORY)
+            try:
+                os.fsync(directory)
+            finally:
+                os.close(directory)
+            if image_digest(self.disk)!=self.checkpoint_hash:
+                raise ValueError('The installed work disk does not match the baseline')
+            self.reset_state=RESET_APPLIED
+            print(f'GUEST_RESET_APPLIED environment={self.environment.hex()} '
+                  f'checkpoint={self.checkpoint_hash.hex()} prior={saved.hex()}',flush=True)
+        except (OSError,ValueError,RuntimeError):
+            self.reset_state=RESET_UNKNOWN if installed else RESET_REJECTED
+            print(f'GUEST_RESET_FAILED state={self.reset_state}',flush=True)
+        finally:
+            if staged:
+                staged.unlink(missing_ok=True)
+        return self.reset_state
+
     def close(self):
+        if self.close_result is not None:
+            return self.close_result
         try:
             if self.process.poll() is None and self.stream:
                 try:
@@ -321,23 +397,30 @@ class Guest:
             if self.process.poll() is None and not self.stream:
                 self.process.terminate()
             try:
-                return self.process.wait(timeout=3)
+                self.close_result=self.process.wait(timeout=3)
             except subprocess.TimeoutExpired:
                 self.process.kill()
-                return self.process.wait(timeout=2)
+                self.close_result=self.process.wait(timeout=2)
+            return self.close_result
         finally:
             if self.stream:
                 self.stream.close()
             self.peer.close()
 
 
-def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=None):
+def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=None, reset_mode=None):
     def interrupt(*_):
         raise KeyboardInterrupt
 
     signal.signal(signal.SIGTERM, interrupt)
+    if reset_mode and (reset_mode!='drop-response' or not disk or not checkpoint or
+            not address.parent.name.startswith('nexaui-guest-') or stat.S_IMODE(address.parent.stat().st_mode)!=0o700 or
+            Path(disk)!=address.parent/'work.img' or Path(checkpoint)!=address.parent/'baseline.img'):
+        raise ValueError('Reset requires the private test harness images')
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
-        guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint)
+        guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
+                      reset_enabled=bool(reset_mode))
+        drop_response=bool(reset_mode)
         try:
             status = guest.wait_ready()
             if status != 'running':
@@ -360,14 +443,24 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                             generation,resize,width,height,kind = fields[:5]
                             if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                                     0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                                    kind in range(9 if guest.desktop else 6) and len(fields)==(6 if kind==5 else 5)):
+                                    kind in range(11 if guest.desktop else 6) and len(fields)==(6 if kind in (5,9,10) else 5)):
                                 raise ValueError('Guest request outside the fixture limits')
-                            size = fields[5] if kind == 5 else 0
+                            size = fields[5] if len(fields)==6 else 0
                             if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
                                 raise ValueError('Guest input batch too large')
+                            if kind in (9,10) and size!=48:
+                                raise ValueError('Guest reset scope must be 48 bytes')
                             payload = stream.read(size)
                             if len(payload)!=size or stream.read(1):
                                 raise ValueError('Invalid guest request framing')
+                        if kind in (9,10):
+                            state = guest.apply_reset(payload) if kind==9 else guest.reset_status(payload)
+                            if kind==9 and drop_response and state==RESET_APPLIED:
+                                drop_response=False
+                                print('GUEST_RESET_RESPONSE dropped',flush=True)
+                            else:
+                                peer.sendall(b'NXA1'+bytes((state,)))
+                            continue
                         if kind == 2:
                             guest.command('stop')
                             if guest.command('query-status')['status'] != 'paused':

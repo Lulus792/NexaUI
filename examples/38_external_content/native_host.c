@@ -97,13 +97,22 @@ static nx_result input_hint(nx_context *context,const nx_font_collection *fonts,
     return label(context,fonts,3,hint,(nx_rect){16,122,448,14},11);
 }
 enum { GUEST_INSPECT=610, GUEST_INSPECT_PANEL, GUEST_INSPECT_BACKDROP, GUEST_INSPECT_CLOSE,
-       GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630 };
+       GUEST_INSPECT_ROW, GUEST_INSPECT_RESET=630, GUEST_INSPECT_RESTORE, GUEST_INSPECT_STATUS };
 typedef struct guest_inspector {
     uint64_t ticket;
-    unsigned open;
-    int enabled, reset_enabled, pending;
+    unsigned open, request;
+    int enabled, reset_enabled, can_apply, reset_started, pending;
+    content_guest_reset_preview scope;
     native_guest_report report;
 } guest_inspector;
+
+static int guest_reset_pending(const guest_inspector *view) {
+    return view->reset_started && view->report.ticket!=view->ticket;
+}
+
+static unsigned guest_reset_outcome(const guest_inspector *view) {
+    return view->report.result==NX_OK?view->report.reset_state:GUEST_RESET_UNKNOWN;
+}
 
 static void guest_hex(const uint8_t *value,size_t bytes,char *out) {
     static const char digits[]="0123456789abcdef";
@@ -115,14 +124,15 @@ static void guest_hex(const uint8_t *value,size_t bytes,char *out) {
 }
 
 static nx_result guest_inspector_overlay(nx_context *context,const nx_font_collection *fonts,
-    nx_window_info info,const guest_inspector *view,unsigned *action) {
+    nx_window_info info,const guest_inspector *view,int disconnected,unsigned *action) {
     int preview=view->open==CONTENT_GUEST_RESET_PREVIEW;
     const char *title=preview?"Reset preview":"Guest resources";
     const char *close=preview?"Close reset preview":"Close resources";
     float width=info.width<448?info.width-32:416;
-    nx_rect panel={(info.width-width)/2,44,width,preview?272:232};
+    int awaiting=guest_reset_pending(view);
+    nx_rect panel={(info.width-width)/2,44,width,preview?(view->can_apply?304:272):232};
     nx_overlay_desc overlay={.panel={.id=GUEST_INSPECT_PANEL,.parent_id=1,.bounds=panel,
-        .name={title,strlen(title)}},.backdrop_id=GUEST_INSPECT_BACKDROP,.dismiss_on_escape=1};
+        .name={title,strlen(title)}},.backdrop_id=GUEST_INSPECT_BACKDROP,.dismiss_on_escape=!awaiting};
     int dismissed;
     nx_result result=nx_modal_begin(context,&overlay,&dismissed);
     if (result!=NX_OK) return result;
@@ -132,10 +142,20 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
     if (result==NX_OK) result=scoped_label(context,fonts,0,GUEST_INSPECT_PANEL,title,
         (nx_rect){x,y,width-128,24},17,ink);
     if (result==NX_OK) result=scoped_button(context,fonts,GUEST_INSPECT_CLOSE,GUEST_INSPECT_PANEL,
-        close,"Close",panel.x+width-86,y-4,70,1,action);
-    char lines[8][96];
+        close,"Close",panel.x+width-86,y-4,70,!awaiting,action);
+    char lines[9][96];
     unsigned count=1;
-    if (view->report.ticket!=view->ticket) {
+    if (view->reset_started) {
+        const char *status="Reset status unknown.";
+        unsigned outcome=guest_reset_outcome(view);
+        if (awaiting) status=view->request==CONTENT_GUEST_RESET_APPLY?"Restoring checkpoint…":"Checking reset status…";
+        else if (outcome==GUEST_RESET_APPLIED) status="Checkpoint restored. Guest stopped.";
+        else if (outcome==GUEST_RESET_REJECTED || outcome==GUEST_RESET_UNREQUESTED) status="Reset did not complete.";
+        snprintf(lines[0],sizeof(lines[0]),"%s",status);
+        if (result==NX_OK && !awaiting && outcome==GUEST_RESET_UNKNOWN)
+            result=scoped_button(context,fonts,GUEST_INSPECT_STATUS,GUEST_INSPECT_PANEL,"Check reset status",
+                "Check reset status",x,y+244,168,1,action);
+    } else if (view->report.ticket!=view->ticket) {
         strcpy(lines[0],preview?"Reading reset scope":"Reading guest resources");
     } else if (view->report.result!=NX_OK) {
         strcpy(lines[0],preview?"Reset preview unavailable":"Guest resources unavailable");
@@ -154,6 +174,12 @@ static nx_result guest_inspector_overlay(nx_context *context,const nx_font_colle
         strcpy(lines[6],"Work disk changes would be replaced.");
         strcpy(lines[7],"No external write grants.");
         count=8;
+        if (view->can_apply && disconnected) {
+            strcpy(lines[count++],"Stops the guest. The previous disk is kept.");
+            if (result==NX_OK)
+                result=scoped_button(context,fonts,GUEST_INSPECT_RESTORE,GUEST_INSPECT_PANEL,"Restore checkpoint",
+                    "Restore checkpoint",x,y+255,168,1,action);
+        }
     } else {
         const content_guest_resources *r=&view->report.resources;
         snprintf(lines[0],sizeof(lines[0]),"Guest %s",r->state==GUEST_RESOURCE_RUNNING?"running":"paused");
@@ -745,8 +771,9 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     int pages_visible=(pdf_case||gallery)&&pdf_can_navigate(phase)&&(document->pages||document->properties.enabled||document->export_enabled)&&
         info.width>=480&&info.height>=248&&
         !selection->active;
+    const char *guest_status=inspector->reset_started?"Console disconnected.":guest_input_name(input_phase);
     if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts, 2,
-        input_controls?(guest_case?guest_input_name(input_phase):input_name(input_phase)):status,
+        input_controls?(guest_case?guest_status:input_name(input_phase)):status,
         (nx_rect){16,12,info.width-(pages_visible?262:zoom_visible?201:32),24},
         (pages_visible||png_case)&&phase==BAD_REJECTED?13:15) != NX_OK ||
         (search && pdf_find_field(context,window,fonts,query)!=NX_OK) ||
@@ -767,7 +794,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         ((!gallery||scale==1)&&button(context,fonts,14,"Scale 2x",136,88,112,
             phase==RECOVERED||(hit_page&&scale==1)||(gallery&&document->page&&pdf_hit_page(phase)),action)!=NX_OK) ||
         button(context,fonts,15,"Close",256,88,(pdf_case||inspector->enabled)&&info.width>=480?112:128,1,action)!=NX_OK) return 0;
-    if (inspector->enabled&&phase==SCALED_READY&&info.width>=480&&
+    if (inspector->enabled&&!inspector->reset_started&&phase==SCALED_READY&&info.width>=480&&
         button(context,fonts,GUEST_INSPECT,"Resources",376,88,88,1,action)!=NX_OK) return 0;
     if (inspector->reset_enabled&&phase==SCALED_READY&&info.width>=480&&
         scoped_button(context,fonts,GUEST_INSPECT_RESET,1,"Review reset","Reset…",392,48,72,1,action)!=NX_OK)
@@ -855,7 +882,8 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
 #ifdef CONTENT_NATIVE_PNG
     if (document->thumbnails.open && content_pages_dialog(context,fonts,info,document,action,linked_page)!=NX_OK) return 0;
 #endif
-    if (inspector->open&&guest_inspector_overlay(context,fonts,info,inspector,action)!=NX_OK) return 0;
+    if (inspector->open&&guest_inspector_overlay(context,fonts,info,inspector,input_phase==INPUT_DISCONNECTED,action)!=NX_OK)
+        return 0;
     return nx_end_frame(context)==NX_OK;
 }
 
@@ -865,10 +893,12 @@ int main(void) {
     if (!isolated||strcmp(isolated,"1")||!display||strcmp(display,"nexaui-test")||
         !getenv("NEXAUI_TEST_ATSPI_ADDRESS")||!path||!test_case||
         (strcmp(test_case,"full")&&strcmp(test_case,"png")&&strcmp(test_case,"pdf")&&strcmp(test_case,"input")&&
-        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&strcmp(test_case,"guest-storage")&&
+        strcmp(test_case,"browser")&&strcmp(test_case,"guest")&&strcmp(test_case,"guest-desktop")&&
+        strcmp(test_case,"guest-storage")&&strcmp(test_case,"guest-reset")&&
         strcmp(test_case,"pending-close")&&strcmp(test_case,"rejected-close"))) return 2;
     int browser_case=!strcmp(test_case,"browser");
-    int guest_desktop=!strcmp(test_case,"guest-desktop")||!strcmp(test_case,"guest-storage");
+    int guest_reset=!strcmp(test_case,"guest-reset");
+    int guest_desktop=guest_reset||!strcmp(test_case,"guest-desktop")||!strcmp(test_case,"guest-storage");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
     const char *guest_socket=guest_case?getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET"):NULL;
 #ifndef CONTENT_NATIVE_GUEST
@@ -916,7 +946,8 @@ int main(void) {
     native_guest_input guest={.ledger.generation=1};
 #endif
     int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
-    guest_inspector inspector={.enabled=guest_desktop,.reset_enabled=!strcmp(test_case,"guest-storage")};
+    guest_inspector inspector={.enabled=guest_desktop,.reset_enabled=guest_reset||!strcmp(test_case,"guest-storage"),
+        .can_apply=guest_reset};
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
 #ifdef CONTENT_NATIVE_BROWSER
     browser_editor editor={.pointer_enabled=browser_pointer_case};
@@ -1025,6 +1056,13 @@ int main(void) {
         }
         native_worker_state state=native_state(&worker);
         inspector.report=state.guest_report;
+        if (inspector.reset_started&&inspector.request==CONTENT_GUEST_RESET_APPLY&&inspector.report.ticket==inspector.ticket&&
+            guest_reset_outcome(&inspector)==GUEST_RESET_UNKNOWN) {
+            if (inspector.ticket==UINT64_MAX) goto done;
+            ++inspector.ticket;
+            inspector.request=CONTENT_GUEST_RESET_STATUS;
+            inspector.pending=need_frame=1;
+        }
         if (uri_launcher) {
             native_uri_result released=native_take_uri_result(&worker);
             if (released.ticket && released.ticket==preview.ticket) {
@@ -1262,15 +1300,34 @@ int main(void) {
             initial_job=1;
         }
         if (action==15) { result=0; break; }
-        if (!inspector.open&&((action==GUEST_INSPECT&&inspector.enabled)||
+        if (!inspector.open&&((action==GUEST_INSPECT&&inspector.enabled&&!inspector.reset_started)||
                              (action==GUEST_INSPECT_RESET&&inspector.reset_enabled))) {
-            if (inspector.ticket==UINT64_MAX||content_input_release(input)!=NX_OK) goto done;
+            if (content_input_release(input)!=NX_OK) goto done;
             if (input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING) input_phase=INPUT_RELEASED;
-            ++inspector.ticket;
             inspector.open=action==GUEST_INSPECT?CONTENT_GUEST_RESOURCES:CONTENT_GUEST_RESET_PREVIEW;
-            inspector.pending=1;
+            if (!inspector.reset_started) {
+                if (inspector.ticket==UINT64_MAX) goto done;
+                ++inspector.ticket;
+                inspector.request=inspector.open;
+                inspector.pending=1;
+            }
             need_frame=1;
-        } else if (action==GUEST_INSPECT_CLOSE&&inspector.open) {
+        } else if (action==GUEST_INSPECT_RESTORE&&inspector.can_apply&&!inspector.reset_started&&
+                   inspector.open==CONTENT_GUEST_RESET_PREVIEW&&input_phase==INPUT_DISCONNECTED&&
+                   inspector.report.ticket==inspector.ticket&&inspector.report.result==NX_OK) {
+            if (inspector.ticket==UINT64_MAX) goto done;
+            inspector.scope=inspector.report.preview;
+            inspector.reset_started=1;
+            ++inspector.ticket;
+            inspector.request=CONTENT_GUEST_RESET_APPLY;
+            inspector.pending=need_frame=1;
+        } else if (action==GUEST_INSPECT_STATUS&&inspector.open==CONTENT_GUEST_RESET_PREVIEW&&
+                   inspector.reset_started&&!guest_reset_pending(&inspector)&&guest_reset_outcome(&inspector)==GUEST_RESET_UNKNOWN) {
+            if (inspector.ticket==UINT64_MAX) goto done;
+            ++inspector.ticket;
+            inspector.request=CONTENT_GUEST_RESET_STATUS;
+            inspector.pending=need_frame=1;
+        } else if (action==GUEST_INSPECT_CLOSE&&inspector.open&&!guest_reset_pending(&inspector)) {
             inspector.open=inspector.pending=0;
             nx_result closed=nx_overlay_close(context);
             if (closed!=NX_OK&&closed!=NX_ERROR_STATE) goto done;
@@ -1492,7 +1549,7 @@ int main(void) {
                 need_frame=1;
             } else if (inspector.pending&&inspector.open) {
                 if (!native_schedule(&worker,(native_job){.request=status.request,.sequence=inspector.ticket,
-                        .kind=inspector.open})) goto done;
+                        .kind=inspector.request,.reset_scope=inspector.scope})) goto done;
                 inspector.pending=0;
             }
         }

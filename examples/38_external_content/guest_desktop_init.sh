@@ -31,6 +31,8 @@ if [ -n "$work" ]; then
         mount -t ext4 -o ro,noload,nodev,nosuid,noexec /dev/vda /mnt/work
         if printf '%s\n' 'NexaUI persisted guest data' | cmp -s - /mnt/work/state.txt; then
             printf '%s\n' 'NEXAUI_STORAGE restored' >/dev/ttyS0
+        elif [ ! -e /mnt/work/state.txt ]; then
+            printf '%s\n' 'NEXAUI_STORAGE baseline' >/dev/ttyS0
         else
             printf '%s\n' 'NEXAUI_STORAGE mismatch' >/dev/ttyS0
         fi

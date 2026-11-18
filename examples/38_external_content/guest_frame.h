@@ -14,8 +14,10 @@ typedef struct content_guest_batch {
 } content_guest_batch;
 
 enum { CONTENT_GUEST_RESOURCES=7, CONTENT_GUEST_RESET_PREVIEW=8,
+       CONTENT_GUEST_RESET_APPLY=9, CONTENT_GUEST_RESET_STATUS=10,
        GUEST_RESOURCE_RUNNING=1, GUEST_RESOURCE_PAUSED=2,
-       GUEST_RESOURCE_DISK=1, GUEST_RESOURCE_WRITABLE=2 };
+       GUEST_RESOURCE_DISK=1, GUEST_RESOURCE_WRITABLE=2,
+       GUEST_RESET_APPLIED=1, GUEST_RESET_REJECTED, GUEST_RESET_UNKNOWN, GUEST_RESET_UNREQUESTED };
 typedef struct content_guest_resources {
     unsigned state, flags, cpus;
     uint64_t ram, capacity, read, written;
@@ -33,5 +35,7 @@ nx_result content_guest_frame(const char *path,content_request request,uint64_t 
 nx_result content_guest_read_resources(const char *path,content_request request,content_guest_resources *out);
 /* Reads the owner's disk and baseline identity. This request has no reset effect. */
 nx_result content_guest_read_reset_preview(const char *path,content_request request,content_guest_reset_preview *out);
+nx_result content_guest_reset_action(const char *path,content_request request,unsigned kind,
+    const content_guest_reset_preview *scope,unsigned *out);
 
 #endif
