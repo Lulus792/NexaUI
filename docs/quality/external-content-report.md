@@ -978,3 +978,63 @@ coalescing and leave before focus dispatch. Native resize during an
 active drag, touch, relative input, OS capture, production
 drag-and-drop, general web navigation and the Chromium accessibility
 subtree remain open.
+
+## Native Chromium accessibility subtree checkpoint, 2026-11-18
+
+Consumer `4bffe5f40026e2402d454fa60b852f0d099537a3` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and Chromium Headless Shell
+156.0.8078.79. The offline fixture uses Chromium's accessibility tree
+for names, roles and parentage, and Chromium's DOM quads for visible
+geometry. It projects groups, read-only heading and paragraph text,
+images and buttons into the existing NexaUI semantic tree. An owned
+frame carries up to 32 parent-first nodes with names of
+up to 256 UTF-8 bytes. The surface validates these with the same
+generation, resize and sequence as the raster.
+[Chromium Accessibility protocol](https://chromedevtools.github.io/devtools-protocol/tot/Accessibility/)
+[Chromium DOM geometry](https://chromedevtools.github.io/devtools-protocol/tot/DOM/#method-getContentQuads)
+
+The independent AT-SPI peer checks the viewport, document and content
+group ancestry, reads `Grün, café and 👋.` as read-only text, and checks
+the image's accessible name and clipped 12 × 24 logical extent at both
+1× and 2× backing. It rejects the retired tab's late subtree. The current
+document stays readable during the forced browser process failure, and
+its native objects become defunct after replacement. During the backing
+change, objects from the retired viewport are withdrawn before the
+accepted frame repopulates it.
+
+At 2× backing the peer focuses **Show notes** and presses it via native
+AT-SPI. The worker targets the button using the accepted document epoch
+and browser node ID. Chromium applies the action once and returns the
+updated pixels and accessible text. The peer reads `Notes opened ✓.`
+from the same live AT-SPI text object and checks the changed button color
+in the native framebuffer.
+
+The surface CTest rejects duplicate node IDs, invalid parentage, invalid
+bounds, malformed UTF-8 and unknown roles without overwriting the
+last accepted subtree. Transport probes cover bounds, packet framing,
+stale document epochs and successful RGBA8 plus metadata transfer.
+
+The exact-source matrix records 86 passing CTests, 71 passing native
+Wayland scenarios and 12 passing transport probes on Alpine 3.24 with
+Clang 22.1.3 and Weston 14.0.2. The new AT-SPI scenario passes on its
+first run in release, shared SDK and ASan/UBSan. Independent pixel
+readback confirms the unchanged document during failure and the new
+button color after activation. Each run accounts for five frame
+publications and five disposals.
+
+Seventy native scenarios passed on their first run. The existing
+ASan PDF link case failed at the link lookup or bounds assertion.
+Three retries stopped during Weston startup or AT-SPI registration.
+The fourth retry passed against the same source and build with
+byte-identical Weston files and font copied into the Linux filesystem.
+The evidence retains all attempts.
+
+Local archive `nexaui-browser-ax449.tar.gz` binds exact source, SDK and
+package receipts, tests, retries, captures and probe sources. Readback
+verified SHA-256
+`d1e53feda25dfd2818677d7ebd88f7434bda596d440904f68708f79b5cd555d5`.
+The local receipt is `browser-ax449-final.json`.
+
+Full HTML role mapping, editable and linked document actions, complex
+browser trees including iframes, and human assistive acceptance remain
+open. This case exercises one offline document and one browser button.
