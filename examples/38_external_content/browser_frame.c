@@ -289,6 +289,19 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     }
     if (result==NX_OK && input && kind==2 && size==1u && encoded[0]=='P')
         result=NX_ERROR_STATE;
+    if (result==NX_OK && input && accessible) {
+        uint32_t metadata=size>=4?wire_u32(encoded):0;
+        if (size<=4 || metadata>BROWSER_AX_WIRE_LIMIT || metadata>=size-4u) {
+            result=NX_ERROR_ARGUMENT;
+        } else {
+            size_t raster=4u+metadata;
+            result=content_guest_frame_with_ax(encoded+raster,size-raster,metadata?encoded+4:NULL,
+                metadata,request,sequence,out,bytes);
+            if (metadata&&result==NX_ERROR_ARGUMENT)
+                result=content_png_frame(encoded+raster,size-raster,request,sequence,out,bytes);
+        }
+        goto done;
+    }
     nx_rect candidate={0};
     content_ax_node ax[CONTENT_AX_NODE_LIMIT];
     uint32_t ax_count=0,epoch=0;
@@ -372,6 +385,13 @@ nx_result content_guest_frame(const char *path,content_request request,uint64_t 
     return transfer(path,request,sequence,kind,NULL,0,(content_ax_action){0},input,out,bytes,NULL,NULL,NULL,0);
 }
 
+nx_result content_guest_read_ax_frame(const char *path,content_request request,uint64_t sequence,
+    unsigned kind,const content_guest_batch *input,void **out,size_t *bytes) {
+    if (!input || input->count>CONTENT_GUEST_INPUT_LIMIT || kind>6 || (!!input->count!=(kind==5)))
+        return NX_ERROR_ARGUMENT;
+    return transfer(path,request,sequence,kind,NULL,1,(content_ax_action){0},input,out,bytes,NULL,NULL,NULL,0);
+}
+
 nx_result content_guest_frame_with_ax(const void *png,size_t png_bytes,const void *snapshot,size_t snapshot_bytes,
     content_request request,uint64_t sequence,void **out,size_t *bytes) {
     if (!out||!bytes||!!snapshot!=!!snapshot_bytes||snapshot_bytes>BROWSER_AX_WIRE_LIMIT) return NX_ERROR_ARGUMENT;
@@ -386,7 +406,7 @@ nx_result content_guest_frame_with_ax(const void *png,size_t png_bytes,const voi
     content_ax_node nodes[CONTENT_AX_NODE_LIMIT];
     uint32_t count,epoch;
     result=read_ax_packet(snapshot,snapshot_bytes,source,(content_ax_action){0},nodes,&count,&epoch);
-    if (result==NX_OK&&(nodes[0].role!=CONTENT_AX_GROUP||nodes[0].x||nodes[0].y||
+    if (result==NX_OK&&(!content_ax_valid((const uint8_t *)nodes,count,source)||nodes[0].x||nodes[0].y||
         nodes[0].width!=source.width||nodes[0].height!=source.height)) result=NX_ERROR_ARGUMENT;
     content_png_fit fit;
     void *frame=NULL;

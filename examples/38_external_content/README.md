@@ -553,8 +553,8 @@ rejected writes and unavailable data on both an open descriptor and a new
 attempt after removal.
 
 Production disk enrollment, recovery when storage is unavailable,
-production grant policy, broader networking, physical microphone and USB
-passthrough, and guest accessibility remain open.
+production grant policy, broader networking, and physical microphone and USB
+passthrough remain open.
 
 ### Guest accessibility snapshots
 
@@ -568,12 +568,21 @@ only when the app has a single visible window with matching bounds.
 The profile describes visible labels and push buttons with window-local
 rectangles and the disabled state. Editable fields are outside the profile.
 
+To run the native console test with `--guest-ax`, use a graphical guest
+initramfs with `guest_desktop_init.sh` as `/init`, the executable
+`/content_guest_ax_reader`, and `/guest_accessibility.py` and
+`/guest_ax_fixture.py`. The guest also needs D-Bus, AT-SPI, GTK 3, Python
+and PyGObject. The VM owner connects a private QEMU serial channel for
+accessibility. The guest test terminal's `axopen` command opens the
+fullscreen GTK test app. F8 changes its status and F9 closes it.
+
 `content_guest_frame_with_ax` combines the snapshot with a corresponding
 guest PNG when the selected window fills the raster. It uses the same fit
-as the pixels, including letterboxing. Pass an empty snapshot when the owner
-has no current observation to publish a frame with an empty accessibility
-subtree. The VM owner supplies the matching image, window and epoch. Live
-transport to the native console and forwarding guest actions remain open.
+as the pixels, including letterboxing. The fixture checks for matching
+observations before and after capture. An omitted or rejected snapshot
+publishes usable pixels with an empty guest subtree. Disconnect clears the
+guest subtree and preserves the video. The verified profile is read-only.
+Supporting other window geometries and forwarding guest actions remain open.
 
 ## Optional PDF producer on Linux
 

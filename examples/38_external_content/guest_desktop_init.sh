@@ -132,6 +132,22 @@ weston --backend=drm --renderer=pixman --socket="$WAYLAND_DISPLAY" --config=/run
 desktop=$!
 wait_socket "$XDG_RUNTIME_DIR/$WAYLAND_DISPLAY" "$desktop"
 case " $(cat /proc/cmdline) " in
+    *" nexaui.ax=probe "*)
+        if [ ! -x /content_guest_ax_reader ] || [ ! -r /guest_accessibility.py ] || [ ! -r /guest_ax_fixture.py ]; then
+            printf '%s\n' 'NEXAUI_STARTUP_FAILED guest accessibility components'
+            exit 1
+        fi
+        (
+            address=$(dbus-daemon --session --fork --print-address)
+            export DBUS_SESSION_BUS_ADDRESS="$address" AT_SPI_BUS_ADDRESS="$address" GDK_BACKEND=wayland
+            unset NO_AT_BRIDGE
+            /usr/libexec/at-spi2-registryd &
+            exec python3 /guest_accessibility.py
+        ) &
+        : >/run/guest-ax-enabled
+        ;;
+esac
+case " $(cat /proc/cmdline) " in
     *" nexaui.network=probe "*)
         modprobe virtio_net
         : >/run/network-enabled
@@ -284,6 +300,9 @@ while IFS= read -r line; do
         sleep .4
         paint 42 'Guest keyboard input received'
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
+    elif [ -f /run/guest-ax-enabled ] && [ "$line" = axopen ]; then
+        : >/run/nexaui-guest-ax-open
+        printf '%s\n' NEXAUI_GUEST_AX_OPEN >/dev/ttyS0
     elif [ -f /run/usb-enabled ] && [ "$line" = usboff ]; then
         if ! usb_target >/dev/null; then printf '%s\n' NEXAUI_USB_OFF >/dev/ttyS0; fi
     elif [ -f /run/usb-enabled ] && [ "$line" = usbopen ] && [ -z "$usb_disk" ]; then

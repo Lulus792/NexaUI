@@ -15,6 +15,7 @@ import sys
 import tempfile
 import time
 
+from guest_accessibility import GuestAccessibility
 from guest_clipboard import CLIPBOARD_LIMIT, GuestClipboard
 from guest_export import GuestExport, private_export_identity
 from guest_microphone import GuestMicrophone
@@ -46,7 +47,7 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
                  reset_enabled=False, file_share=None, revoke_share=False, grant_share=False, export=None,
-                 clipboard=False, network=False, microphone=False, usb=False):
+                 clipboard=False, network=False, microphone=False, usb=False, accessibility=False):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -64,6 +65,9 @@ class Guest:
             raise ValueError('Microphone requires the desktop guest')
         if usb and not self.desktop:
             raise ValueError('USB sharing requires the desktop guest')
+        if accessibility and not self.desktop:
+            raise ValueError('Accessibility transport requires the desktop guest')
+        self.accessibility = GuestAccessibility(root) if accessibility else None
         self.clipboard = GuestClipboard(root) if clipboard else None
         self.network = GuestNetwork(root) if network else None
         self.microphone = None
@@ -117,6 +121,8 @@ class Guest:
                 cmdline += ' nexaui.microphone=probe'
             if self.usb:
                 cmdline += ' nexaui.usb=probe'
+            if self.accessibility:
+                cmdline += ' nexaui.ax=probe'
             if self.file_share:
                 cmdline += ' nexaui.export=' + ('grantable' if grant_share else 'revocable' if revoke_share else 'write')
             boot_options = [
@@ -128,6 +134,11 @@ class Guest:
             if self.clipboard:
                 boot_options += ['-chardev',f'socket,id=clipboard,path={self.clipboard.address},server=on,wait=off',
                                  '-serial','chardev:clipboard']
+            if self.accessibility:
+                if not self.clipboard:
+                    boot_options += ['-serial','null']  # Keep the accessibility service on ttyS2.
+                boot_options += ['-chardev',f'socket,id=ax,path={self.accessibility.address},server=on,wait=off',
+                                 '-serial','chardev:ax']
             if disk:
                 node = {'driver':'raw','node-name':'work','read-only':not writable,
                         'file':{'driver':'file','filename':str(disk)}}
@@ -182,6 +193,8 @@ class Guest:
         self.command('qmp_capabilities')
         if self.clipboard:
             self.clipboard.connect()
+        if self.accessibility:
+            self.accessibility.connect()
         if self.desktop:
             deadline = time.monotonic() + DESKTOP_BOOT_TIMEOUT
             while True:
@@ -192,7 +205,8 @@ class Guest:
                     if (b'NEXAUI_DESKTOP_READY' in lines and
                             (not self.clipboard or b'NEXAUI_CLIPBOARD_READY' in lines) and
                             (not self.microphone or b'NEXAUI_MICROPHONE_READY' in lines) and
-                            (not self.usb or b'NEXAUI_USB_READY' in lines)):
+                            (not self.usb or b'NEXAUI_USB_READY' in lines) and
+                            (not self.accessibility or b'NEXAUI_GUEST_AX_READY' in lines)):
                         if self.clipboard:
                             self.clipboard.can_read = b'NEXAUI_CLIPBOARD_READ_READY' in lines
                         break
@@ -330,9 +344,14 @@ class Guest:
         return data
 
     def frame(self):
+        snapshot = self.accessibility.read() if self.accessibility else b''
         data = self.capture('png')
         if not data.startswith(b'\x89PNG\r\n\x1a\n'):
             raise ValueError('Invalid guest screendump')
+        if self.accessibility:
+            if snapshot and snapshot != self.accessibility.read():
+                snapshot = b''
+            return struct.pack('>I',len(snapshot))+snapshot+data
         return data
 
     def work_device(self):
@@ -704,6 +723,8 @@ class Guest:
                 self.close_result=self.process.wait(timeout=2)
             return self.close_result
         finally:
+            if self.accessibility:
+                self.accessibility.close()
             if self.microphone:
                 self.microphone.close()
             if self.network:
@@ -768,7 +789,8 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
     network = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_NETWORK')=='1'
     microphone = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_MICROPHONE')=='1'
     usb = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_USB')=='1'
-    if clipboard or network or microphone or usb:
+    accessibility = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_AX')=='1'
+    if clipboard or network or microphone or usb or accessibility:
         require_reset_root(address)
     grant = bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_GRANT')=='1')
     bindfs = os.environ.get('NEXAUI_CONTENT_TEST_FILE_BINDFS')
@@ -779,7 +801,8 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
                       reset_enabled=bool(reset_mode),file_share=file_share,
                       revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'),
-                      grant_share=grant,export=export,clipboard=clipboard,network=network,microphone=microphone,usb=usb)
+                      grant_share=grant,export=export,clipboard=clipboard,network=network,microphone=microphone,usb=usb,
+                      accessibility=accessibility)
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()

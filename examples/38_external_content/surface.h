@@ -98,4 +98,6 @@ nx_result content_surface_get_links(const content_surface *surface,
     const content_frame_link **links, size_t *count);
 nx_result content_surface_get_ax(const content_surface *surface,const content_ax_node **nodes,
     size_t *count,uint32_t *epoch);
+/* Validate the encoded in-process node array before publishing it. */
+int content_ax_valid(const uint8_t *source,size_t count,content_request request);
 #endif

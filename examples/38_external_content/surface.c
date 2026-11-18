@@ -91,7 +91,8 @@ static int valid_links(const uint8_t *links, size_t count) {
     return 1;
 }
 
-static int valid_ax(const uint8_t *source,size_t count,content_request request) {
+int content_ax_valid(const uint8_t *source,size_t count,content_request request) {
+    if ((count&&!source)||count>CONTENT_AX_NODE_LIMIT) return 0;
     uint32_t ids[CONTENT_AX_NODE_LIMIT];
     for (size_t i=0;i<count;++i) {
         content_ax_node node;
@@ -174,7 +175,7 @@ static nx_result stage(content_surface *surface, const nx_snapshot_view *view) {
             return NX_ERROR_ARGUMENT;
         if (!valid_words(text, header.text_bytes, words, header.word_count)) return NX_ERROR_ARGUMENT;
         if (!valid_links(links,header.link_count)) return NX_ERROR_ARGUMENT;
-        if (!valid_ax(ax,header.ax_count,*request)) return NX_ERROR_ARGUMENT;
+        if (!content_ax_valid(ax,header.ax_count,*request)) return NX_ERROR_ARGUMENT;
         metadata = surface->allocator.allocate(surface->allocator.user, metadata_bytes);
         if (!metadata) return NX_ERROR_MEMORY;
         memcpy(metadata,ax,ax_bytes);

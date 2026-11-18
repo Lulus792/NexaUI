@@ -87,6 +87,7 @@ typedef struct native_worker {
     const char *encoded_dir, *pdf_renderer, *pdf_reader, *pdf_link_reader;
     const char *browser_socket;
     const char *guest_socket;
+    int guest_ax;
     int browser_ax;
     const char *uri_launcher;
     const char *export_path;
@@ -426,7 +427,9 @@ static void *native_worker_entry(void *user) {
         nx_rect browser_caret={0};
 #ifdef CONTENT_NATIVE_GUEST
         if (worker->guest_socket)
-            result=content_guest_frame(worker->guest_socket,job.request,job.sequence,job.kind,&job.guest_input,&data,&bytes);
+            result=worker->guest_ax?
+                content_guest_read_ax_frame(worker->guest_socket,job.request,job.sequence,job.kind,&job.guest_input,&data,&bytes):
+                content_guest_frame(worker->guest_socket,job.request,job.sequence,job.kind,&job.guest_input,&data,&bytes);
         else
 #endif
 #ifdef CONTENT_NATIVE_BROWSER
@@ -515,7 +518,7 @@ static int native_worker_close(native_worker *worker) {
 static int native_worker_open(native_worker *worker, nx_snapshot_exchange *exchange,
     const char *encoded_dir, const char *pdf_renderer, const char *pdf_reader, const char *pdf_link_reader,
     const char *uri_launcher, const char *export_path,const png_gallery *gallery,const char *browser_socket,int browser_ax,
-    const char *guest_socket) {
+    const char *guest_socket,int guest_ax) {
     memset(worker, 0, sizeof(*worker)); worker->wake[0] = worker->wake[1] = -1;
     worker->pdf_file = -1;
     atomic_init(&worker->disposals, 0); worker->exchange = exchange;
@@ -526,6 +529,7 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
     worker->gallery = gallery;
     worker->browser_socket = browser_socket;
     worker->guest_socket = guest_socket;
+    worker->guest_ax = guest_ax;
     worker->browser_ax = browser_ax;
     if (pthread_mutex_init(&worker->mutex, NULL)) return -1;
     worker->mutex_ready = 1;

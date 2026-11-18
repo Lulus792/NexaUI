@@ -710,6 +710,78 @@ static int guest_console_marker(AtspiAccessible *app,const char *window,const ch
         await_guest_marker(marker,600)&&release_guest_keys(app);
 }
 
+static int guest_ax_key(AtspiAccessible *app,const char *key,const char *marker) {
+    return focus(app,"Enter guest")&&drive("key","Return")&&
+        observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&
+        drive("key",key)&&await_guest_marker(marker,600)&&release_guest_keys(app);
+}
+
+static int guest_ax_tree(AtspiAccessible *app,AtspiAccessible *label) {
+    AtspiAccessible *view=find(app,"Guest display",0);
+    AtspiAccessible *root=view?find(view,"Guest accessibility check",0):NULL;
+    AtspiAccessible *button=root?find(root,"Inspect guest job",0):NULL;
+    AtspiAccessible *disabled=root?find(root,"Disabled guest command",0):NULL;
+    AtspiAccessible *private_entry=root?find(root,"private-example-entry",0):NULL;
+    AtspiComponent *component=button?atspi_accessible_get_component_iface(button):NULL;
+    AtspiRect *bounds=component?atspi_component_get_extents(component,ATSPI_COORD_TYPE_WINDOW,NULL):NULL;
+    AtspiAction *actions=button?atspi_accessible_get_action_iface(button):NULL;
+    int ok=root&&atspi_accessible_get_child_count(root,NULL)==3&&browser_ax_parent(root,"Guest display")&&
+        browser_ax_parent(label,"Guest accessibility check")&&
+        bounds&&atspi_accessible_get_role(button,NULL)==ATSPI_ROLE_PUSH_BUTTON&&
+        abs(bounds->x-129)<=1&&abs(bounds->y-195)<=1&&abs(bounds->width-222)<=1&&abs(bounds->height-39)<=1&&
+        !state(button,ATSPI_STATE_FOCUSABLE)&&(!actions||atspi_action_get_n_actions(actions,NULL)==0)&&
+        disabled&&atspi_accessible_get_role(disabled,NULL)==ATSPI_ROLE_PUSH_BUTTON&&
+        !state(disabled,ATSPI_STATE_ENABLED)&&!private_entry;
+    if (!ok&&bounds) fprintf(stderr,"Guest AX button bounds %d,%d %dx%d\n",
+        bounds->x,bounds->y,bounds->width,bounds->height);
+    if (actions) g_object_unref(actions);
+    g_free(bounds);
+    if (component) g_object_unref(component);
+    if (private_entry) g_object_unref(private_entry);
+    if (disabled) g_object_unref(disabled);
+    if (button) g_object_unref(button);
+    if (root) g_object_unref(root);
+    if (view) g_object_unref(view);
+    return ok;
+}
+
+static int guest_ax_retired(AtspiAccessible *app,AtspiAccessible *old) {
+    for (unsigned i=0;i<200;++i) {
+        AtspiAccessible *root=find(app,"Guest accessibility check",0);
+        if (root) g_object_unref(root);
+        else if (state(old,ATSPI_STATE_DEFUNCT)) return guest_video(app,1);
+        pump();
+    }
+    return 0;
+}
+
+static int guest_ax_flow(AtspiAccessible *app,Display *display,const char *window) {
+    const char *ready="Gaststatus – bereit",*updated="Gaststatus – fertig";
+    AtspiAccessible *label=NULL,*second=NULL;
+    int ok=0;
+    CHECK(guest_console_marker(app,window,"axopen","NEXAUI_GUEST_AX_OPEN"));
+    CHECK(await_guest_marker("NEXAUI_GUEST_AX_APP_STARTED",2400));
+    CHECK(observe(app,ready,0));
+    CHECK((label=find(app,ready,0))&&pdf_text_is(label,ready)&&guest_ax_tree(app,label)&&
+        guest_video(app,1)&&input_chrome(display,window,"guest-ax-ready"));
+    CHECK(guest_ax_key(app,"F8","NEXAUI_GUEST_AX_UPDATED")&&observe(app,updated,0)&&
+        !state(label,ATSPI_STATE_DEFUNCT)&&pdf_text_is(label,updated)&&input_chrome(display,window,"guest-ax-updated"));
+    CHECK(guest_ax_key(app,"F9","NEXAUI_GUEST_AX_APP_EXITED")&&guest_ax_retired(app,label));
+    CHECK(guest_console_marker(app,window,"axopen","NEXAUI_GUEST_AX_OPEN"));
+    for (unsigned attempt=0;attempt<12&&!second;++attempt) {
+        if (observe(app,ready,0)) second=find(app,ready,0);
+    }
+    CHECK(second&&second!=label&&pdf_text_is(second,ready));
+    CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
+        guest_ax_retired(app,second)&&input_chrome(display,window,"guest-ax-disconnected"));
+    puts("GUEST_AX_NATIVE verified: scoped read-only text, roles and bounds, update, guest exit, new tree and disconnect retirement");
+    ok=1;
+done:
+    if (second) g_object_unref(second);
+    if (label) g_object_unref(label);
+    return ok;
+}
+
 static int guest_microphone_review(AtspiAccessible *app,const char *window,const char *command,
                                    const char *started,const char *sampled) {
     return guest_console_marker(app,window,command,started)&&
@@ -905,6 +977,7 @@ int main(int argc,char **argv) {
     int guest_storage=guest_reset||!strcmp(test_case,"guest-storage");
     int guest_desktop=guest_storage||!strcmp(test_case,"guest-desktop");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
+    int guest_ax=guest_desktop&&getenv("NEXAUI_CONTENT_TEST_GUEST_AX");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
     int browser_ax=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_AX");
@@ -1454,7 +1527,8 @@ int main(int argc,char **argv) {
                 drive("key","Escape")&&observe(app,"Sharing",1));
             puts("GUEST_USB_NATIVE verified: read-only disk and detached for held and fresh reads");
         }
-        CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
+        if (guest_ax) CHECK(guest_ax_flow(app,display,id));
+        else CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
         if (directory) {
             CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoke?"Files: revoked":NULL,network,microphone)&&

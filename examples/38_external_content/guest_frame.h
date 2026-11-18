@@ -56,6 +56,9 @@ typedef struct content_guest_clipboard {
    the physical UI request while preserving the whole guest display. */
 nx_result content_guest_frame(const char *path,content_request request,uint64_t sequence,
     unsigned kind,const content_guest_batch *input,void **out,size_t *bytes);
+/* Optional console wire form with a bounded AX packet before the PNG. */
+nx_result content_guest_read_ax_frame(const char *path,content_request request,uint64_t sequence,
+    unsigned kind,const content_guest_batch *input,void **out,size_t *bytes);
 /* The owner supplies a snapshot for the same full-frame guest window as the
    PNG, or NULL and zero when unavailable. Nodes use native guest pixels. */
 nx_result content_guest_frame_with_ax(const void *png,size_t png_bytes,const void *snapshot,size_t snapshot_bytes,

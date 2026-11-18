@@ -12,6 +12,8 @@
 #include "content_camera.h"
 #ifdef CONTENT_NATIVE_BROWSER
 #include "native_browser.h"
+#endif
+#if defined(CONTENT_NATIVE_BROWSER) || defined(CONTENT_NATIVE_GUEST)
 #include "native_browser_ax.h"
 #endif
 
@@ -876,7 +878,7 @@ static nx_result pdf_find_results(nx_context *context, const nx_font_collection 
 static int frame(nx_context *context, nx_window_info info, const nx_font_collection *fonts,
     content_surface *surface, double scale, enum phase phase, int focus, unsigned *action,
     nx_result *content_result, int *leased, int input_case, enum input_phase input_phase, int png_case, int pdf_case, int browser_case,
-    int guest_case, const guest_inspector *inspector,
+    int guest_case, int guest_ax, const guest_inspector *inspector,
     pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
     unsigned *linked_page, pdf_selection *selection, int *redraw,
     char link_address[CONTENT_PDF_URI_LIMIT+1u], pdf_url_view *preview, int can_open_url,
@@ -884,8 +886,9 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     int browser_ax_ready,content_ax_action *browser_action) {
     *action = 0; *leased = 0; *linked_page=0;
     *browser_action=(content_ax_action){0};
-#ifndef CONTENT_NATIVE_BROWSER
+#if !defined(CONTENT_NATIVE_BROWSER) && !defined(CONTENT_NATIVE_GUEST)
     (void)browser_ax_ready;
+    (void)guest_ax;
 #endif
     link_address[0]=0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
@@ -1003,8 +1006,10 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
             }
         }
     } else *page_view=content_camera_place(camera,desc.bounds,fitted);
-#ifdef CONTENT_NATIVE_BROWSER
-    if (browser_case && *leased && browser_ax_semantics(context,surface,&desc,browser_ax_ready,browser_action)!=NX_OK)
+#if defined(CONTENT_NATIVE_BROWSER) || defined(CONTENT_NATIVE_GUEST)
+    int guest_attached=guest_ax&&phase==SCALED_READY&&input_phase!=INPUT_DISCONNECTED&&input_phase!=INPUT_DISCONNECTING;
+    if ((browser_case||guest_attached)&&*leased&&
+        browser_ax_semantics(context,surface,&desc,browser_case&&browser_ax_ready,browser_action)!=NX_OK)
         return 0;
 #endif
     if (pdf_case && *leased && pdf_text_semantics(context,surface,&desc,text_view,selection,window,
@@ -1052,6 +1057,7 @@ int main(void) {
     int guest_reset=!strcmp(test_case,"guest-reset");
     int guest_desktop=guest_reset||!strcmp(test_case,"guest-desktop")||!strcmp(test_case,"guest-storage");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
+    int guest_ax=guest_desktop&&getenv("NEXAUI_CONTENT_TEST_GUEST_AX");
     const char *guest_socket=guest_case?getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET"):NULL;
 #ifndef CONTENT_NATIVE_GUEST
     if (guest_case) return 2;
@@ -1140,7 +1146,7 @@ int main(void) {
         (pdf_case&&nx_text_field_create("",0,4096,&query)!=NX_OK)||
         nx_software_view_open(window,&software)!=NX_OK||
         native_worker_open(&worker,exchange,encoded_dir,pdf_renderer,pdf_reader,pdf_link_reader,uri_launcher,export_path,
-            document.gallery,browser_socket,browser_ax_case,guest_socket)) goto done;
+            document.gallery,browser_socket,browser_ax_case,guest_socket,guest_ax)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
 #ifdef CONTENT_NATIVE_GUEST
@@ -1377,7 +1383,8 @@ int main(void) {
         ++frames;
         if ((!guest_desktop&&frames>((browser_pointer_case||guest_case)?220u:150u))||
             !frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
-            &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,guest_case,&inspector,&text_view,window,query,&document,
+            &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,guest_case,guest_ax,
+            &inspector,&text_view,window,query,&document,
             &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view,
             browser_status,browser_enter,browser_ax_case&&phase==SCALED_READY&&!state.working&&!state.pending,
             &browser_action)) goto done;
