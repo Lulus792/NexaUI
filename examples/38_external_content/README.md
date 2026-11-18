@@ -399,8 +399,21 @@ would be replaced, and the external-write grant status. Escape and
 Close dismiss the preview and restore focus to its button. This
 workflow only reads the scope.
 
-Production disk ownership, reset execution and recovery, sharing
-grants and the guest's accessibility tree remain open.
+Use `--case guest-reset` with the same QEMU arguments and put `mke2fs`
+and `debugfs` on the host path. Rebuild the initramfs with the current
+`guest_desktop_init.sh` so the independent boot can report the baseline.
+After **Disconnect**, open **Reset…** and activate **Restore checkpoint**.
+The owner checks the displayed scope again, stops and joins QEMU,
+retains the previous disk, and installs a byte-verified copy of the
+baseline. The harness creates both disk images in its own temporary
+directory. It drops the first success reply to exercise the read-only
+status request. Reopening the dialog shows the observed result.
+
+The harness reads the guest's saved file from the retained disk and
+boots the restored disk with read-only access. It checks that the file
+is absent, the guest read the device, and the checkpoint hash stayed
+the same. Production disk ownership, recovery across owner restarts,
+sharing grants and the guest's accessibility tree remain open.
 
 ## Optional PDF producer on Linux
 

@@ -1298,3 +1298,48 @@ values, archive members and boot artifacts.
 Product-owned disk enrollment across app launches, applying a reset,
 recovery after uncertain operations, and reviewing concrete external
 write grants remain open.
+
+## Native QEMU confirmed checkpoint reset, 2026-11-18
+
+Consumer and installed SDK `841d5620accdcc5c5ce5222f614e5333b5afdb08`
+were built from the same Git archive, SHA-256
+`4705f12a356910af8fc2213a7b52080dcb86ad687ec6935802df97ee56fb2ca5`.
+The test used QEMU 11.0.3, Alpine 3.24.4, Weston 14.0.2 and Clang
+22.1.3. The guest initramfs contains the matching executable `/init`
+from that revision. The boot artifacts and package manifest are tracked
+by the local receipt.
+
+The `guest-reset` test creates a fresh 16 MiB ext4 work disk and baseline.
+After console disconnect, the host dialog gives the user the environment
+ID, checkpoint SHA-256, affected disk and consequences. Keyboard
+confirmation sends the exact environment and checkpoint to the owner.
+The owner checks the active disk and immutable baseline, stops and joins
+QEMU, retains the old disk, and atomically installs the checked copy.
+The test drops the success reply. A bounded status request observes the
+applied result, and reopening the dialog displays it again. Each run
+records one disk replacement and one status request.
+
+The independent AT-SPI peer verified keyboard confirmation, result
+reading, and focus restoration on dismissal. The rendered preview and
+outcome text reached at least 12.85:1 in both captures. `debugfs` read
+the exact 28-byte guest-written file from the retained disk. A new QEMU
+boot mounted the installed image read-only, observed the original
+baseline, read 384,000 device bytes and wrote zero. The restored disk
+matched the baseline SHA-256 before and after that boot.
+
+The exact revision passed 54 CTests across four build profiles, seven
+private native test runs and 25 focused owner and wire checks. Reset
+passed in Release and with AddressSanitizer, UndefinedBehaviorSanitizer
+and leak detection. The default, PNG, VGA, desktop and storage scenarios
+also passed. WSL I/O errors blocked the previous runner. Retained setup
+logs show the isolated Alpine test root and the retries after resolving
+its runtime library and D-Bus environment failures. The previous full
+optional-engine matrix was outside the scope of this checkpoint.
+
+The local archive `nexaui-qemu-reset-apply455.tar.gz` has SHA-256
+`13236ab447856cc4cb0848b2a6c480441d051e109909ccb6051d156148163bdf`.
+`qemu-reset-apply455-final.json` lists the member hashes, boot artifacts,
+tested profiles, bound scopes and independent readback measurements.
+
+Product-owned disk enrollment, durable recovery across owner restarts,
+individual external write grants and guest accessibility remain open.
