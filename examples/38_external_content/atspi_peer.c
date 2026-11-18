@@ -901,8 +901,10 @@ static int guest_ax_flow(AtspiAccessible *app,Display *display,Window outer,cons
     CHECK(observe(app,ready,0));
     CHECK((label=find(app,ready,0))&&pdf_text_is(label,ready)&&guest_ax_tree(app,label)&&
         guest_video(app,1)&&input_chrome(display,window,"guest-ax-ready"));
-    CHECK(guest_ax_key(app,"F8","NEXAUI_GUEST_AX_UPDATED")&&observe(app,updated,0)&&
-        !state(label,ATSPI_STATE_DEFUNCT)&&pdf_text_is(label,updated)&&input_chrome(display,window,"guest-ax-updated"));
+    CHECK(guest_ax_key(app,"F8","NEXAUI_GUEST_AX_UPDATED"));
+    CHECK(observe(app,updated,0));
+    CHECK(!state(label,ATSPI_STATE_DEFUNCT)&&pdf_text_is(label,updated));
+    CHECK(input_chrome(display,window,"guest-ax-updated"));
     if (compose_view) CHECK(guest_view_compose(app));
     if (pointer_view) CHECK(guest_view_pointer(app,display,outer,window));
     CHECK(guest_ax_key(app,"F9","NEXAUI_GUEST_AX_APP_EXITED")&&guest_ax_retired(app,label));
