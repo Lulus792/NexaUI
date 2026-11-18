@@ -723,3 +723,45 @@ The local receipt is `png-viewer442-final.json`.
 
 Image collections and thumbnails, additional photo formats and metadata,
 and physical and human assistive acceptance remain open.
+
+## PNG gallery checkpoint, 2026-11-18
+
+Consumer `f7aa9260a63b05a4c4050d0f1ab26f59c2b39488` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803`. An explicit manifest admits an
+ordered collection of up to 256 regular PNG candidates. Each accepted
+entry has a bounded UTF-8 leaf filename and a pinned descriptor. The
+worker checks file size and timestamps before and after reading. The
+manifest is released and the descriptors remain owned through worker join.
+
+The image gallery and PDF pages share the existing three-item thumbnail
+cache. Each cache key binds collection generation, raster revision, size
+and item. Reopening a group reuses its admissions. Changing density or
+moving to a different group retires the old thumbnails. The UI draws
+card chrome from the current theme. The worker decodes the selected PNG,
+and the viewer adopts the new surface only on successful completion.
+
+The native workflow opens a seven-file collection. It verifies selected
+state and focus return, then reopens the same page and selects a corrupt
+image. The last accepted raster stays visible. Changing to 2× backing
+recovers from the old failure and refreshes the thumbnails. The peer
+advances through both remaining groups and opens `Küste.png` with Enter.
+Each profile records three thumbnail attempts at 104 × 80 and seven at
+208 × 160, including the expected corrupt placeholder at each density.
+Three main frames are published and disposed on close.
+
+Independent readback verifies the complete first, retained and final
+viewports. The two available thumbnail regions match the expected PNG
+pixels at both densities. The earlier PDF thumbnail and page captures
+remain byte-identical. The gallery CTest checks order, Unicode names,
+changed pinned files, duplicate names and rejected path escapes and
+symlinks.
+
+The main matrix passes 65 CTests and 55 private Wayland runs on Alpine
+with Clang 22.1.3. A PNG-only build adds 13 CTests and one native run.
+Local archive `nexaui-png-gallery444.tar.gz` binds exact source, SDK
+receipt, manifest, images, logs and captures. Readback verified SHA-256
+`97ae02e0b936148eac160a521e25be8bfc0fcffdc366e487e7efc79748c58dbe`.
+The local receipt is `png-gallery444-final.json`.
+
+Product collection selection, live filesystem refresh, more photo codecs,
+and human assistive acceptance remain open.

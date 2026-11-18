@@ -251,6 +251,25 @@ resize and sequence. Fit image uses the fitted raster.
 Use `--case png --png-viewer` to check a landscape image, a truncated PNG,
 and a portrait with fine stripes and straight alpha at both backing sizes.
 
+### PNG gallery
+
+The host can supply an ordered collection through `gallery.txt` in its
+selected directory. The file contains one distinct UTF-8 filename per
+line, with up to 256 regular files. The loader pins the admitted file
+descriptors so the worker uses the same entries for previews and viewing.
+It rejects a file whose observed size or timestamps changed since
+admission when that entry is decoded again.
+
+**Gallery** shows three previews at a time in the host's order. Tab reaches
+the image cards and group controls. Enter opens the focused image. Escape
+returns focus to **Gallery**. The cards expose full filenames, selected
+state and preview availability through AT-SPI. A decode failure leaves
+the last accepted image visible and the gallery available for a new choice.
+The same group reuses its cache until the group, collection or raster
+density changes.
+
+Use `--case png --png-gallery` to run the seven-file native workflow.
+
 ## Optional PDF producer on Linux
 
 Configure with `-DNEXAUI_CONTENT_BUILD_PNG=ON` and
