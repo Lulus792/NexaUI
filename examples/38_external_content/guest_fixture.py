@@ -1,5 +1,6 @@
 """Private QEMU guest owner for the native console workflow."""
 
+from contextlib import ExitStack
 import json
 import os
 from pathlib import Path
@@ -14,6 +15,7 @@ import sys
 import tempfile
 import time
 
+from guest_export import GuestExport, private_export_identity
 from guest_reset import (RESET_APPLIED, RESET_REJECTED, RESET_SCOPE_BYTES, RESET_UNKNOWN, RESET_UNREQUESTED,
                          WORK_DISK_BYTES, image_digest, image_identity, image_snapshot, observe_reset,
                          record_reset, sync_directory)
@@ -39,7 +41,7 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
-                 reset_enabled=False, file_share=None, revoke_share=False, grant_share=False):
+                 reset_enabled=False, file_share=None, revoke_share=False, grant_share=False, export=None):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -48,6 +50,9 @@ class Guest:
         self.reset_state = RESET_UNREQUESTED
         self.close_result = None
         self.file_share = file_share
+        self.export = export
+        if self.export and (not grant_share or self.export.source!=file_share):
+            raise ValueError('The file backend requires the private runtime grant')
         self.grant_share = grant_share
         self.revoke_share = revoke_share or grant_share
         self.share_state = SHARE_OFFERED if grant_share else SHARE_ACTIVE
@@ -61,6 +66,8 @@ class Guest:
             if len(self.share_path)>SHARE_PATH_LIMIT or not re.fullmatch(rb'/[a-zA-Z0-9_./-]+',self.share_path):
                 raise ValueError('Invalid private export path')
             self.share_identity = self.export_identity()
+            if self.export and self.export.source_identity!=self.share_identity:
+                raise ValueError('The private export directory changed during setup')
         if self.checkpoint:
             if not (self.desktop and self.disk and writable):
                 raise ValueError('Reset preview requires an owned writable disk')
@@ -95,8 +102,9 @@ class Guest:
                         'file':{'driver':'file','filename':str(disk)}}
                 boot_options += ['-blockdev',json.dumps(node),'-device','virtio-blk-pci,drive=work,id=work-disk']
             if self.file_share:
+                export_path = self.export.mount if self.export else self.file_share
                 boot_options += [
-                    '-fsdev',f'local,id={FILE_EXPORT_ID},path={self.file_share},security_model=mapped-xattr,writeout=immediate']
+                    '-fsdev',f'local,id={FILE_EXPORT_ID},path={export_path},security_model=mapped-xattr,writeout=immediate']
                 if not grant_share:
                     device = f'virtio-9p-pci,id={FILE_EXPORT_ID},fsdev={FILE_EXPORT_ID},mount_tag={FILE_EXPORT_ID}'
                     if revoke_share:
@@ -299,10 +307,7 @@ class Guest:
         return struct.pack('>4sBBHQQQQ',b'NXR1',state,flags,cpus,ram,capacity,read,written)
 
     def export_identity(self):
-        info = self.file_share.stat(follow_symlinks=False)
-        if not stat.S_ISDIR(info.st_mode) or stat.S_IMODE(info.st_mode)!=0o700 or info.st_uid!=os.geteuid():
-            raise ValueError('File sharing requires the private export directory')
-        return info.st_dev, info.st_ino
+        return private_export_identity(self.file_share)
 
     def file_share_scope(self):
         if not self.file_share:
@@ -319,6 +324,15 @@ class Guest:
         return self.share_path
 
     def observe_share_state(self):
+        if self.export:
+            backend = self.export.status()
+            if backend=='cut off' and self.share_requested:
+                if self.share_state!=SHARE_REVOKED:
+                    print('GUEST_SHARE_BACKEND_CUTOFF',flush=True)
+                self.share_state = SHARE_REVOKED
+                return self.share_state
+            if backend!='running':
+                return SHARE_UNKNOWN
         if self.share_state!=SHARE_ACTIVE:
             devices = self.command('qom-list',path='/machine/peripheral')
             present = any(item['name']==FILE_EXPORT_ID for item in devices)
@@ -375,7 +389,7 @@ class Guest:
             return b'U'
         print(f'GUEST_SHARING files={path.decode() or "unavailable"}',flush=True)
         if self.file_share and self.revoke_share:
-            return self.sharing_reply(SHARE_ACTIVE)
+            return self.sharing_reply(self.share_state)
         return struct.pack('>4sI',b'NXS1',len(path))+path
 
     def revoke_files(self, environment):
@@ -387,12 +401,18 @@ class Guest:
             self.file_share_scope()
         except (OSError,ValueError,RuntimeError,EOFError,KeyError):
             return b'U'
+        if self.share_state!=SHARE_ACTIVE:
+            return self.sharing_reply(self.share_state)
         self.share_state = SHARE_UNKNOWN
         self.share_deleted = False
         try:
-            self.command('device_del',id=FILE_EXPORT_ID)
+            if self.export:
+                self.export.cut_off()
+            else:
+                self.command('device_del',id=FILE_EXPORT_ID)
             self.share_state = SHARE_PENDING
-            print(f'GUEST_SHARE_REVOKE_REQUEST device={FILE_EXPORT_ID}',flush=True)
+            mechanism = 'backend' if self.export else f'device={FILE_EXPORT_ID}'
+            print(f'GUEST_SHARE_REVOKE_REQUEST {mechanism}',flush=True)
         except (OSError,ValueError,RuntimeError,EOFError,KeyError):
             pass
         return self.sharing_reply(self.share_state)
@@ -574,11 +594,16 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                 Path(disk)!=address.parent/'work.img' or Path(checkpoint)!=address.parent/'baseline.img'):
             raise ValueError('Reset requires the private test harness images')
     file_share = address.parent/'host-export' if reset_mode and os.environ.get('NEXAUI_CONTENT_TEST_FILE_SHARE')=='1' else None
-    with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
+    grant = bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_GRANT')=='1')
+    bindfs = os.environ.get('NEXAUI_CONTENT_TEST_FILE_BINDFS')
+    if bindfs and not grant:
+        raise ValueError('Private file backend requires a runtime grant')
+    with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp, ExitStack() as services:
+        export = services.enter_context(GuestExport(bindfs,file_share,Path(temp)/'file-export')) if bindfs else None
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
                       reset_enabled=bool(reset_mode),file_share=file_share,
                       revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'),
-                      grant_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_GRANT')=='1'))
+                      grant_share=grant,export=export)
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()
@@ -601,7 +626,7 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                             state = guest.apply_reset(payload) if kind==9 else guest.reset_status(payload)
                             if kind==9 and reset_mode=='restart-before-reply' and state==RESET_APPLIED:
                                 print(f'GUEST_RESET_OWNER_EXIT pid={os.getpid()}',flush=True)
-                                os._exit(RESET_RESTART_EXIT)
+                                return RESET_RESTART_EXIT
                             if kind==9 and drop_response and state==RESET_APPLIED:
                                 drop_response=False
                                 print('GUEST_RESET_RESPONSE dropped',flush=True)
@@ -716,6 +741,6 @@ if __name__ == '__main__':
     elif len(args)==8 and args[-1]=='restart-before-reply':
         supervise_reset_restart(args)
     elif 4<=len(args)<=8 or (len(args)==9 and args[7]=='restart-before-reply'):
-        serve(*args[:3], Path(args[3]), *args[4:8], listener_fd=int(args[8]) if len(args)==9 else None)
+        sys.exit(serve(*args[:3], Path(args[3]), *args[4:8], listener_fd=int(args[8]) if len(args)==9 else None))
     else:
         raise SystemExit('Invalid guest fixture arguments')

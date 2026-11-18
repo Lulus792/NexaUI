@@ -1208,7 +1208,9 @@ int main(int argc,char **argv) {
         }
         int revoke=getenv("NEXAUI_CONTENT_TEST_FILE_REVOKE")!=NULL;
         int grant=getenv("NEXAUI_CONTENT_TEST_FILE_GRANT")!=NULL;
+        int cutoff=getenv("NEXAUI_CONTENT_TEST_FILE_BINDFS")!=NULL;
         CHECK((!revoke&&!grant)||directory);
+        CHECK(!cutoff||(grant&&revoke));
         CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,grant?"Files: access off":NULL)&&
             input_chrome(display,id,"guest-sharing")&&drive("key","Escape")&&observe(app,"Sharing",1));
         unsigned long long reads=0, before=0, after=0;
@@ -1248,6 +1250,10 @@ int main(int argc,char **argv) {
         }
         CHECK(drive("key","n")&&drive("key","e")&&drive("key","x")&&drive("key","a")&&drive("key","Return"));
         CHECK(browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-typed"));
+        if (cutoff) {
+            CHECK(guest_command("hold")&&browser_pixel(display,outer,156,43,0x0000a8u)&&
+                input_chrome(display,id,"guest-export-held"));
+        }
         CHECK(drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
             observe(app,"Guest input released.",0)&&observe(app,"Close",1));
         CHECK(drive("mouseup","1")&&drive("keyup","shift")&&drive("keyup","ctrl"));
@@ -1258,18 +1264,25 @@ int main(int argc,char **argv) {
             CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL)&&
                 focus(app,"Revoke file access")&&drive("key","Return")&&read_guest_sharing(app,directory,pending)&&
                 input_chrome(display,id,"guest-revoke-pending"));
-            CHECK(focus(app,"Check sharing status")&&drive("key","Return")&&read_guest_sharing(app,directory,pending)&&
-                drive("key","Escape")&&observe(app,"Sharing",1));
-            CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
-                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("detach")&&
-                browser_pixel(display,outer,156,43,0x0000a8u)&&release_guest_keys(app));
+            CHECK(focus(app,"Check sharing status")&&drive("key","Return")&&
+                read_guest_sharing(app,directory,cutoff?revoked:pending)&&drive("key","Escape")&&observe(app,"Sharing",1));
+            if (!cutoff) {
+                CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+                    observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("detach")&&
+                    browser_pixel(display,outer,156,43,0x0000a8u)&&release_guest_keys(app));
+            }
             CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,revoked)&&
                 input_chrome(display,id,"guest-revoked")&&drive("key","Escape")&&observe(app,"Sharing",1));
             CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
-                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("probe")&&
+                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command(cutoff?"check":"probe")&&
                 browser_pixel(display,outer,156,43,0x00a800u)&&release_guest_keys(app));
             CHECK(read_guest_export(directory,&after_probe)&&prior.st_dev==after_probe.st_dev&&prior.st_ino==after_probe.st_ino);
-            puts("GUEST_REVOKE_NATIVE verified: pending, confirmed removal, guest denied and prior file retained");
+            if (cutoff) {
+                char late[128];
+                snprintf(late,sizeof(late),"%s/late.txt",directory);
+                CHECK(access(late,F_OK)!=0&&errno==ENOENT&&input_chrome(display,id,"guest-export-cutoff"));
+                puts("GUEST_CUTOFF_NATIVE verified: retained mount and handle, denied writes and unchanged host file");
+            } else puts("GUEST_REVOKE_NATIVE verified: pending, confirmed removal, guest denied and prior file retained");
         }
         CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));

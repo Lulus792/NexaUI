@@ -139,7 +139,7 @@ while IFS= read -r line; do
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
     elif [ -f /run/grantable-export ] && [ "$line" = attach ]; then
         tries=0
-        until timeout 3 mount -t 9p -o trans=virtio,version=9p2000.L,nodev,nosuid,noexec nexaui-export /mnt/export; do
+        until timeout 3 mount -t 9p -o trans=virtio,version=9p2000.L,cache=none,nodev,nosuid,noexec nexaui-export /mnt/export; do
             tries=$((tries + 1))
             if [ "$tries" -ge 5 ]; then break; fi
             sleep .2
@@ -150,6 +150,25 @@ while IFS= read -r line; do
             paint 44 'Guest mounted the host export'
         else
             paint 41 'Guest could not mount the host export'
+        fi
+    elif [ -f /run/file-export ] && [ "$line" = hold ]; then
+        if [ -f /mnt/export/guest-export.txt ]; then
+            exec 3<>/mnt/export/guest-export.txt
+            if IFS= read -r saved <&3 && [ "$saved" = 'NexaUI guest export' ]; then
+                : >/run/export-held
+                printf '%s\n' 'NEXAUI_FILE_SHARE held' >/dev/ttyS0
+                paint 44 'Guest kept its file handle and mount'
+            fi
+        fi
+    elif [ -f /run/export-held ] && [ "$line" = check ]; then
+        if grep -q ' /mnt/export .* - 9p nexaui-export ' /proc/self/mountinfo &&
+            [ -L /proc/self/fd/3 ] &&
+            ! (printf '%s\n' 'Unexpected write through retained handle' >&3) &&
+            ! (printf '%s\n' 'Unexpected new file' >/mnt/export/late.txt); then
+            printf '%s\n' 'NEXAUI_FILE_SHARE cutoff' >/dev/ttyS0
+            paint 42 'Guest writes denied with the mount held'
+        else
+            paint 41 'Guest retained access or lost its mount'
         fi
     elif [ -f /run/revocable-export ] && [ "$line" = detach ]; then
         umount /mnt/export || continue
