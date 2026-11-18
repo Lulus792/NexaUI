@@ -354,8 +354,10 @@ outside the guest image. **Disconnect** drains guest input and keeps
 the last image while QEMU stays running. The owner joins QEMU on
 fixture close.
 
-The host advertises clipboard, file, network, microphone and device
-sharing as unavailable in both workflows.
+The VGA fixture advertises host sharing as unavailable. In the desktop
+fixture, **Sharing** reads the VM owner's current clipboard, files,
+network, microphone and device sharing status. Escape and Close return
+focus to the Sharing button.
 
 Use `--case guest-desktop` with the same QEMU arguments and add
 `--guest-kernel /absolute/path/to/vmlinuz` and
@@ -424,9 +426,23 @@ reads and refuses reset requests. A missing receipt or an inconsistent
 image yields an unknown result.
 
 Run `python3 examples/38_external_content/test_guest_reset.py -v` on
-Linux for the receipt and replacement-owner checks. Production disk
-enrollment, recovery when storage is unavailable, sharing grants and
-the guest's accessibility tree remain open.
+Linux for the receipt and replacement-owner checks.
+
+Add `--guest-file-share` to the reset case to authorize one writable
+VirtIO 9p export when starting the private test guest. Rebuild the
+initramfs from the current script with the Alpine kernel's `9p` and
+`9pnet_virtio` modules. The harness creates the export inside its private
+temporary directory. The Sharing dialog reads the exact host directory
+from the owner and displays each unavailable channel. The reset review
+shows which host directory's files will stay. It checks the active
+export identity again before committing the reset.
+
+The guest writes a file in that directory. An independent AT-SPI peer
+checks the before and after bytes and file identity, and the harness
+checks the file again after the separate read-only boot. The temporary
+directory is collected at the end of the fixture. Production disk
+enrollment, recovery when storage is unavailable, interactive grants and
+revocation, the other sharing channels and guest accessibility remain open.
 
 ## Optional PDF producer on Linux
 

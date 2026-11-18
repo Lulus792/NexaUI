@@ -1389,3 +1389,54 @@ harness remain available. Product disk enrollment across UI launches,
 recovery across host or storage failure, external sharing grants and
 guest accessibility remain open. The optional Browser/PDF/JPEG matrix
 has separate prior evidence.
+
+## Native QEMU file sharing and reset scope, 2026-11-18
+
+Consumer and Wayland-only SDK source
+`ae96d5d92c5b61ed1de88e04d0cdab9db6bc9d74` were built from Git archive
+SHA-256 `25da44e4b054081c450215c6cab71240d91af95c53ecf634ea989353f369a946`.
+The guest boot uses the same Alpine kernel and an updated initramfs with
+the matching `/init` and the `9p` and `9pnet_virtio` modules.
+
+`--case guest-reset --guest-file-share` grants the private test guest one
+writable, harness-created directory at launch. QEMU 11.0.3 exports it as
+a VirtIO 9p device. The owner checks the live device tag and directory
+identity when reading permissions and again before restoring the disk.
+The owner generates the environment ID for the immutable launch scope.
+The desktop Sharing dialog shows each channel and the exact granted host
+directory. The reset preview identifies that directory and explains what
+happens to its files. [QEMU file exports](https://www.qemu.org/docs/master/system/invocation.html)
+[Linux VirtIO 9p mount](https://docs.kernel.org/filesystems/9p.html)
+
+The independent AT-SPI peer opened Sharing by keyboard, read the five
+channel rows and the exact path, and checked focus restoration. It read
+the same grant after console disconnect and in the reset review. The
+guest used the 9p mount to write its host file. The peer compared the
+bytes and file identity before and after restore. A replacement owner
+answered the pending status read, and a separate QEMU boot confirmed
+the restored work disk with read-only access. The harness verified the
+external file again after that boot.
+
+Release and ASan/UBSan with leak detection both passed the file-sharing
+workflow. The measured contrast of the six sharing rows and the path
+in the reset preview was 12.85:1 in both captures. The same revision
+passed 54 CTests across four profiles, ten native test runs and 43
+focused checks. The focused checks include malformed sharing packets,
+legacy reset preview compatibility, a wrong live device tag, and
+replacement or permission changes to the export directory. Native
+runs with the default no-grant profile verify the individual
+unavailable states and the original reset, desktop and storage behavior.
+
+The initial retained synthetic owner probe needed the added file-share
+field initialized. An unshared graphical guest also timed out before
+readiness once. The isolated retry passed with the same binaries and
+boot artifacts. Both failed logs are included. The local bundle
+`nexaui-qemu-file-share457.tar.gz` has SHA-256
+`11b8849365dbcf7f8a277b2df9ee51a16f2f2e6669ef0db147f8b2660730ce0c`.
+`qemu-file-share457-final.json` records all member hashes, exact
+scope, artifact hashes, independent readback and contrast results.
+
+Aetheri's product authority, runtime grants and revocation, the other
+sharing channels and the guest's accessibility tree remain open. The
+private launch grant and reset evidence are available for consumer
+integration with the existing owner model.
