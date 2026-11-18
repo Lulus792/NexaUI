@@ -866,3 +866,61 @@ The product engine decision, web navigation and permissions, body input and
 IME candidate geometry, engine accessibility subtree mapping, incremental
 damage and GPU interop remain open. This fixture exercises host keyboard
 and AT-SPI controls around browser-rendered pixels.
+
+## Native browser text and IME checkpoint, 2026-11-18
+
+Consumer `b98aa6d0e7bc3d402089136f42d0d3013e11851a` uses installed SDK
+`85f5d1cab97ff4488062b80d0149dc4efddcb803` and Chromium Headless Shell
+156.0.8078.79. Example 38 opts into native Wayland IME transaction
+boundaries. The host admits input after Chromium confirms focus on its
+editable element and publishes a matching frame and caret. Chromium
+owns the editor state. The app advertises the editor identity and
+revision with empty surrounding text. The host batches complete native
+commits and checks their editor identity, revision and flags.
+
+The worker accepts up to eight queued edit operations and 256 UTF-8
+bytes per operation. It forwards composition separately from commit.
+The Chromium adapter converts preedit offsets to UTF-16 for DevTools
+and returns the CSS caret with the updated frame. The host validates
+that reply against the accepted frame sequence and viewport, adds
+the viewport offset and advertises the logical rectangle to Wayland.
+[DevTools IME commands](https://chromedevtools.github.io/devtools-protocol/tot/Input/#method-imeSetComposition)
+
+An independent native peer enters the page with Return, types `a`
+and uses Weston Compose to produce `ü`. Chromium reports a live
+preedit while the committed value remains `a`, then reports the exact
+committed value `aü`. The Wayland trace records both commits and
+the changing candidate rectangles for the same 448 × 208 CSS view
+at 2× backing. The peer verifies the host shortcut after a commit,
+re-enters the same editor, and activates **Release page** through
+AT-SPI during a second composition. Chromium blurs and cancels the
+draft. Focus returns to the host Close control and a later native key
+leaves the engine's committed value intact.
+
+Independent guard probes exercise a complete multi-scalar commit, a
+stale revision, unsupported deletion, rejected or filtered input, an
+oversized commit and a partial commit interrupted by host release.
+The earlier frame transfer checks still cover the deadline, size and
+format bounds.
+
+The exact-source matrix passes 81 CTests, 65 native Wayland runs,
+10 input guard probes and 14 frame transfer probes on Alpine 3.24,
+Clang 22.1.3 and Weston 14.0.2. The browser editor case passes in
+release, shared SDK and ASan/UBSan profiles. Readback confirms six
+candidate rectangles at the Wayland protocol boundary, two
+deactivations and both expected commits in every profile. The peer
+captures the preedit and committed glyphs, and the independent
+comparison locates their pixel differences inside the browser editor.
+Each run closes with 12 publications and 12 disposals.
+
+Local archive `nexaui-browser-ime447.tar.gz` binds the source, installed
+SDK and package receipts, native logs, wire traces, captures and guard
+probes. Readback verified SHA-256
+`b7c03f9573345dcc54acf6211c8fb2857cf72ee611ad6f4d1a5d8605005afd50`.
+The local receipt is `browser-ime447-final.json`.
+
+The fixture retains one edit target and tests
+Wayland text-input v1 through Weston simple-IME. Page pointer and
+wheel routing, non-text key editing commands, surrounding deletion,
+text-input v3 acceptance for this integration, the engine accessibility
+subtree, arbitrary navigation and physical IME review remain open.
