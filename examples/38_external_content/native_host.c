@@ -24,11 +24,11 @@ static const char *input_name(enum input_phase phase) {
         "Input active: Ctrl+Shift+F12 exits.","Input released.","Input focus lost.","Input disconnected; pixels retained."};
     return names[(unsigned)phase];
 }
-static const char *guest_input_name(enum input_phase phase) {
+static const char *guest_input_name(enum input_phase phase,int extended_pointer) {
     static const char *names[]={"Guest running. Keyboard and three-button mouse.","Release keys and buttons to enter guest.",
         "Guest input active: Ctrl+Shift+F12 exits.","Guest input released.","Guest input focus lost.",
         "Console disconnected. Guest retained.","Disconnecting console. Releasing guest input."};
-    return names[(unsigned)phase];
+    return phase==INPUT_IDLE&&extended_pointer?"Guest running. Keyboard, wheel and five-button mouse.":names[(unsigned)phase];
 }
 enum phase { PREPARING, WAITING, REPLACED, RELEASED, OLD_REJECTED, FRESH_PENDING, READY,
              BAD_PENDING, BAD_REJECTED, RECOVERY_PENDING, RECOVERED, SCALED_WAIT, SCALED_PENDING,
@@ -112,7 +112,7 @@ enum { CLIPBOARD_IDLE, CLIPBOARD_READING, CLIPBOARD_READING_GUEST, CLIPBOARD_REV
 typedef struct guest_inspector {
     uint64_t ticket, clipboard_token;
     unsigned open, request, clipboard_phase;
-    int enabled, reset_enabled, can_apply, reset_started, pending, clipboard_import;
+    int enabled, reset_enabled, can_apply, reset_started, pending, clipboard_import, extended_pointer;
     content_guest_reset_preview scope;
     content_guest_sharing share_scope;
     content_guest_clipboard clipboard;
@@ -925,7 +925,8 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     int pages_visible=(pdf_case||gallery)&&pdf_can_navigate(phase)&&(document->pages||document->properties.enabled||document->export_enabled)&&
         info.width>=480&&info.height>=248&&
         !selection->active;
-    const char *guest_status=inspector->reset_started?"Console disconnected.":guest_input_name(input_phase);
+    const char *guest_status=inspector->reset_started?"Console disconnected.":
+        guest_input_name(input_phase,inspector->extended_pointer);
     if (nx_semantics_add(context, &root, NULL) != NX_OK || label(context, fonts, 2,
         input_controls?(guest_case?guest_status:input_name(input_phase)):status,
         (nx_rect){16,12,info.width-(pages_visible?262:zoom_visible?201:inspector->enabled?128:32),24},
@@ -1058,6 +1059,8 @@ int main(void) {
     int guest_desktop=guest_reset||!strcmp(test_case,"guest-desktop")||!strcmp(test_case,"guest-storage");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
     int guest_ax=guest_desktop&&getenv("NEXAUI_CONTENT_TEST_GUEST_AX");
+    const char *pointer_profile=getenv("NEXAUI_CONTENT_TEST_GUEST_POINTER");
+    int guest_pointer=guest_desktop&&pointer_profile&&!strcmp(pointer_profile,"1");
     const char *guest_socket=guest_case?getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET"):NULL;
 #ifndef CONTENT_NATIVE_GUEST
     if (guest_case) return 2;
@@ -1101,11 +1104,11 @@ int main(void) {
     nx_font *font=NULL; nx_font_collection *fonts=NULL;
     content_input *input=NULL; native_input_receiver receiver={.generation=1};
 #ifdef CONTENT_NATIVE_GUEST
-    native_guest_input guest={.ledger.generation=1};
+    native_guest_input guest={.ledger.generation=1,.extended_pointer=guest_pointer};
 #endif
     int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
     guest_inspector inspector={.enabled=guest_desktop,.reset_enabled=guest_reset||!strcmp(test_case,"guest-storage"),
-        .can_apply=guest_reset};
+        .can_apply=guest_reset,.extended_pointer=guest_pointer};
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
 #ifdef CONTENT_NATIVE_BROWSER
     browser_editor editor={.pointer_enabled=browser_pointer_case};

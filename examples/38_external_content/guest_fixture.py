@@ -28,7 +28,8 @@ from guest_reset import (RESET_APPLIED, RESET_REJECTED, RESET_SCOPE_BYTES, RESET
 PNG_LIMIT = 4 * 1024 * 1024
 INPUT_LIMIT = 128
 INPUT_RECORD_SIZE = 5
-INPUT_KEY, INPUT_BUTTON, INPUT_MOTION = 1, 2, 3
+INPUT_KEY, INPUT_BUTTON, INPUT_MOTION, INPUT_WHEEL = 1, 2, 3, 4
+WHEEL_LIMIT = 7
 QMP_LIMIT = 16384
 DESKTOP_BOOT_TIMEOUT = 120
 RESET_RESTART_EXIT = 86
@@ -43,11 +44,16 @@ KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_
                   19:'end', 20:'pgup', 21:'pgdn', 22:'meta_l'})
 KEY_CODES.update({63+n:f'f{n}' for n in range(1,13)})
 BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
+EXPLORER_BUTTONS = {**BUTTONS, 4:('side',b''), 5:('extra',b'')}
+EXPLORER_CODES = (b'Input device name: "ImExPS/2 Generic Explorer Mouse"',
+                  b'Event code 275 (BTN_SIDE)', b'Event code 276 (BTN_EXTRA)',
+                  b'Event code 6 (REL_HWHEEL)', b'Event code 8 (REL_WHEEL)')
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
                  reset_enabled=False, file_share=None, revoke_share=False, grant_share=False, export=None,
-                 clipboard=False, network=False, microphone=False, usb=False, accessibility=False):
+                 clipboard=False, network=False, microphone=False, usb=False, accessibility=False,
+                 extended_pointer=False):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -67,6 +73,9 @@ class Guest:
             raise ValueError('USB sharing requires the desktop guest')
         if accessibility and not self.desktop:
             raise ValueError('Accessibility transport requires the desktop guest')
+        if extended_pointer and not self.desktop:
+            raise ValueError('Extended pointer input requires the desktop guest')
+        self.extended_pointer = extended_pointer
         self.accessibility = GuestAccessibility(root) if accessibility else None
         self.clipboard = GuestClipboard(root) if clipboard else None
         self.network = GuestNetwork(root) if network else None
@@ -207,6 +216,8 @@ class Guest:
                             (not self.microphone or b'NEXAUI_MICROPHONE_READY' in lines) and
                             (not self.usb or b'NEXAUI_USB_READY' in lines) and
                             (not self.accessibility or b'NEXAUI_GUEST_AX_READY' in lines)):
+                        if self.extended_pointer and not all(marker in data for marker in EXPLORER_CODES):
+                            raise RuntimeError('Guest did not report the Explorer mouse capabilities')
                         if self.clipboard:
                             self.clipboard.can_read = b'NEXAUI_CLIPBOARD_READ_READY' in lines
                         break
@@ -290,6 +301,7 @@ class Guest:
         if not payload or len(payload)%INPUT_RECORD_SIZE or len(payload) > INPUT_LIMIT*INPUT_RECORD_SIZE:
             raise ValueError('Invalid guest input batch')
         keys, buttons = self.held.copy(), self.buttons.copy()
+        allowed_buttons = EXPLORER_BUTTONS if self.extended_pointer else BUTTONS
         commands = []
         for kind, code, down, lo, hi in struct.iter_unpack('5B', payload):
             if kind == INPUT_MOTION:
@@ -304,9 +316,21 @@ class Guest:
                     commands.append((events,b'P'))
                     dx, dy = dx-steps[0], dy-steps[1]
                 continue
+            if kind == INPUT_WHEEL:
+                dx, dy = struct.unpack('bb', bytes((code, down)))
+                if not self.extended_pointer or lo or hi or not (dx or dy) or max(abs(dx), abs(dy)) > WHEEL_LIMIT:
+                    raise ValueError('Invalid guest wheel input')
+                for ticks, positive, negative in ((dx,'wheel-left','wheel-right'), (dy,'wheel-up','wheel-down')):
+                    if ticks:
+                        button = positive if ticks > 0 else negative
+                        # Sync axes independently so the PS/2 mouse can emit each form.
+                        events = [{'type':'btn','data':{'button':button,'down':pressed}}
+                                  for _ in range(abs(ticks)) for pressed in (True,False)]
+                        commands.append((events,b''))
+                continue
             if kind not in (INPUT_KEY, INPUT_BUTTON) or lo or hi:
                 raise ValueError('Invalid guest input record')
-            allowed, held = (KEY_CODES,keys) if kind == INPUT_KEY else (BUTTONS,buttons)
+            allowed, held = (KEY_CODES,keys) if kind == INPUT_KEY else (allowed_buttons,buttons)
             if code not in allowed or down not in (0,1) or (code in held)==bool(down):
                 raise ValueError('Invalid guest button or key transition')
             if down:
@@ -790,7 +814,8 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
     microphone = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_MICROPHONE')=='1'
     usb = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_USB')=='1'
     accessibility = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_AX')=='1'
-    if clipboard or network or microphone or usb or accessibility:
+    extended_pointer = os.environ.get('NEXAUI_CONTENT_TEST_GUEST_POINTER')=='1'
+    if clipboard or network or microphone or usb or accessibility or extended_pointer:
         require_reset_root(address)
     grant = bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_GRANT')=='1')
     bindfs = os.environ.get('NEXAUI_CONTENT_TEST_FILE_BINDFS')
@@ -802,7 +827,7 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                       reset_enabled=bool(reset_mode),file_share=file_share,
                       revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'),
                       grant_share=grant,export=export,clipboard=clipboard,network=network,microphone=microphone,usb=usb,
-                      accessibility=accessibility)
+                      accessibility=accessibility,extended_pointer=extended_pointer)
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()

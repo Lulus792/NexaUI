@@ -4,8 +4,9 @@
 typedef struct native_guest_input {
     native_input_receiver ledger;
     content_guest_batch pending;
-    int pointer_seen, merge_motion;
+    int pointer_seen, merge_motion, extended_pointer;
     int x, y, motion_from_x, motion_from_y;
+    float wheel_x, wheel_y;
 } native_guest_input;
 
 static uint8_t guest_key_code(nx_key key) {
@@ -64,6 +65,30 @@ static nx_result guest_motion(native_guest_input *guest, int x, int y) {
     return NX_OK;
 }
 
+static int guest_wheel_ticks(float amount,float *fraction) {
+    const float limit=CONTENT_GUEST_WHEEL_LIMIT;
+    float total=amount+*fraction;
+    if (total>limit) total=limit;
+    if (total<-limit) total=-limit;
+    int ticks=(int)total;
+    *fraction=total-(float)ticks;
+    return ticks;
+}
+
+static nx_result guest_wheel(native_guest_input *guest,float x,float y) {
+    int dx=guest_wheel_ticks(x,&guest->wheel_x),dy=guest_wheel_ticks(y,&guest->wheel_y);
+    if (!dx&&!dy) return NX_OK;
+    content_guest_batch *batch=&guest->pending;
+    if (batch->count==CONTENT_GUEST_INPUT_LIMIT) return NX_ERROR_LIMIT;
+    uint8_t *record=batch->records[batch->count++];
+    record[0]=GUEST_WHEEL;
+    record[1]=(uint8_t)dx;
+    record[2]=(uint8_t)dy;
+    record[3]=record[4]=0;
+    guest->merge_motion=0;
+    return NX_OK;
+}
+
 static nx_result native_guest_receive(void *user,uint64_t generation,const nx_event *events,size_t count) {
     native_guest_input *guest=user,next=*guest;
     if (!events || !count || count>NX_KEY_COUNT+6u || generation!=guest->ledger.generation) return NX_ERROR_ARGUMENT;
@@ -72,11 +97,14 @@ static nx_result native_guest_receive(void *user,uint64_t generation,const nx_ev
         nx_result result=NX_OK;
         if (event->type==NX_EVENT_FOCUS) {
             next.pointer_seen=next.merge_motion=0;
+            next.wheel_x=next.wheel_y=0;
         } else if (event->type==NX_EVENT_POINTER_MOVE) {
             result=guest_motion(&next,(int)event->x,(int)event->y);
         } else if (event->type==NX_EVENT_POINTER_DOWN||event->type==NX_EVENT_POINTER_UP) {
             uint32_t button=event->button;
             uint8_t code=button==NX_BUTTON_LEFT?1:button==NX_BUTTON_RIGHT?2:button==NX_BUTTON_MIDDLE?3:0;
+            if (next.extended_pointer&&button==NX_BUTTON_X1) code=4;
+            if (next.extended_pointer&&button==NX_BUTTON_X2) code=5;
             if (code) {
                 if (!next.pointer_seen&&event->type==NX_EVENT_POINTER_DOWN) {
                     next.pointer_seen=1;
@@ -91,7 +119,12 @@ static nx_result native_guest_receive(void *user,uint64_t generation,const nx_ev
             if (!code) return NX_ERROR_UNSUPPORTED;
             next.merge_motion=0;
             result=guest_append_edge(&next.pending,GUEST_KEY,code,event->type==NX_EVENT_KEY_DOWN);
-        } else if (event->type!=NX_EVENT_WHEEL) return NX_ERROR_UNSUPPORTED;
+        } else if (event->type==NX_EVENT_WHEEL) {
+            if (next.extended_pointer) {
+                result=guest_motion(&next,(int)event->x,(int)event->y);
+                if (result==NX_OK) result=guest_wheel(&next,event->delta_x,event->delta_y);
+            }
+        } else return NX_ERROR_UNSUPPORTED;
         if (result!=NX_OK) return result;
     }
     nx_result result=native_input_receive(&next.ledger,generation,events,count);

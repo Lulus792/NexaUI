@@ -227,7 +227,7 @@ def verify_guest_export(path):
 
 def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False,
               sharing=False, revoke=False, grant=False, bindfs=None, clipboard_source=None, clipboard_reader=None,
-              network=False, microphone=False, usb=False, accessibility=False):
+              network=False, microphone=False, usb=False, accessibility=False, extended_pointer=False):
     from guest_fixture import DESKTOP_BOOT_TIMEOUT
 
     engine = str(engine.resolve(strict=True))
@@ -273,6 +273,9 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
         env.pop('NEXAUI_CONTENT_TEST_GUEST_AX',None)
         if accessibility:
             env['NEXAUI_CONTENT_TEST_GUEST_AX']='1'
+        env.pop('NEXAUI_CONTENT_TEST_GUEST_POINTER',None)
+        if extended_pointer:
+            env['NEXAUI_CONTENT_TEST_GUEST_POINTER']='1'
         if clipboard_source:
             env['NEXAUI_CONTENT_TEST_GUEST_CLIPBOARD']='1'
             env['NEXAUI_CONTENT_TEST_HOST_WL_COPY']=clipboard_source
@@ -377,6 +380,7 @@ def main():
     parser.add_argument('--guest-microphone', action='store_true', help='Grant and revoke the synthetic guest microphone tone')
     parser.add_argument('--guest-usb', action='store_true', help='Attach and detach a read-only emulated guest USB test drive')
     parser.add_argument('--guest-ax', action='store_true', help='Read the selected fullscreen guest through native AT-SPI')
+    parser.add_argument('--guest-pointer', action='store_true', help='Exercise the graphical guest wheel and side buttons')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF or guest clipboard cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -409,6 +413,8 @@ def main():
         parser.error('--guest-usb requires a graphical guest')
     if args.guest_ax and not desktop_guest:
         parser.error('--guest-ax requires a graphical guest')
+    if args.guest_pointer and not desktop_guest:
+        parser.error('--guest-pointer requires a graphical guest')
     if (desktop_guest or args.case=='guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
         parser.error('guest cases require --guest-engine and --guest-firmware')
     if desktop_guest != bool(args.guest_kernel) or bool(args.guest_kernel)!=bool(args.guest_initrd):
@@ -512,7 +518,7 @@ def main():
                          clipboard_source=clipboard_source,
                          clipboard_reader=str(Path(guest_clipboard_reader).resolve(strict=True)) if guest_clipboard_reader else None,
                          network=args.guest_network,microphone=args.guest_microphone,usb=args.guest_usb,
-                         accessibility=args.guest_ax)
+                         accessibility=args.guest_ax,extended_pointer=args.guest_pointer)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

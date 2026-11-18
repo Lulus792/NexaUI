@@ -370,6 +370,15 @@ appear without another host action. The fixture starts with a desktop
 panel and a maximized Wayland terminal. Type **nexa** and press
 **Enter** to trigger the delayed guest paint.
 
+Add `--guest-pointer` to exercise vertical and horizontal scrolling and
+both side buttons in the graphical guest. This profile requires the
+guest's PS/2 Explorer device and the existing `evtest` capability output.
+It accumulates fractional wheel motion while guest input is active and
+sends up to seven ticks per axis per native event. Both side buttons
+follow the same hold and release rules as the three primary buttons.
+The native peer checks the events recorded by the guest kernel, including
+release on the host shortcut and on pointer exit into the letterbox.
+
 To prepare the guest, use a verified Alpine x86-64 minirootfs in an
 isolated staging directory. Install the `linux-virt`, `kmod`,
 `weston`, `weston-backend-drm`, `weston-shell-desktop`,

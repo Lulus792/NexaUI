@@ -5,11 +5,13 @@
 
 #define CONTENT_GUEST_INPUT_LIMIT 128u
 #define CONTENT_GUEST_RECORD_SIZE 5u
+#define CONTENT_GUEST_WHEEL_LIMIT 7
 #define GUEST_SHARE_PATH_LIMIT 96u
 #define GUEST_CLIPBOARD_LIMIT 192u
-enum content_guest_input_kind { GUEST_KEY=1, GUEST_BUTTON, GUEST_MOTION };
+enum content_guest_input_kind { GUEST_KEY=1, GUEST_BUTTON, GUEST_MOTION, GUEST_WHEEL };
 /* Edge records are kind, code, pressed, zero, zero. Motion records encode
-   signed 16-bit X/Y increments in little-endian order after the kind. */
+   signed 16-bit X/Y increments in little-endian order after the kind.
+   Wheel records encode signed 8-bit X/Y ticks, then two zero bytes. */
 typedef struct content_guest_batch {
     unsigned count;
     uint8_t records[CONTENT_GUEST_INPUT_LIMIT][CONTENT_GUEST_RECORD_SIZE];

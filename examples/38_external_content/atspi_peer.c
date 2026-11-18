@@ -677,16 +677,21 @@ static int offer_host_clipboard(const char *source,const char *text) {
     return joined==child&&WIFEXITED(status)&&WEXITSTATUS(status)==0;
 }
 
-static int await_guest_marker(const char *expected,unsigned attempts) {
+static FILE *guest_trace(void) {
     const char *socket=getenv("NEXAUI_CONTENT_TEST_GUEST_SOCKET");
     const char *end=socket?strrchr(socket,'/'):NULL;
-    if (!end||end-socket>=80) return 0;
+    if (!end||end-socket>=80) return NULL;
     char pattern[128];
     snprintf(pattern,sizeof(pattern),"%.*s/qemu-guest-*/guest.trace",(int)(end-socket),socket);
     glob_t paths={0};
     int found=glob(pattern,0,NULL,&paths)==0&&paths.gl_pathc==1;
     FILE *trace=found?fopen(paths.gl_pathv[0],"rb"):NULL;
     globfree(&paths);
+    return trace;
+}
+
+static int await_guest_marker(const char *expected,unsigned attempts) {
+    FILE *trace=guest_trace();
     if (!trace) return 0;
     int ok=0;
     for (unsigned i=0;i<attempts;++i) {
@@ -700,6 +705,67 @@ static int await_guest_marker(const char *expected,unsigned attempts) {
         pump();
     }
     fclose(trace);
+    return ok;
+}
+
+static int guest_pointer_steps(FILE *trace,const char *expected,unsigned attempts) {
+    static const char *const codes[]={"(REL_WHEEL), value ","(REL_HWHEEL), value ",
+        "(BTN_SIDE), value ","(BTN_EXTRA), value "};
+    static const char signs[][2]={{'d','u'},{'l','r'},{'S','s'},{'E','e'}};
+    for (unsigned attempt=0;attempt<attempts;++attempt) {
+        rewind(trace);
+        const char *step=expected;
+        char line[512];
+        while (fgets(line,sizeof(line),trace)) {
+            if (strncmp(line,"Event: time ",12)) continue;
+            for (size_t code=0;code<sizeof(codes)/sizeof(codes[0]);++code) {
+                const char *value=strstr(line,codes[code]);
+                if (!value) continue;
+                int edge;
+                if (sscanf(value+strlen(codes[code]),"%d",&edge)!=1) return 0;
+                if ((code<2 ? edge!=1&&edge!=-1 : edge!=0&&edge!=1)||*step!=signs[code][edge>0]) {
+                    fprintf(stderr,"Guest pointer: unexpected event %s",line);
+                    return 0;
+                }
+                ++step;
+                break;
+            }
+        }
+        if (!*step) return 1;
+        pump();
+    }
+    fprintf(stderr,"Guest pointer: timed out waiting for %s\n",expected);
+    return 0;
+}
+
+static int guest_pointer_flow(AtspiAccessible *app,const char *window) {
+    FILE *trace=guest_trace();
+    int ok=0;
+    CHECK(trace&&focus(app,"Enter guest")&&drive("key","Return")&&
+        observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(window,155,100));
+    static const char *const wheels[]={"4","5","6","7"};
+    for (size_t i=0;i<4;++i) {
+        char expected[5]="udlr";
+        expected[i+1]=0;
+        CHECK(drive("click",wheels[i])&&guest_pointer_steps(trace,expected,200));
+    }
+    CHECK(drive("mousedown","8")&&guest_pointer_steps(trace,"udlrs",200));
+    CHECK(drive("mousedown","9")&&guest_pointer_steps(trace,"udlrse",200));
+    CHECK(release_guest_keys(app)&&guest_pointer_steps(trace,"udlrseSE",200));
+    CHECK(drive("mouseup","8")&&drive("mouseup","9")&&drive("click","4")&&drive("click","7"));
+    for (unsigned i=0;i<24;++i) pump();
+    CHECK(guest_pointer_steps(trace,"udlrseSE",1));
+    CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+        observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(window,155,100)&&
+        drive("mousedown","8")&&guest_pointer_steps(trace,"udlrseSEs",200));
+    CHECK(point_at(window,30,100)&&observe(app,"Guest input released.",0)&&
+        guest_pointer_steps(trace,"udlrseSEsS",200)&&drive("mouseup","8")&&drive("click","5"));
+    for (unsigned i=0;i<24;++i) pump();
+    CHECK(guest_pointer_steps(trace,"udlrseSEsS",1));
+    puts("GUEST_POINTER_NATIVE verified: both wheel axes, side buttons, host escape, letterbox exit and inactive wheel suppression");
+    ok=1;
+done:
+    if (trace) fclose(trace);
     return ok;
 }
 
@@ -977,6 +1043,8 @@ int main(int argc,char **argv) {
     int guest_storage=guest_reset||!strcmp(test_case,"guest-storage");
     int guest_desktop=guest_storage||!strcmp(test_case,"guest-desktop");
     int guest_case=guest_desktop||!strcmp(test_case,"guest");
+    const char *pointer_profile=getenv("NEXAUI_CONTENT_TEST_GUEST_POINTER");
+    int guest_pointer=guest_desktop&&pointer_profile&&!strcmp(pointer_profile,"1");
     int guest_ax=guest_desktop&&getenv("NEXAUI_CONTENT_TEST_GUEST_AX");
     int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int browser_pointer=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_POINTER");
@@ -1334,6 +1402,7 @@ int main(int argc,char **argv) {
     CHECK(observe(app,"Waiting for scaled frame.",0)&&state(fresh,ATSPI_STATE_DEFUNCT));
     if(pdf_case)CHECK(state(second_text,ATSPI_STATE_DEFUNCT));
     CHECK(focus(app,"Publish frame")&&drive("key","Return")&&observe(app,pdf_case?"PDF page 2 of 2 at 2x.":
+        guest_pointer?"Guest running. Keyboard, wheel and five-button mouse.":
         guest_case?"Guest running. Keyboard and three-button mouse.":"Scaled frame ready.",0));
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     if (browser_ax) {
@@ -1527,6 +1596,7 @@ int main(int argc,char **argv) {
                 drive("key","Escape")&&observe(app,"Sharing",1));
             puts("GUEST_USB_NATIVE verified: read-only disk and detached for held and fresh reads");
         }
+        if (guest_pointer) CHECK(guest_pointer_flow(app,id));
         if (guest_ax) CHECK(guest_ax_flow(app,display,id));
         else CHECK(press(app,"Disconnect")&&observe(app,"Console disconnected. Guest retained.",0)&&
             browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-disconnected"));
