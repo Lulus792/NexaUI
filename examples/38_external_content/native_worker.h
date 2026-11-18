@@ -29,6 +29,9 @@ typedef struct native_job {
     unsigned kind;
     int held;
     unsigned page; /* Zero uses the existing scenario's page. */
+#ifdef CONTENT_NATIVE_BROWSER
+    content_browser_edit edit;
+#endif
 } native_job;
 typedef struct native_png_source {
     content_request request;
@@ -73,6 +76,7 @@ typedef struct native_worker {
     native_job job;
     unsigned completed, publications, discarded;
     nx_result result;
+    nx_rect browser_caret;
     native_png_source png_source;
     int pdf_file;
     uint64_t pdf_generation, indexed_generation;
@@ -96,6 +100,7 @@ typedef struct native_worker_state {
     int working, pending, prepared;
     unsigned completed;
     nx_result result;
+    nx_rect browser_caret;
 } native_worker_state;
 
 static void native_dispose(void *user, void *data, size_t bytes) {
@@ -353,9 +358,13 @@ static void *native_worker_entry(void *user) {
         void *data = NULL;
         native_png_source original={0};
         nx_result result;
+        nx_rect browser_caret={0};
 #ifdef CONTENT_NATIVE_BROWSER
-        if (worker->browser_socket)
-            result=content_browser_frame(worker->browser_socket,job.request,job.sequence,job.kind,&data,&bytes);
+        if (worker->browser_socket) {
+            if (job.edit.kind)
+                result=content_browser_edit_frame(worker->browser_socket,job.request,job.sequence,&job.edit,&data,&bytes,&browser_caret);
+            else result=content_browser_frame(worker->browser_socket,job.request,job.sequence,job.kind,&data,&bytes);
+        }
         else
 #endif
 #ifdef CONTENT_NATIVE_PDF
@@ -389,6 +398,7 @@ static void *native_worker_entry(void *user) {
         if (result != NX_OK) free(data);
         pthread_mutex_lock(&worker->mutex);
         worker->prepared = 0; worker->working = 0; ++worker->completed; worker->result = result;
+        worker->browser_caret=browser_caret;
         if (result == NX_OK) ++worker->publications;
         if (result==NX_OK && original.bitmap.pixels) {
             free((void *)worker->png_source.bitmap.pixels);
@@ -453,7 +463,7 @@ static int native_worker_open(native_worker *worker, nx_snapshot_exchange *excha
 }
 static native_worker_state native_state(native_worker *worker) {
     pthread_mutex_lock(&worker->mutex);
-    native_worker_state state = {worker->working, worker->pending, worker->prepared, worker->completed, worker->result};
+    native_worker_state state = {worker->working, worker->pending, worker->prepared, worker->completed, worker->result,worker->browser_caret};
     pthread_mutex_unlock(&worker->mutex);
     return state;
 }

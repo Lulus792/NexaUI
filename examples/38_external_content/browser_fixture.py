@@ -92,8 +92,17 @@ class Chromium:
                 'background:#47a31f}</style><main aria-label="Engine fixture">' + patch + '</main>')
         frame = self.command('Page.getFrameTree')['frameTree']['frame']['id']
         self.command('Page.setDocumentContent', {'frameId': frame, 'html': html})
-        metrics = self.command('Runtime.evaluate', {'expression': '[innerWidth,innerHeight,devicePixelRatio]',
-                               'returnByValue': True})['result']['value']
+        return self.screenshot(width,height,scale)
+
+    def value(self, expression):
+        result = self.command('Runtime.evaluate', {'expression': expression, 'returnByValue': True})
+        if 'exceptionDetails' in result:
+            raise RuntimeError('Browser fixture expression failed')
+        return result['result']['value']
+
+    def screenshot(self, width, height, scale):
+        css_width, css_height = width // scale, height // scale
+        metrics = self.value('[innerWidth,innerHeight,devicePixelRatio]')
         if metrics != [css_width, css_height, scale]:
             raise ValueError('Chromium viewport metrics differ from the request')
         encoded = self.command('Page.captureScreenshot', {'format': 'png', 'captureBeyondViewport': False})['data']
@@ -102,6 +111,72 @@ class Chromium:
                 struct.unpack('>II', png[16:24]) != (width, height)):
             raise ValueError('Chromium physical frame differs from the request')
         return png, metrics
+
+    def edit(self, kind, raw, begin, end):
+        if kind == 5:
+            if self.value("!!document.querySelector('#editor')"):
+                self.command('Input.imeSetComposition', {'text': '', 'selectionStart': 0, 'selectionEnd': 0})
+            self.value("""(() => {
+                let editor = document.querySelector('#editor');
+                if (!editor) {
+                    editor = document.createElement('div');
+                    editor.id = 'editor';
+                    editor.contentEditable = 'true';
+                    editor.setAttribute('aria-label', 'Fixture text');
+                    editor.style.cssText = 'position:absolute;left:48px;top:36px;width:260px;' +
+                        'padding:4px;color:#111;background:white;font:24px monospace;min-height:1em';
+                    document.body.append(editor);
+                    editor.dataset.committed = '';
+                    editor.dataset.preedit = '';
+                    editor.addEventListener('compositionupdate', e => editor.dataset.preedit = e.data);
+                    editor.addEventListener('compositionend', () => editor.dataset.preedit = '');
+                }
+                editor.focus();
+                return true;
+            })()""")
+        elif kind == 6:
+            text = raw.decode('utf-8')
+            self.value("""(() => {
+                const editor = document.querySelector('#editor');
+                if (!editor.dataset.preedit) editor.dataset.committed = editor.textContent;
+                return true;
+            })()""")
+            def offset(index):
+                if index == -1:
+                    index = len(raw)
+                if not 0 <= index <= len(raw):
+                    raise ValueError('Invalid preedit offset')
+                return len(raw[:index].decode('utf-8').encode('utf-16-le')) // 2
+            first,last=sorted((offset(begin),offset(end)))
+            self.command('Input.imeSetComposition', {'text': text, 'selectionStart': first, 'selectionEnd': last})
+        elif kind == 7:
+            self.command('Input.insertText', {'text': raw.decode('utf-8')})
+        elif kind == 8:
+            self.command('Input.imeSetComposition', {'text': '', 'selectionStart': 0, 'selectionEnd': 0})
+            self.value("document.querySelector('#editor').blur(); true")
+        state = self.value("""(() => {
+            const editor = document.querySelector('#editor');
+            const focused = document.activeElement === editor;
+            let caret = [0,0,0,0];
+            if (focused) {
+                const selection = getSelection();
+                let box = editor.getBoundingClientRect();
+                if (selection.rangeCount) {
+                    const range = selection.getRangeAt(0).cloneRange();
+                    range.collapse(false);
+                    const cursor = range.getBoundingClientRect();
+                    if (cursor.height) box = cursor;
+                    else box = {x:box.x+4, y:box.y+4, height:24};
+                }
+                caret = [Math.floor(box.x), Math.floor(box.y), 1, Math.ceil(box.height)];
+            }
+            const committed = editor.dataset.preedit ? editor.dataset.committed : editor.textContent;
+            return [focused, editor.dataset.preedit.length, committed.length, committed === 'aü', caret];
+        })()""")
+        focused, preedit, committed, expected, caret = state
+        if focused != (kind != 8):
+            raise RuntimeError('Chromium focus disagrees with the requested edit')
+        return struct.pack('>4H', *caret), (int(focused), preedit, committed, int(expected))
 
     def crash(self):
         os.killpg(self.process.pid, signal.SIGKILL)
@@ -148,12 +223,23 @@ def serve(engine, socket_path):
                     with peer:
                         peer.settimeout(1)
                         with peer.makefile('rb') as request:
-                            line = request.readline(96)
-                            if not line.endswith(b'\n') or request.read(1):
+                            line = request.readline(128)
+                            if not line.endswith(b'\n'):
                                 raise ValueError('Invalid browser request framing')
-                        tab, resize, width, height, kind = map(int, line.split())
+                            fields = list(map(int, line.split()))
+                            tab, resize, width, height, kind = fields[:5]
+                            raw = b''
+                            if kind >= 5:
+                                begin,end,size = fields[5:]
+                                if not 0 <= size <= 256:
+                                    raise ValueError('Browser edit exceeds fixture limit')
+                                raw = request.read(size)
+                                if len(raw) != size:
+                                    raise ValueError('Truncated browser edit')
+                            if request.read(1):
+                                raise ValueError('Unexpected browser request bytes')
                         if not (0 < tab < 2**64 and 0 < resize < 2**64 and 0 < width <= 2048 and
-                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 4):
+                                0 < height <= 2048 and width*height*4 <= PNG_LIMIT and 0 <= kind <= 8):
                             raise ValueError('Browser request exceeds fixture limits')
                         if kind == 2:
                             result = browser.crash()
@@ -172,6 +258,13 @@ def serve(engine, socket_path):
                         if tab != generation:
                             browser.open_target()
                             generation = tab
+                        if kind >= 5:
+                            prefix,(focused,preedit,committed,expected) = browser.edit(kind,raw,begin,end)
+                            png,_ = browser.screenshot(width,height,2)
+                            peer.sendall(prefix+png)
+                            print(f'BROWSER_EDIT kind={kind} focus={focused} preedit={preedit} '
+                                  f'committed={committed} expected={expected}', flush=True)
+                            continue
                         png, (css_w, css_h, dpr) = browser.capture(width, height, kind)
                         peer.sendall(png)
                         print(f'BROWSER_FRAME generation={tab} resize={resize} kind={kind} '

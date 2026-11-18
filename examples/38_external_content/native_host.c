@@ -6,6 +6,9 @@
 #include "native_input.h"
 #include "pdf_selection.h"
 #include "content_camera.h"
+#ifdef CONTENT_NATIVE_BROWSER
+#include "native_browser.h"
+#endif
 
 enum input_phase { INPUT_IDLE, INPUT_PENDING, INPUT_ACTIVE, INPUT_RELEASED, INPUT_FOCUS_LOST, INPUT_DISCONNECTED };
 static const char *input_name(enum input_phase phase) {
@@ -603,7 +606,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     pdf_text_view *text_view, nx_window *window, nx_text_field *query, pdf_document_view *document,
     unsigned *linked_page, pdf_selection *selection, int *redraw,
     char link_address[CONTENT_PDF_URI_LIMIT+1u], pdf_url_view *preview, int can_open_url,
-    const content_camera *camera, content_camera_view *page_view) {
+    const content_camera *camera, content_camera_view *page_view,const char *browser_status,int browser_enter) {
     *action = 0; *leased = 0; *linked_page=0;
     link_address[0]=0;
     if (nx_begin_frame(context, info.width, info.height, 0) != NX_OK) return 0;
@@ -613,6 +616,7 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
     int gallery=document->gallery!=NULL;
     const char *status=png_case&&phase==BAD_REJECTED?"PNG decoding failed; image retained.":phase_name(phase);
     if (browser_case && phase==BAD_REJECTED) status="Browser engine unavailable; view retained.";
+    if (browser_status) status=browser_status;
     char pdf_status[64];
     if (pdf_case) {
         if (phase==BAD_REJECTED) status="PDF rendering failed; page retained.";
@@ -643,10 +647,12 @@ static int frame(nx_context *context, nx_window_info info, const nx_font_collect
         (nx_rect){16,12,info.width-(pages_visible?262:zoom_visible?201:32),24},
         (pages_visible||png_case)&&phase==BAD_REJECTED?13:15) != NX_OK ||
         (search && pdf_find_field(context,window,fonts,query)!=NX_OK) ||
-        (!gallery&&!search && (button(context,fonts,input_controls?16u:10u,input_controls?"Enter content":"Replace tab",16,48,112,
-            input_controls?input_phase!=INPUT_DISCONNECTED:phase==WAITING,action)!=NX_OK ||
-        button(context,fonts,input_controls?17u:11u,input_controls?"Release input":"Release old",136,48,112,
-            input_controls?input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING:phase==REPLACED,action)!=NX_OK)) ||
+        (!gallery&&!search && (button(context,fonts,input_controls||browser_status?16u:10u,
+            input_controls?"Enter content":browser_status?"Enter page":"Replace tab",16,48,112,
+            input_controls?input_phase!=INPUT_DISCONNECTED:browser_status?browser_enter:phase==WAITING,action)!=NX_OK ||
+        button(context,fonts,input_controls||browser_status?17u:11u,
+            input_controls?"Release input":browser_status?"Release page":"Release old",136,48,112,
+            input_controls?input_phase==INPUT_ACTIVE||input_phase==INPUT_PENDING:browser_status?!browser_enter:phase==REPLACED,action)!=NX_OK)) ||
         (!gallery&&(button(context,fonts,input_controls?18u:12u,input_controls?"Disconnect":
             pdf_case&&(phase==BAD_REJECTED||phase==PDF_PAGE1_SCALED||hit_page)?"Next page":"Publish frame",256,48,128,
             input_controls?input_phase!=INPUT_DISCONNECTED:phase==OLD_REJECTED||phase==BAD_REJECTED||
@@ -752,6 +758,7 @@ int main(void) {
 #ifndef CONTENT_NATIVE_BROWSER
     if (browser_case) return 2;
 #endif
+    int browser_text_case=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int gallery_case=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
     int pdf_case=!strcmp(test_case,"pdf");
     int pdf_select_case=pdf_case&&getenv("NEXAUI_CONTENT_TEST_PDF_SELECT");
@@ -783,6 +790,9 @@ int main(void) {
     content_input *input=NULL; native_input_receiver receiver={.generation=1};
     int input_case=!strcmp(test_case,"input"); enum input_phase input_phase=INPUT_IDLE;
     native_worker worker={0}; worker.wake[0]=worker.wake[1]=-1;
+#ifdef CONTENT_NATIVE_BROWSER
+    browser_editor editor={0};
+#endif
 #ifdef CONTENT_NATIVE_PNG
     native_png_source png_source={0};
 #endif
@@ -822,6 +832,7 @@ int main(void) {
             document.gallery,browser_socket)) goto done;
     worker_ready=1;
     if(input_case&&content_input_create(1,NX_KEY_F12,NX_MOD_CONTROL|NX_MOD_SHIFT,native_input_receive,&receiver,&input)!=NX_OK) goto done;
+    if(browser_text_case&&nx_window_set_ime_transaction_events(window,1)!=NX_OK) goto done;
     for (;;) {
         uint32_t ready=0; size_t routed=0; nx_window_info info;
         if (nx_window_poll_with_fd_events(window,need_frame?0:200,worker.wake[0],NX_WINDOW_FD_READABLE,&ready)!=NX_OK||
@@ -854,6 +865,19 @@ int main(void) {
                 }
             }
         }
+#ifdef CONTENT_NATIVE_BROWSER
+        if (browser_text_case) {
+            for (;;) {
+                nx_event event;
+                int available=0,route=0;
+                if (nx_window_next_event(window,&event,&available)!=NX_OK) goto done;
+                if (!available) break;
+                ++routed;
+                if (!browser_edit_filter(&editor,window,&event,&route) ||
+                    (route && nx_context_queue_event(context,&event)!=NX_OK)) goto done;
+            }
+        }
+#endif
         size_t ax_routed=0;
         if(nx_window_route_events(window,context,&ax_routed)!=NX_OK) goto done;
         routed+=ax_routed;
@@ -946,6 +970,10 @@ int main(void) {
         if (phase==PREPARING&&state.prepared) { phase=WAITING; need_frame=1; }
         int decode_rejected=(png_case||pdf_case)&&state.completed==3&&
             (state.result==NX_ERROR_ARGUMENT||(browser_case&&state.result!=NX_OK));
+#ifdef CONTENT_NATIVE_BROWSER
+        if (browser_text_case&&phase==SCALED_READY&&editor.awaiting==state.completed&&editor.awaiting&&state.result!=NX_OK &&
+            !browser_edit_stop(&editor,window)) goto done;
+#endif
         int navigation_error=pdf_case&&(phase==PDF_PAGE_PENDING||phase==PDF_HIT_FAILED)&&
             state.completed==nav_completion&&state.result!=NX_OK;
         if (!gallery_case&&state.result!=NX_OK&&!decode_rejected&&!navigation_error&&phase!=FAILED) { phase=FAILED; need_frame=1; }
@@ -956,9 +984,21 @@ int main(void) {
         int had_pages=document.thumbnails.open;
         enum phase drawn=phase; nx_result content_result=NX_ERROR_STATE;
         content_camera_view page_view;
+        const char *browser_status=NULL;
+        int browser_enter=0;
+#ifdef CONTENT_NATIVE_BROWSER
+        if (browser_text_case&&phase==SCALED_READY) {
+            browser_enter=editor.phase==BROWSER_HOST;
+            browser_status=editor.phase==BROWSER_ENTERING?"Focusing browser page.":
+                editor.phase==BROWSER_EDITING?"Page input active: Ctrl+Shift+F12 exits.":
+                editor.phase==BROWSER_LEAVING?"Releasing page input.":
+                editor.revision?"Page input released.":"Scaled frame ready.";
+        }
+#endif
         if (++frames>150||!frame(context,info,fonts,surface,scale,phase,phase!=last_phase,&action,
             &content_result,&leased,input_case,input_phase,png_case&&!browser_case,pdf_case,browser_case,&text_view,window,query,&document,
-            &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view)) goto done;
+            &linked_page,&selection,&need_frame,link_address,&preview,uri_launcher!=NULL,&camera,&page_view,
+            browser_status,browser_enter)) goto done;
         int search_focused=nx_focus_id(context)==PDF_FIND_FIELD;
         if (!had_pages&&!had_preview&&!preview.uri[0]&&find_visible(query,drawn,info.width)) {
             if (pdf_find_shortcut(context,leased,&find_pressed,&need_frame)!=NX_OK) goto done;
@@ -1071,6 +1111,19 @@ int main(void) {
             initial_job=1;
         }
         if (action==15) { result=0; break; }
+#ifdef CONTENT_NATIVE_BROWSER
+        if (browser_status) {
+            if (browser_enter&&action==16) {
+                if (!browser_edit_enter(&editor,context,status.request)) goto done;
+                need_frame=1;
+            }
+            if (action==17) {
+                if (!browser_edit_leave(&editor,window)) goto done;
+                need_frame=1;
+            }
+            if (!browser_edit_update(&editor,&worker,state,status,window,context,info,&need_frame)) goto done;
+        }
+#endif
         if ((pdf_case||png_case)&&!had_pages&&!preview.uri[0]&&!had_preview&&content_result==NX_OK&&pdf_can_navigate(drawn)) {
             if (content_camera_update(&camera,context,page_view,100,action,&need_frame)!=NX_OK) goto done;
         } else camera.dragging=0;
@@ -1247,6 +1300,9 @@ int main(void) {
 #endif
     }
 done:
+#ifdef CONTENT_NATIVE_BROWSER
+    if (browser_text_case&&window&&!browser_ime_disable(&editor,window)) result=1;
+#endif
     if(content_input_close(&input)!=NX_OK) result=1;
     if (leased&&content_surface_complete(surface)!=NX_OK) result=1;
     if (window&&nx_window_publish_semantics(window,NULL)!=NX_OK) result=1;
@@ -1272,6 +1328,12 @@ done:
     if (window) nx_window_destroy(window);
     nx_font_collection_destroy(fonts); nx_font_close(font); free(data);
     unsigned expected=(!strcmp(test_case,"full")||input_case||png_case)?5u:!strcmp(test_case,"rejected-close")?1u:0u;
+#ifdef CONTENT_NATIVE_BROWSER
+    if (browser_text_case) {
+        expected=worker.completed;
+        if (expected<10u || editor.awaiting || editor.count || editor.phase!=BROWSER_HOST || editor.revision<3) result=1;
+    }
+#endif
     if (pdf_case) expected=pdf_url_case?2u:(pdf_select_case||pdf_properties_case||pdf_detail_case||pdf_export_case)?4u:
         pdf_zoom_case?5u:content_thumbnails_case?6u:pdf_link_reader?10u:8u;
     unsigned published=expected-(unsigned)(png_case||(pdf_case&&!pdf_url_case));

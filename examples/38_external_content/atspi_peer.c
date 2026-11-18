@@ -3,6 +3,7 @@
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <errno.h>
+#include <fcntl.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -685,6 +686,7 @@ int main(int argc,char **argv) {
     const char *uri_receipt=getenv("NEXAUI_CONTENT_TEST_URI_RECEIPT");
     if (uri_receipt && !strncmp(argv[1],"http",4)) return uri_received(uri_receipt,argv[1]);
     int browser_case=!strcmp(test_case,"browser");
+    int browser_input=browser_case&&getenv("NEXAUI_CONTENT_TEST_BROWSER_INPUT");
     int png_case=browser_case||!strcmp(test_case,"png");
     int png_viewer=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_VIEWER");
     int gallery=png_case&&getenv("NEXAUI_CONTENT_TEST_PNG_GALLERY");
@@ -715,6 +717,11 @@ int main(int argc,char **argv) {
     child=fork();CHECK(child>=0);
     if(!child){
         if(dup2(fileno(host_log),STDOUT_FILENO)<0||dup2(fileno(host_log),STDERR_FILENO)<0)_exit(126);
+        if(browser_input) {
+            const char *wire=getenv("NEXAUI_CONTENT_TEST_BROWSER_WIRE");
+            int fd=wire?open(wire,O_WRONLY|O_CREAT|O_EXCL,0600):-1;
+            if(fd<0||dup2(fd,STDERR_FILENO)<0||close(fd)||setenv("WAYLAND_DEBUG","client",1))_exit(126);
+        }
         execl(argv[1],argv[1],(char *)NULL);_exit(127);
     }
     CHECK(atspi_init()==0);initialized=1;atspi_set_timeout(1000,1000);
@@ -1009,6 +1016,25 @@ int main(int argc,char **argv) {
     CHECK(host_marker(host_log,"CONTENT_STATE generation=2 resize=2 width=896 height=416 sequence=1 copied=3"));
     CHECK(capture(display,outer,pdf_case?blue:0xbf3f89u,pdf_case?"pdf-page2-scaled":"scaled"));
     if (browser_case) puts("BROWSER_NATIVE verified: retired tab, engine failure, host recovery, 2x backing and native controls");
+    if (browser_input) {
+        CHECK(focus(app,"Enter page")&&drive("key","Return")&&
+            observe(app,"Page input active: Ctrl+Shift+F12 exits.",0)&&observe(app,viewport,1));
+        CHECK(drive("key","a")&&host_marker(host_log,"BROWSER_IME kind=7 revision=2"));
+        CHECK(drive("key","108")&&drive("keydown","Shift_L")&&drive("key","apostrophe")&&drive("keyup","Shift_L"));
+        CHECK(host_marker(host_log,"BROWSER_IME kind=6 revision=2"));
+        CHECK(input_chrome(display,id,"browser-preedit")&&drive("key","u")&&
+            host_marker(host_log,"BROWSER_IME kind=7 revision=3"));
+        CHECK(input_chrome(display,id,"browser-commit")&&drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12"));
+        CHECK(observe(app,"Page input released.",0)&&observe(app,"Close",1));
+        CHECK(drive("keyup","shift")&&drive("keyup","ctrl"));
+        CHECK(focus(app,"Enter page")&&drive("key","Return")&&
+            observe(app,"Page input active: Ctrl+Shift+F12 exits.",0)&&observe(app,viewport,1));
+        CHECK(drive("key","108")&&drive("keydown","Shift_L")&&drive("key","apostrophe")&&drive("keyup","Shift_L"));
+        CHECK(host_marker(host_log,"BROWSER_IME kind=6 revision=4")&&press(app,"Release page")&&
+            observe(app,"Page input released.",0)&&observe(app,"Close",1));
+        CHECK(drive("key","b")&&observe(app,"Close",1));
+        puts("BROWSER_INPUT verified: native keys, preedit, commit, candidate geometry and host escape");
+    }
     if(pdf_case) {
         CHECK((scaled_text=pdf_text(app,"Grün page two\n\n"))&&pdf_word_geometry(scaled_text,72,4,145)&&
             observe(app,"0 matches on page",0));

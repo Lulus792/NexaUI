@@ -302,9 +302,20 @@ viewport and frame lease. The workflow checks an old tab publication at
 replacement, browser process failure and restart, 1× and 2× backing, host
 keyboard and AT-SPI controls, and close.
 
-Content input, candidate geometry, browser accessibility subtree mapping,
-regular website navigation and GPU buffer ownership remain separate work
-for the engine integration. The browser executable is a fixture input.
+Add `--browser-input` to exercise the fixture's editable page with
+Weston simple-IME. **Enter page** requests Chromium focus. The host
+enables its IME after Chromium supplies the editable caret. Chromium
+receives separate composition and commit operations through the worker.
+The host forwards the translated candidate rectangle to Wayland.
+**Ctrl+Shift+F12** returns focus to the host after a commit, and
+**Release page** also cancels an in-progress composition. The input queue
+holds at most eight pending operations of up to 256 UTF-8 bytes each.
+The browser retains ownership of the field value.
+
+The input fixture covers text in one offline editable element at 2×
+backing. Pointer and wheel routing, browser accessibility subtree mapping,
+regular website navigation and GPU buffer ownership remain separate work.
+The browser executable is a fixture input.
 
 ## Optional PDF producer on Linux
 

@@ -196,6 +196,7 @@ def main():
     parser.add_argument('--png-gallery', action='store_true', help='Open the host-owned ordered PNG gallery')
     parser.add_argument('--jpeg-gallery', action='store_true', help='Include an EXIF-oriented JPEG in --png-gallery')
     parser.add_argument('--browser-engine', type=Path, help='Chromium headless shell for the offline browser frame workflow')
+    parser.add_argument('--browser-input', action='store_true', help='Exercise native keyboard and Weston Compose in Chromium')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
     args = parser.parse_args()
@@ -207,6 +208,8 @@ def main():
         parser.error('--jpeg-gallery requires --png-gallery')
     if (args.case == 'browser') != bool(args.browser_engine):
         parser.error('--case browser and --browser-engine must be used together')
+    if args.browser_input and (not args.browser_engine or not os.environ.get('NEXAUI_WESTON_LIBEXEC')):
+        parser.error('--browser-input requires the browser case and Weston simple-IME')
     if args.case == 'pdf' and not args.pdf_renderer:
         parser.error('--case pdf requires --pdf-renderer')
     if args.pdf_link_reader and args.case != 'pdf':
@@ -276,12 +279,15 @@ def main():
                '--timeout', '60', '--', sys.executable, str(repo / 'tests/run_atspi_native.py'),
                str(args.registry), str(args.build_dir / 'content_atspi_peer'),
                str(args.build_dir / 'content_native_host')]
-    if args.pdf_compose:
+    if args.pdf_compose or args.browser_input:
         setxkbmap = os.environ.get('NEXAUI_SETXKBMAP', 'setxkbmap')
         command[4:4] = ['sh', '-ec', '"$1" -layout us -option "" -option compose:ralt; shift; exec "$@"',
-                        'pdf-compose', setxkbmap]
-        env.update(NEXAUI_WESTON_INPUT_METHOD='weston-simple-im', XKB_DEFAULT_OPTIONS='compose:ralt',
-                   NEXAUI_CONTENT_PDF_COMPOSE='1')
+                       'content-compose', setxkbmap]
+        env.update(NEXAUI_WESTON_INPUT_METHOD='weston-simple-im', XKB_DEFAULT_OPTIONS='compose:ralt')
+        flag='NEXAUI_CONTENT_PDF_COMPOSE' if args.pdf_compose else 'NEXAUI_CONTENT_TEST_BROWSER_INPUT'
+        env[flag]='1'
+        if args.browser_input:
+            env['NEXAUI_CONTENT_TEST_BROWSER_WIRE']=str(args.work_dir.resolve() / 'browser-ime.wire')
     if args.browser_engine:
         return run_browser(command, env, args.browser_engine)
     if args.case in ('png', 'pdf'):
