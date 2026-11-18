@@ -2013,3 +2013,42 @@ The guest uses the same kernel and initramfs as the accessibility relay.
 The verified scope reaches the guest Linux input device. Guest application
 reactions, physical mice and touchpads, other guest operating systems,
 and Aetheri compositor acceptance remain open.
+
+## Native QEMU GTK application pointer, 2026-11-18
+
+The tested source is `823e4b4dc3607efe1be85393329a5031615c7c6b` on installed
+SDK `266404bf1743248f16eb289c0a1c0d99701cc395`. The combined
+`--guest-pointer --guest-ax` workflow opens a fullscreen GTK 3 scroll
+view in the graphical QEMU guest. The independent native peer drives both
+directions of each wheel axis. It checks GTK adjustment events, a colored
+status indicator, and pixels where the scroll exposes different tiles.
+Control+Shift+F12 releases both side buttons into the guest application
+while the native peer still holds the corresponding host buttons.
+[GTK ScrolledWindow](https://docs.gtk.org/gtk3/class.ScrolledWindow.html)
+[GTK adjustment changes](https://docs.gtk.org/gtk3/signal.Adjustment.value-changed.html)
+
+An earlier sanitizer run received a GTK movement event while the host
+still showed the previous frame at the pixel check deadline. A subsequent
+attempt reached the guest console and timed out during GTK cold start.
+The native pixel check now allows time for the next bounded guest frame.
+The guest prepares GTK during startup and waits for explicit activation
+with its window hidden. The test observes no guest tree before activation,
+then checks that closing the first window retires its tree and reopening
+publishes a new one. Console disconnect retires the replacement tree.
+
+Forty CTests passed across Release, ASan/UBSan with leak detection and the
+default fixture. Four native runs passed. Release and ASan/UBSan cover
+the combined application workflow. Two separate Release runs cover
+accessibility-only and pointer-only operation.
+
+The tested guest initramfs has SHA-256
+`1b94885b3990ae1bc49ecd30c734572b63c3212901ab2e8fc62408edcdce345d`.
+The compact archive `nexaui-qemu-view469.tar.gz` has SHA-256
+`5bf740a5bab190882ec370464cf5a6d533473dd3157cca95b1c09e848409e531`.
+Its manifest records 35 verified members, including the exact source,
+guest overlay, tool environment, native receipts and six checked captures.
+
+The test uses a private Weston seat, QEMU 11.0.3, the Alpine
+`6.18.63-0-virt` guest kernel and GTK 3.24.52. It covers this guest
+application under virtual input. Other applications and guest platforms,
+physical input and Aetheri compositor acceptance remain open.

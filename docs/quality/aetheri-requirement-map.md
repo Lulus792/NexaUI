@@ -1,5 +1,12 @@
 # Aetheri catalogue: preliminary requirement-to-source map
 
+The QEMU GTK application workflow advances I08/R06/D08/A05/P07 at `823e4b4`.
+Both wheel axes move real guest application content and change pixels in
+the Wayland console. Both side-button releases reach GTK after host escape.
+The initially hidden app gains a new semantic subtree on activation and
+reopening. Other guest applications and Aetheri compositor acceptance remain open.
+[GTK guest application evidence](external-content-report.md#native-qemu-gtk-application-pointer-2026-11-18)
+
 The QEMU console pointer workflow advances I08/D08/P07 at `ca0cd7b`.
 The guest Linux input device receives both wheel axes and both side buttons.
 Host escape and exit into the letterbox release the held buttons. Guest app
