@@ -86,7 +86,8 @@ static uint64_t wire_u64(const uint8_t *bytes) {
     return ((uint64_t)wire_u32(bytes)<<32)|wire_u32(bytes+4);
 }
 
-enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64, GUEST_ACTION_BYTES=5, GUEST_SHARING_V1=8, GUEST_SHARING_V2=28 };
+enum { GUEST_RESOURCE_BYTES=40, GUEST_PREVIEW_BYTES=64, GUEST_PREVIEW_V3=80,
+       GUEST_ACTION_BYTES=5, GUEST_SHARING_V1=8, GUEST_SHARING_V2=28 };
 static nx_result read_guest_resources(const uint8_t *wire,size_t bytes,content_guest_resources *out) {
     if (bytes!=GUEST_RESOURCE_BYTES||memcmp(wire,"NXR1",4)) return NX_ERROR_ARGUMENT;
     content_guest_resources value={wire[4],wire[5],wire_u16(wire+6),wire_u64(wire+8),
@@ -119,7 +120,7 @@ static nx_result read_guest_sharing(const uint8_t *wire,size_t bytes,content_gue
     if (!memcmp(wire,"NXS2",4)) {
         static const uint8_t zero[16]={0};
         prefix=GUEST_SHARING_V2;
-        if (bytes<=prefix||wire[4]<GUEST_SHARE_ACTIVE||wire[4]>GUEST_SHARE_UNKNOWN||
+        if (bytes<=prefix||wire[4]<GUEST_SHARE_ACTIVE||wire[4]>GUEST_SHARE_ATTACHING||
             wire[5]||wire[6]||wire[7]||!memcmp(wire+8,zero,sizeof(zero))) return NX_ERROR_ARGUMENT;
         value.state=wire[4];
         memcpy(value.environment,wire+8,sizeof(value.environment));
@@ -133,11 +134,17 @@ static nx_result read_guest_sharing(const uint8_t *wire,size_t bytes,content_gue
 static nx_result read_guest_preview(const uint8_t *wire,size_t bytes,content_guest_reset_preview *out) {
     if (bytes==1&&wire[0]=='U') return NX_ERROR_STATE;
     static const uint8_t zero[32]={0};
-    if (bytes<GUEST_PREVIEW_BYTES||wire_u32(wire+60)!=bytes-GUEST_PREVIEW_BYTES||
-        memcmp(wire,bytes==GUEST_PREVIEW_BYTES?"NXV1":"NXV2",4)||
+    if (bytes<GUEST_PREVIEW_BYTES||
         !memcmp(wire+4,zero,16)||!memcmp(wire+20,zero,32)||!wire_u64(wire+52)) return NX_ERROR_ARGUMENT;
+    size_t prefix=GUEST_PREVIEW_BYTES;
     content_guest_reset_preview value={.capacity=wire_u64(wire+52)};
-    nx_result result=read_guest_share_path(wire+GUEST_PREVIEW_BYTES,bytes-GUEST_PREVIEW_BYTES,value.file_share);
+    if (!memcmp(wire,"NXV3",4)) {
+        prefix=GUEST_PREVIEW_V3;
+        if (bytes<prefix||!memcmp(wire+GUEST_PREVIEW_BYTES,zero,sizeof(value.confirmation))) return NX_ERROR_ARGUMENT;
+        memcpy(value.confirmation,wire+GUEST_PREVIEW_BYTES,sizeof(value.confirmation));
+    } else if (memcmp(wire,bytes==prefix?"NXV1":"NXV2",4)) return NX_ERROR_ARGUMENT;
+    if (wire_u32(wire+60)!=bytes-prefix) return NX_ERROR_ARGUMENT;
+    nx_result result=read_guest_share_path(wire+prefix,bytes-prefix,value.file_share);
     if (result!=NX_OK) return result;
     memcpy(value.environment,wire+4,sizeof(value.environment));
     memcpy(value.checkpoint,wire+20,sizeof(value.checkpoint));
@@ -208,9 +215,9 @@ static nx_result transfer(const char *socket_path,content_request request,uint64
     if (!send_request(fd,line,send_size,deadline)) goto done;
     size_t prefix=edit?8u:0;
     int reset_action=kind==CONTENT_GUEST_RESET_APPLY||kind==CONTENT_GUEST_RESET_STATUS;
-    int sharing=kind==CONTENT_GUEST_SHARING||kind==CONTENT_GUEST_REVOKE_FILES;
+    int sharing=kind>=CONTENT_GUEST_SHARING&&kind<=CONTENT_GUEST_GRANT_FILES;
     size_t capacity=guest_report?(reset_action?GUEST_ACTION_BYTES:kind==CONTENT_GUEST_RESOURCES?GUEST_RESOURCE_BYTES:
-        (sharing?GUEST_SHARING_V2:GUEST_PREVIEW_BYTES)+GUEST_SHARE_PATH_LIMIT)+1u:
+        (sharing?GUEST_SHARING_V2:GUEST_PREVIEW_V3)+GUEST_SHARE_PATH_LIMIT)+1u:
         prefix+(accessible?4u+BROWSER_AX_WIRE_LIMIT:0)+CONTENT_PNG_ENCODED_LIMIT+1u;
     encoded=malloc(capacity);
     if (!encoded) { result=NX_ERROR_MEMORY;goto done; }
@@ -334,11 +341,11 @@ nx_result content_guest_read_sharing(const char *path,content_request request,co
     return transfer(path,request,1,CONTENT_GUEST_SHARING,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,NULL,0);
 }
 
-nx_result content_guest_revoke_files(const char *path,content_request request,const uint8_t environment[16],
+nx_result content_guest_file_action(const char *path,content_request request,unsigned kind,const uint8_t environment[16],
     content_guest_sharing *out) {
-    if (!environment||!out) return NX_ERROR_ARGUMENT;
+    if (!environment||!out||(kind!=CONTENT_GUEST_REVOKE_FILES&&kind!=CONTENT_GUEST_GRANT_FILES)) return NX_ERROR_ARGUMENT;
     content_guest_sharing observed;
-    nx_result result=transfer(path,request,1,CONTENT_GUEST_REVOKE_FILES,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,
+    nx_result result=transfer(path,request,1,kind,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,
         &observed,environment,sizeof(observed.environment));
     if (result!=NX_OK) return result;
     if (observed.state==GUEST_SHARE_FIXED||memcmp(observed.environment,environment,sizeof(observed.environment)))
@@ -356,7 +363,9 @@ nx_result content_guest_reset_action(const char *path,content_request request,un
     const content_guest_reset_preview *scope,unsigned *out) {
     if (!scope||!out||(kind!=CONTENT_GUEST_RESET_APPLY&&kind!=CONTENT_GUEST_RESET_STATUS)) return NX_ERROR_ARGUMENT;
     uint8_t operation[sizeof(scope->environment)+sizeof(scope->checkpoint)];
-    memcpy(operation,scope->environment,sizeof(scope->environment));
+    static const uint8_t zero[16]={0};
+    const uint8_t *binding=memcmp(scope->confirmation,zero,sizeof(zero))?scope->confirmation:scope->environment;
+    memcpy(operation,binding,sizeof(scope->environment));
     memcpy(operation+sizeof(scope->environment),scope->checkpoint,sizeof(scope->checkpoint));
     return transfer(path,request,1,kind,NULL,0,(content_ax_action){0},NULL,NULL,NULL,NULL,out,operation,sizeof(operation));
 }

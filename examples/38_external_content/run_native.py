@@ -226,7 +226,7 @@ def verify_guest_export(path):
 
 
 def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=False, reset=False, restart=False,
-              sharing=False, revoke=False):
+              sharing=False, revoke=False, grant=False):
     from guest_fixture import DESKTOP_BOOT_TIMEOUT
 
     engine = str(engine.resolve(strict=True))
@@ -256,12 +256,16 @@ def run_guest(command, env, engine, firmware, kernel=None, initrd=None, storage=
         env['NEXAUI_CONTENT_TEST_GUEST_SOCKET']=str(address)
         env.pop('NEXAUI_CONTENT_TEST_FILE_SHARE',None)
         env.pop('NEXAUI_CONTENT_TEST_FILE_REVOKE',None)
+        env.pop('NEXAUI_CONTENT_TEST_FILE_GRANT',None)
         if sharing:
             (root/'host-export').mkdir(mode=0o700)
             env['NEXAUI_CONTENT_TEST_FILE_SHARE']='1'
-            print(f'GUEST_FILE_SHARE_GRANTED path={root / "host-export"}',flush=True)
-        if revoke:
+            mode='OFFERED' if grant else 'GRANTED'
+            print(f'GUEST_FILE_SHARE_{mode} path={root / "host-export"}',flush=True)
+        if revoke or grant:
             env['NEXAUI_CONTENT_TEST_FILE_REVOKE']='1'
+        if grant:
+            env['NEXAUI_CONTENT_TEST_FILE_GRANT']='1'
         args=[sys.executable,str(Path(__file__).with_name('guest_fixture.py')),
               engine,firmware,str(boot),str(address)]
         if initrd:
@@ -341,7 +345,9 @@ def main():
     parser.add_argument('--guest-kernel', type=Path, help='Linux kernel for --case guest-desktop')
     parser.add_argument('--guest-initrd', type=Path, help='Alpine/Weston initramfs for --case guest-desktop')
     parser.add_argument('--guest-owner-restart', action='store_true', help='Replace the guest owner after a committed reset')
-    parser.add_argument('--guest-file-share', action='store_true', help='Grant the reset guest one private writable export')
+    sharing = parser.add_mutually_exclusive_group()
+    sharing.add_argument('--guest-file-share', action='store_true', help='Grant the reset guest one private writable export at launch')
+    sharing.add_argument('--guest-file-grant', action='store_true', help='Exercise granting and revoking a private file export in the running guest')
     parser.add_argument('--guest-file-revoke', action='store_true', help='Exercise runtime removal of the private file export')
     parser.add_argument('--clipboard-reader', type=Path, help='Independent wl-paste executable for PDF copy cases')
     parser.add_argument('--pdf-compose', action='store_true', help='Also exercise Weston simple-IME Compose')
@@ -357,8 +363,8 @@ def main():
     desktop_guest=args.case in ('guest-desktop','guest-storage','guest-reset')
     if args.guest_owner_restart and args.case!='guest-reset':
         parser.error('--guest-owner-restart requires --case guest-reset')
-    if args.guest_file_share and args.case!='guest-reset':
-        parser.error('--guest-file-share requires --case guest-reset')
+    if (args.guest_file_share or args.guest_file_grant) and args.case!='guest-reset':
+        parser.error('guest file sharing requires --case guest-reset')
     if args.guest_file_revoke and not args.guest_file_share:
         parser.error('--guest-file-revoke requires --guest-file-share')
     if (desktop_guest or args.case=='guest') != bool(args.guest_engine) or bool(args.guest_engine)!=bool(args.guest_firmware):
@@ -455,7 +461,8 @@ def main():
     if args.guest_engine:
         return run_guest(command,env,args.guest_engine,args.guest_firmware,args.guest_kernel,args.guest_initrd,
                          storage=args.case in ('guest-storage','guest-reset'),reset=args.case=='guest-reset',
-                         restart=args.guest_owner_restart,sharing=args.guest_file_share,revoke=args.guest_file_revoke)
+                         restart=args.guest_owner_restart,sharing=args.guest_file_share or args.guest_file_grant,
+                         revoke=args.guest_file_revoke,grant=args.guest_file_grant)
     if args.case in ('png', 'pdf'):
         with tempfile.TemporaryDirectory(prefix='nexaui-content-') as directory:
             env['NEXAUI_CONTENT_TEST_ENCODED'] = directory

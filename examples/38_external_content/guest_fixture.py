@@ -28,7 +28,7 @@ RESET_RESTART_EXIT = 86
 SHARE_PATH_LIMIT = 96
 FILE_EXPORT_ID = 'nexaui-export'
 FILE_EXPORT_QOM = f'/machine/peripheral/{FILE_EXPORT_ID}'
-SHARE_ACTIVE, SHARE_PENDING, SHARE_REVOKED, SHARE_UNKNOWN = range(1,5)
+SHARE_ACTIVE, SHARE_PENDING, SHARE_REVOKED, SHARE_UNKNOWN, SHARE_OFFERED, SHARE_ATTACHING = range(1,7)
 KEY_CODES = {k:chr(k) for k in b'abcdefghijklmnopqrstuvwxyz0123456789'}
 KEY_CODES.update({1:'ctrl', 2:'ctrl_r', 3:'shift', 4:'shift_r', 5:'alt', 6:'alt_r',
                   7:'ret', 8:'tab', 9:'spc', 10:'esc', 11:'backspace', 12:'left',
@@ -39,7 +39,7 @@ BUTTONS = {1:('left',b'L'), 2:('right',b'M'), 3:('middle',b'N')}
 
 class Guest:
     def __init__(self, engine, firmware, boot, root, initrd=None, disk=None, writable=False, checkpoint=None,
-                 reset_enabled=False, file_share=None, revoke_share=False):
+                 reset_enabled=False, file_share=None, revoke_share=False, grant_share=False):
         self.root = root
         self.desktop = initrd is not None
         self.disk = Path(disk) if disk else None
@@ -48,8 +48,11 @@ class Guest:
         self.reset_state = RESET_UNREQUESTED
         self.close_result = None
         self.file_share = file_share
-        self.revoke_share = revoke_share
-        self.share_state = SHARE_ACTIVE
+        self.grant_share = grant_share
+        self.revoke_share = revoke_share or grant_share
+        self.share_state = SHARE_OFFERED if grant_share else SHARE_ACTIVE
+        self.share_requested = False
+        self.share_granted = not grant_share
         self.share_deleted = False
         if self.file_share:
             if not (reset_enabled and self.disk and self.file_share==self.disk.parent/'host-export'):
@@ -62,6 +65,7 @@ class Guest:
             if not (self.desktop and self.disk and writable):
                 raise ValueError('Reset preview requires an owned writable disk')
             self.environment = os.urandom(16)
+            self.reset_binding = os.urandom(16) if grant_share else self.environment
             self.disk_identity = image_identity(self.disk.stat(follow_symlinks=False))
             self.checkpoint_identity = image_identity(self.checkpoint.stat(follow_symlinks=False))
             self.checkpoint_hash = image_digest(self.checkpoint)
@@ -81,7 +85,7 @@ class Guest:
             if disk:
                 cmdline += ' nexaui.work=' + ('rw' if writable else 'ro')
             if self.file_share:
-                cmdline += ' nexaui.export=' + ('revocable' if revoke_share else 'write')
+                cmdline += ' nexaui.export=' + ('grantable' if grant_share else 'revocable' if revoke_share else 'write')
             boot_options = [
                 '-m', '768', '-device', 'virtio-vga,id=guest-gpu,xres=800,yres=600',
                 '-kernel', boot, '-initrd', initrd, '-append', cmdline,
@@ -91,13 +95,14 @@ class Guest:
                         'file':{'driver':'file','filename':str(disk)}}
                 boot_options += ['-blockdev',json.dumps(node),'-device','virtio-blk-pci,drive=work,id=work-disk']
             if self.file_share:
-                device = f'virtio-9p-pci,id={FILE_EXPORT_ID},fsdev={FILE_EXPORT_ID},mount_tag={FILE_EXPORT_ID}'
-                if revoke_share:
-                    device = json.dumps(dict(driver='virtio-9p-pci',id=FILE_EXPORT_ID,fsdev=FILE_EXPORT_ID,
-                                             mount_tag=FILE_EXPORT_ID))
                 boot_options += [
-                    '-fsdev',f'local,id={FILE_EXPORT_ID},path={self.file_share},security_model=mapped-xattr,writeout=immediate',
-                    '-device',device]
+                    '-fsdev',f'local,id={FILE_EXPORT_ID},path={self.file_share},security_model=mapped-xattr,writeout=immediate']
+                if not grant_share:
+                    device = f'virtio-9p-pci,id={FILE_EXPORT_ID},fsdev={FILE_EXPORT_ID},mount_tag={FILE_EXPORT_ID}'
+                    if revoke_share:
+                        device = json.dumps(dict(driver='virtio-9p-pci',id=FILE_EXPORT_ID,fsdev=FILE_EXPORT_ID,
+                                                 mount_tag=FILE_EXPORT_ID))
+                    boot_options += ['-device',device]
         else:
             boot_options = [
                 '-m', '32', '-device', 'VGA', '-serial', 'none',
@@ -304,23 +309,57 @@ class Guest:
             return b''
         if self.export_identity()!=self.share_identity:
             raise ValueError('The file grant changed')
-        if self.share_state!=SHARE_ACTIVE:
-            if self.observe_share_state()!=SHARE_REVOKED:
-                raise ValueError('File access removal is unconfirmed')
-        elif self.command('qom-get',path=FILE_EXPORT_QOM,property='mount_tag')!=FILE_EXPORT_ID:
+        state = self.observe_share_state()
+        if state==SHARE_OFFERED:
+            return b''
+        if state not in (SHARE_ACTIVE,SHARE_REVOKED):
+            raise ValueError('File access scope is unconfirmed')
+        if state==SHARE_ACTIVE and self.command('qom-get',path=FILE_EXPORT_QOM,property='mount_tag')!=FILE_EXPORT_ID:
             raise ValueError('The file grant changed')
         return self.share_path
 
     def observe_share_state(self):
         if self.share_state!=SHARE_ACTIVE:
             devices = self.command('qom-list',path='/machine/peripheral')
-            if self.share_deleted and not any(item['name']==FILE_EXPORT_ID for item in devices):
+            present = any(item['name']==FILE_EXPORT_ID for item in devices)
+            if self.grant_share and not self.share_granted:
+                if present:
+                    if self.share_requested and self.command('qom-get',path=FILE_EXPORT_QOM,
+                            property='mount_tag')==FILE_EXPORT_ID:
+                        self.share_granted = True
+                        self.share_state = SHARE_ACTIVE
+                        print(f'GUEST_SHARE_ATTACHED device={FILE_EXPORT_ID}',flush=True)
+                    else:
+                        self.share_state = SHARE_UNKNOWN
+            elif self.share_deleted and not present:
                 if self.share_state!=SHARE_REVOKED:
                     print(f'GUEST_SHARE_REMOVED device={FILE_EXPORT_ID}',flush=True)
                 self.share_state = SHARE_REVOKED
             elif self.share_state==SHARE_REVOKED:
                 self.share_state = SHARE_UNKNOWN
         return self.share_state
+
+    def grant_files(self, environment):
+        if not self.file_share or not self.grant_share or environment!=self.environment:
+            return b'U'
+        if self.share_requested or self.share_state!=SHARE_OFFERED:
+            return self.sharing()
+        try:
+            if self.file_share_scope() or self.share_state!=SHARE_OFFERED:
+                return b'U'
+        except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            return b'U'
+        self.reset_binding = os.urandom(16)
+        self.share_requested = True
+        self.share_state = SHARE_UNKNOWN
+        try:
+            self.command('device_add',driver='virtio-9p-pci',id=FILE_EXPORT_ID,bus='pci.0',
+                         fsdev=FILE_EXPORT_ID,mount_tag=FILE_EXPORT_ID)
+            self.share_state = SHARE_ATTACHING
+            print(f'GUEST_SHARE_GRANT_REQUEST device={FILE_EXPORT_ID}',flush=True)
+        except (OSError,ValueError,RuntimeError,EOFError,KeyError):
+            pass
+        return self.sharing_reply(self.share_state)
 
     def sharing_reply(self, state):
         return struct.pack('>4sB3x16sI',b'NXS2',state,self.environment,len(self.share_path))+self.share_path
@@ -343,7 +382,7 @@ class Guest:
         if not self.file_share or not self.revoke_share or environment!=self.environment:
             return b'U'
         if self.share_state!=SHARE_ACTIVE:
-            return self.sharing()
+            return self.sharing() if self.share_granted else b'U'
         try:
             self.file_share_scope()
         except (OSError,ValueError,RuntimeError,EOFError,KeyError):
@@ -379,11 +418,17 @@ class Guest:
             return b'U'
         print(f'GUEST_RESET_PREVIEW environment={self.environment.hex()} checkpoint={self.checkpoint_hash.hex()} '
               f'capacity={WORK_DISK_BYTES} grants={int(bool(export))}',flush=True)
+        if self.file_share and self.grant_share:
+            return struct.pack('>4s16s32sQI16s',b'NXV3',self.environment,self.checkpoint_hash,WORK_DISK_BYTES,
+                               len(export),self.reset_binding)+export
         magic = b'NXV2' if export else b'NXV1'
         return struct.pack('>4s16s32sQI',magic,self.environment,self.checkpoint_hash,WORK_DISK_BYTES,len(export))+export
 
     def reset_matches(self, scope):
-        return self.reset_enabled and scope==self.environment+self.checkpoint_hash
+        if not self.reset_enabled:
+            return False
+        binding = self.reset_binding if self.file_share and self.grant_share else self.environment
+        return scope==binding+self.checkpoint_hash
 
     def reset_status(self, scope):
         state=self.reset_state if self.reset_matches(scope) else RESET_REJECTED
@@ -495,14 +540,14 @@ def read_request(peer, desktop):
         generation, resize, width, height, kind = fields[:5]
         if not (0 < generation < 2**64 and 0 < resize < 2**64 and
                 0 < width <= 2048 and 0 < height <= 2048 and width*height*4 <= PNG_LIMIT and
-                kind in range(13 if desktop else 6) and len(fields)==(6 if kind in (5,9,10,12) else 5)):
+                kind in range(14 if desktop else 6) and len(fields)==(6 if kind in (5,9,10,12,13) else 5)):
             raise ValueError('Guest request outside the fixture limits')
         size = fields[5] if len(fields)==6 else 0
         if not 0 <= size <= INPUT_LIMIT*INPUT_RECORD_SIZE:
             raise ValueError('Guest input batch too large')
         if kind in (9,10) and size!=RESET_SCOPE_BYTES:
             raise ValueError('Invalid guest reset scope length')
-        if kind==12 and size!=16:
+        if kind in (12,13) and size!=16:
             raise ValueError('Invalid file grant environment length')
         payload = stream.read(size)
         if len(payload)!=size or stream.read(1):
@@ -532,7 +577,8 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
     with tempfile.TemporaryDirectory(prefix='qemu-guest-', dir=address.parent) as temp:
         guest = Guest(engine, firmware, boot, Path(temp), initrd, disk, writable=bool(disk), checkpoint=checkpoint,
                       reset_enabled=bool(reset_mode),file_share=file_share,
-                      revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'))
+                      revoke_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_REVOKE')=='1'),
+                      grant_share=bool(file_share and os.environ.get('NEXAUI_CONTENT_TEST_FILE_GRANT')=='1'))
         drop_response=reset_mode=='drop-response'
         try:
             status = guest.wait_ready()
@@ -587,6 +633,9 @@ def serve(engine, firmware, boot, address, initrd=None, disk=None, checkpoint=No
                             continue
                         if kind == 12:
                             peer.sendall(guest.revoke_files(payload))
+                            continue
+                        if kind == 13:
+                            peer.sendall(guest.grant_files(payload))
                             continue
                         image = guest.frame()
                         peer.sendall(image)

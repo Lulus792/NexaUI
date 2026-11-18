@@ -49,17 +49,22 @@ if [ -n "$work" ]; then
     fi
 fi
 case " $(cat /proc/cmdline) " in
-    *" nexaui.export=write "*|*" nexaui.export=revocable "*)
+    *" nexaui.export=write "*|*" nexaui.export=revocable "*|*" nexaui.export=grantable "*)
         modprobe 9pnet_virtio
         modprobe 9p
         mkdir -p /mnt/export
-        mount -t 9p -o trans=virtio,version=9p2000.L,nodev,nosuid,noexec nexaui-export /mnt/export
-        : >/run/file-export
-        printf '%s\n' 'NEXAUI_FILE_SHARE mounted' >/dev/ttyS0
+        case " $(cat /proc/cmdline) " in
+            *" nexaui.export=grantable "*) : >/run/grantable-export ;;
+            *)
+                mount -t 9p -o trans=virtio,version=9p2000.L,nodev,nosuid,noexec nexaui-export /mnt/export
+                : >/run/file-export
+                printf '%s\n' 'NEXAUI_FILE_SHARE mounted' >/dev/ttyS0
+                ;;
+        esac
         ;;
 esac
 case " $(cat /proc/cmdline) " in
-    *" nexaui.export=revocable "*) : >/run/revocable-export ;;
+    *" nexaui.export=revocable "*|*" nexaui.export=grantable "*) : >/run/revocable-export ;;
 esac
 for event in /dev/input/event*; do
     if udevadm info -q property "$event" | grep -qx ID_INPUT_MOUSE=1; then
@@ -132,6 +137,20 @@ while IFS= read -r line; do
         sleep .4
         paint 42 'Guest keyboard input received'
         printf '%s\n' NEXAUI_DESKTOP_INPUT >/dev/ttyS0
+    elif [ -f /run/grantable-export ] && [ "$line" = attach ]; then
+        tries=0
+        until timeout 3 mount -t 9p -o trans=virtio,version=9p2000.L,nodev,nosuid,noexec nexaui-export /mnt/export; do
+            tries=$((tries + 1))
+            if [ "$tries" -ge 5 ]; then break; fi
+            sleep .2
+        done
+        if [ "$tries" -lt 5 ]; then
+            : >/run/file-export
+            printf '%s\n' 'NEXAUI_FILE_SHARE mounted' >/dev/ttyS0
+            paint 44 'Guest mounted the host export'
+        else
+            paint 41 'Guest could not mount the host export'
+        fi
     elif [ -f /run/revocable-export ] && [ "$line" = detach ]; then
         umount /mnt/export || continue
         rm -f /run/file-export

@@ -1207,8 +1207,9 @@ int main(int argc,char **argv) {
             directory=shared;
         }
         int revoke=getenv("NEXAUI_CONTENT_TEST_FILE_REVOKE")!=NULL;
-        CHECK(!revoke||directory);
-        CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL)&&
+        int grant=getenv("NEXAUI_CONTENT_TEST_FILE_GRANT")!=NULL;
+        CHECK((!revoke&&!grant)||directory);
+        CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,grant?"Files: access off":NULL)&&
             input_chrome(display,id,"guest-sharing")&&drive("key","Escape")&&observe(app,"Sharing",1));
         unsigned long long reads=0, before=0, after=0;
         guest_reset_scope baseline={0}, preview={0};
@@ -1221,7 +1222,7 @@ int main(int argc,char **argv) {
         } else CHECK(observe(app,"No persistent disk attached",0));
         CHECK(input_chrome(display,id,"guest-resources-first")&&drive("key","Escape")&&observe(app,"Resources",1));
         if (guest_storage) {
-            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&baseline,directory)&&
+            CHECK(focus(app,"Review reset")&&drive("key","Return")&&read_guest_reset_scope(app,&baseline,grant?NULL:directory)&&
                 input_chrome(display,id,"guest-reset-first"));
             CHECK(drive("key","Escape")&&observe(app,"Review reset",1));
         }
@@ -1229,6 +1230,22 @@ int main(int argc,char **argv) {
             observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0));
         CHECK(point_at(id,140,90)&&host_marker(host_log,"x=157 y=259")&&
             point_at(id,155,100)&&drive("mousedown","1"));
+        if (grant) {
+            char path[128];
+            snprintf(path,sizeof(path),"%s/guest-export.txt",directory);
+            CHECK(guest_command("probe")&&browser_pixel(display,outer,156,43,0x00a800u)&&
+                release_guest_keys(app)&&drive("mouseup","1"));
+            CHECK(access(path,F_OK)!=0&&errno==ENOENT);
+            CHECK(focus(app,"Sharing")&&drive("key","Return")&&read_guest_sharing(app,directory,"Files: access off")&&
+                focus(app,"Grant file access")&&drive("key","Return")&&
+                read_guest_sharing(app,directory,"Files: activation pending")&&input_chrome(display,id,"guest-grant-pending"));
+            CHECK(focus(app,"Check sharing status")&&drive("key","Return")&&read_guest_sharing(app,directory,NULL)&&
+                input_chrome(display,id,"guest-granted")&&drive("key","Escape")&&observe(app,"Sharing",1));
+            CHECK(focus(app,"Enter guest")&&drive("key","Return")&&
+                observe(app,"Guest input active: Ctrl+Shift+F12 exits.",0)&&point_at(id,150,100)&&guest_command("attach")&&
+                browser_pixel(display,outer,156,43,0x0000a8u));
+            puts("GUEST_GRANT_NATIVE verified: denied before consent, scoped activation and guest mount");
+        }
         CHECK(drive("key","n")&&drive("key","e")&&drive("key","x")&&drive("key","a")&&drive("key","Return"));
         CHECK(browser_pixel(display,outer,156,43,0x00a800u)&&input_chrome(display,id,"guest-desktop-typed"));
         CHECK(drive("keydown","ctrl")&&drive("keydown","shift")&&drive("key","F12")&&
