@@ -205,12 +205,17 @@ network_read() {
 }
 microphone_window() {
     dd if="$1" bs=192000 skip="$2" count=1 of=/run/microphone-window.raw 2>/dev/null || return 1
+    [ "$(stat -c %s /run/microphone-window.raw)" -eq 192000 ] || return 1
     if [ "$3" != active ]; then
         if ! cmp -s /run/microphone-silence.raw /run/microphone-window.raw; then return 1; fi
         printf 'NEXAUI_MICROPHONE_WINDOW %s count=96000 nonzero=0 positive=0 negative=0\n' "$3" >/dev/ttyS0
         return
     fi
-    od -An -v -t d2 /run/microphone-window.raw |
+    {
+        for slice in 0 12 24 36 48 60 72 84; do
+            dd if=/run/microphone-window.raw bs=1920 skip="$slice" count=1 2>/dev/null || break
+        done
+    } | od -An -v -t d2 |
         awk '
             { for (i = 1; i <= NF; ++i) {
                 v = $i + 0; ++count
@@ -221,7 +226,7 @@ microphone_window() {
             END {
                 printf "NEXAUI_MICROPHONE_WINDOW active count=%d nonzero=%d positive=%d negative=%d\n",
                     count, nonzero, positive, negative
-                exit !(count == 96000 && positive > 20000 && negative > 20000)
+                exit !(count == 7680 && positive > 1500 && negative > 1500)
             }' >/dev/ttyS0
 }
 microphone_held_window() {
